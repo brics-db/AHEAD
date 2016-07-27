@@ -1,0 +1,11 @@
+#!/bin/bash
+
+LIB=column_operators
+LIBFILE=lib${LIB}.a
+FILES=(operators)
+CD=`pwd | sed 's#.*/##'`
+
+rm *.o
+rm ${LIBFILE}
+rm ../${LIBFILE}
+

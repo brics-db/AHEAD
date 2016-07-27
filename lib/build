@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for p in column_operators column_storage meta_repository; do
+	pushd $p
+	./build
+	popd
+done
+

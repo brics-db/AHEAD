@@ -1,0 +1,15 @@
+/database
+/lib/libcolumn_operators.a
+/lib/libcolumn_storage.a
+/lib/libmeta_repository.a
+/lib/column_operators/libcolumn_operators.a
+/lib/column_operators/operators.o
+/lib/column_storage/BucketManager.o
+/lib/column_storage/ColumnManager.o
+/lib/column_storage/TransactionManager.o
+/lib/column_storage/libcolumn_storage.a
+/lib/meta_repository/MetaRepositoryManager.o
+/lib/meta_repository/libmeta_repository.a
+/nbproject/private
+/tools/sample/main
+*.swp

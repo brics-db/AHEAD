@@ -1,0 +1,11 @@
+#!/bin/bash
+
+LIB=column_storage
+LIBFILE=lib${LIB}.a
+FILES=(BucketManager ColumnManager TransactionManager)
+CD=`pwd | sed 's#.*/##'`
+
+rm *.o
+rm ${LIBFILE}
+rm ../${LIBFILE}
+

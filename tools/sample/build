@@ -1,0 +1,4 @@
+#!/bin/bash
+
+clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -std=c++14 main.cpp -o main -v `llvm-config --ldflags` -L/home/tk4/git/columnstore/lib `llvm-config --libs` -lcolumn_operators -lcolumn_storage -lmeta_repository -lffi -ldl -lpthread -lcurses
+

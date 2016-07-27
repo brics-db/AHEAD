@@ -1,0 +1,64 @@
+Install LLVM, LLVM GCC Frontend and Clang
+
+1) Download 
+	- LLVM-GCC-Frontend Binary
+	- LLVM Source Code
+	- LLVM Clang Source Code
+
+2) Create LLVM directory
+	mkdir $HOME/llvm
+
+3) Install the frontend binaries to $HOME/llvm/frontend
+	cd $HOME/llvm
+	tar -xvf llvm-gcc....tar
+	mv llvm-gcc... frontend
+
+4) Add llvm-gcc frontend to path (put in your .bashrc)
+	export PATH=$PATH:/$HOME/llvm/frontend/bin
+
+
+5) Extract LLVM source to $HOME/llvm/src
+
+	cd $HOME/llvm
+	tar -xvf llvm-2.7.tar
+	mv llvm-2.7 src
+
+5) Extract Clang Source to $HOME/llvm/src/tools/clang
+
+	cd $HOME/llvm/src/tools/clang
+	tar -xvf clang-2.7.tar
+	mv clang-2.7/* .
+
+6) Configure LLVM and Clang (optimal build, local installation)
+
+	cd $HOME/llvm/src
+	./configure --enable-optimized --prefix=$HOME/llvm
+
+7) Make and install
+	
+	cd $HOME/llvm/src
+	make
+	make install
+
+8) Add llvm to path (put in your .bashrc)
+
+	export PATH=$PATH:/$HOME/llvm/bin
+
+9) Make sure, you have the following dependencies installed (e.g. via package manager, needed for boost)
+
+   python2.7-dev libbz2-dev
+
+Preparing V2-Source 
+
+1) Copy Makefile.common.template to Makefile.common
+
+2) Modifying/Adjusting Makefile.common
+	LLVM_SRC_ROOT
+	LLVM_OBJ_ROOT
+	PROJ_SRC_ROOT
+
+3) run "make"
+	 
+3) Add the boost lib path to your LD_LIBRARY_PATH (e.g. in your .bashrc):
+
+   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/v2/thirdparty/boost/Release/lib

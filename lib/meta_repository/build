@@ -1,0 +1,15 @@
+#!/bin/bash
+
+LIB=meta_repository
+LIBFILE=lib${LIB}.a
+FILES=(MetaRepositoryManager)
+CD=`pwd | sed 's#.*/##'`
+
+for f in "${FILES[@]}"; do
+        clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -std=c++14 -c $f.cpp -o $f.o
+done
+
+ar cru ${LIBFILE} "${FILES[@]/%/.o}"
+ranlib ${LIBFILE}
+ln -sf ${CD}/${LIBFILE} ../${LIBFILE}
+
