@@ -2,7 +2,8 @@
 
 for p in sample; do
 	pushd $p
-	./build
+	./build || exit 1
 	popd
 done
 
+exit 0

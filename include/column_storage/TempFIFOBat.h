@@ -20,30 +20,41 @@
 
 
 /***
-* @author Burkhard Rammé
-*/
+ * @author Burkhard Rammé
+ */
 #ifndef TEMPFIFOBAT_H
 #define TEMPFIFOBAT_H
 
-#include "column_storage/Bat.h"
 #include <queue>
+
+#include "ColumnStore.h"
+#include "column_storage/Bat.h"
 //#include "column_storage/TempFIFOBatIterator.h"
 
 template<class Head, class Tail>
-class TempFIFOBat : public Bat<Head,Tail> {
+class TempFIFOBat : public Bat<Head, Tail> {
 private:
-    std::queue<std::pair<Head,Tail> > items;
+    std::queue<std::pair<Head, Tail> > items;
 public:
-	/** default constructor */
-	TempFIFOBat() {};
 
-	/** returns an iterator pointing at the start of the column */
-	virtual BatIterator<Head,Tail> * begin() {/*return new TempFIFOBatIterator<Head,Tail>(&items);*/ return 0; };
+    /** default constructor */
+    TempFIFOBat() {
+    };
 
-	/** append an item */
-	virtual void append(pair<Head,Tail> p) {items.push(p); };
-	virtual int size() {return items.size(); }
-//	virtual std::pair<Head,Tail> pop() { std::cout<<"TempFIFOBat::pop() called - is just a dummy for now!"; }
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<Head, Tail> * begin() {
+        /*return new TempFIFOBatIterator<Head,Tail>(&items);*/ return 0;
+    };
+
+    /** append an item */
+    virtual void append(pair<Head, Tail> p) {
+        items.push(p);
+    };
+
+    virtual int size() {
+        return items.size();
+    }
+    //	virtual std::pair<Head,Tail> pop() { std::cout<<"TempFIFOBat::pop() called - is just a dummy for now!"; }
 };
 
 #endif //TEMPFIFOBAT_H

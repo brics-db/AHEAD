@@ -2,14 +2,15 @@
 
 LIB=column_storage
 LIBFILE=lib${LIB}.a
-FILES=(BucketManager ColumnManager TransactionManager)
+FILES=(BucketManager ColumnManager TransactionManager Transaction)
 CD=`pwd | sed 's#.*/##'`
 
 for f in "${FILES[@]}"; do
-	clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -std=c++14 -c $f.cpp -o $f.o
+	clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -fcxx-exceptions -std=c++14 -c $f.cpp -o $f.o || exit 1
 done
 
 ar cru ${LIBFILE} "${FILES[@]/%/.o}"
 ranlib ${LIBFILE}
 ln -sf ${CD}/${LIBFILE} ../${LIBFILE}
 
+exit 0

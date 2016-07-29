@@ -1,5 +1,6 @@
-#include <string.h>
+#include <cstring>
 
+#include "ColumnStore.h"
 #include "column_storage/ColumnBat.h"
 #include "column_storage/TempBat.h"
 #include "column_operators/operators.h"
@@ -7,220 +8,195 @@
 #ifndef METAREPOSITORYMANAGER_H
 #define METAREPOSITORYMANAGER_H
 
-class Bat_Operators;
-
 using namespace std;
 
-/**
-* @author Christian Vogel
-* @date 22.10.2010
-*
-* @todo
-*/
+enum type_t {
+    type_int = 0, type_str, type_fxd, type_chr, type_resint
+};
 
+typedef int int_t;
+typedef char char_t, *str_t;
+typedef double fxd_t;
+typedef uint64_t resint_t;
+
+extern const char* NAME_INTEGER;
+extern const char* NAME_STRING;
+extern const char* NAME_FIXED;
+extern const char* NAME_CHAR;
+extern const char* NAME_RESINT;
+
+extern const size_t MAXLEN_STRING;
 
 /**
-* @brief Class for managing meta data
-*
-* This class will manage the whole meta data stuff, where information about the database are stored. Meta data creates
-* new entries when somebody creates new tables, operators or something else!
-*
-* The class implements the Singleton Pattern, this makes clear that only one object exists in runtime.
-*/
+ * @author Christian Vogel
+ * @date 22.10.2010
+ *
+ * @todo
+ */
+
+/**
+ * @brief Class for managing meta data
+ *
+ * This class will manage the whole meta data stuff, where information about the database are stored. Meta data creates
+ * new entries when somebody creates new tables, operators or something else!
+ *
+ * The class implements the Singleton Pattern, this makes clear that only one object exists in runtime.
+ */
 class MetaRepositoryManager {
 public:
+    /**
+     * @author Christian Vogel
+     *
+     * @return pointer for only one object of the MetaRepositoryManager class
+     *
+     * The function returns a pointer of the one and only existing instance of the class. In the case that no instance
+     * exists, it will be created and afterwards returned from the function.
+     */
+    static MetaRepositoryManager* getInstance();
 
-	/**
-	* @author Christian Vogel
-	*
-	* @return pointer for only one object of the MetaRepositoryManager class
-	*
-	* The function returns a pointer of the one and only existing instance of the class. In the case that no instance
-	* exists, it will be created and afterwards returned from the function.
-	*/
-	static MetaRepositoryManager* getInstance();
+    static void init(const char* strBaseDir);
 
-	/**
-	 * @author Christian Vogel
-	 *
-	 * @return unique id of the created table
-	 *
-	 * Creates an entry for a table into the meta repository.
-	 */
-	int createTable(char *name);
+    /**
+     * @author Christian Vogel
+     *
+     * @return unique id of the created table
+     *
+     * Creates an entry for a table into the meta repository.
+     */
+    int createTable(const char *name);
 
-	/**
-	 * @author Christian Vogel
-	 *
-	 * Creates an entry for an attribute of a specified table into the meta repository.
-	 */
-	void createAttribute(char *name, char *datatype, unsigned BATId, unsigned table_id);
+    /**
+     * @author Christian Vogel
+     *
+     * Creates an entry for an attribute of a specified table into the meta repository.
+     */
+    void createAttribute(char *name, char *datatype, unsigned BATId, unsigned table_id);
 
-	char* getDataTypeForAttribute(char *name);
+    char* getDataTypeForAttribute(char *name);
 
-	unsigned getBatIdOfAttribute(char *nameOfTable, char *attribute);
+    unsigned getBatIdOfAttribute(const char *nameOfTable, const char *attribute);
 
 private:
-	static MetaRepositoryManager *instance;
+    static MetaRepositoryManager *instance;
+    static char* strBaseDir;
 
-	Bat_Operators *operators;
+    Bat_Operators *operators;
 
-	// all attributes for the table table :)
+    // all attributes for the table table :)
 
-	Bat<unsigned, unsigned> *pk_table_id;
-	Bat<unsigned, const char*> *table_name;
+    Bat<unsigned, unsigned> *pk_table_id;
+    Bat<unsigned, const char*> *table_name;
 
-	// all attributes for the attribute table
+    // all attributes for the attribute table
 
-	Bat<unsigned, unsigned> *pk_attribute_id;
-	Bat<unsigned, const char*> *attribute_name;
-	Bat<unsigned, bool> *is_dropped; //unused now
-	Bat<unsigned, unsigned> *fk_table_id;
-	Bat<unsigned, unsigned> *fk_type_id;
-	Bat<unsigned, unsigned> *BAT_number;
+    Bat<unsigned, unsigned> *pk_attribute_id;
+    Bat<unsigned, const char*> *attribute_name;
+    Bat<unsigned, bool> *is_dropped; //unused now
+    Bat<unsigned, unsigned> *fk_table_id;
+    Bat<unsigned, unsigned> *fk_type_id;
+    Bat<unsigned, unsigned> *BAT_number;
 
-	// all attributes for the layout table
+    // all attributes for the layout table
 
-	Bat<unsigned, unsigned> *pk_layout_id;
-	Bat<unsigned, const char*> *layout_name;
-	Bat<unsigned, unsigned> *size;
+    Bat<unsigned, unsigned> *pk_layout_id;
+    Bat<unsigned, const char*> *layout_name;
+    Bat<unsigned, unsigned> *size;
 
-	// all attributes for the operator table
+    // all attributes for the operator table
 
-	Bat<unsigned, unsigned> *pk_operator_id;
-	Bat<unsigned, const char*> *operator_name;
+    Bat<unsigned, unsigned> *pk_operator_id;
+    Bat<unsigned, const char*> *operator_name;
 
-	// all attributes for the datatypes table
+    // all attributes for the datatypes table
 
-	Bat<unsigned, unsigned> *pk_datatype_id;
-	Bat<unsigned, const char*> *datatype_name;
-	Bat<unsigned, unsigned> *length;
-	Bat<unsigned, char> *typ_category;
-	Bat<unsigned, unsigned> *fk_datatype_id;
+    Bat<unsigned, unsigned> *pk_datatype_id;
+    Bat<unsigned, const char*> *datatype_name;
+    Bat<unsigned, unsigned> *length;
+    Bat<unsigned, char> *typ_category;
+    Bat<unsigned, unsigned> *fk_datatype_id;
 
-	// path where all table files are located
-	char* META_PATH;
-	char* TEST_DATABASE_PATH;
+    // path where all table files are located
+    char* META_PATH;
+    char* TEST_DATABASE_PATH;
 
-	void createRepository();
+    void createRepository();
 
-	void createDefaultDataTypes();
+    void createDefaultDataTypes();
 
-	template<class Head, class Tail>
-	pair<Head, Tail> getLastValue(Bat<Head,Tail> *bat) {
-		BatIterator<unsigned, unsigned> *iter = bat->begin();
+    template<class Head, class Tail>
+    pair<Head, Tail> getLastValue(Bat<Head, Tail> *bat);
 
-		return iter->get(bat->size() - 1);
-	}
+    template<class Head, class Tail>
+    pair<Head, Tail> unique_selection(Bat<Head, Tail> *bat, Tail value);
 
-	template<class Head, class Tail>
-	pair<Head, Tail> unique_selection(Bat<Head,Tail> *bat, Tail value) {
-		BatIterator<Head, Tail> *iter = bat->begin();
+    template<class Head, class Tail>
+    bool isBatEmpty(Bat<Head, Tail> *bat);
 
-		pair<Head, Tail> nullResult;
+    template<class Head, class Tail>
+    int selectBatId(Bat<Head, Tail> *bat, const char *value);
 
-		while (iter->hasNext()) {
-			pair<Head, Tail> p = iter->next();
-			if (p.second == value) {
-				return p;
-			}
-		}
-		delete(iter);
+    template<class Head, class Tail>
+    int selectBatId(Bat<Head, Tail> *bat, int value);
 
-		return nullResult;
-	}
+    template<class Head, class Tail>
+    Tail selection(Bat<Head, Tail> *bat, Tail value);
 
-	template<class Head, class Tail>
-	bool isBatEmpty(Bat<Head,Tail> *bat) {
-		if(bat->size() == 0) {
-			return true;
-		}
+    template<class Head, class Tail>
+    int selectPKId(Bat<Head, Tail> *bat, int batId);
 
-		return false;
-	}
+    template<class Head, class Tail>
+    bool dataAlreadyExists(Bat<Head, Tail> *bat, const char* name_value);
 
-	template<class Head, class Tail>
-	int selectBatId(Bat<Head,Tail> *bat, char *value) {
-		BatIterator<Head, Tail> *iter = bat->begin();
+    MetaRepositoryManager();
+    virtual ~MetaRepositoryManager();
 
-		while(iter->hasNext()) {
-			pair<Head,Tail> p = iter->next();
-			if(strcmp(p.second, value) == 0) {
-				delete(iter);
-				return p.first;
-			}
-		}
-		delete(iter);
+public:
 
-		return -1;
-	}
+    class TablesIterator : public BatIterator<unsigned, const char*> {
+        typedef BatIterator<unsigned, unsigned> table_key_iter_t;
+        typedef BatIterator<unsigned, const char*> table_name_iter_t;
 
-	template<class Head, class Tail>
-	int selectBatId(Bat<Head,Tail> *bat, int value) {
-		BatIterator<Head, Tail> *iter = bat->begin();
+        table_key_iter_t *pKeyIter;
+        table_name_iter_t *pNameIter;
 
-		while(iter->hasNext()) {
-			pair<Head,Tail> p = iter->next();
-			if(p.second == value) {
-				delete(iter);
-				return p.first;
-			}
-		}
-		delete(iter);
+    public:
 
-		return -1;
-	}
+        TablesIterator() {
+            pKeyIter = MetaRepositoryManager::instance->pk_table_id->begin();
+            pNameIter = MetaRepositoryManager::instance->table_name->begin();
+        }
 
-	template<class Head, class Tail>
-	Tail selection(Bat<Head,Tail> *bat, Tail value) {
-		BatIterator<Head, Tail> *iter = bat->begin();
+        ~TablesIterator() {
+            delete pKeyIter;
+            delete pNameIter;
+        }
 
-		while(iter->hasNext()) {
-			pair<Head,Tail> p = iter->next();
-			if(p.second == value) {
-				delete(iter);
-				return p.first;
-			}
-		}
-		delete(iter);
+        virtual pair<unsigned, const char*> next() override {
+            return make_pair(pKeyIter->next().second, pNameIter->next().second);
+        }
 
-		return 0;
-	}
+        virtual pair<unsigned, const char*> get(unsigned index) override {
+            return make_pair(pKeyIter->get(index).second, pNameIter->get(index).second);
+        }
 
-	template<class Head, class Tail>
-	int selectPKId(Bat<Head,Tail> *bat, int batId) {
-		BatIterator<Head, Tail> *iter = bat->begin();
+        virtual bool hasNext() override {
+            return pKeyIter->hasNext();
+        }
 
-		while(iter->hasNext()) {
-			pair<Head,Tail> p = iter->next();
-			if(p.first == batId) {
-				delete(iter);
-				return p.second;
-			}
-		}
-		delete(iter);
+        virtual unsigned size() override {
+            return pKeyIter->size();
+        }
 
-		return -1;
-	}
 
-	template<class Head, class Tail>
-	bool dataAlreadyExists(Bat<Head,Tail> *bat, char* name_value) {
-		BatIterator<Head, Tail> *iter = bat->begin();
+        friend class MetaRepositoryManager;
+    };
 
-		while(iter->hasNext()) {
-			pair<Head,Tail> p = iter->next();
-			if(strcmp(p.second, name_value) == 0) {
-				delete(iter);
-				return true;
-			}
-		}
-		delete(iter);
-
-		return false;
-	}
-
-	MetaRepositoryManager();
-	~MetaRepositoryManager();
+    TablesIterator listTables() {
+        TablesIterator iter;
+        return iter;
+    }
 };
+
+#include "meta_repository/MetaRepositoryManager.tcc"
 
 #endif

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-for p in column_operators column_storage meta_repository; do
+for p in column_operators column_storage meta_repository util; do
 	pushd $p
-	./clean
+	./clean || exit 1
 	popd
 done
-
+exit 0

@@ -13,11 +13,12 @@
 
 template<class T>
 class col_import : public column<T> {
+
     template<class Head>
-    col_import(const Bat<Head,T>& b) {
-        BatIterator<Head,T> * iter = arg->begin();
-        while(iter->hasNext()) {
-            pair<Head,T> p = iter->next();
+    col_import(const Bat<Head, T>& b) {
+        BatIterator<Head, T> * iter = arg->begin();
+        while (iter->hasNext()) {
+            pair<Head, T> p = iter->next();
             push_back(p.second);
         }
         delete iter;

@@ -20,45 +20,52 @@
 
 
 /***
-* @author Benjamin Schlegel
-*/
+ * @author Benjamin Schlegel
+ */
 #ifndef COLUMNBAT_H
 #define COLUMNBAT_H
+
+#include <vector>
+#include <iostream>
+#include <cstdlib>
 
 #include "column_storage/Bat.h"
 #include "column_storage/ColumnManager.h"
 #include "column_storage/TransactionManager.h"
 #include "meta_repository/MetaRepositoryManager.h"
 #include "column_storage/ColumnBatIterator.h"
-#include <vector>
-#include <iostream>
-#include <cstdlib>
-
-class MetaRepositoryManager;
 
 using namespace std;
 
 template<class Head, class Tail>
-class ColumnBat : public Bat<Head,Tail>{
+class ColumnBat : public Bat<Head, Tail> {
 private:
-	unsigned mColumnId;
+    unsigned mColumnId;
 public:
-	/** default constructor */
-	ColumnBat(unsigned columnId) : mColumnId(columnId) {};
 
-	ColumnBat(char *table_name, char *attribute) {
-		MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
-		mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
-	};
+    /** default constructor */
+    ColumnBat(unsigned columnId) : mColumnId(columnId) {
+    };
 
-	/** returns an iterator pointing at the start of the column */
-	virtual BatIterator<Head,Tail> * begin() {return new ColumnBatIterator<Head,Tail>(mColumnId);};	
+    ColumnBat(const char *table_name, const char *attribute) {
+        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
+        mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
+    };
 
-	/** append an item */
-	virtual void append(pair<Head,Tail> p) { };
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<Head, Tail> * begin() {
+        return new ColumnBatIterator<Head, Tail>(mColumnId);
+    };
 
-	virtual int size() { cout<<"ColoumnBat::size() called - is just a dummy for now!"; return 0; }
-//	virtual std::pair<Head,Tail> pop() { std::cout<<"ColumnBat::pop() called - is just a dummy for now!"; }
+    /** append an item */
+    virtual void append(pair<Head, Tail> p) {
+    };
+
+    virtual int size() {
+        cout << "ColoumnBat::size() called - is just a dummy for now!";
+        return 0;
+    }
+    //	virtual std::pair<Head,Tail> pop() { std::cout<<"ColumnBat::pop() called - is just a dummy for now!"; }
 };
 
 #endif

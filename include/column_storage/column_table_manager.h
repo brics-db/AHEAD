@@ -24,8 +24,10 @@ public:
 private:
     static column_table_manager *instance;
 
-    std::map<std::string,column_table*> tables;
-    column_table_manager() : database_path("/home/c5148079/workspace/V2/database/") {};
+    std::map<std::string, column_table*> tables;
+
+    column_table_manager() : database_path("/home/c5148079/workspace/V2/database/") {
+    };
     ~column_table_manager();
 };
 

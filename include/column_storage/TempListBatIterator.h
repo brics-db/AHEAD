@@ -20,31 +20,46 @@
 
 
 /***
-* @author Burkhard Rammé
-*/
+ * @author Burkhard Rammé
+ */
 #ifndef TEMPLISTBATITERATOR_H
 #define TEMPLISTBATITERATOR_H
 
-#include "column_storage/BatIterator.h"
 #include <list>
+
+#include "ColumnStore.h"
+#include "column_storage/BatIterator.h"
 
 using namespace std;
 
 template<class Head, class Tail>
-class TempListBatIterator : public BatIterator<Head,Tail> {
+class TempListBatIterator : public BatIterator<Head, Tail> {
 private:
-    list<pair<Head,Tail> > * mList;
-        typename list<pair<Head,Tail> >::iterator iter;
+    list<pair<Head, Tail> > * mList;
+    typename list<pair<Head, Tail> >::iterator iter;
 public:
-	TempListBatIterator(list<pair<Head,Tail> > * _l) : mList(_l) {iter = mList->begin();};
-	virtual pair<Head,Tail> next() {return *(iter++);};
-	virtual pair<Head,Tail> get(unsigned index) {
-		iter = mList->begin();
-		advance(iter,index);
-		return next();
-	};
-	virtual bool hasNext() {return iter != mList->end();};
-	virtual unsigned size() {return mList->size();};
+
+    TempListBatIterator(list<pair<Head, Tail> > * _l) : mList(_l) {
+        iter = mList->begin();
+    };
+
+    virtual pair<Head, Tail> next() {
+        return *(iter++);
+    };
+
+    virtual pair<Head, Tail> get(unsigned index) {
+        iter = mList->begin();
+        advance(iter, index);
+        return next();
+    };
+
+    virtual bool hasNext() {
+        return iter != mList->end();
+    };
+
+    virtual unsigned size() {
+        return mList->size();
+    };
 };
 
 #endif //TEMPLISTBATITERATOR_H

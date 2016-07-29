@@ -20,30 +20,44 @@
 
 
 /***
-* @author Burkhard Rammé
-*/
+ * @author Burkhard Rammé
+ */
 #ifndef TEMPLISTBAT_H
 #define TEMPLISTBAT_H
 
+#include "ColumnStore.h"
 #include "column_storage/Bat.h"
 #include "column_storage/TempListBatIterator.h"
 
 template<class Head, class Tail>
-class TempListBat : public Bat<Head,Tail> {
+class TempListBat : public Bat<Head, Tail> {
 private:
-	list<std::pair<Head,Tail> > items;
+    list<std::pair<Head, Tail> > items;
 public:
-	/** default constructor */
-	TempListBat() {};
 
-	/** returns an iterator pointing at the start of the column */
-	virtual BatIterator<Head,Tail> * begin() {return new TempListBatIterator<Head,Tail>(&items); };
+    /** default constructor */
+    TempListBat() {
+    };
 
-	/** append an item */
-	virtual void append(pair<Head,Tail> p) {items.push_back(p); };
-	virtual int size() {return items.size(); }
-	
-	virtual std::pair<Head,Tail> pop() {std::pair<Head,Tail> first=items.front(); items.pop_front(); return first; }
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<Head, Tail> * begin() {
+        return new TempListBatIterator<Head, Tail>(&items);
+    };
+
+    /** append an item */
+    virtual void append(pair<Head, Tail> p) {
+        items.push_back(p);
+    };
+
+    virtual int size() {
+        return items.size();
+    }
+
+    virtual std::pair<Head, Tail> pop() {
+        std::pair<Head, Tail> first = items.front();
+        items.pop_front();
+        return first;
+    }
 };
 
 #endif //TEMPLISTBAT_H

@@ -20,31 +20,49 @@
 
 
 /***
-* @author Benjamin Schlegel
-*/
+ * @author Benjamin Schlegel
+ */
 #ifndef TEMPBATITERATOR_H
 #define TEMPBATITERATOR_H
 
-#include "column_storage/BatIterator.h"
 #include <vector>
+
+#include "ColumnStore.h"
+#include "column_storage/BatIterator.h"
 
 using namespace std;
 
 template<class Head, class Tail>
-class TempBatIterator : public BatIterator<Head,Tail> {
+class TempBatIterator : public BatIterator<Head, Tail> {
 private:
-	vector<pair<Head,Tail> > * mVector;
-        typename vector<pair<Head,Tail> >::iterator iter;
+    vector<pair<Head, Tail> > * mVector;
+    typename vector<pair<Head, Tail> >::iterator iter;
 public:
-	TempBatIterator(vector<pair<Head,Tail> > * _v) : mVector(_v) {iter = mVector->begin();};
-	virtual pair<Head,Tail> next() {return *(iter++);};
-	virtual pair<Head,Tail> get(unsigned index) {
-		iter = mVector->begin();
-		advance(iter,index);
-		return next();
-	};
-	virtual bool hasNext() {return iter != mVector->end();};
-	virtual unsigned size() {return mVector->size();};
+
+    TempBatIterator(vector<pair<Head, Tail> > * _v) : mVector(_v) {
+        iter = mVector->begin();
+    }
+
+    virtual ~TempBatIterator() {
+    }
+
+    virtual pair<Head, Tail> next() override {
+        return *(iter++);
+    }
+
+    virtual pair<Head, Tail> get(unsigned index) override {
+        iter = mVector->begin();
+        advance(iter, index);
+        return next();
+    }
+
+    virtual bool hasNext() override {
+        return iter != mVector->end();
+    }
+
+    virtual unsigned size() override {
+        return mVector->size();
+    }
 };
 
 #endif

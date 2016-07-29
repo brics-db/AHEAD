@@ -20,8 +20,8 @@
 
 
 /***
-* @author Dirk Habich
-*/
+ * @author Dirk Habich
+ */
 #ifndef EXECUTOR_H
 #define EXECUTOR_H
 
@@ -53,15 +53,14 @@ using namespace std;
 using namespace llvm;
 
 class Executor {
-
 public:
-	Executor();
-	
-	void execute_query(const char* file);
+    Executor();
 
-private: 
-	
-        ExecutionEngine *EE;
+    void execute_query(const char* file);
+
+private:
+
+    ExecutionEngine *EE;
 
 };
 

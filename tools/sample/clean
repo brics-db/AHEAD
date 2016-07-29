@@ -1,4 +1,3 @@
 #!/bin/bash
 
-rm main
-
+rm main 2>/dev/null

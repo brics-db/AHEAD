@@ -13,3 +13,7 @@
 /nbproject/private
 /tools/sample/main
 *.swp
+lib/column_storage/Transaction.o
+lib/libutil.a
+lib/util/libutil.a
+lib/util/stopwatch.o

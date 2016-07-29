@@ -19,42 +19,39 @@ private:
 public:
     unsigned init_size;
 
-    column_table(std::istream& csv_header_stream,std::istream& csv_stream,unsigned partition_size=0) {
-        init_size=1;
+    column_table(std::istream& csv_header_stream, std::istream& csv_stream, unsigned partition_size = 0) {
+        init_size = 1;
         std::string line;
         std::string name_line;
         std::string type_line;
-        if(std::getline(csv_header_stream,name_line) && std::getline(csv_header_stream,type_line)) {
+        if (std::getline(csv_header_stream, name_line) && std::getline(csv_header_stream, type_line)) {
             if (name_line[name_line.size() - 1] == '\r')
                 name_line.resize(name_line.size() - 1);
             if (type_line[type_line.size() - 1] == '\r')
                 type_line.resize(type_line.size() - 1);
-            std::stringstream  nameStream(name_line);
-            std::stringstream  typeStream(type_line);
+            std::stringstream nameStream(name_line);
+            std::stringstream typeStream(type_line);
 
-            std::string        n;
-            std::string        t;
+            std::string n;
+            std::string t;
 
-            while(std::getline(typeStream,t,'|') && std::getline(nameStream,n,'|'))
-            {
+            while (std::getline(typeStream, t, '|') && std::getline(nameStream, n, '|')) {
                 cols.push_back(generic_column(t));
                 cols.back().setName(n);
             }
 
             init_size = 0;
 
-            while(std::getline(csv_stream,line))
-            {
+            while (std::getline(csv_stream, line)) {
 
                 if (line[line.size() - 1] == '\r')
                     line.resize(line.size() - 1);
                 ++init_size;
-                std::stringstream  lineStream(line);
-                std::string        cell;
+                std::stringstream lineStream(line);
+                std::string cell;
                 unsigned c = 0;
-                while(std::getline(lineStream,cell,'|'))
-                {
-                    if(partition_size && (init_size%partition_size)==0)
+                while (std::getline(lineStream, cell, '|')) {
+                    if (partition_size && (init_size % partition_size) == 0)
                         cols[c].create_partition(partition_size);
                     cols[c].push_back(cell);
                     ++c;
@@ -88,5 +85,5 @@ std::ostream &operator<<(std::ostream &os, column_table &obj) {
     }
     return os;
 }
-*/
+ */
 #endif /* COLUMN_TABLE_H_ */

@@ -20,8 +20,8 @@
 
 
 /***
-* @author Dirk Habich
-*/
+ * @author Dirk Habich
+ */
 #ifndef CODEHANDLER_H
 #define CODEHANDLER_H
 
@@ -35,11 +35,10 @@
 using namespace std;
 
 class CodeHandler {
-
 public:
-	CodeHandler();
+    CodeHandler();
 
-	void read_in(const char* file);
+    void read_in(const char* file);
 
 };
 

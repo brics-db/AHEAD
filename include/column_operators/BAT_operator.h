@@ -17,40 +17,46 @@ class BAT {
 public:
     typedef unsigned row_id_t;
 
-    BAT(): head(),tail() {}
+    BAT() : head(), tail() {
+    }
+
     /**
      *
      * @param _head
      * @param _tail
      * @return
      */
-    BAT(const column<Head>& _head, const column<Tail>& _tail) : head(_head),tail(_tail),first_head(0) {   }
+    BAT(const column<Head>& _head, const column<Tail>& _tail) : head(_head), tail(_tail), first_head(0) {
+    }
+
     /**
      *
      * @param _tail
      * @param _first_head the starting row - only used, if the BAT head is empty
      * @return
      */
-    BAT(const column<Tail>& _tail, row_id_t _first_head=0) : head(),tail(_tail),first_head(_first_head) {   }
+    BAT(const column<Tail>& _tail, row_id_t _first_head = 0) : head(), tail(_tail), first_head(_first_head) {
+    }
 
-	column<Head> head;
-	column<Tail> tail;
-	row_id_t first_head;
+    column<Head> head;
+    column<Tail> tail;
+    row_id_t first_head;
 };
 
 template<class Head, class Tail>
-class BAT_operator : public BAT<Head,Tail>, public scheduledOp {
+class BAT_operator : public BAT<Head, Tail>, public scheduledOp {
 public:
     virtual bool execute() = 0;
     typedef unsigned row_id_t;
 };
 
 template<class Head, class Tail>
-class par_BAT_operator : public BAT<Head,Tail>, public job {
+class par_BAT_operator : public BAT<Head, Tail>, public job {
 public:
+
     par_BAT_operator() {
         scheduler *m = scheduler::getInstance();
-        this->jobID=m->createJob(this);
+        this->jobID = m->createJob(this);
     }
 };
 

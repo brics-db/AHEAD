@@ -1,8 +1,8 @@
 #!/bin/bash
 
-LIB=column_operators
+LIB=util
 LIBFILE=lib${LIB}.a
-FILES=(operators)
+FILES=(stopwatch)
 CD=`pwd | sed 's#.*/##'`
 
 rm *.o 2>/dev/null

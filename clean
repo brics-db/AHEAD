@@ -2,6 +2,7 @@
 
 for p in lib tools; do
 	pushd $p
-	./clean
+	./clean || exit 1
 	popd
 done
+exit 0

@@ -20,27 +20,28 @@
 
 
 /***
-* @author Benjamin Schlegel
-*/
+ * @author Benjamin Schlegel
+ */
 #ifndef BAT_H
 #define BAT_H
 
+#include <utility>
+
 #include "column_storage/BatIterator.h"
-#include <vector>
 
 using namespace std;
 
 template<class Head, class Tail>
 class Bat {
 public:
-	/** returns an iterator pointing at the start of the column */
-	virtual BatIterator<Head,Tail > * begin() = 0;	
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<Head, Tail > * begin() = 0;
 
-	/** append an item */
-	virtual void append(pair<Head,Tail> p) = 0;
+    /** append an item */
+    virtual void append(pair<Head, Tail> p) = 0;
 
-	//DEPRECATED
-	virtual int size() = 0;
+    //DEPRECATED
+    virtual int size() = 0;
 };
 
 #endif

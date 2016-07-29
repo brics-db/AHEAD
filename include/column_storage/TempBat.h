@@ -20,32 +20,47 @@
 
 
 /***
-* @author Benjamin Schlegel
-*/
+ * @author Benjamin Schlegel
+ */
 #ifndef TEMPBAT_H
 #define TEMPBAT_H
 
+#include "ColumnStore.h"
 #include "column_storage/Bat.h"
 #include "column_storage/TempBatIterator.h"
 
 template<class Head, class Tail>
-class TempBat : public Bat<Head,Tail> {
+class TempBat : public Bat<Head, Tail> {
 private:
-	vector<std::pair<Head,Tail> > items;
+    vector<std::pair<Head, Tail> > items;
 public:
-	/** default constructor */
-	TempBat() {};
-	~TempBat() {items.clear();};
 
-	/** constructor for n elements */
-	TempBat(int n) {items.reserve(n); };
+    /** default constructor */
+    TempBat() {
+    };
 
-	/** returns an iterator pointing at the start of the column */
-	virtual BatIterator<Head,Tail> * begin() {return new TempBatIterator<Head,Tail>(&items); };
+    ~TempBat() {
+        items.clear();
+    };
 
-	/** append an item */
-	virtual void append(pair<Head,Tail> p) {items.push_back(p); };
-	virtual int size() {return items.size(); }
+    /** constructor for n elements */
+    TempBat(int n) {
+        items.reserve(n);
+    };
+
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<Head, Tail> * begin() {
+        return new TempBatIterator<Head, Tail>(&items);
+    };
+
+    /** append an item */
+    virtual void append(pair<Head, Tail> p) {
+        items.push_back(p);
+    };
+
+    virtual int size() {
+        return items.size();
+    }
 };
 
 #endif

@@ -18,7 +18,9 @@ public:
 template<class T>
 class pred_true : public predicate<T> {
 public:
-    pred_true() {}
+
+    pred_true() {
+    }
 
     virtual bool check(const T& toCheck) const {
         return true;
@@ -29,10 +31,12 @@ template<class T>
 class pred_eq : public predicate<T> {
     const T v;
 public:
-    pred_eq(const T& val) : v(val) {}
+
+    pred_eq(const T& val) : v(val) {
+    }
 
     virtual bool check(const T& toCheck) const {
-        return toCheck==v;
+        return toCheck == v;
     }
 };
 
@@ -40,10 +44,12 @@ template<class T>
 class pred_lq : public predicate<T> {
     const T v;
 public:
-    pred_lq(const T& val) : v(val) {}
+
+    pred_lq(const T& val) : v(val) {
+    }
 
     virtual bool check(const T& toCheck) const {
-        return toCheck<=v;
+        return toCheck <= v;
     }
 };
 
@@ -51,10 +57,12 @@ template<class T>
 class pred_gq : public predicate<T> {
     const T v;
 public:
-    pred_gq(const T& val) : v(val) {}
+
+    pred_gq(const T& val) : v(val) {
+    }
 
     virtual bool check(const T& toCheck) const {
-        return toCheck>=v;
+        return toCheck >= v;
     }
 };
 
@@ -81,5 +89,5 @@ public:
         return p1.check(toCheck) || p2.check(toCheck);
     }
 };
-*/
+ */
 #endif /* PREDICATE_H_ */
