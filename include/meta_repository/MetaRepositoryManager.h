@@ -10,15 +10,6 @@
 
 using namespace std;
 
-enum type_t {
-    type_int = 0, type_str, type_fxd, type_chr, type_resint
-};
-
-typedef int int_t;
-typedef char char_t, *str_t;
-typedef double fxd_t;
-typedef uint64_t resint_t;
-
 extern const char* NAME_INTEGER;
 extern const char* NAME_STRING;
 extern const char* NAME_FIXED;

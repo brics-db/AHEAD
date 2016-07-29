@@ -1,17 +1,24 @@
 #!/bin/bash
 
 LIB=column_operators
-LIBFILE=lib${LIB}.a
+LIBFILE_R=lib${LIB}.a
+LIBFILE_D=lib${LIB}_dbg.a
 FILES=(operators)
 CD=`pwd | sed 's#.*/##'`
 
 for f in "${FILES[@]}"; do
-        clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -std=c++14 -c $f.cpp -o $f.o || exit 1
+    clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -g3 -O0 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
+    clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -O3 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}.o || exit 1
 done
 
-#libtool -static operators.o -o liboperators.a
-ar cru ${LIBFILE} "${FILES[@]/%/.o}"
-ranlib ${LIBFILE}
-ln -sf ${CD}/${LIBFILE} ../${LIBFILE}
+#Release
+ar cru ${LIBFILE_R} "${FILES[@]/%/.o}"
+ranlib ${LIBFILE_R}
+ln -sf ${CD}/${LIBFILE_R} ../${LIBFILE_R}
+
+#Debug
+ar cru ${LIBFILE_D} "${FILES[@]/%/_dbg.o}"
+ranlib ${LIBFILE_D}
+ln -sf ${CD}/${LIBFILE_D} ../${LIBFILE_D}
 
 exit 0

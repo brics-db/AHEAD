@@ -52,12 +52,14 @@ public:
          * @author Julian Hollender
          *
          * @param path Pfad zu Daten
-         * @param prefix Prefix der Spaltennamen vorangestellt wird
-         * @return Anzahl der geladenen Tupel
+         * @param tableName name of the target table OR nullptr
+         * @param prefix prefix string for all column names OR nullptr for no prefix
+         * @param delim string of delimiters between values OR nullptr to use default ("|")
+         * @return maximum number of tuples to load
          *
          * Die Funktion öffnet die Datei path + '_header.csv' und liest die enthaltenen Spaltennamen und Spaltentypen. Die Spaltennamen ( = Prefix + Spaltenname aus Header-Datei ) werden an die Spalte mit der Identifikationsnummer 0 angehängt, die Spaltentypen an die Spalte mit der Identifikationsnummer 1 und in der Spalte mit der Identifikationsnummer 2 wird die Identifikationsnummer der Spalte angehängt, in der anschließend die zugehörigen Daten landen. Danach werden die Daten aus der Datei path + '.tbl' gelesen und in die entsprechenden Spalten eingepflegt. Hierbei ist zu beachten, dass die Spalten mit der Identifikationsnummer 0, 1 und 2 ausschließlich durch die load()-Funktion verändert werden sollten, um eine korrekte Arbeitsweise der Funktion zu sichern.
          */
-        size_t load(const char *path, const char *tableName, const char *prefix = nullptr, int size = -1);
+        size_t load(const char *path, const char *tableName = nullptr, const char *prefix = nullptr, size_t size = static_cast<size_t> (-1), const char *delim = nullptr);
 
         /**
          * @author Julian Hollender

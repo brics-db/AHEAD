@@ -30,6 +30,7 @@
 #include <cinttypes>
 
 #include "column_storage/TransactionManager.h"
+#include "util/resilience.hpp"
 
 TransactionManager::Transaction::Transaction(bool isUpdater, unsigned int currentVersion) {
     this->botVersion = currentVersion;
@@ -51,7 +52,7 @@ TransactionManager::Transaction::~Transaction() {
     }
 }
 
-size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, int size) {
+size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, size_t size, const char* delim) {
     static const size_t MAX_PATH_LEN = 1024;
     if (path == nullptr) {
         throw runtime_error("[TransactionManager::load] You must provide a path!");
@@ -60,6 +61,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     if (pathLen == 0 || pathLen == MAX_PATH_LEN) {
         throw runtime_error("[TransactionManager::load] path is too long (>1024)");
     }
+    const char* actDelim = delim == nullptr ? "|" : delim;
 
     MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
     ColumnManager * cm = ColumnManager::getInstance();
@@ -78,7 +80,8 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     string headerPath(path);
     headerPath.append("_header.csv");
     FILE *valuesFile, *headerFile;
-    char *line = new char[1024]();
+    static const size_t LEN_LINE = 1024;
+    char *line = new char[LEN_LINE]();
     char *value = new char[256]();
     char *buffer = new char[1024]();
     TransactionManager::BinaryUnit *bun;
@@ -116,17 +119,19 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             open(2);
 
             // create table
-            newTableId = mrm->createTable(tableName);
+            if (tableName) {
+                newTableId = mrm->createTable(tableName);
+            }
 
             // Zeile mit Spaltennamen einlesen aus Header-Datei
-            fgets(line, 1024, headerFile);
+            fgets(line, LEN_LINE, headerFile);
 
             if (strchr(line, '\n') != 0) {
                 *strchr(line, '\n') = 0;
             }
 
-            // Zeile durch Zeichen "|" in Einzelwerte trennen
-            buffer = strtok(line, "|");
+            // Zeile durch Zeichen actDelim in Einzelwerte trennen
+            buffer = strtok(line, actDelim);
 
             while (buffer != 0) {
                 size_t lenBuf = strlen(buffer);
@@ -139,10 +144,11 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
                 // Spaltenname = Prefix + Spaltenname aus Header-Datei
                 if (prefix) {
-                    strncpy(value, prefix, 255);
+                    strncpy(value, prefix, 256);
+                    strncat(value, buffer, 256 - lenPrefix);
+                } else {
+                    strncpy(value, buffer, 256);
                 }
-                strncat(value, buffer, 255 - lenPrefix);
-                value[lenPrefix + lenBuf] = 0;
 
                 // prevents the referencing of value
                 char* attribute_name = new char[256];
@@ -160,18 +166,18 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 delete bun->head;
                 delete bun;
 
-                buffer = strtok(nullptr, "|");
+                buffer = strtok(nullptr, actDelim);
             }
 
             // Zeile mit Spaltentypen einlesen aus Header-Datei
-            fgets(line, 1024, headerFile);
+            fgets(line, LEN_LINE, headerFile);
 
             if (strchr(line, '\n') != 0) {
                 *strchr(line, '\n') = 0;
             }
 
-            // Zeile durch Zeichen "|" in Einzelwerte trennen
-            buffer = strtok(line, "|");
+            // Zeile durch Zeichen actDelim in Einzelwerte trennen
+            buffer = strtok(line, actDelim);
 
             int attributeNamesIndex = 0;
 
@@ -230,18 +236,20 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
                 iterators.push_back(this->iterators[column]);
 
-                buffer = strtok(nullptr, "|");
+                buffer = strtok(nullptr, actDelim);
 
                 BATId = column;
 
                 // create attribute for specified table
-                mrm->createAttribute(attribute_names.at(attributeNamesIndex), datatype, BATId, newTableId);
+                if (tableName) {
+                    mrm->createAttribute(attribute_names.at(attributeNamesIndex), datatype, BATId, newTableId);
+                }
 
                 attributeNamesIndex++;
             }
 
             // Spaltenwerte zeilenweise aus Datei einlesen		
-            while (fgets(line, 1024, valuesFile) != 0 && n != size) {
+            while (fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
                 if (strchr(line, '\n') != 0) {
                     *strchr(line, '\n') = 0;
                 }
@@ -251,8 +259,8 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 iteratorsIterator = iterators.begin();
                 typesIterator = types.begin();
 
-                // Zeile durch Zeichen "|" in Einzelwerte trennen
-                buffer = strtok(line, "|");
+                // Zeile durch Zeichen actDelim in Einzelwerte trennen
+                buffer = strtok(line, actDelim);
 
                 while (buffer != 0) {
                     // Spaltentyp und Spaltenidentifikation bestimmen
@@ -282,7 +290,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                             break;
 
                         case type_resint:
-                            *(static_cast<resint_t*> (record->content)) = atoll(buffer); // TODO multiply by A
+                            *(static_cast<resint_t*> (record->content)) = atoll(buffer) * A;
                             break;
 
                         default:
@@ -295,7 +303,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                     typesIterator++;
                     iteratorsIterator++;
 
-                    buffer = strtok(nullptr, "|");
+                    buffer = strtok(nullptr, actDelim);
                 }
             }
 

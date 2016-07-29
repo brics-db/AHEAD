@@ -24,19 +24,20 @@
  */
 #ifndef OPERATORS_H
 #define OPERATORS_H
-
-#include "column_storage/Bat.h"
-#include "column_storage/TempBat.h"
-#include "column_storage/ColumnBat.h"
-#include "column_storage/BatIterator.h"
 #include <vector>
 #include <iostream>
 #include <map>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unordered_map>
+#include <cmath>
 
-#include <math.h>
+#include "ColumnStore.h"
+#include "column_storage/Bat.h"
+#include "column_storage/TempBat.h"
+#include "column_storage/ColumnBat.h"
+#include "column_storage/BatIterator.h"
+#include "util/resilience.hpp"
 
 #define SEL_EQ 1
 #define SEL_LT 2
@@ -77,19 +78,53 @@ public:
         BatIterator<Head, Tail> *vcpi = arg->begin();
         Bat<Head, Tail> * result = new TempBat<Head, Tail>();
 
-        result->append(vcpi->get(start));
-        if (size) {
-            unsigned step = 1;
-            while (step < size && vcpi->hasNext()) {
-                result->append(vcpi->next());
-                step++;
-            }
-        } else {
-            while (vcpi->hasNext()) {
-                result->append(vcpi->next());
+        if (vcpi->hasNext()) {
+            result->append(vcpi->get(start));
+            if (size) {
+                unsigned step = 1;
+                while (step < size && vcpi->hasNext()) {
+                    result->append(vcpi->next());
+                    step++;
+                }
+            } else {
+                while (vcpi->hasNext()) {
+                    result->append(vcpi->next());
+                }
             }
         }
-        return result;
+        return result; // possibly empty
+    }
+
+    template<typename Head, typename Tail>
+    static Bat<Head, resint_t>* copyA(Bat<Head, Tail>* arg, size_t start = 0, size_t size = 0) {
+        auto vcpi = arg->begin();
+        auto result = new TempBat<Head, resint_t>();
+
+        if (vcpi->hasNext()) {
+            auto next = vcpi->get(start);
+            pair<Head, resint_t> nextA;
+            nextA.first = next.first;
+            nextA.second = static_cast<resint_t> (next.second) * A;
+            result->append(nextA);
+            if (size) {
+                unsigned step = 1;
+                while (step < size && vcpi->hasNext()) {
+                    next = vcpi->next();
+                    nextA.first = next.first;
+                    nextA.second = static_cast<resint_t> (next.second) * A;
+                    result->append(nextA);
+                    step++;
+                }
+            } else {
+                while (vcpi->hasNext()) {
+                    next = vcpi->next();
+                    nextA.first = next.first;
+                    nextA.second = static_cast<resint_t> (next.second) * A;
+                    result->append(nextA);
+                }
+            }
+        }
+        return result; // possibly empty
     }
 
     template<class Head, class Tail>
