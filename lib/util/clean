@@ -9,3 +9,4 @@ rm *.o 2>/dev/null
 rm ${LIBFILE} 2>/dev/null
 rm ../${LIBFILE} 2>/dev/null
 
+exit 0

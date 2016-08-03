@@ -47,7 +47,7 @@ BucketManager::BucketIterator::BucketIterator(BucketManager::BucketStream *strea
     }
 }
 
-unsigned int BucketManager::BucketIterator::size() {
+unsigned int BucketManager::BucketIterator::countBuckets() {
     unsigned int position;
     BucketManager::Bucket *bucket;
 
@@ -76,7 +76,7 @@ unsigned int BucketManager::BucketIterator::position() {
     } else if (this->previousBucket == 0) {
         return 1;
     } else if (this->currentBucket == 0) {
-        return size();
+        return countBuckets();
     } else {
         return this->currentBucket->number + 1;
     }

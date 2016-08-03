@@ -16,11 +16,7 @@
 #include "query_executor/codeHandler.h"
 #include "util/stopwatch.hpp"
 
-#include <unistd.h>
-
 using namespace std;
-using namespace llvm;
-using namespace __gnu_cxx;
 
 int main(int argc, char ** argv) {
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
@@ -31,7 +27,7 @@ int main(int argc, char ** argv) {
     MetaRepositoryManager::init(baseDir.c_str());
 
     // create a column manager
-    ColumnManager *cm = ColumnManager::getInstance();
+    __attribute__((unused)) ColumnManager *cm = ColumnManager::getInstance();
 
     // create a transaction manager
     TransactionManager* tm = TransactionManager::getInstance();
@@ -49,6 +45,15 @@ int main(int argc, char ** argv) {
     cout << "File: " << path << "\n\tNumber of BUNs: " << numCust << "\n\tTime: " << sw << " ns." << endl;
     tm->endTransaction(t);
 
+    t = tm->beginTransaction(true);
+    assert(t != nullptr);
+    sw.start();
+    path = "/home/tk4/git/columnstore/database/customer2";
+    size_t numCust2 = t->load(path.c_str(), "customer2");
+    sw.stop();
+    cout << "File: " << path << "\n\tNumber of BUNs: " << numCust2 << "\n\tTime: " << sw << " ns." << endl;
+    tm->endTransaction(t);
+
     /*
     t = tm->beginTransaction(true);
     assert(t != nullptr);
@@ -60,7 +65,6 @@ int main(int argc, char ** argv) {
     tm->endTransaction(t);
      */
 
-    /*
     t = tm->beginTransaction(true);
     assert(t != nullptr);
     sw.start();
@@ -69,10 +73,18 @@ int main(int argc, char ** argv) {
     sw.stop();
     cout << "File: " << path << "\n\tNumber of BUNs: " << numLineOrder << "\n\tTime: " << sw << " ns." << endl;
     tm->endTransaction(t);
-     */
+
+    t = tm->beginTransaction(true);
+    assert(t != nullptr);
+    sw.start();
+    path = "/home/tk4/git/columnstore/database/lineorder2";
+    size_t numLineOrder2 = t->load(path.c_str(), "lineorder2");
+    sw.stop();
+    cout << "File: " << path << "\n\tNumber of BUNs: " << numLineOrder2 << "\n\tTime: " << sw << " ns." << endl;
+    tm->endTransaction(t);
 
     // Test Query
-    auto batCustKey = new ColumnBat<unsigned, int_t>("customer", "custkey");
+    __attribute__((unused)) auto batCustKey = new ColumnBat<unsigned, int_t>("customer", "custkey");
     sw.start();
     __attribute__((unused)) auto bat0 = Bat_Operators::selection_lt(batCustKey, static_cast<int_t> (12345));
     sw.stop();
@@ -86,8 +98,13 @@ int main(int argc, char ** argv) {
     cout << "[lineorder] Selection over " << numLineOrder << " tuples took " << sw << " ns" << endl;
      */
 
-    size_t max = 10;
-    cout << "Customer::custkey (int_t):\n";
+    sw.start();
+    __attribute__((unused)) auto batA = Bat_Operators::encodeA(batCustKey);
+    sw.stop();
+    cout << "[customer] Converted " << numCust << " tuples from int_t to resint_t took " << sw << " ns" << endl;
+
+    const size_t max = 10;
+    cout << "Customer::custkey (int_t) top " << max << ":\n";
     auto iter = bat0->begin();
     for (size_t i = 0; iter->hasNext() && i < max; ++i) {
         auto data = iter->next();
@@ -96,12 +113,7 @@ int main(int argc, char ** argv) {
     cout << endl;
     delete iter;
 
-    sw.start();
-    __attribute__((unused)) Bat<unsigned, resint_t> *batA = Bat_Operators::copyA(batCustKey);
-    sw.stop();
-    cout << "[customer] Converted " << numCust << " tuples from int_t to resint_t took " << sw << " ns" << endl;
-
-    cout << "Customer::custkey (resint_t):\n";
+    cout << "Customer::custkey (resint_t) top " << max << ":\n";
     auto iter2 = batA->begin();
     for (size_t i = 0; iter2->hasNext() && i < max; ++i) {
         auto data = iter2->next();

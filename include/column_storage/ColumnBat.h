@@ -41,31 +41,44 @@ template<class Head, class Tail>
 class ColumnBat : public Bat<Head, Tail> {
 private:
     unsigned mColumnId;
+
 public:
 
     /** default constructor */
     ColumnBat(unsigned columnId) : mColumnId(columnId) {
-    };
+    }
 
     ColumnBat(const char *table_name, const char *attribute) {
         MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
         mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
-    };
+    }
+
+    virtual ~ColumnBat() {
+    }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail> * begin() {
+    virtual BatIterator<Head, Tail> * begin() override {
         return new ColumnBatIterator<Head, Tail>(mColumnId);
-    };
+    }
 
     /** append an item */
-    virtual void append(pair<Head, Tail> p) {
-    };
-
-    virtual int size() {
-        cout << "ColoumnBat::size() called - is just a dummy for now!";
-        return 0;
+    virtual void append(pair<Head, Tail> p) override {
     }
-    //	virtual std::pair<Head,Tail> pop() { std::cout<<"ColumnBat::pop() called - is just a dummy for now!"; }
+
+    virtual unsigned size() override {
+        auto iter = begin();
+        unsigned size = iter->size();
+        delete iter;
+        return size;
+    }
+
+    virtual size_t consumption() override {
+        auto iter = begin();
+        unsigned size = iter->consumption();
+        delete iter;
+        return size;
+    }
+
 };
 
 #endif

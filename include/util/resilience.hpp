@@ -28,20 +28,23 @@
 #ifndef RESILIENCE_HPP
 #define RESILIENCE_HPP
 
-#include <cinttypes>
+#include "../ColumnStore.h"
 
-extern const uint64_t A;
-extern const uint64_t A_INV;
+extern const resint_t AN_UNENC_MAX;
+extern const resint_t AN_UNENC_MAX_U;
+
+extern const resint_t A;
+extern const resint_t A_INV;
 extern const int64_t A_ENCMAX;
 extern const int64_t A_ENCMIN;
-extern const uint64_t A_ENCMAX_U;
-extern const uint64_t A_ENCMIN_U;
+extern const resint_t A_ENCMAX_U;
+extern const resint_t A_ENCMIN_U;
 
-extern const uint64_t A2;
-extern const uint64_t A2_INV;
+extern const resint_t A2;
+extern const resint_t A2_INV;
 extern const int64_t A2_ENCMAX;
 extern const int64_t A2_ENCMIN;
-extern const uint64_t A2_ENCMAX_U;
-extern const uint64_t A2_ENCMIN_U;
+extern const resint_t A2_ENCMAX_U;
+extern const resint_t A2_ENCMIN_U;
 
 #endif /* RESILIENCE_HPP */

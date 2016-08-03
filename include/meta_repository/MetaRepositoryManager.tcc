@@ -96,7 +96,7 @@ Tail MetaRepositoryManager::selection(Bat<Head, Tail> *bat, Tail value) {
 }
 
 template<class Head, class Tail>
-int MetaRepositoryManager::selectPKId(Bat<Head, Tail> *bat, int batId) {
+int MetaRepositoryManager::selectPKId(Bat<Head, Tail> *bat, Head batId) {
     BatIterator<Head, Tail> *iter = bat->begin();
 
     while (iter->hasNext()) {

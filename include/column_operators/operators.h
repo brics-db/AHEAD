@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <unordered_map>
 #include <cmath>
+#include <utility>
 
 #include "ColumnStore.h"
 #include "column_storage/Bat.h"
@@ -74,17 +75,15 @@ public:
     }
 
     template<class Head, class Tail>
-    static Bat<Head, Tail>* copy(Bat<Head, Tail>* arg, unsigned start = 0, unsigned size = 0) {
+    static Bat<Head, Tail>* copy(Bat<Head, Tail>* arg, unsigned start = 0, size_t size = 0) {
         BatIterator<Head, Tail> *vcpi = arg->begin();
         Bat<Head, Tail> * result = new TempBat<Head, Tail>();
 
         if (vcpi->hasNext()) {
             result->append(vcpi->get(start));
             if (size) {
-                unsigned step = 1;
-                while (step < size && vcpi->hasNext()) {
+                for (size_t step = 1; step < size && vcpi->hasNext(); ++step) {
                     result->append(vcpi->next());
-                    step++;
                 }
             } else {
                 while (vcpi->hasNext()) {
@@ -96,35 +95,76 @@ public:
     }
 
     template<typename Head, typename Tail>
-    static Bat<Head, resint_t>* copyA(Bat<Head, Tail>* arg, size_t start = 0, size_t size = 0) {
-        auto vcpi = arg->begin();
+    static Bat<Head, resint_t>* encodeA(Bat<Head, Tail>* arg, uint64_t A = ::A, size_t start = 0, size_t size = 0) {
+        auto iter = arg->begin();
         auto result = new TempBat<Head, resint_t>();
 
-        if (vcpi->hasNext()) {
-            auto next = vcpi->get(start);
-            pair<Head, resint_t> nextA;
-            nextA.first = next.first;
-            nextA.second = static_cast<resint_t> (next.second) * A;
-            result->append(nextA);
+        if (iter->hasNext()) {
+            auto next = iter->get(start);
+            result->append(make_pair(next.first, static_cast<resint_t> (next.second) * A));
             if (size) {
-                unsigned step = 1;
-                while (step < size && vcpi->hasNext()) {
-                    next = vcpi->next();
-                    nextA.first = next.first;
-                    nextA.second = static_cast<resint_t> (next.second) * A;
-                    result->append(nextA);
-                    step++;
+                for (size_t step = 1; step < size && iter->hasNext(); ++step) {
+                    next = iter->next();
+                    result->append(make_pair(next.first, static_cast<resint_t> (next.second) * A));
                 }
             } else {
-                while (vcpi->hasNext()) {
-                    next = vcpi->next();
-                    nextA.first = next.first;
-                    nextA.second = static_cast<resint_t> (next.second) * A;
-                    result->append(nextA);
+                while (iter->hasNext()) {
+                    next = iter->next();
+                    result->append(make_pair(next.first, static_cast<resint_t> (next.second) * A));
                 }
             }
         }
+        delete iter;
         return result; // possibly empty
+    }
+
+    template<typename Head>
+    static vector<bool>* checkA(Bat<Head, resint_t>* arg, resint_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+        auto result = new vector<bool>();
+        auto iter = arg->begin();
+        if (iter->hasNext()) {
+            result->push_back((iter->get(start).second * aInv) <= unEncMaxU);
+            if (size) {
+                for (size_t step = 1; step < size && iter->hasNext(); ++step) {
+                    result->push_back((iter->next().second * aInv) <= unEncMaxU);
+                }
+            } else {
+                while (iter->hasNext()) {
+                    result->push_back((iter->next().second * aInv) <= unEncMaxU);
+                }
+            }
+        }
+        delete iter;
+        return result; // possibly empty
+    }
+
+    template<typename Head, typename Tail>
+    static pair<Bat<Head, Tail>*, vector<bool>*> checkAndDecodeA(Bat<Head, resint_t>* arg, uint64_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+        pair < Bat<Head, Tail>*, vector<bool>*> result = make_pair(new TempBat<Head, Tail>(), new vector<bool>());
+        auto iter = arg->begin();
+        if (iter->hasNext()) {
+            auto current = iter->get(start);
+            resint_t decoded = current.second * aInv;
+            result.first->append(make_pair(current.first, static_cast<Tail> (decoded)));
+            result.second->push_back(decoded <= unEncMaxU);
+            if (size) {
+                for (size_t step = 1; step < size && iter->hasNext(); ++step) {
+                    current = iter->next();
+                    decoded = current.second * aInv;
+                    result.first->append(make_pair(current.first, static_cast<Tail> (decoded)));
+                    result.second->push_back(decoded <= unEncMaxU);
+                }
+            } else {
+                while (iter->hasNext()) {
+                    current = iter->next();
+                    decoded = current.second * aInv;
+                    result.first->append(make_pair(current.first, static_cast<Tail> (decoded)));
+                    result.second->push_back(decoded <= unEncMaxU);
+                }
+            }
+        }
+        delete iter;
+        return result;
     }
 
     template<class Head, class Tail>
@@ -381,16 +421,16 @@ public:
         return result;
     }
 
-    template<class T1, class T2, class T3, class T4>
-    static Bat<T1, T4>* col_hashjoin(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2, int SIDE = 0) {
+    template<class T1, class T2, class T3>
+    static Bat<T1, T3>* col_hashjoin(Bat<T1, T2> *arg1, Bat<T2, T3> *arg2, int SIDE = 0) {
         //cout<<"hashjoin must be checked - strange errors while compiling indicate copy n paste errors"<<endl;
-        Bat<T1, T4> *result = new TempBat<T1, T4>();
+        Bat<T1, T3> *result = new TempBat<T1, T3>();
 
         BatIterator<T1, T2> *iter1 = arg1->begin();
-        BatIterator<T3, T4> *iter2 = arg2->begin();
+        BatIterator<T2, T3> *iter2 = arg2->begin();
 
         unordered_map<T2, vector<T1>* > hashMapLeft;
-        unordered_map<T3, vector<T4>* > hashMapRight;
+        unordered_map<T2, vector<T3>* > hashMapRight;
 
         // building hash map
         if (SIDE == JOIN_LEFT) {
@@ -408,13 +448,13 @@ public:
             }
         } else {
             while (iter2->hasNext()) {
-                pair<T3, T4> p1 = iter2->next();
+                pair<T2, T3> p1 = iter2->next();
                 if (hashMapRight.find(p1.first) == hashMapRight.end()) {
-                    vector<T4> *vec = new vector<T4>();
+                    vector<T3> *vec = new vector<T3>();
                     vec->push_back(p1.second);
                     hashMapRight[p1.first] = vec;
                 } else {
-                    vector<T4>* vec = (vector<T4>*)hashMapRight[(T3) p1.first];
+                    vector<T3>* vec = (vector<T3>*)hashMapRight[(T2) p1.first];
                     vec->push_back(p1.second);
                     hashMapRight[p1.first] = vec;
                 }
@@ -424,15 +464,15 @@ public:
         // probing against hash map
         if (SIDE == JOIN_LEFT) {
             while (iter2->hasNext()) {
-                pair<T3, T4> p2 = iter2->next();
+                pair<T2, T3> p2 = iter2->next();
                 if (hashMapLeft.find((T2) p2.first) != hashMapLeft.end()) {
                     vector<T1>* vec = (vector<T1>*)hashMapLeft[(T2) p2.first];
                     for (unsigned i = 0; i < (unsigned) vec->size(); i++) {
-                        pair<T1, T4> np;
+                        pair<T1, T3> np;
                         T1 value = (T1) (*vec)[i];
                         //cout <<value<<" "<<p2.second<<endl;
                         memcpy(&np.first, &value, sizeof (T1));
-                        memcpy(&np.second, &p2.second, sizeof (T4));
+                        memcpy(&np.second, &p2.second, sizeof (T3));
                         result->append(np);
                     }
                 }
@@ -440,13 +480,13 @@ public:
         } else {
             while (iter1->hasNext()) {
                 pair<T1, T2> p2 = iter1->next();
-                if (hashMapRight.find((T3) p2.second) != hashMapRight.end()) {
-                    vector<T4>* vec = (vector<T4>*)hashMapRight[(T4) p2.second];
+                if (hashMapRight.find((T2) p2.second) != hashMapRight.end()) {
+                    vector<T3>* vec = (vector<T3>*)hashMapRight[(T3) p2.second];
                     for (unsigned i = 0; i < (unsigned) vec->size(); i++) {
-                        pair<T1, T4> np;
-                        T4 value = (T4) (*vec)[i];
+                        pair<T1, T3> np;
+                        T3 value = (T3) (*vec)[i];
                         //cout <<value<<" "<<p2.second<<endl;
-                        memcpy(&np.second, &value, sizeof (T4));
+                        memcpy(&np.second, &value, sizeof (T3));
                         memcpy(&np.first, &p2.first, sizeof (T1));
                         result->append(np);
                     }
@@ -532,12 +572,10 @@ public:
         }
         delete iter;
 
-        typedef typename std::map<T1, T2>::iterator mapIter;
-        for (mapIter m = values->begin(); m != values->end(); m++) {
+        for (auto iter = values->begin(); iter != values->end(); iter++) {
             //cout <<first<<endl;
             //cout <<value<<endl;
-            pair<T1, T2> p = make_pair(m->first, m->second);
-            result->append(p);
+            result->append(make_pair(iter->first, iter->second));
         }
         delete values;
         return result;
@@ -563,6 +601,41 @@ public:
         delete iter;
 
         return result;
+    }
+
+    /**
+     * Simple sum of all tail values in a Bat
+     * @param arg a Bat
+     * @return a single sum value
+     */
+    template<typename Head, typename Tail>
+    static Tail aggregate_sum(Bat<Head, Tail>* arg) {
+        Tail sum = 0;
+        auto iter = arg->begin();
+        while (iter->hasNext()) {
+            sum += iter->next().second;
+        }
+        delete iter;
+        return sum;
+    }
+
+    /**
+     * Multiplies the tail values of each of the two Bat's and sums everything up.
+     * @param arg1
+     * @param arg2
+     * @return A single sum of the pair-wise products of the two Bats
+     */
+    template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+    static Result aggregate_mul_sum(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, Result init) {
+        auto iter1 = arg1->begin();
+        auto iter2 = arg2->begin();
+        Result total = init;
+        while (iter1->hasNext() && iter2->hasNext()) {
+            total += (static_cast<Result> (iter1->next().second) * static_cast<Result> (iter2->next().second));
+        }
+        delete iter2;
+        delete iter1;
+        return total;
     }
 
     /**
@@ -628,6 +701,4 @@ public:
 
 };
 
-
 #endif
-

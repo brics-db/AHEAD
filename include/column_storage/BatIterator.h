@@ -40,7 +40,8 @@ public:
     virtual pair<Head, Tail> get(unsigned index) = 0;
     virtual bool hasNext() = 0;
 
-    virtual unsigned size() = 0;
+    virtual size_t size() = 0;
+    virtual size_t consumption() = 0;
 };
 
 #endif

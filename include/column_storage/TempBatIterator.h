@@ -60,8 +60,12 @@ public:
         return iter != mVector->end();
     }
 
-    virtual unsigned size() override {
+    virtual size_t size() override {
         return mVector->size();
+    }
+
+    virtual size_t consumption() override {
+        return mVector->capacity() * sizeof (typename vector<pair<Head, Tail>>::value_type);
     }
 };
 

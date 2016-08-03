@@ -9,6 +9,7 @@
 #include "column_storage/TransactionManager.h"
 #include "column_operators/operators.h"
 #include "column_storage/types.h"
+#include "util/stopwatch.hpp"
 
 using namespace std;
 

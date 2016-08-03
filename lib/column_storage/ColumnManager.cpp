@@ -41,24 +41,28 @@ void ColumnManager::createColumn(unsigned int id, unsigned int width) {
 ColumnManager::ColumnManager() {
 }
 
-unsigned int ColumnManager::ColumnIterator::size() {
+size_t ColumnManager::ColumnIterator::size() {
     const unsigned int recordsPerBucket = (unsigned int) ((CHUNK_CONTENT_SIZE - sizeof (unsigned int)) / this->column->width);
     unsigned int position;
     unsigned int *elementCounter;
 
-    if (this->iterator->size() == 0) {
+    if (this->iterator->countBuckets() == 0) {
         return 0;
     } else {
         position = this->iterator->position();
 
-        this->currentChunk = this->iterator->seek(this->iterator->size() - 1);
+        this->currentChunk = this->iterator->seek(this->iterator->countBuckets() - 1);
 
         elementCounter = (unsigned int*) this->currentChunk->content;
 
         this->currentChunk = this->iterator->seek(position);
 
-        return (this->iterator->size() - 1) * recordsPerBucket + *elementCounter;
+        return (this->iterator->countBuckets() - 1) * recordsPerBucket + *elementCounter;
     }
+}
+
+size_t ColumnManager::ColumnIterator::consumption() {
+    return this->iterator->countBuckets() * CHUNK_CONTENT_SIZE;
 }
 
 ColumnManager::Record* ColumnManager::ColumnIterator::next() {
@@ -162,13 +166,13 @@ ColumnManager::Record* ColumnManager::ColumnIterator::append() {
     const unsigned int recordsPerBucket = (unsigned int) ((CHUNK_CONTENT_SIZE - sizeof (unsigned int)) / this->column->width);
     unsigned int *elementCounter;
 
-    if (this->iterator->size() == 0) {
+    if (this->iterator->countBuckets() == 0) {
         this->currentChunk = this->iterator->append();
         elementCounter = (unsigned int*) this->currentChunk->content;
 
         *elementCounter = 0;
     } else {
-        this->currentChunk = this->iterator->seek(this->iterator->size() - 1);
+        this->currentChunk = this->iterator->seek(this->iterator->countBuckets() - 1);
         elementCounter = (unsigned int*) this->currentChunk->content;
 
         if (*elementCounter == recordsPerBucket) {

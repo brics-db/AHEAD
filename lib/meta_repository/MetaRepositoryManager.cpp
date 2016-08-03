@@ -76,6 +76,7 @@ void MetaRepositoryManager::createDefaultDataTypes() {
     length->append(make_pair(1, sizeof (char_t) * MAXLEN_STRING));
     length->append(make_pair(2, sizeof (fxd_t)));
     length->append(make_pair(3, sizeof (char_t)));
+    length->append(make_pair(4, sizeof (resint_t)));
 
     typ_category->append(make_pair(0, 'N'));
     typ_category->append(make_pair(1, 'S'));
@@ -144,7 +145,7 @@ unsigned MetaRepositoryManager::getBatIdOfAttribute(const char *nameOfTable, con
     pair<unsigned, unsigned> batNrPair;
 
     int batIdForTableName = this->selectBatId(table_name, nameOfTable);
-    int tableId = this->selectPKId(pk_table_id, batIdForTableName);
+    int tableId = this->selectPKId(pk_table_id, static_cast<unsigned> (batIdForTableName));
 
     if (tableId != -1) {
         Bat<unsigned, unsigned> *batForTableId = operators->selection_eq(fk_table_id, (unsigned) tableId);
@@ -165,7 +166,7 @@ unsigned MetaRepositoryManager::getBatIdOfAttribute(const char *nameOfTable, con
 
 void MetaRepositoryManager::createAttribute(char *name, char *datatype, unsigned BATId, unsigned table_id) {
     int batIdOfDataType = selectBatId(datatype_name, datatype);
-    int dataTypeId = selectPKId(pk_datatype_id, batIdOfDataType);
+    int dataTypeId = selectPKId(pk_datatype_id, static_cast<unsigned> (batIdOfDataType));
 
     unsigned newAttributeId;
     unsigned newBatId;

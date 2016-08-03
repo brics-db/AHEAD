@@ -47,6 +47,11 @@ public:
     class Transaction {
         friend class TransactionManager;
 
+        static const unsigned ID_BAT_COLNAMES;
+        static const unsigned ID_BAT_COLTYPES;
+        static const unsigned ID_BAT_COLIDENT;
+        static const unsigned ID_BAT_FIRST_USER;
+
     public:
         /**
          * @author Julian Hollender
@@ -78,7 +83,7 @@ public:
          *
          * Die Funktion öffnet die Spalte mit der übergebenen Identifikationsnummer. Falls die Spalte bereits geöffnet ist oder keine Spalte zur übergebenen Identifikationsnummer existiert, wird keine Operation ausgeführt.
          */
-        unsigned open(unsigned int id);
+        pair<size_t, size_t> open(unsigned int id);
         /**
          * @author Julian Hollender
          *

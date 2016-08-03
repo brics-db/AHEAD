@@ -32,35 +32,41 @@
 template<class Head, class Tail>
 class TempBat : public Bat<Head, Tail> {
 private:
-    vector<std::pair<Head, Tail> > items;
+    typedef vector<std::pair<Head, Tail> > container_t;
+    container_t items;
+
 public:
 
     /** default constructor */
     TempBat() {
-    };
+    }
 
-    ~TempBat() {
-        items.clear();
-    };
+    virtual ~TempBat() {
+    }
 
     /** constructor for n elements */
     TempBat(int n) {
         items.reserve(n);
-    };
+    }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail> * begin() {
+    virtual BatIterator<Head, Tail> * begin() override {
         return new TempBatIterator<Head, Tail>(&items);
-    };
+    }
 
     /** append an item */
-    virtual void append(pair<Head, Tail> p) {
+    virtual void append(pair<Head, Tail> p) override {
         items.push_back(p);
-    };
+    }
 
-    virtual int size() {
+    virtual unsigned size() override {
         return items.size();
     }
+
+    virtual size_t consumption() override {
+        return size() * sizeof (Tail);
+    }
+
 };
 
 #endif

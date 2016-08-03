@@ -82,7 +82,7 @@ private:
 
     Bat<unsigned, unsigned> *pk_attribute_id;
     Bat<unsigned, const char*> *attribute_name;
-    Bat<unsigned, bool> *is_dropped; //unused now
+    __attribute__((unused)) Bat<unsigned, bool> *is_dropped; //unused now
     Bat<unsigned, unsigned> *fk_table_id;
     Bat<unsigned, unsigned> *fk_type_id;
     Bat<unsigned, unsigned> *BAT_number;
@@ -133,7 +133,7 @@ private:
     Tail selection(Bat<Head, Tail> *bat, Tail value);
 
     template<class Head, class Tail>
-    int selectPKId(Bat<Head, Tail> *bat, int batId);
+    int selectPKId(Bat<Head, Tail> *bat, Head batId);
 
     template<class Head, class Tail>
     bool dataAlreadyExists(Bat<Head, Tail> *bat, const char* name_value);
@@ -174,10 +174,13 @@ public:
             return pKeyIter->hasNext();
         }
 
-        virtual unsigned size() override {
+        virtual size_t size() override {
             return pKeyIter->size();
         }
 
+        virtual size_t consumption() override {
+            return pKeyIter->consumption() + pNameIter->consumption();
+        }
 
         friend class MetaRepositoryManager;
     };

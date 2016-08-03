@@ -30,13 +30,17 @@ using namespace std::chrono;
 
 class StopWatch {
     high_resolution_clock::time_point startNS, stopNS;
+    high_resolution_clock::rep totalNS;
 
 public:
     StopWatch();
 
     void start();
+    void resume();
     high_resolution_clock::rep stop();
     high_resolution_clock::rep duration();
+
+    friend StopWatch operator-(StopWatch&, StopWatch&);
 };
 
 typedef struct hrc_duration {

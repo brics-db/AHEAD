@@ -4,6 +4,11 @@ using namespace std;
 
 TransactionManager* TransactionManager::instance = 0;
 
+const unsigned TransactionManager::Transaction::ID_BAT_COLNAMES = 0;
+const unsigned TransactionManager::Transaction::ID_BAT_COLTYPES = 1;
+const unsigned TransactionManager::Transaction::ID_BAT_COLIDENT = 2;
+const unsigned TransactionManager::Transaction::ID_BAT_FIRST_USER = 3;
+
 TransactionManager::TransactionManager() {
     this->currentVersion = 0;
 }

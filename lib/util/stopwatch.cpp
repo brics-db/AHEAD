@@ -25,20 +25,27 @@ using namespace std::chrono;
 
 const bool OUTPUT_INSERT_DOT = true;
 
-StopWatch::StopWatch() {
+StopWatch::StopWatch() : startNS(), stopNS() {
+    totalNS = duration_cast<nanoseconds>(stopNS - startNS).count();
 }
 
 void StopWatch::start() {
+    totalNS = 0;
+    startNS = high_resolution_clock::now();
+}
+
+void StopWatch::resume() {
     startNS = high_resolution_clock::now();
 }
 
 high_resolution_clock::rep StopWatch::stop() {
     stopNS = high_resolution_clock::now();
+    totalNS += duration_cast<nanoseconds>(stopNS - startNS).count();
     return duration();
 }
 
 high_resolution_clock::rep StopWatch::duration() {
-    return duration_cast<nanoseconds>(stopNS - startNS).count();
+    return totalNS;
 }
 
 hrc_duration::hrc_duration(high_resolution_clock::rep dura)

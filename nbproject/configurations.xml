@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
-    <df root="include" name="2">
-      <df name="util">
-        <in>resilience.hpp</in>
-      </df>
+    <df root="include" name="0">
     </df>
-    <df root="lib" name="0">
+    <df root="include" name="3">
+    </df>
+    <df root="lib" name="1">
       <df name="column_operators">
         <in>operators.cpp</in>
       </df>
@@ -24,14 +23,26 @@
         <in>stopwatch.cpp</in>
       </df>
     </df>
-    <df root="tools" name="1">
+    <df root="lib" name="4">
+    </df>
+    <df root="tools" name="2">
       <df name="sample">
         <in>main.cpp</in>
         <in>query1.cpp</in>
         <in>ssb-q01.cpp</in>
         <in>ssb-q11.cpp</in>
+        <in>ssbm-q01.cpp</in>
+        <in>ssbm-q01_eager.cpp</in>
       </df>
     </df>
+    <df root="tools" name="5">
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false"
@@ -41,6 +52,9 @@
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
+    <Elem>lib</Elem>
+    <Elem>tools</Elem>
+    <Elem>include</Elem>
     <Elem>lib</Elem>
     <Elem>tools</Elem>
     <Elem>include</Elem>
@@ -55,6 +69,8 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0"
+                 commonFlags="-std=c++0x -fPIC -pedantic -std=c++11 -O2 -fno-exceptions -O3 -std=c++14"/>
+        <element flagsID="1"
                  commonFlags="-std=c++0x -fPIC -pedantic -std=c++11 -O2 -fno-exceptions -std=c++14"/>
       </flagsDictionary>
       <codeAssistance>
@@ -93,49 +109,70 @@
           </preprocessorList>
         </ccTool>
       </folder>
-      <item path="include/util/resilience.hpp" ex="false" tool="3" flavor2="0">
-      </item>
+      <folder path="1">
+        <ccTool>
+          <incDir>
+            <pElem>lib</pElem>
+            <pElem>include</pElem>
+            <pElem>/usr/lib/llvm-3.8/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+            <Elem>_GNU_SOURCE</Elem>
+            <Elem>__STDC_CONSTANT_MACROS</Elem>
+            <Elem>__STDC_FORMAT_MACROS</Elem>
+            <Elem>__STDC_LIMIT_MACROS</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
       <item path="lib/column_operators/operators.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="lib/column_storage/ColumnManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="lib/column_storage/Transaction.cpp" ex="false" tool="1" flavor2="0">
+      <item path="lib/column_storage/Transaction.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
       </item>
       <item path="lib/column_storage/TransactionManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="lib/meta_repository/MetaRepositoryManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="lib/util/resilience.cpp" ex="false" tool="1" flavor2="0">
+      <item path="lib/util/resilience.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
       </item>
       <item path="lib/util/stopwatch.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="tools/sample/main.cpp" ex="false" tool="1" flavor2="11">
@@ -173,6 +210,38 @@
           <incDir>
             <pElem>include</pElem>
           </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/sample/ssbm-q01.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>lib</pElem>
+            <pElem>include</pElem>
+            <pElem>/usr/lib/llvm-3.8/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+            <Elem>_GNU_SOURCE</Elem>
+            <Elem>__STDC_CONSTANT_MACROS</Elem>
+            <Elem>__STDC_FORMAT_MACROS</Elem>
+            <Elem>__STDC_LIMIT_MACROS</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="tools/sample/ssbm-q01_eager.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>lib</pElem>
+            <pElem>include</pElem>
+            <pElem>/usr/lib/llvm-3.8/include</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+            <Elem>_GNU_SOURCE</Elem>
+            <Elem>__STDC_CONSTANT_MACROS</Elem>
+            <Elem>__STDC_FORMAT_MACROS</Elem>
+            <Elem>__STDC_LIMIT_MACROS</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
     </conf>

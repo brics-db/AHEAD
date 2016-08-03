@@ -28,17 +28,18 @@
 #include "column_storage/TransactionManager.h"
 
 template<class Head, class Tail>
-class ColumnBatIterator : public BatIterator<Head, Tail> {
-private:
+class ColumnBatIteratorBase : public BatIterator<Head, Tail> {
+protected:
     TransactionManager::Transaction* ta;
     TransactionManager::BinaryUnit* bu;
     unsigned mColumnId;
-    unsigned Csize;
+    size_t Csize;
+    size_t Cconsumption;
     bool mNext;
 public:
 
     /** default constructor */
-    ColumnBatIterator(unsigned columnId) : mColumnId(columnId) {
+    ColumnBatIteratorBase(unsigned columnId) : mColumnId(columnId) {
         mNext = false;
         TransactionManager* tm = TransactionManager::getInstance();
         if (tm == NULL) {
@@ -46,41 +47,86 @@ public:
             abort();
         }
         ta = tm->beginTransaction(false);
-        Csize = ta->open(columnId);
+        tie(Csize, Cconsumption) = ta->open(columnId);
         if (ta == NULL) {
             cout << "Column is not available!" << endl;
         }
         bu = ta->next(mColumnId);
-    };
+    }
+
+    virtual ~ColumnBatIteratorBase() {
+        TransactionManager* tm = TransactionManager::getInstance();
+        tm->endTransaction(ta);
+        if (bu) {
+            delete bu;
+        }
+    }
 
     /** iterator next */
-    virtual pair<Head, Tail> next() {
+    virtual pair<Head, Tail> next() override {
         pair<Head, Tail> p;
-        memcpy(&p.first, bu->head, sizeof (Head));
+        // memcpy(&p.first, bu->head, sizeof (Head));
+        p.first = *reinterpret_cast<unsigned*> (&bu->head);
         memcpy(&p.second, bu->tail, sizeof (Tail));
-        delete bu->head;
+        // delete reinterpret_cast<Head*> (bu->head);
         delete bu;
         bu = ta->next(mColumnId);
         return p;
-    };
+    }
 
     /** @return true if a next item is available - otherwise false */
-    virtual bool hasNext() {
+    virtual bool hasNext() override {
         return (bu != NULL);
-    };
+    }
 
-    virtual pair<Head, Tail> get(unsigned index) {
+    virtual pair<Head, Tail> get(unsigned index) override {
         bu = ta->get(mColumnId, index);
         pair<Head, Tail> p;
-        memcpy(&p.first, bu->head, sizeof (Head));
+        // memcpy(&p.first, bu->head, sizeof (Head));
+        p.first = *reinterpret_cast<unsigned*> (&bu->head);
         memcpy(&p.second, bu->tail, sizeof (Tail));
+        // delete reinterpret_cast<Head*> (bu->head);
+        delete bu;
         bu = ta->next(mColumnId);
         return p;
-    };
+    }
 
-    virtual unsigned size() {
+    virtual size_t size() override {
         return Csize;
-    };
+    }
+
+    virtual size_t consumption() override {
+        return Cconsumption;
+    }
+};
+
+template<typename Head, typename Tail>
+class ColumnBatIterator : public ColumnBatIteratorBase<Head, Tail> {
+public:
+    using ColumnBatIteratorBase<Head, Tail>::ColumnBatIteratorBase;
+
+    virtual ~ColumnBatIterator() {
+    }
+};
+
+template<typename Head>
+class ColumnBatIterator<Head, const char*> : public ColumnBatIteratorBase<Head, const char*> {
+public:
+    using ColumnBatIteratorBase<Head, const char*>::ColumnBatIteratorBase;
+
+    virtual ~ColumnBatIterator() {
+    }
+
+    virtual pair<Head, const char*> get(unsigned index) override {
+        this->bu = this->ta->get(this->mColumnId, index);
+        pair<Head, const char*> p;
+        // memcpy(&p.first, this->bu->head, sizeof (Head));
+        p.first = *static_cast<unsigned*> (&this->bu->head);
+        p.second = this->bu->tail;
+        delete this->bu;
+        this->bu = this->ta->next(this->mColumnId);
+        return p;
+    }
 };
 
 #endif

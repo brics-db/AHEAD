@@ -28,9 +28,12 @@
 #include <stdexcept>
 #include <cstring>
 #include <cinttypes>
+#include <sstream>
 
 #include "column_storage/TransactionManager.h"
 #include "util/resilience.hpp"
+
+using namespace std;
 
 TransactionManager::Transaction::Transaction(bool isUpdater, unsigned int currentVersion) {
     this->botVersion = currentVersion;
@@ -53,12 +56,15 @@ TransactionManager::Transaction::~Transaction() {
 }
 
 size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, size_t size, const char* delim) {
-    static const size_t MAX_PATH_LEN = 1024;
+    static const size_t LEN_PATH = 1024;
+    static const size_t LEN_LINE = 1024;
+    static const size_t LEN_VALUE = 256;
+
     if (path == nullptr) {
         throw runtime_error("[TransactionManager::load] You must provide a path!");
     }
-    size_t pathLen = strnlen(path, MAX_PATH_LEN);
-    if (pathLen == 0 || pathLen == MAX_PATH_LEN) {
+    size_t pathLen = strnlen(path, LEN_PATH);
+    if (pathLen == 0 || pathLen == LEN_PATH) {
         throw runtime_error("[TransactionManager::load] path is too long (>1024)");
     }
     const char* actDelim = delim == nullptr ? "|" : delim;
@@ -80,10 +86,11 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     string headerPath(path);
     headerPath.append("_header.csv");
     FILE *valuesFile, *headerFile;
-    static const size_t LEN_LINE = 1024;
-    char *line = new char[LEN_LINE]();
-    char *value = new char[256]();
-    char *buffer = new char[1024]();
+    char line[LEN_LINE];
+    memset(line, 0, LEN_LINE);
+    char value[LEN_VALUE];
+    memset(value, 0, LEN_VALUE);
+    char *buffer;
     TransactionManager::BinaryUnit *bun;
     unsigned int offset, column;
     type_t type;
@@ -93,7 +100,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
     unsigned newTableId; // unique id of the created table
     unsigned BATId;
-    char *datatype = new char[256];
+    char datatype[LEN_VALUE];
     vector<char*> attribute_names;
 
     if (this->isUpdater) {
@@ -103,20 +110,20 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
         if (valuesFile && headerFile) {
             columns = cm->listColumns();
 
-            if (columns.find(0) == columns.end()) {
-                cm->createColumn(0, sizeof (char)*256);
-                cm->createColumn(1, sizeof (unsigned int));
-                cm->createColumn(2, sizeof (unsigned int));
+            if (columns.find(ID_BAT_COLNAMES) == columns.end()) {
+                cm->createColumn(ID_BAT_COLNAMES, sizeof (char)*LEN_VALUE);
+                cm->createColumn(ID_BAT_COLTYPES, sizeof (unsigned int));
+                cm->createColumn(ID_BAT_COLIDENT, sizeof (unsigned int));
             } else {
                 // Zurückspulen der Iteratoren
-                close(0);
-                close(1);
-                close(2);
+                close(ID_BAT_COLNAMES);
+                close(ID_BAT_COLTYPES);
+                close(ID_BAT_COLIDENT);
             }
 
-            open(0);
-            open(1);
-            open(2);
+            open(ID_BAT_COLNAMES);
+            open(ID_BAT_COLTYPES);
+            open(ID_BAT_COLIDENT);
 
             // create table
             if (tableName) {
@@ -124,6 +131,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             }
 
             // Zeile mit Spaltennamen einlesen aus Header-Datei
+            memset(line, 0, LEN_LINE);
             fgets(line, LEN_LINE, headerFile);
 
             if (strchr(line, '\n') != 0) {
@@ -135,41 +143,45 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
             while (buffer != 0) {
                 size_t lenBuf = strlen(buffer);
-                if (lenPrefix + lenBuf > 255) {
+                if (lenPrefix + lenBuf > (LEN_VALUE - 1)) {
                     // Problem : Name für Spalte (inkl. Prefix) zu lang
-                    throw runtime_error("[TransactionManager::load] Name of column is too long (>255)!");
+                    stringstream ss;
+                    ss << "[TransactionManager::load] Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
+                    throw runtime_error(ss.str());
                 }
 
-                bun = append(0);
+                bun = append(ID_BAT_COLNAMES);
 
                 // Spaltenname = Prefix + Spaltenname aus Header-Datei
                 if (prefix) {
-                    strncpy(value, prefix, 256);
-                    strncat(value, buffer, 256 - lenPrefix);
+                    strncpy(value, prefix, LEN_VALUE);
+                    strncat(value, buffer, LEN_VALUE - lenPrefix);
                 } else {
-                    strncpy(value, buffer, 256);
+                    strncpy(value, buffer, LEN_VALUE);
                 }
 
                 // prevents the referencing of value
-                char* attribute_name = new char[256];
-                strncpy(attribute_name, value, lenPrefix + lenBuf + 1);
+                const size_t attr_name_len = lenPrefix + lenBuf + 1;
+                char* attribute_name = new char[attr_name_len];
+                strncpy(attribute_name, value, attr_name_len);
                 attribute_names.push_back(attribute_name);
 
-                strncpy((char*) bun->tail, value, lenPrefix + lenBuf + 1);
+                strncpy(static_cast<char*> (bun->tail), value, attr_name_len);
 
                 // Berechnung der Anzahl bisher vorhandener Spalten
                 if (firstAppend) {
-                    offset = *((unsigned int*) bun->head);
+                    offset = *reinterpret_cast<unsigned*> (&bun->head);
                     firstAppend = false;
                 }
 
-                delete bun->head;
+                // delete static_cast<unsigned int*> (bun->head);
                 delete bun;
 
                 buffer = strtok(nullptr, actDelim);
             }
 
             // Zeile mit Spaltentypen einlesen aus Header-Datei
+            memset(line, 0, LEN_LINE);
             fgets(line, LEN_LINE, headerFile);
 
             if (strchr(line, '\n') != 0) {
@@ -184,14 +196,14 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             while (buffer != 0) {
                 // freie Spalte suchen
                 columns = cm->listColumns();
-                column = 3;
+                column = ID_BAT_FIRST_USER;
 
                 while (columns.find(column) != columns.end()) {
                     column++;
                 }
 
                 // Spaltentyp einpflegen
-                bun = append(1);
+                bun = append(ID_BAT_COLTYPES);
 
                 if (strncmp(buffer, "INTEGER", 7) == 0) {
                     *((type_t*) bun->tail) = type_int;
@@ -204,7 +216,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 } else if (strncmp(buffer, "FIXED", 5) == 0) {
                     // data type fixed
                     *((type_t*) bun->tail) = type_fxd;
-                    cm->createColumn(column, sizeof (double_t));
+                    cm->createColumn(column, sizeof (fxd_t));
                     //cerr << "Type double" << column << endl;
                 } else if (strncmp(buffer, "CHAR", 4) == 0) {
                     *((type_t*) bun->tail) = type_chr;
@@ -221,34 +233,30 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
                 types.push_back(*((type_t*) bun->tail));
 
-                delete bun->head;
+                // delete static_cast<unsigned int*> (bun->head);
                 delete bun;
 
                 // Spaltenidentifikation einpflegen
-                bun = append(2);
-
-                *((unsigned int*) bun->tail) = column;
-
-                delete bun->head;
+                bun = append(ID_BAT_COLIDENT);
+                *static_cast<unsigned*> (bun->tail) = column;
+                // delete static_cast<unsigned int*> (bun->head);
                 delete bun;
 
                 open(column);
-
                 iterators.push_back(this->iterators[column]);
-
-                buffer = strtok(nullptr, actDelim);
-
-                BATId = column;
 
                 // create attribute for specified table
                 if (tableName) {
+                    BATId = column;
                     mrm->createAttribute(attribute_names.at(attributeNamesIndex), datatype, BATId, newTableId);
                 }
 
+                buffer = strtok(nullptr, actDelim);
                 attributeNamesIndex++;
             }
 
-            // Spaltenwerte zeilenweise aus Datei einlesen		
+            // Spaltenwerte zeilenweise aus Datei einlesen
+            memset(line, 0, LEN_LINE);
             while (fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
                 if (strchr(line, '\n') != 0) {
                     *strchr(line, '\n') = 0;
@@ -261,8 +269,14 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
                 // Zeile durch Zeichen actDelim in Einzelwerte trennen
                 buffer = strtok(line, actDelim);
+                size_t numVal = 1;
 
                 while (buffer != 0) {
+                    if (typesIterator == types.end()) {
+                        stringstream ss;
+                        ss << "TransactionManager::Transaction::load() more values than types registered (#" << numVal << ")!";
+                        throw runtime_error(ss.str());
+                    }
                     // Spaltentyp und Spaltenidentifikation bestimmen
                     type = *typesIterator;
                     ci = *iteratorsIterator;
@@ -290,7 +304,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                             break;
 
                         case type_resint:
-                            *(static_cast<resint_t*> (record->content)) = atoll(buffer) * A;
+                            *(static_cast<resint_t*> (record->content)) = atoll(buffer) * ::A;
                             break;
 
                         default:
@@ -304,32 +318,34 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                     iteratorsIterator++;
 
                     buffer = strtok(nullptr, actDelim);
+                    ++numVal;
                 }
+                memset(line, 0, LEN_LINE);
             }
 
             // Spalten schließen
-            close(0);
-            close(1);
-            close(2);
+            close(ID_BAT_COLNAMES);
+            close(ID_BAT_COLTYPES);
+            close(ID_BAT_COLIDENT);
 
-            open(2);
+            open(ID_BAT_COLIDENT);
 
             if (offset > 0) {
-                bun = get(2, offset);
+                bun = get(ID_BAT_COLIDENT, offset);
             } else {
-                bun = next(2);
+                bun = next(ID_BAT_COLIDENT);
             }
 
             while (bun != 0) {
                 close(*((unsigned int*) bun->tail));
 
-                delete bun->head;
+                // delete static_cast<unsigned int*> (bun->head);
                 delete bun;
 
-                bun = next(2);
+                bun = next(ID_BAT_COLIDENT);
             }
 
-            close(2);
+            close(ID_BAT_COLIDENT);
 
             // Dateien schließen
             fclose(valuesFile);
@@ -349,42 +365,38 @@ set<unsigned int> TransactionManager::Transaction::list() {
     return ColumnManager::getInstance()->listColumns();
 }
 
-unsigned TransactionManager::Transaction::open(unsigned int id) {
+pair<size_t, size_t> TransactionManager::Transaction::open(unsigned int id) {
+    bool isOK = false;
     if (id >= this->iterators.size()) {
         this->iterators.resize(id + 1);
         this->iteratorPositions.resize(id + 1);
-
         ColumnManager::ColumnIterator* cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
-
         if (cm != 0) {
             this->iterators[id] = cm;
             this->iteratorPositions[id] = 0;
-            return this->iterators[id]->size();
+            isOK = true;
         } else {
             // Problem : Spalte nicht existent
-            return 0;
         }
     } else if (id < this->iterators.size() && this->iterators[id] != nullptr) {
         if (this->iteratorPositions[id] != -1) {
             ColumnManager::ColumnIterator* cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
-
             if (cm != 0) {
                 this->iterators[id] = cm;
                 this->iteratorPositions[id] = 0;
-                return this->iterators[id]->size();
+                isOK = true;
             } else {
                 // Problem : Spalte nicht existent
-                return 0;
             }
         } else {
             this->iterators[id]->rewind();
             this->iteratorPositions[id] = 0;
-            return this->iterators[id]->size();
+            isOK = true;
         }
     } else {
         // Problem : Spalte bereits geoffnet
-        return 0;
     }
+    return isOK ? make_pair<size_t, size_t>(this->iterators[id]->size(), this->iterators[id]->consumption()) : make_pair<size_t, size_t>(0, 0);
 }
 
 void TransactionManager::Transaction::close(unsigned int id) {
@@ -401,14 +413,9 @@ TransactionManager::BinaryUnit* TransactionManager::Transaction::next(unsigned i
 
         if (record != 0) {
             TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-            unsigned int *position = new unsigned int;
-
-            *position = this->iteratorPositions[id]++;
-            bun->head = position;
+            *reinterpret_cast<unsigned*> (&bun->head) = this->iteratorPositions[id]++;
             bun->tail = record->content;
-
             delete record;
-
             return bun;
         } else {
             // Problem : Ende der Spalte
@@ -426,15 +433,10 @@ TransactionManager::BinaryUnit* TransactionManager::Transaction::get(unsigned in
 
         if (record != 0) {
             TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-            unsigned int *position = new unsigned int;
-
-            *position = index++;
-            this->iteratorPositions[id] = index;
-            bun->head = position;
+            *reinterpret_cast<unsigned*> (&bun->head) = index++;
             bun->tail = record->content;
-
+            this->iteratorPositions[id] = index;
             delete record;
-
             return bun;
         } else {
             // Problem : Falscher Index
@@ -454,14 +456,9 @@ TransactionManager::BinaryUnit* TransactionManager::Transaction::edit(unsigned i
 
             if (record != 0) {
                 TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-                unsigned int *position = new unsigned int;
-
-                *position = this->iteratorPositions[id] - 1;
-                bun->head = position;
+                *reinterpret_cast<unsigned*> (&bun->head) = this->iteratorPositions[id] - 1;
                 bun->tail = record->content;
-
                 delete record;
-
                 return bun;
             } else {
                 // Problem : Ende der Spalte
@@ -484,16 +481,10 @@ TransactionManager::BinaryUnit* TransactionManager::Transaction::append(unsigned
 
             if (record != 0) {
                 TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-                unsigned int *position = new unsigned int;
-
-                this->iteratorPositions[id] = this->iterators[id]->size();
-                *position = this->iteratorPositions[id] - 1;
-
-                bun->head = position;
+                // this->iteratorPositions[id] = this->iterators[id]->size();
+                *reinterpret_cast<unsigned*> (&bun->head) = this->iteratorPositions[id]++;
                 bun->tail = record->content;
-
                 delete record;
-
                 return bun;
             } else {
                 // Problem : Record konnte nicht an Spalte angehängt werden

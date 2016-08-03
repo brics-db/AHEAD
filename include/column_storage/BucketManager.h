@@ -77,7 +77,7 @@ public:
          *
          * Die Funktion gibt die Anzahl der sichtbaren Buckets innerhalb des Bucket-Streams zur�ck.
          */
-        unsigned int size();
+        unsigned int countBuckets();
         /**
          * @author Julian Hollender
          *

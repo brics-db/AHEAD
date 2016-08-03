@@ -54,7 +54,14 @@ public:
          *
          * Die Funktion gibt die Anzahl der sichtbaren Records innerhalb der Spalte zur�ck.
          */
-        unsigned int size();
+        size_t size();
+
+        /**
+         * @author Till Kolditz
+         * 
+         * @return Amount of storage actually allocated for this column
+         */
+        size_t consumption();
 
         /**
          * @author Julian Hollender
