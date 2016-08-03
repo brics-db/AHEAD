@@ -62,25 +62,28 @@ do {                         \
 #define PRINT_BAT(SW, PRINT)
 #endif
 
+#define SAVE_TYPE(I, BAT)          \
+headTypes[I] = BAT->type_head();   \
+tailTypes[I] = BAT->type_tail();   \
+hasTwoTypes[I] = true
+
 #define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
 
-#define MEASURE_OP7(SW, i, TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP) \
+#define MEASURE_OP7(SW, I, TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP) \
 SW.start();                               \
 TYPE VAR = OP;                            \
-opTimes[i] = SW.stop();                   \
-batSizes[i] = STORE_SIZE_OP;              \
-batConsumptions[i] = STORE_CONSUMPTION_OP
+opTimes[I] = SW.stop();                   \
+batSizes[I] = STORE_SIZE_OP;              \
+batConsumptions[I] = STORE_CONSUMPTION_OP
 
-#define MEASURE_OP5(SW, i, TYPE, VAR, OP)                     \
-MEASURE_OP7(SW, i, TYPE, VAR, OP, 1, sizeof(TYPE));           \
-headTypes[i] = boost::typeindex::type_id<TYPE>().type_info(); \
-hasTwoTypes[i] = false
+#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                     \
+MEASURE_OP7(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE));           \
+headTypes[I] = boost::typeindex::type_id<TYPE>().type_info(); \
+hasTwoTypes[I] = false
 
-#define MEASURE_OP4(SW, i, BAT, OP)                                     \
-MEASURE_OP7(SW, i, auto, BAT, OP, BAT->size(), BAT->consumption());     \
-headTypes[i] = BAT->type_head();                                        \
-tailTypes[i] = BAT->type_tail();                                        \
-hasTwoTypes[i] = true
+#define MEASURE_OP4(SW, I, BAT, OP)                                     \
+MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());     \
+SAVE_TYPE(I, BAT)
 
 int main(int argc, char** argv) {
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
