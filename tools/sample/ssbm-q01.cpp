@@ -20,8 +20,6 @@
 #include "column_storage/TransactionManager.h"
 #include "column_operators/operators.h"
 #include "column_storage/types.h"
-#include "query_executor/executor.h"
-#include "query_executor/codeHandler.h"
 #include "util/stopwatch.hpp"
 
 using namespace std;

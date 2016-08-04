@@ -121,8 +121,8 @@ public:
         this->bu = this->ta->get(this->mColumnId, index);
         pair<Head, const char*> p;
         // memcpy(&p.first, this->bu->head, sizeof (Head));
-        p.first = *static_cast<unsigned*> (&this->bu->head);
-        p.second = this->bu->tail;
+        p.first = *reinterpret_cast<unsigned*> (&this->bu->head);
+        p.second = static_cast<const char*> (this->bu->tail);
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
         return p;

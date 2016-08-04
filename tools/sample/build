@@ -1,6 +1,7 @@
 #!/bin/bash
 
-for file in main ssbm-q01 ssbm-q01_eager; do
+#for file in main ssbm-q01 ssbm-q01_eager lineorder_size; do
+for file in lineorder_size; do
     clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -fcxx-exceptions -O3 -DNDEBUG -std=c++14 ${file}.cpp -o ${file} `llvm-config --ldflags` -L/home/tk4/git/columnstore/lib `llvm-config --libs` -lcolumn_operators -lcolumn_storage -lmeta_repository -lutil -lffi -ldl -lpthread -lcurses -lboost_system -lboost_filesystem || exit 1
 
     clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -fcxx-exceptions -g3 -O0 -std=c++14 ${file}.cpp -o ${file}_dbg `llvm-config --ldflags` -L/home/tk4/git/columnstore/lib `llvm-config --libs` -lcolumn_operators_dbg -lcolumn_storage_dbg -lmeta_repository_dbg -lutil_dbg -lffi -ldl -lpthread -lcurses -lboost_system -lboost_filesystem || exit 1
