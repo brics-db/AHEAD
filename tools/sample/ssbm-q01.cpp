@@ -152,9 +152,9 @@ int main(int argc, char** argv) {
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
-    cout << "\nselect lo_extendedprice\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
+    cout << "\nSSBM Q1.1:\nselect lo_extendedprice\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
 
-    const size_t NUM_OPS = 22;
+    const size_t NUM_OPS = 21;
     nanoseconds::rep opTimes[NUM_OPS];
     size_t batSizes[NUM_OPS];
     size_t batConsumptions[NUM_OPS];
@@ -162,57 +162,65 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
 
+    typedef ColumnBat<unsigned, int_t> intColType;
+    typedef ColumnBat<unsigned, fxd_t> fxdColType;
+    const size_t LEN_TYPES = 13;
+    string emptyString;
+
+    MEASURE_OP(sw1, 0, batDYcb, new intColType("date", "year"));
+    MEASURE_OP(sw1, 1, batDDcb, new intColType("date", "datekey"));
+    MEASURE_OP(sw1, 2, batLQcb, new intColType("lineorder", "quantity"));
+    MEASURE_OP(sw1, 3, batLDcb, new intColType("lineorder", "discount"));
+    MEASURE_OP(sw1, 4, batLOcb, new intColType("lineorder", "orderdate"));
+    MEASURE_OP(sw1, 5, batLEcb, new fxdColType("lineorder", "extendedprice"));
+
+    MEASURE_OP(sw1, 6, batDY, Bat_Operators::copy(batDYcb));
+    MEASURE_OP(sw1, 7, batDD, Bat_Operators::copy(batDDcb));
+    MEASURE_OP(sw1, 8, batLQ, Bat_Operators::copy(batLQcb));
+    MEASURE_OP(sw1, 9, batLD, Bat_Operators::copy(batLDcb));
+    MEASURE_OP(sw1, 10, batLO, Bat_Operators::copy(batLOcb));
+    MEASURE_OP(sw1, 11, batLE, Bat_Operators::copy(batLEcb));
+
+    for (size_t i = 0; i < 12; ++i) {
+        cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
+    }
+    cout << '\n' << endl;
+
     for (size_t i = 0; i < 1; ++i) {
         sw1.start();
 
-        typedef ColumnBat<unsigned, int_t> intColType;
-        typedef ColumnBat<unsigned, fxd_t> fxdColType;
-
-        MEASURE_OP(sw2, 0, batDY, new intColType("date", "year"));
-        MEASURE_OP(sw2, 1, batDD, new intColType("date", "datekey"));
-        MEASURE_OP(sw2, 2, batLQ, new intColType("lineorder", "quantity"));
-        MEASURE_OP(sw2, 3, batLD, new intColType("lineorder", "discount"));
-        MEASURE_OP(sw2, 4, batLO, new intColType("lineorder", "orderdate"));
-        MEASURE_OP(sw2, 5, batLE, new fxdColType("lineorder", "extendedprice"));
-
         // 1) selection push-down
-        MEASURE_OP(sw2, 6, bat3, Bat_Operators::selection_lt(batLQ, 25)); // lo_quantity < 25
+        MEASURE_OP(sw2, 5, bat3, Bat_Operators::selection_lt(batLQ, 25)); // lo_quantity < 25
         PRINT_BAT(sw1, printBat(bat3->begin(), "lo_quantity < 25"));
-        MEASURE_OP(sw2, 7, bat4, Bat_Operators::selection_bt(batLD, 1, 3)); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, 6, bat4, Bat_Operators::selection_bt(batLD, 1, 3)); // lo_discount between 1 and 3
         PRINT_BAT(sw1, printBat(bat4->begin(), "lo_discount between 1 and 3"));
-        MEASURE_OP(sw2, 8, batDYsel, Bat_Operators::selection_eq(batDY, 1993)); // d_year = 1993
+        MEASURE_OP(sw2, 7, batDYsel, Bat_Operators::selection_eq(batDY, 1993)); // d_year = 1993
         PRINT_BAT(sw1, printBat(batDYsel->begin(), "d_year = 1993"));
 
         // 2) join BATs
-        MEASURE_OP(sw2, 9, bat6, Bat_Operators::mirror(bat4)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        MEASURE_OP(sw2, 10, bat7, Bat_Operators::col_hashjoin(bat6, bat3)); // join selection
-        MEASURE_OP(sw2, 11, bat8, Bat_Operators::mirror(bat7)); // prepare joined selection with lo_orderdate (contains positions in tail)
+        MEASURE_OP(sw2, 8, bat6, Bat_Operators::mirror(bat4)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
+        MEASURE_OP(sw2, 9, bat7, Bat_Operators::col_hashjoin(bat6, bat3)); // join selection
+        MEASURE_OP(sw2, 10, bat8, Bat_Operators::mirror(bat7)); // prepare joined selection with lo_orderdate (contains positions in tail)
         PRINT_BAT(sw1, printBat(bat8->begin(), "lineorder where lo_quantity < 25 and lo_discoutn between 1 and 3"));
-        MEASURE_OP(sw2, 12, batLOsel, Bat_Operators::col_hashjoin(bat8, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(sw2, 11, batLOsel, Bat_Operators::col_hashjoin(bat8, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
 
         // 3) join lineorder and date
         PRINT_BAT(sw1, printBat(bat8->begin(), "lo_orderdates where lo_quantity < 25 and lo_discount between 1 and 3"));
-        MEASURE_OP(sw2, 13, batDYsel2, Bat_Operators::mirror(batDYsel)); // prepare joined selection over d_year and d_datekey
-        MEASURE_OP(sw2, 14, batDDsel, Bat_Operators::col_hashjoin(batDYsel2, batDD)); // only those d_datekey where d_year...
+        MEASURE_OP(sw2, 12, batDYsel2, Bat_Operators::mirror(batDYsel)); // prepare joined selection over d_year and d_datekey
+        MEASURE_OP(sw2, 13, batDDsel, Bat_Operators::col_hashjoin(batDYsel2, batDD)); // only those d_datekey where d_year...
         PRINT_BAT(sw1, printBat(batDDsel->begin(), "d_datekey where d_year = 1993"));
-        MEASURE_OP(sw2, 15, batDDselRev, Bat_Operators::reverse(batDDsel));
-        MEASURE_OP(sw2, 16, batE, Bat_Operators::col_hashjoin(batLOsel, batDDselRev)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP(sw2, 14, batDDselRev, Bat_Operators::reverse(batDDsel));
+        MEASURE_OP(sw2, 15, batE, Bat_Operators::col_hashjoin(batLOsel, batDDselRev)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
-        MEASURE_OP(sw2, 17, batF, Bat_Operators::mirror(batE)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
-        MEASURE_OP(sw2, 18, unsigned, count, batF->size());
+        MEASURE_OP(sw2, 16, batF, Bat_Operators::mirror(batE)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP(sw2, 17, unsigned, count, batF->size());
         // BatF only contains the 
-        MEASURE_OP(sw2, 19, bat11, Bat_Operators::col_hashjoin(batF, batLE));
+        MEASURE_OP(sw2, 18, bat11, Bat_Operators::col_hashjoin(batF, batLE));
         PRINT_BAT(sw1, printBat(bat11->begin(), "lo_extprice where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
-        MEASURE_OP(sw2, 20, bat12, Bat_Operators::col_hashjoin(batF, batLD));
-        MEASURE_OP(sw2, 21, double, result, Bat_Operators::aggregate_mul_sum(bat11, bat12, 0.0));
+        MEASURE_OP(sw2, 19, bat12, Bat_Operators::col_hashjoin(batF, batLD));
+        MEASURE_OP(sw2, 20, double, result, Bat_Operators::aggregate_mul_sum(bat11, bat12, 0.0));
 
         sw2.start();
-        delete batDY;
-        delete batDD;
-        delete batLQ;
-        delete batLD;
-        delete batLO;
-        delete batLE;
         delete bat3;
         delete bat4;
         delete batDYsel;
@@ -231,16 +239,26 @@ int main(int argc, char** argv) {
 
         sw1.stop();
 
-        const size_t LEN_TYPES = 13;
-        cout << "SSBM Q1.1 (" << setw(2) << i << ")\n\tresult: " << result << "\n\t count: " << count << "\n\t  time: " << setw(13) << sw1 << " ns.\n\tdelete: " << setw(13) << sw2 << "\n\tq-only: " << hrc_duration(sw1.duration() - sw2.duration());
+        cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t count: " << count << "\n\t  time: " << setw(13) << sw1 << " ns.\n\tdelete: " << setw(13) << sw2 << "\n\tq-only: " << hrc_duration(sw1.duration() - sw2.duration());
         cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
-        string emptyString;
-        for (size_t i = 0; i < NUM_OPS; ++i) {
+        for (size_t i = 5; i < NUM_OPS; ++i) {
             cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
         }
         cout << endl;
     }
 
+    delete batDY;
+    delete batDD;
+    delete batLQ;
+    delete batLD;
+    delete batLO;
+    delete batLE;
+    delete batDYcb;
+    delete batDDcb;
+    delete batLQcb;
+    delete batLDcb;
+    delete batLOcb;
+    delete batLEcb;
+
     return 0;
 }
-
