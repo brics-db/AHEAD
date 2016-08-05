@@ -12,12 +12,12 @@ for f in "${FILES[@]}"; do
 done
 
 #Release
-ar cru ${LIBFILE_R} "${FILES[@]/%/.o}"
+ar cr ${LIBFILE_R} "${FILES[@]/%/.o}"
 ranlib ${LIBFILE_R}
 ln -sf ${CD}/${LIBFILE_R} ../${LIBFILE_R}
 
 #Debug
-ar cru ${LIBFILE_D} "${FILES[@]/%/_dbg.o}"
+ar cr ${LIBFILE_D} "${FILES[@]/%/_dbg.o}"
 ranlib ${LIBFILE_D}
 ln -sf ${CD}/${LIBFILE_D} ../${LIBFILE_D}
 
