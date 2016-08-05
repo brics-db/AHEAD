@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     assert(t != nullptr);
     sw2.start();
     path = baseDir;
-    path += "/lineorder";
+    path += "/lineorder2"; // header file only contains the first column definition
     num = t->load(path.c_str(), "lineorder");
     sw2.stop();
     cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw2 << " ns." << endl;
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
     assert(t != nullptr);
     sw2.start();
     path = baseDir;
-    path += "/lineorderAN";
+    path += "/lineorder2AN"; // header file only contains the first column definition
     num = t->load(path.c_str(), "lineorderAN");
     sw2.stop();
     cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw2 << " ns." << endl;
@@ -139,38 +139,6 @@ int main(int argc, char** argv) {
     size_t consumptionIntBatsOrg = 0;
     MEASURE_OP(sw1, x, batOKbcOrg, new intColType("lineorder", "orderkey"));
     consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batLNbcOrg, new intColType("lineorder", "linenumber"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batCKbcOrg, new intColType("lineorder", "custkey"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batPKbcOrg, new intColType("lineorder", "partkey"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batSKbcOrg, new intColType("lineorder", "suppkey"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batODbcOrg, new intColType("lineorder", "orderdate"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batOPbcOrg, new strColType("lineorder", "orderpriority"));
-    x++;
-    MEASURE_OP(sw1, x, batSPbcOrg, new strColType("lineorder", "shippriority"));
-    x++;
-    MEASURE_OP(sw1, x, batQUbcOrg, new intColType("lineorder", "quantity"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batEPbcOrg, new intColType("lineorder", "extendedprice"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batOTbcOrg, new intColType("lineorder", "ordertotalprice"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batDIbcOrg, new intColType("lineorder", "discount"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batREbcOrg, new intColType("lineorder", "revenue"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batSCbcOrg, new intColType("lineorder", "supplycost"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batTAbcOrg, new intColType("lineorder", "tax"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batCDbcOrg, new intColType("lineorder", "commitdate"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batSMbcOrg, new strColType("lineorder", "shipmode"));
-    x++;
 
     size_t consumptionTotalOrg = 0;
     for (size_t i = 0; i < x; ++i) {
@@ -183,38 +151,6 @@ int main(int argc, char** argv) {
     size_t consumptionIntBatsEnc = 0;
     MEASURE_OP(sw1, x, batOKbcEnc, new resintColType("lineorderAN", "orderkey"));
     consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batLNbcEnc, new resintColType("lineorderAN", "linenumber"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batCKbcEnc, new resintColType("lineorderAN", "custkey"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batPKbcEnc, new resintColType("lineorderAN", "partkey"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batSKbcEnc, new resintColType("lineorderAN", "suppkey"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batODbcEnc, new resintColType("lineorderAN", "orderdate"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batOPbcEnc, new strColType("lineorderAN", "orderpriority"));
-    x++;
-    MEASURE_OP(sw1, x, batSPbcEnc, new strColType("lineorderAN", "shippriority"));
-    x++;
-    MEASURE_OP(sw1, x, batQUbcEnc, new resintColType("lineorderAN", "quantity"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batEPbcEnc, new resintColType("lineorderAN", "extendedprice"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batOTbcEnc, new resintColType("lineorderAN", "ordertotalprice"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batDIbcEnc, new resintColType("lineorderAN", "discount"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batREbcEnc, new resintColType("lineorderAN", "revenue"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batSCbcEnc, new resintColType("lineorderAN", "supplycost"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batTAbcEnc, new resintColType("lineorderAN", "tax"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batCDbcEnc, new resintColType("lineorderAN", "commitdate"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-    MEASURE_OP(sw1, x, batSMbcEnc, new strColType("lineorderAN", "shipmode"));
-    x++;
 
     size_t consumptionTotalEnc = 0;
     for (size_t i = 0; i < x; ++i) {
@@ -225,8 +161,8 @@ int main(int argc, char** argv) {
 
     cout << "\nOverhead - Total: " << (static_cast<double> (consumptionTotalEnc) / static_cast<double> (consumptionTotalOrg)) << "        Int BATs: " << (static_cast<double> (consumptionIntBatsEnc) / static_cast<double> (consumptionIntBatsOrg)) << endl;
 
-    __attribute__((unused)) auto batOKtcOrg = Bat_Operators::copy(batOKbcOrg);
-    __attribute__((unused)) auto batOKtcEnc = Bat_Operators::copy(batOKbcEnc);
+    batOKtcOrg = Bat_Operators::copy(batOKbcOrg);
+    batOKtcEnc = Bat_Operators::copy(batOKbcEnc);
 
     cout << " num |         check |  check+decode\n";
     cout << "-----+---------------+--------------" << endl;
@@ -236,12 +172,13 @@ int main(int argc, char** argv) {
         sw1.stop();
         cout << "  " << setw(2) << i << "   " << setw(13) << sw1 << "  ";
 
+        delete result1;
+
         sw1.start();
         __attribute__((unused)) auto result2 = Bat_Operators::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
         sw1.stop();
         cout << "   " << setw(13) << sw1 << '\n';
 
-        delete result1;
         delete result2.first;
         delete result2.second;
     }
