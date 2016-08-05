@@ -59,6 +59,7 @@ public:
     template<class Head, class Tail>
     static void prn_vecOfPair(Bat<Head, Tail> *arg) {
         BatIterator<Head, Tail> * iter = arg->begin();
+
         unsigned step = 0;
         while (iter->hasNext()) {
             pair<Head, Tail> p = iter->next();
@@ -71,14 +72,13 @@ public:
             step++;
         }
         delete iter;
-        return;
     }
 
     template<class Head, class Tail>
     static Bat<Head, Tail>* copy(Bat<Head, Tail>* arg, unsigned start = 0, size_t size = 0) {
         BatIterator<Head, Tail> *vcpi = arg->begin();
-        Bat<Head, Tail> * result = new TempBat<Head, Tail>();
 
+        Bat<Head, Tail> * result = new TempBat<Head, Tail>(arg->size());
         if (vcpi->hasNext()) {
             result->append(vcpi->get(start));
             if (size) {
@@ -97,8 +97,8 @@ public:
     template<typename Head, typename Tail>
     static Bat<Head, resint_t>* encodeA(Bat<Head, Tail>* arg, uint64_t A = ::A, size_t start = 0, size_t size = 0) {
         auto iter = arg->begin();
-        auto result = new TempBat<Head, resint_t>();
 
+        auto result = new TempBat<Head, resint_t>(arg->size());
         if (iter->hasNext()) {
             auto next = iter->get(start);
             result->append(make_pair(next.first, static_cast<resint_t> (next.second) * A));
@@ -120,8 +120,9 @@ public:
 
     template<typename Head>
     static vector<bool>* checkA(Bat<Head, resint_t>* arg, resint_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
-        auto result = new vector<bool>();
         auto iter = arg->begin();
+
+        auto result = new vector<bool>(arg->size());
         if (iter->hasNext()) {
             result->push_back((iter->get(start).second * aInv) <= unEncMaxU);
             if (size) {
@@ -140,8 +141,9 @@ public:
 
     template<typename Head, typename Tail>
     static pair<Bat<Head, Tail>*, vector<bool>*> checkAndDecodeA(Bat<Head, resint_t>* arg, uint64_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
-        pair < Bat<Head, Tail>*, vector<bool>*> result = make_pair(new TempBat<Head, Tail>(), new vector<bool>());
         auto iter = arg->begin();
+
+        pair < Bat<Head, Tail>*, vector<bool>*> result = make_pair(new TempBat<Head, Tail>(arg->size()), new vector<bool>(arg->size()));
         if (iter->hasNext()) {
             auto current = iter->get(start);
             resint_t decoded = current.second * aInv;
@@ -170,7 +172,6 @@ public:
     template<class Head, class Tail>
     static Bat<Head, Tail>* selection(Bat<Head, Tail>* arg, unsigned OP, Tail treshold, Tail treshold2 = Tail(0)) {
         BatIterator<Head, Tail> *iter = arg->begin();
-
 
         Bat<Head, Tail> * result = new TempBat<Head, Tail>();
         switch (OP) {
@@ -251,7 +252,6 @@ public:
     static Bat<Head, Tail>* selection_lq(Bat<Head, Tail>* arg, Tail treshold) {
         BatIterator<Head, Tail> *iter = arg->begin();
 
-
         Bat<Head, Tail> * result = new TempBat<Head, Tail>();
         while (iter->hasNext()) {
             pair<Head, Tail> p = iter->next();
@@ -271,7 +271,6 @@ public:
     template<class Head, class Tail>
     static Bat<Head, Tail>* selection_lt(Bat<Head, Tail>* arg, Tail treshold) {
         BatIterator<Head, Tail> *iter = arg->begin();
-
 
         Bat<Head, Tail> * result = new TempBat<Head, Tail>();
         while (iter->hasNext()) {
@@ -293,7 +292,6 @@ public:
     static Bat<Head, Tail>* selection_bt(Bat<Head, Tail>* arg, Tail start, Tail end) {
         BatIterator<Head, Tail> *iter = arg->begin();
 
-
         Bat<Head, Tail> * result = new TempBat<Head, Tail>();
         while (iter->hasNext()) {
             pair<Head, Tail> p = iter->next();
@@ -314,7 +312,6 @@ public:
     static Bat<Head, Tail>* selection_eq(Bat<Head, Tail>* arg, Tail value) {
         BatIterator<Head, Tail> *iter = arg->begin();
 
-
         Bat<Head, Tail> * result = new TempBat<Head, Tail>();
         while (iter->hasNext()) {
             pair<Head, Tail> p = iter->next();
@@ -333,7 +330,7 @@ public:
     static Bat<Tail, Head>* reverse(Bat<Head, Tail> *arg) {
         BatIterator<Head, Tail> *iter = arg->begin();
 
-        Bat<Tail, Head> * result = new TempBat<Tail, Head>();
+        Bat<Tail, Head> * result = new TempBat<Tail, Head>(arg->size());
         while (iter->hasNext()) {
             pair<Head, Tail> p = iter->next();
             pair<Tail, Head> np;
@@ -348,7 +345,7 @@ public:
     template<class Head, class Tail>
     static Bat<Head, Head>* mirror(Bat<Head, Tail> *arg) {
         BatIterator<Head, Tail> *iter = arg->begin();
-        Bat<Head, Head> * result = new TempBat<Head, Head>();
+        Bat<Head, Head> * result = new TempBat<Head, Head>(arg->size());
         while (iter->hasNext()) {
             pair<Head, Tail> p = iter->next();
             pair<Head, Head> np;
@@ -504,7 +501,7 @@ public:
     static Bat<T1, T3>* col_fill(Bat<T1, T2> *arg, T3 value) {
         BatIterator<T1, T2> *iter = arg->begin();
 
-        Bat<T1, T3> *result = new TempBat<T1, T3>();
+        Bat<T1, T3> *result = new TempBat<T1, T3>(arg->size());
         while (iter->hasNext()) {
             pair<T1, T2> p = iter->next();
             pair<T1, T3> np;
