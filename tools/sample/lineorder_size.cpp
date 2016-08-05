@@ -161,8 +161,8 @@ int main(int argc, char** argv) {
 
     cout << "\nOverhead - Total: " << (static_cast<double> (consumptionTotalEnc) / static_cast<double> (consumptionTotalOrg)) << "        Int BATs: " << (static_cast<double> (consumptionIntBatsEnc) / static_cast<double> (consumptionIntBatsOrg)) << endl;
 
-    batOKtcOrg = Bat_Operators::copy(batOKbcOrg);
-    batOKtcEnc = Bat_Operators::copy(batOKbcEnc);
+    auto batOKtcOrg = Bat_Operators::copy(batOKbcOrg);
+    auto batOKtcEnc = Bat_Operators::copy(batOKbcEnc);
 
     cout << " num |         check |  check+decode\n";
     cout << "-----+---------------+--------------" << endl;
