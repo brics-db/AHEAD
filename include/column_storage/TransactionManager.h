@@ -64,7 +64,7 @@ public:
          *
          * Die Funktion öffnet die Datei path + '_header.csv' und liest die enthaltenen Spaltennamen und Spaltentypen. Die Spaltennamen ( = Prefix + Spaltenname aus Header-Datei ) werden an die Spalte mit der Identifikationsnummer 0 angehängt, die Spaltentypen an die Spalte mit der Identifikationsnummer 1 und in der Spalte mit der Identifikationsnummer 2 wird die Identifikationsnummer der Spalte angehängt, in der anschließend die zugehörigen Daten landen. Danach werden die Daten aus der Datei path + '.tbl' gelesen und in die entsprechenden Spalten eingepflegt. Hierbei ist zu beachten, dass die Spalten mit der Identifikationsnummer 0, 1 und 2 ausschließlich durch die load()-Funktion verändert werden sollten, um eine korrekte Arbeitsweise der Funktion zu sichern.
          */
-        size_t load(const char *path, const char *tableName = nullptr, const char *prefix = nullptr, size_t size = static_cast<size_t> (-1), const char *delim = nullptr);
+        size_t load(const char *path, const char *tableName = nullptr, const char *prefix = nullptr, size_t size = static_cast<size_t> (-1), const char *delim = nullptr, bool ignoreMoreData = true);
 
         /**
          * @author Julian Hollender

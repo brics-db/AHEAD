@@ -127,7 +127,6 @@ int main(int argc, char** argv) {
 
     typedef ColumnBat<unsigned, int_t> intColType;
     typedef ColumnBat<unsigned, resint_t> resintColType;
-    typedef ColumnBat<unsigned, const char*> strColType;
     const size_t LEN_TYPES = 13;
     string emptyString;
 
@@ -159,23 +158,26 @@ int main(int argc, char** argv) {
     }
     cout << "\nEnc\n\tTotal table mem consumption (all BATs): " << consumptionTotalEnc << "\n\tTotal mem consumption of all int BATs: " << consumptionIntBatsEnc << endl;
 
+
     cout << "\nOverhead - Total: " << (static_cast<double> (consumptionTotalEnc) / static_cast<double> (consumptionTotalOrg)) << "        Int BATs: " << (static_cast<double> (consumptionIntBatsEnc) / static_cast<double> (consumptionIntBatsOrg)) << endl;
 
-    auto batOKtcOrg = Bat_Operators::copy(batOKbcOrg);
+
     auto batOKtcEnc = Bat_Operators::copy(batOKbcEnc);
+
 
     cout << " num |         check |  check+decode\n";
     cout << "-----+---------------+--------------" << endl;
+
     for (size_t i = 0; i < 10; ++i) {
         sw1.start();
-        __attribute__((unused)) auto result1 = Bat_Operators::checkA(batOKtcEnc);
+        auto result1 = Bat_Operators::checkA(batOKtcEnc);
         sw1.stop();
         cout << "  " << setw(2) << i << "   " << setw(13) << sw1 << "  ";
 
         delete result1;
 
         sw1.start();
-        __attribute__((unused)) auto result2 = Bat_Operators::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
+        auto result2 = Bat_Operators::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
         sw1.stop();
         cout << "   " << setw(13) << sw1 << '\n';
 

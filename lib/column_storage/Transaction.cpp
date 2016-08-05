@@ -55,7 +55,7 @@ TransactionManager::Transaction::~Transaction() {
     }
 }
 
-size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, size_t size, const char* delim) {
+size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, size_t size, const char* delim, bool ignoreMoreData) {
     static const size_t LEN_PATH = 1024;
     static const size_t LEN_LINE = 1024;
     static const size_t LEN_VALUE = 256;
@@ -134,14 +134,18 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             memset(line, 0, LEN_LINE);
             fgets(line, LEN_LINE, headerFile);
 
-            if (strchr(line, '\n') != 0) {
-                *strchr(line, '\n') = 0;
+            char* pPos;
+            if ((pPos = strchr(line, '\n')) != nullptr) {
+                *pPos = 0;
+            }
+            if (*(pPos - 1) == '\r') {
+                *(pPos - 1) = 0;
             }
 
             // Zeile durch Zeichen actDelim in Einzelwerte trennen
             buffer = strtok(line, actDelim);
 
-            while (buffer != 0) {
+            while (buffer != nullptr) {
                 size_t lenBuf = strlen(buffer);
                 if (lenPrefix + lenBuf > (LEN_VALUE - 1)) {
                     // Problem : Name für Spalte (inkl. Prefix) zu lang
@@ -184,8 +188,11 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             memset(line, 0, LEN_LINE);
             fgets(line, LEN_LINE, headerFile);
 
-            if (strchr(line, '\n') != 0) {
-                *strchr(line, '\n') = 0;
+            if ((pPos = strchr(line, '\n')) != nullptr) {
+                *pPos = 0;
+            }
+            if (*(pPos - 1) == '\r') {
+                *(pPos - 1) = 0;
             }
 
             // Zeile durch Zeichen actDelim in Einzelwerte trennen
@@ -193,7 +200,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
             int attributeNamesIndex = 0;
 
-            while (buffer != 0) {
+            while (buffer != nullptr) {
                 // freie Spalte suchen
                 columns = cm->listColumns();
                 column = ID_BAT_FIRST_USER;
@@ -258,8 +265,11 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             // Spaltenwerte zeilenweise aus Datei einlesen
             memset(line, 0, LEN_LINE);
             while (fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
-                if (strchr(line, '\n') != 0) {
-                    *strchr(line, '\n') = 0;
+                if ((pPos = strchr(line, '\n')) != nullptr) {
+                    *pPos = 0;
+                }
+                if (*(pPos - 1) == '\r') {
+                    *(pPos - 1) = 0;
                 }
                 n++; // increase line counter
 
@@ -271,57 +281,63 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 buffer = strtok(line, actDelim);
                 size_t numVal = 1;
 
-                while (buffer != 0) {
+                while (buffer != nullptr) {
                     if (typesIterator == types.end()) {
-                        stringstream ss;
-                        ss << "TransactionManager::Transaction::load() more values than types registered (#" << numVal << ")!";
-                        throw runtime_error(ss.str());
+                        if (ignoreMoreData) {
+                            buffer = nullptr;
+                        } else {
+                            stringstream ss;
+                            ss << "TransactionManager::Transaction::load() more values than types registered (#" << numVal << ")!";
+                            throw runtime_error(ss.str());
+                        }
+                    } else {
+                        // Spaltentyp und Spaltenidentifikation bestimmen
+                        type = *typesIterator;
+                        ci = *iteratorsIterator;
+
+                        record = ci->append();
+                        size_t bufLen;
+
+                        switch (type) {
+                            case type_int:
+                                *(static_cast<int_t*> (record->content)) = atoi(buffer);
+                                break;
+
+                            case type_str:
+                                bufLen = strlen(buffer); // strtok already replaced the token separator with a null char
+                                // TODO make sure the string is at most MAXLEN_STRING bytes long (incl. null byte)
+                                strncpy(static_cast<str_t> (record->content), buffer, bufLen + 1);
+                                break;
+
+                            case type_fxd:
+                                *(static_cast<fxd_t*> (record->content)) = atof(buffer);
+                                break;
+
+                            case type_chr:
+                                *(static_cast<char_t*> (record->content)) = buffer[0];
+                                break;
+
+                            case type_resint:
+                                *(static_cast<resint_t*> (record->content)) = atoll(buffer) * ::A;
+                                break;
+
+                            default:
+                                cerr << "TransactionManager::Transaction::load() data type unknown" << endl;
+                                abort();
+                        }
+
+                        delete record;
+
+                        typesIterator++;
+                        iteratorsIterator++;
+
+                        buffer = strtok(nullptr, actDelim);
+                        ++numVal;
                     }
-                    // Spaltentyp und Spaltenidentifikation bestimmen
-                    type = *typesIterator;
-                    ci = *iteratorsIterator;
-
-                    record = ci->append();
-                    size_t bufLen;
-
-                    switch (type) {
-                        case type_int:
-                            *(static_cast<int_t*> (record->content)) = atoi(buffer);
-                            break;
-
-                        case type_str:
-                            bufLen = strlen(buffer); // strtok already replaced the token separator with a null char
-                            // TODO make sure the string is at most MAXLEN_STRING bytes long (incl. null byte)
-                            strncpy(static_cast<str_t> (record->content), buffer, bufLen + 1);
-                            break;
-
-                        case type_fxd:
-                            *(static_cast<fxd_t*> (record->content)) = atof(buffer);
-                            break;
-
-                        case type_chr:
-                            *(static_cast<char_t*> (record->content)) = buffer[0];
-                            break;
-
-                        case type_resint:
-                            *(static_cast<resint_t*> (record->content)) = atoll(buffer) * ::A;
-                            break;
-
-                        default:
-                            cerr << "TransactionManager::Transaction::load() data type unknown" << endl;
-                            abort();
-                    }
-
-                    delete record;
-
-                    typesIterator++;
-                    iteratorsIterator++;
-
-                    buffer = strtok(nullptr, actDelim);
-                    ++numVal;
                 }
                 memset(line, 0, LEN_LINE);
             }
+            cout << "Transaction::load() imported " << n << " records." << endl;
 
             // Spalten schließen
             close(ID_BAT_COLNAMES);
