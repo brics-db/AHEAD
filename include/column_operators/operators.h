@@ -122,7 +122,8 @@ public:
     static vector<bool>* checkA(Bat<Head, resint_t>* arg, resint_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
         auto iter = arg->begin();
 
-        auto result = new vector<bool>(arg->size());
+        auto result = new vector<bool>();
+        result->reserve(arg->size());
         if (iter->hasNext()) {
             result->push_back((iter->get(start).second * aInv) <= unEncMaxU);
             if (size) {
@@ -143,7 +144,8 @@ public:
     static pair<Bat<Head, Tail>*, vector<bool>*> checkAndDecodeA(Bat<Head, resint_t>* arg, uint64_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
         auto iter = arg->begin();
 
-        pair < Bat<Head, Tail>*, vector<bool>*> result = make_pair(new TempBat<Head, Tail>(arg->size()), new vector<bool>(arg->size()));
+        pair < Bat<Head, Tail>*, vector<bool>*> result = make_pair(new TempBat<Head, Tail>(arg->size()), new vector<bool>());
+        result.second->reserve(arg->size());
         if (iter->hasNext()) {
             auto current = iter->get(start);
             resint_t decoded = current.second * aInv;
