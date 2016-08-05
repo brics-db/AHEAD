@@ -21,7 +21,6 @@
 #include "column_operators/operators.h"
 #include "column_storage/types.h"
 #include "util/stopwatch.hpp"
-#include "util/rss.hpp"
 
 using namespace std;
 
@@ -162,48 +161,26 @@ int main(int argc, char** argv) {
 
     cout << "\nOverhead - Total: " << (static_cast<double> (consumptionTotalEnc) / static_cast<double> (consumptionTotalOrg)) << "        Int BATs: " << (static_cast<double> (consumptionIntBatsEnc) / static_cast<double> (consumptionIntBatsOrg)) << endl;
 
-    cout << "Current RSS: " << setw(10) << getCurrentRSS() << " Peak RSS: " << setw(10) << getPeakRSS() << endl;
-
     auto batOKtcEnc = Bat_Operators::copy(batOKbcEnc);
-
-    cout << "Current RSS: " << setw(10) << getCurrentRSS() << " Peak RSS: " << setw(10) << getPeakRSS() << endl;
 
     cout << " num |         check |  check+decode\n";
     cout << "-----+---------------+--------------" << endl;
 
-    size_t rss[8];
     for (size_t i = 0; i < 10; ++i) {
         sw1.start();
         auto result1 = Bat_Operators::checkA(batOKtcEnc);
         sw1.stop();
         cout << "  " << setw(2) << i << "   " << setw(13) << sw1.duration() << "  ";
 
-        rss[0] = getCurrentRSS();
-        rss[1] = getPeakRSS();
-
         delete result1;
-
-        rss[2] = getCurrentRSS();
-        rss[3] = getPeakRSS();
 
         sw1.start();
         auto result2 = Bat_Operators::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
         sw1.stop();
         cout << "   " << setw(13) << sw1.duration() << '\n';
 
-        rss[4] = getCurrentRSS();
-        rss[5] = getPeakRSS();
-
         delete result2.first;
         delete result2.second;
-
-        rss[6] = getCurrentRSS();
-        rss[7] = getPeakRSS();
-
-        cout << "After checkA: Current RSS: " << setw(10) << rss[0] << " Peak RSS: " << setw(10) << rss[1] << '\n';
-        cout << "After del r1: Current RSS: " << setw(10) << rss[2] << " Peak RSS: " << setw(10) << rss[3] << '\n';
-        cout << "After ck&deA: Current RSS: " << setw(10) << rss[4] << " Peak RSS: " << setw(10) << rss[5] << '\n';
-        cout << "After del r2: Current RSS: " << setw(10) << rss[6] << " Peak RSS: " << setw(10) << rss[7] << endl;
     }
 
     return 0;
