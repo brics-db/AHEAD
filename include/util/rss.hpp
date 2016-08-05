@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Benjamin Schlegel
+// Copyright (c) 2016 Till Kolditz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,55 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-/***
- * @author Benjamin Schlegel
+/* 
+ * File:   rss.hpp
+ * Author: Till Kolditz <till.kolditz@gmail.com>
+ *
+ * Created on 5. August 2016, 17:22
  */
-#ifndef TEMPBAT_H
-#define TEMPBAT_H
 
-#include "ColumnStore.h"
-#include "column_storage/Bat.h"
-#include "column_storage/TempBatIterator.h"
+#ifndef RSS_HPP
+#define RSS_HPP
 
-template<class Head, class Tail>
-class TempBat : public Bat<Head, Tail> {
-private:
-    typedef vector<std::pair<Head, Tail> > container_t;
-    container_t items;
+#include <cinttypes>
 
-public:
+using namespace std;
 
-    /** default constructor */
-    TempBat() {
-    }
+/**
+ * Returns the peak (maximum so far) resident set size (physical
+ * memory use) measured in bytes, or zero if the value cannot be
+ * determined on this OS.
+ */
+size_t getPeakRSS();
 
-    virtual ~TempBat() {
-    }
+/**
+ * Returns the current resident set size (physical memory use) measured
+ * in bytes, or zero if the value cannot be determined on this OS.
+ */
+size_t getCurrentRSS();
 
-    /** constructor for n elements */
-    TempBat(int n) {
-        items.reserve(n);
-    }
-
-    /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail> * begin() override {
-        return new TempBatIterator<Head, Tail>(&items);
-    }
-
-    /** append an item */
-    virtual void append(pair<Head, Tail> p) override {
-        items.emplace_back(p);
-    }
-
-    virtual unsigned size() override {
-        return items.size();
-    }
-
-    virtual size_t consumption() override {
-        return size() * sizeof (Tail);
-    }
-
-};
-
-#endif
+#endif /* RSS_HPP */
