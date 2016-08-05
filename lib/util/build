@@ -3,7 +3,7 @@
 LIB=util
 LIBFILE_R=lib${LIB}.a
 LIBFILE_D=lib${LIB}_dbg.a
-FILES=(stopwatch resilience)
+FILES=(stopwatch resilience rss)
 CD=`pwd | sed 's#.*/##'`
 
 for f in "${FILES[@]}"; do
