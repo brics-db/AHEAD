@@ -13,7 +13,7 @@
 
 #include <set>
 
-#include "ColumnStore.h"
+#include <ColumnStore.h>
 #include "column_storage/BucketManager.h"
 
 /**
@@ -117,6 +117,7 @@ public:
         Column *column;
         BucketManager::Chunk *currentChunk;
         unsigned int currentPosition;
+        const unsigned int recordsPerBucket;
 
         ColumnIterator(Column *column, BucketManager::BucketIterator *iterator);
         ColumnIterator(const ColumnIterator &copy);

@@ -47,6 +47,13 @@ BucketManager::BucketIterator::BucketIterator(BucketManager::BucketStream *strea
     }
 }
 
+BucketManager::BucketIterator::BucketIterator(const BucketManager::BucketIterator & copy) {
+    this->stream = copy.stream;
+    this->version = copy.version;
+    this->currentBucket = copy.currentBucket;
+    this->previousBucket = copy.previousBucket;
+}
+
 unsigned int BucketManager::BucketIterator::countBuckets() {
     unsigned int position;
     BucketManager::Bucket *bucket;

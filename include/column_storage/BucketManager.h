@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <ColumnStore.h>
+
 #ifdef DEBUG
 #include <iostream>
 #endif
@@ -156,6 +158,8 @@ public:
 
         BucketIterator(BucketStream *stream, unsigned int *version);
         BucketIterator(const BucketIterator &copy);
+
+        friend class ColumnManager;
     };
 
     /**

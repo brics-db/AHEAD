@@ -1,3 +1,6 @@
+#include <llvm/ADT/FoldingSet.h>
+#include <llvm/ADT/DenseMap.h>
+
 #include "column_storage/ColumnManager.h"
 
 ColumnManager* ColumnManager::instance = 0;
@@ -163,26 +166,23 @@ ColumnManager::Record* ColumnManager::ColumnIterator::edit() {
 }
 
 ColumnManager::Record* ColumnManager::ColumnIterator::append() {
-    const unsigned int recordsPerBucket = (unsigned int) ((CHUNK_CONTENT_SIZE - sizeof (unsigned int)) / this->column->width);
-    unsigned int *elementCounter;
+    unsigned int *elementCounter = nullptr;
 
-    if (this->iterator->countBuckets() == 0) {
+    unsigned numBuckets = this->iterator->countBuckets();
+    if (numBuckets == 0) {
         this->currentChunk = this->iterator->append();
-        elementCounter = (unsigned int*) this->currentChunk->content;
-
+        elementCounter = (unsigned*) this->currentChunk->content;
         *elementCounter = 0;
     } else {
-        this->currentChunk = this->iterator->seek(this->iterator->countBuckets() - 1);
-        elementCounter = (unsigned int*) this->currentChunk->content;
-
+        this->currentChunk = this->iterator->seek(numBuckets - 1);
+        elementCounter = (unsigned*) this->currentChunk->content;
         if (*elementCounter == recordsPerBucket) {
             this->currentChunk = this->iterator->append();
-            elementCounter = (unsigned int*) this->currentChunk->content;
-
+            elementCounter = (unsigned*) this->currentChunk->content;
             *elementCounter = 0;
         } else {
             this->currentChunk = this->iterator->edit();
-            elementCounter = (unsigned int*) this->currentChunk->content;
+            elementCounter = (unsigned*) this->currentChunk->content;
         }
     }
 
@@ -203,10 +203,18 @@ void ColumnManager::ColumnIterator::undo() {
     this->currentPosition = 0;
 }
 
-ColumnManager::ColumnIterator::ColumnIterator(Column *column, BucketManager::BucketIterator *iterator) {
+ColumnManager::ColumnIterator::ColumnIterator(Column *column, BucketManager::BucketIterator *iterator) : recordsPerBucket(static_cast<unsigned> ((CHUNK_CONTENT_SIZE - sizeof (unsigned)) / column->width)) {
     this->iterator = iterator;
     this->iterator->rewind();
     this->column = column;
     this->currentChunk = 0;
     this->currentPosition = 0;
+}
+
+ColumnManager::ColumnIterator::ColumnIterator(const ColumnIterator& copy) : recordsPerBucket(copy.recordsPerBucket) {
+    this->iterator = new BucketManager::BucketIterator(*copy.iterator);
+    this->column = new Column;
+    this->column->width = copy.column->width;
+    this->currentChunk = copy.currentChunk;
+    this->currentPosition = copy.currentPosition;
 }
