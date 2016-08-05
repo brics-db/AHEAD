@@ -135,52 +135,44 @@ int main(int argc, char** argv) {
     // RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|STRING|STRING|RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|STRING
 
     size_t x = 0;
-    size_t consumptionIntBatsOrg = 0;
     MEASURE_OP(sw1, x, batOKbcOrg, new intColType("lineorder", "orderkey"));
-    consumptionIntBatsOrg += batConsumptions[x++];
-
-    size_t consumptionTotalOrg = 0;
-    for (size_t i = 0; i < x; ++i) {
-        cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
-        consumptionTotalOrg += batConsumptions[i];
-    }
-    cout << "\nOrg\n\tTotal table mem consumption (all BATs): " << consumptionTotalOrg << "\n\tTotal mem consumption of all int BATs: " << consumptionIntBatsOrg << endl;
-
-    x = 0;
-    size_t consumptionIntBatsEnc = 0;
+    x++;
     MEASURE_OP(sw1, x, batOKbcEnc, new resintColType("lineorderAN", "orderkey"));
-    consumptionIntBatsEnc += batConsumptions[x++];
-
-    size_t consumptionTotalEnc = 0;
+    x++;
+    MEASURE_OP(sw1, x, batOKtcEnc, Bat_Operators::copy(batOKbcEnc));
+    x++;
+    MEASURE_OP(sw1, x, batOKtcEnc2, Bat_Operators::copy(batOKtcEnc));
+    x++;
+    delete batOKtcEnc2;
     for (size_t i = 0; i < x; ++i) {
         cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
-        consumptionTotalEnc += batConsumptions[i];
     }
-    cout << "\nEnc\n\tTotal table mem consumption (all BATs): " << consumptionTotalEnc << "\n\tTotal mem consumption of all int BATs: " << consumptionIntBatsEnc << endl;
-
-
-    cout << "\nOverhead - Total: " << (static_cast<double> (consumptionTotalEnc) / static_cast<double> (consumptionTotalOrg)) << "        Int BATs: " << (static_cast<double> (consumptionIntBatsEnc) / static_cast<double> (consumptionIntBatsOrg)) << endl;
-
-    auto batOKtcEnc = Bat_Operators::copy(batOKbcEnc);
-
-    cout << " num |         check |  check+decode\n";
-    cout << "-----+---------------+--------------" << endl;
+    cout << "\n\n";
+    cout << " num |         check |        decode |  check+decode\n";
+    cout << "-----+---------------+---------------+--------------" << endl;
 
     for (size_t i = 0; i < 10; ++i) {
         sw1.start();
         auto result1 = Bat_Operators::checkA(batOKtcEnc);
         sw1.stop();
-        cout << "  " << setw(2) << i << "   " << setw(13) << sw1.duration() << "  ";
+        cout << "  " << setw(2) << i << "   " << setw(13) << sw1.duration();
 
         delete result1;
 
         sw1.start();
-        auto result2 = Bat_Operators::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
+        auto result2 = Bat_Operators::decodeA<unsigned, int_t>(batOKtcEnc);
+        sw1.stop();
+        cout << "   " << setw(13) << sw1.duration();
+
+        delete result2;
+
+        sw1.start();
+        auto result3 = Bat_Operators::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
         sw1.stop();
         cout << "   " << setw(13) << sw1.duration() << '\n';
 
-        delete result2.first;
-        delete result2.second;
+        delete result3.first;
+        delete result3.second;
     }
 
     return 0;

@@ -138,6 +138,32 @@ public:
     }
 
     template<typename Head, typename Tail>
+    static Bat<Head, Tail>* decodeA(Bat<Head, resint_t>* arg, uint64_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+        auto result = new TempBat<Head, Tail>(arg->size());
+        auto iter = arg->begin();
+        if (iter->hasNext()) {
+            auto current = iter->get(start);
+            current.second *= aInv;
+            result->append(current);
+            if (size) {
+                for (size_t step = 1; step < size && iter->hasNext(); ++step) {
+                    current = iter->next();
+                    current.second *= aInv;
+                    result->append(current);
+                }
+            } else {
+                while (iter->hasNext()) {
+                    current = iter->next();
+                    current.second *= aInv;
+                    result->append(current);
+                }
+            }
+        }
+        delete iter;
+        return result;
+    }
+
+    template<typename Head, typename Tail>
     static pair<Bat<Head, Tail>*, vector<bool>*> checkAndDecodeA(Bat<Head, resint_t>* arg, uint64_t aInv = ::A_INV, resint_t unEncMaxU = ::AN_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
         size_t sizeBAT = arg->size();
         auto result = make_pair(new TempBat<Head, Tail>(sizeBAT), new vector<bool>());
@@ -145,22 +171,22 @@ public:
         auto iter = arg->begin();
         if (iter->hasNext()) {
             auto current = iter->get(start);
-            resint_t decoded = current.second * aInv;
-            result.first->append(make_pair(current.first, static_cast<Tail> (decoded)));
-            result.second->emplace_back(decoded <= unEncMaxU);
+            current.second *= aInv;
+            result.first->append(current);
+            result.second->emplace_back(current.second <= unEncMaxU);
             if (size) {
                 for (size_t step = 1; step < size && iter->hasNext(); ++step) {
                     current = iter->next();
-                    decoded = current.second * aInv;
-                    result.first->append(make_pair(current.first, static_cast<Tail> (decoded)));
-                    result.second->emplace_back(decoded <= unEncMaxU);
+                    current.second *= aInv;
+                    result.first->append(current);
+                    result.second->emplace_back(current.second <= unEncMaxU);
                 }
             } else {
                 while (iter->hasNext()) {
                     current = iter->next();
-                    decoded = current.second * aInv;
-                    result.first->append(make_pair(current.first, static_cast<Tail> (decoded)));
-                    result.second->emplace_back(decoded <= unEncMaxU);
+                    current.second *= aInv;
+                    result.first->append(current);
+                    result.second->emplace_back(current.second <= unEncMaxU);
                 }
             }
         }
