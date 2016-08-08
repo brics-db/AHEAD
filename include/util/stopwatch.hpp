@@ -29,24 +29,29 @@ using namespace std;
 using namespace std::chrono;
 
 class StopWatch {
-    high_resolution_clock::time_point startNS, stopNS;
-    high_resolution_clock::rep totalNS;
+public:
+    typedef typename high_resolution_clock::time_point time_point;
+    typedef typename high_resolution_clock::rep rep;
+
+private:
+    time_point startNS, stopNS;
+    rep totalNS;
 
 public:
     StopWatch();
 
     void start();
     void resume();
-    high_resolution_clock::rep stop();
-    high_resolution_clock::rep duration();
+    rep stop();
+    rep duration();
 
     friend StopWatch operator-(StopWatch&, StopWatch&);
 };
 
 typedef struct hrc_duration {
-    high_resolution_clock::rep dura;
+    StopWatch::rep dura;
 
-    hrc_duration(high_resolution_clock::rep dura);
+    hrc_duration(StopWatch::rep dura);
 } hrc_duration;
 
 ostream& operator<<(ostream& stream, hrc_duration hrcd);
