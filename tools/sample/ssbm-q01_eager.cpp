@@ -83,6 +83,20 @@ hasTwoTypes[I] = false
 MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());     \
 SAVE_TYPE(I, BAT)
 
+StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
+    static StopWatch sw;
+    TransactionManager* tm = TransactionManager::getInstance();
+    TransactionManager::Transaction* t = tm->beginTransaction(true);
+    assert(t != nullptr);
+    string path = baseDir + "/" + columnName;
+    sw.start();
+    size_t num = t->load(path.c_str(), columnName);
+    sw.stop();
+    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw << " ns." << endl;
+    tm->endTransaction(t);
+    return sw.duration();
+}
+
 int main(int argc, char** argv) {
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
     if (boost::filesystem::is_regular(p)) {
@@ -91,62 +105,14 @@ int main(int argc, char** argv) {
     string baseDir = p.remove_trailing_separator().generic_string();
     MetaRepositoryManager::init(baseDir.c_str());
 
-    TransactionManager* tm = TransactionManager::getInstance();
-    TransactionManager::Transaction* t;
     StopWatch sw1, sw2;
-    string path;
-    size_t num;
 
     sw1.start();
-    t = tm->beginTransaction(true);
-    assert(t != nullptr);
-    sw2.start();
-    path = baseDir;
-    path += "/customerAN";
-    num = t->load(path.c_str(), "customerAN");
-    sw2.stop();
-    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw2 << " ns." << endl;
-    tm->endTransaction(t);
-
-    t = tm->beginTransaction(true);
-    assert(t != nullptr);
-    sw2.start();
-    path = baseDir;
-    path += "/dateAN";
-    num = t->load(path.c_str(), "dateAN");
-    sw2.stop();
-    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw2 << " ns." << endl;
-    tm->endTransaction(t);
-
-    t = tm->beginTransaction(true);
-    assert(t != nullptr);
-    sw2.start();
-    path = baseDir;
-    path += "/lineorderAN";
-    num = t->load(path.c_str(), "lineorderAN");
-    sw2.stop();
-    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw2 << " ns." << endl;
-    tm->endTransaction(t);
-
-    t = tm->beginTransaction(true);
-    assert(t != nullptr);
-    sw2.start();
-    path = baseDir;
-    path += "/partAN";
-    num = t->load(path.c_str(), "partAN");
-    sw2.stop();
-    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw2 << " ns." << endl;
-    tm->endTransaction(t);
-
-    t = tm->beginTransaction(true);
-    assert(t != nullptr);
-    sw2.start();
-    path = baseDir;
-    path += "/supplierAN";
-    num = t->load(path.c_str(), "supplierAN");
-    sw2.stop();
-    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw2 << " ns." << endl;
-    tm->endTransaction(t);
+    loadTable(baseDir, "customer");
+    loadTable(baseDir, "date");
+    loadTable(baseDir, "lineorder");
+    loadTable(baseDir, "part");
+    loadTable(baseDir, "supplier");
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
@@ -165,6 +131,7 @@ int main(int argc, char** argv) {
     const size_t LEN_TYPES = 13;
     string emptyString;
 
+    /* Measure loading ColumnBats */
     MEASURE_OP(sw1, 0, batDYcb, new resintColType("dateAN", "year"));
     MEASURE_OP(sw1, 1, batDDcb, new resintColType("dateAN", "datekey"));
     MEASURE_OP(sw1, 2, batLQcb, new resintColType("lineorderAN", "quantity"));
@@ -172,6 +139,7 @@ int main(int argc, char** argv) {
     MEASURE_OP(sw1, 4, batLOcb, new resintColType("lineorderAN", "orderdate"));
     MEASURE_OP(sw1, 5, batLEcb, new fxdColType("lineorderAN", "extendedprice"));
 
+    /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(sw1, 6, batDYenc, Bat_Operators::copy(batDYcb));
     MEASURE_OP(sw1, 7, batDDenc, Bat_Operators::copy(batDDcb));
     MEASURE_OP(sw1, 8, batLQenc, Bat_Operators::copy(batLQcb));
@@ -235,7 +203,6 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, 19, bat12, Bat_Operators::col_hashjoin(batF, batLD));
         MEASURE_OP(sw2, 20, double, result, Bat_Operators::aggregate_mul_sum(bat11, bat12, 0.0));
 
-        sw2.start();
         delete batDY;
         delete batDYpair.second;
         delete batDD;
@@ -260,11 +227,10 @@ int main(int argc, char** argv) {
         delete batF;
         delete bat11;
         delete bat12;
-        sw2.stop();
 
         sw1.stop();
 
-        cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t count: " << count << "\n\t  time: " << setw(13) << sw1 << " ns.\n\tdelete: " << setw(13) << sw2 << "\n\tq-only: " << hrc_duration(sw1.duration() - sw2.duration());
+        cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t count: " << count << "\n\t  time: " << setw(13) << sw1 << " ns.";
         cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
         for (size_t i = 0; i < NUM_OPS; ++i) {
             cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
