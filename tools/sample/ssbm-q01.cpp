@@ -84,7 +84,7 @@ MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());     \
 SAVE_TYPE(I, BAT)
 
 StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
-    static Stopwatch sw;
+    static StopWatch sw;
     TransactionManager* tm = TransactionManager::getInstance();
     TransactionManager::Transaction* t = tm->beginTransaction(true);
     assert(t != nullptr);
@@ -105,8 +105,6 @@ int main(int argc, char** argv) {
     string baseDir = p.remove_trailing_separator().generic_string();
     MetaRepositoryManager::init(baseDir.c_str());
 
-    TransactionManager* tm = TransactionManager::getInstance();
-    TransactionManager::Transaction* t;
     StopWatch sw1, sw2;
 
     sw1.start();
