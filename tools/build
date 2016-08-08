@@ -1,8 +1,15 @@
 #!/bin/bash
 
+if [[ $# -ne 1 ]]; then
+    echo "build script must be called with single parameter <base path of git repository>"
+    exit 1
+fi
+
+BASEDIR="$1"
+
 for p in sample; do
 	pushd $p
-	./build || exit 1
+	./build "${BASEDIR}" || exit 1
 	popd
 done
 

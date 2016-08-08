@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ $# -ne 1 ]]; then
+    echo "build script must be called with single parameter <base path of git repository>"
+    exit 1
+fi
+
+BASEDIR="$1"
 LIB=util
 LIBFILE_R=lib${LIB}.a
 LIBFILE_D=lib${LIB}_dbg.a
@@ -7,8 +13,8 @@ FILES=(stopwatch resilience rss)
 CD=`pwd | sed 's#.*/##'`
 
 for f in "${FILES[@]}"; do
-    clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -g3 -O0 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
-    clang++ -I/home/tk4/git/columnstore/lib -I/home/tk4/git/columnstore/include `llvm-config --cxxflags` -O3 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}.o || exit 1
+    clang++ -I$BASEDIR/lib -I$BASEDIR/include `llvm-config --cxxflags` -g3 -O0 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
+    clang++ -I$BASEDIR/lib -I$BASEDIR/include `llvm-config --cxxflags` -O3 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}.o || exit 1
 done
 
 #Release
