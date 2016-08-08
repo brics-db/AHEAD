@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, unsigned, count1, batD->size());
         MEASURE_OP(sw2, x, batE, Bat_Operators::col_hashjoin(batC, bat4));
         MEASURE_OP(sw2, x, unsigned, count2, batE->size());
-        MEASURE_OP(sw2, x, uint64_t, result, Bat_Operators::aggregate_mul_sum<double>(batD, batE, 0));
+        MEASURE_OP(sw2, x, uint64_t, result, Bat_Operators::aggregate_mul_sum<uint64_t>(batD, batE, 0));
 
         delete bat1;
         delete bat2;
