@@ -11,10 +11,12 @@ done
 BASEDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 # END FROM
 
+pushd ${BASEDIR}
 for p in lib tools; do
 	pushd $p
 	./build "${BASEDIR}" || exit 1
 	popd
 done
+popd
 
 exit 0
