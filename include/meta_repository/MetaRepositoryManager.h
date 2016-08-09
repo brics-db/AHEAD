@@ -1,12 +1,10 @@
+#ifndef METAREPOSITORYMANAGER_H
+#define METAREPOSITORYMANAGER_H
+
 #include <cstring>
 
 #include "ColumnStore.h"
-#include "column_storage/ColumnBat.h"
-#include "column_storage/TempBat.h"
-#include "column_operators/operators.h"
-
-#ifndef METAREPOSITORYMANAGER_H
-#define METAREPOSITORYMANAGER_H
+#include "column_storage/Bat.h"
 
 using namespace std;
 
@@ -70,8 +68,6 @@ public:
 private:
     static MetaRepositoryManager *instance;
     static char* strBaseDir;
-
-    Bat_Operators *operators;
 
     // all attributes for the table table :)
 

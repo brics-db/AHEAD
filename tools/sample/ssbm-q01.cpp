@@ -14,13 +14,10 @@
 
 #include <boost/filesystem.hpp>
 
-#include "column_storage/TempBat.h"
-#include "column_storage/ColumnBat.h"
-#include "column_storage/ColumnManager.h"
-#include "column_storage/TransactionManager.h"
-#include "column_operators/operators.h"
-#include "column_storage/types.h"
-#include "util/stopwatch.hpp"
+#include <column_storage/ColumnBat.h>
+#include <column_storage/TransactionManager.h>
+#include <column_operators/operators.h>
+#include <util/stopwatch.hpp>
 
 using namespace std;
 
@@ -144,12 +141,12 @@ int main(int argc, char** argv) {
     MEASURE_OP(sw1, x, batLEcb, new intColType("lineorder", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(sw1, x, batDY, Bat_Operators::copy(batDYcb));
-    MEASURE_OP(sw1, x, batDD, Bat_Operators::copy(batDDcb));
-    MEASURE_OP(sw1, x, batLQ, Bat_Operators::copy(batLQcb));
-    MEASURE_OP(sw1, x, batLD, Bat_Operators::copy(batLDcb));
-    MEASURE_OP(sw1, x, batLO, Bat_Operators::copy(batLOcb));
-    MEASURE_OP(sw1, x, batLE, Bat_Operators::copy(batLEcb));
+    MEASURE_OP(sw1, x, batDY, v2::bat::ops::copy(batDYcb));
+    MEASURE_OP(sw1, x, batDD, v2::bat::ops::copy(batDDcb));
+    MEASURE_OP(sw1, x, batLQ, v2::bat::ops::copy(batLQcb));
+    MEASURE_OP(sw1, x, batLD, v2::bat::ops::copy(batLDcb));
+    MEASURE_OP(sw1, x, batLO, v2::bat::ops::copy(batLOcb));
+    MEASURE_OP(sw1, x, batLE, v2::bat::ops::copy(batLEcb));
 
     for (size_t i = 0; i < x; ++i) {
         cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
@@ -161,36 +158,36 @@ int main(int argc, char** argv) {
         x = 5;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, Bat_Operators::selection_lt(batLQ, 25)); // lo_quantity < 25
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQ, 25)); // lo_quantity < 25
         PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
-        MEASURE_OP(sw2, x, bat2, Bat_Operators::selection_bt(batLD, 1, 3)); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLD, 1, 3)); // lo_discount between 1 and 3
         PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
-        MEASURE_OP(sw2, x, bat3, Bat_Operators::mirror(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        MEASURE_OP(sw2, x, bat4, Bat_Operators::col_hashjoin(bat3, bat2)); // join selection
-        MEASURE_OP(sw2, x, bat5, Bat_Operators::mirror(bat4)); // prepare joined selection with lo_orderdate (contains positions in tail)
+        MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirror(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
+        MEASURE_OP(sw2, x, bat4, v2::bat::ops::col_hashjoin(bat3, bat2)); // join selection
+        MEASURE_OP(sw2, x, bat5, v2::bat::ops::mirror(bat4)); // prepare joined selection with lo_orderdate (contains positions in tail)
         PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity < 25 and lo_discount between 1 and 3"));
-        MEASURE_OP(sw2, x, bat6, Bat_Operators::col_hashjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(sw2, x, bat6, v2::bat::ops::col_hashjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
         PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity < 25 and lo_discount between 1 and 3"));
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, Bat_Operators::selection_eq(batDY, 1993)); // d_year = 1993
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDY, 1993)); // d_year = 1993
         PRINT_BAT(sw1, printBat(bat7->begin(), "d_year = 1993"));
-        MEASURE_OP(sw2, x, bat8, Bat_Operators::mirror(bat7)); // prepare joined selection over d_year and d_datekey
-        MEASURE_OP(sw2, x, bat9, Bat_Operators::col_hashjoin(bat8, batDD)); // only those d_datekey where d_year...
+        MEASURE_OP(sw2, x, bat8, v2::bat::ops::mirror(bat7)); // prepare joined selection over d_year and d_datekey
+        MEASURE_OP(sw2, x, bat9, v2::bat::ops::col_hashjoin(bat8, batDD)); // only those d_datekey where d_year...
         PRINT_BAT(sw1, printBat(bat9->begin(), "d_datekey where d_year = 1993"));
 
         // 3) join lineorder and date
-        MEASURE_OP(sw2, x, batA, Bat_Operators::reverse(bat9));
-        MEASURE_OP(sw2, x, batB, Bat_Operators::col_hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP(sw2, x, batA, v2::bat::ops::reverse(bat9));
+        MEASURE_OP(sw2, x, batB, v2::bat::ops::col_hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
-        MEASURE_OP(sw2, x, batC, Bat_Operators::mirror(batB)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP(sw2, x, batC, v2::bat::ops::mirror(batB)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         // BatF only contains the 
-        MEASURE_OP(sw2, x, batD, Bat_Operators::col_hashjoin(batC, batLE));
+        MEASURE_OP(sw2, x, batD, v2::bat::ops::col_hashjoin(batC, batLE));
         PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
         MEASURE_OP(sw2, x, unsigned, count1, batD->size());
-        MEASURE_OP(sw2, x, batE, Bat_Operators::col_hashjoin(batC, bat4));
+        MEASURE_OP(sw2, x, batE, v2::bat::ops::col_hashjoin(batC, bat4));
         MEASURE_OP(sw2, x, unsigned, count2, batE->size());
-        MEASURE_OP(sw2, x, uint64_t, result, Bat_Operators::aggregate_mul_sum<uint64_t>(batD, batE, 0));
+        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batD, batE, 0));
 
         delete bat1;
         delete bat2;

@@ -6,13 +6,10 @@
 
 #include <boost/filesystem.hpp>
 
-#include "column_storage/TempBat.h"
-#include "column_storage/ColumnBat.h"
-#include "column_storage/ColumnManager.h"
-#include "column_storage/TransactionManager.h"
-#include "column_operators/operators.h"
-#include "column_storage/types.h"
-#include "util/stopwatch.hpp"
+#include <column_storage/ColumnBat.h>
+#include <column_storage/TransactionManager.h>
+#include <column_operators/operators.h>
+#include <util/stopwatch.hpp>
 
 using namespace std;
 
@@ -84,20 +81,20 @@ int main(int argc, char ** argv) {
     // Test Query
     __attribute__((unused)) auto batCustKey = new ColumnBat<unsigned, int_t>("customer", "custkey");
     sw.start();
-    __attribute__((unused)) auto bat0 = Bat_Operators::selection_lt(batCustKey, static_cast<int_t> (12345));
+    __attribute__((unused)) auto bat0 = v2::bat::ops::selection_lt(batCustKey, static_cast<int_t> (12345));
     sw.stop();
     cout << "[customer] Selection over " << numCust << " tuples took " << sw << " ns" << endl;
 
     /*
     auto batLineOrderKey = new ColumnBat<unsigned, int_t>("lineorder", "orderkey");
     sw.start();
-    __attribute__((unused)) auto bat1 = Bat_Operators::selection_lt(batLineOrderKey, static_cast<int_t> (123450));
+    __attribute__((unused)) auto bat1 = v2::bat::ops::selection_lt(batLineOrderKey, static_cast<int_t> (123450));
     sw.stop();
     cout << "[lineorder] Selection over " << numLineOrder << " tuples took " << sw << " ns" << endl;
      */
 
     sw.start();
-    __attribute__((unused)) auto batA = Bat_Operators::encodeA(batCustKey);
+    __attribute__((unused)) auto batA = v2::bat::ops::encodeA(batCustKey);
     sw.stop();
     cout << "[customer] Converted " << numCust << " tuples from int_t to resint_t took " << sw << " ns" << endl;
 

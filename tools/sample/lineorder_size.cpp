@@ -14,13 +14,11 @@
 
 #include <boost/filesystem.hpp>
 
-#include "column_storage/TempBat.h"
-#include "column_storage/ColumnBat.h"
-#include "column_storage/ColumnManager.h"
-#include "column_storage/TransactionManager.h"
-#include "column_operators/operators.h"
-#include "column_storage/types.h"
-#include "util/stopwatch.hpp"
+#include <ColumnStore.h>
+#include <column_storage/ColumnBat.h>
+#include <column_storage/TransactionManager.h>
+#include <column_operators/operators.h>
+#include <util/stopwatch.hpp>
 
 using namespace std;
 
@@ -139,9 +137,9 @@ int main(int argc, char** argv) {
     x++;
     MEASURE_OP(sw1, x, batOKbcEnc, new resintColType("lineorderAN", "orderkey"));
     x++;
-    MEASURE_OP(sw1, x, batOKtcEnc, Bat_Operators::copy(batOKbcEnc));
+    MEASURE_OP(sw1, x, batOKtcEnc, v2::bat::ops::copy(batOKbcEnc));
     x++;
-    MEASURE_OP(sw1, x, batOKtcEnc2, Bat_Operators::copy(batOKtcEnc));
+    MEASURE_OP(sw1, x, batOKtcEnc2, v2::bat::ops::copy(batOKtcEnc));
     x++;
     delete batOKtcEnc2;
     for (size_t i = 0; i < x; ++i) {
@@ -153,21 +151,21 @@ int main(int argc, char** argv) {
 
     for (size_t i = 0; i < 10; ++i) {
         sw1.start();
-        auto result1 = Bat_Operators::checkA(batOKtcEnc);
+        auto result1 = v2::bat::ops::checkA(batOKtcEnc);
         sw1.stop();
         cout << "  " << setw(2) << i << "   " << setw(13) << sw1.duration();
 
         delete result1;
 
         sw1.start();
-        auto result2 = Bat_Operators::decodeA<unsigned, int_t>(batOKtcEnc);
+        auto result2 = v2::bat::ops::decodeA<unsigned, int_t>(batOKtcEnc);
         sw1.stop();
         cout << "   " << setw(13) << sw1.duration();
 
         delete result2;
 
         sw1.start();
-        auto result3 = Bat_Operators::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
+        auto result3 = v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
         sw1.stop();
         cout << "   " << setw(13) << sw1.duration() << '\n';
 

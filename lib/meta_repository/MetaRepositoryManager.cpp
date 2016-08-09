@@ -1,6 +1,7 @@
 #include <cstring>
 
-#include "meta_repository/MetaRepositoryManager.h"
+#include <meta_repository/MetaRepositoryManager.h>
+#include <column_operators/operators.h>
 
 MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
 char* MetaRepositoryManager::strBaseDir = nullptr;
@@ -48,8 +49,6 @@ MetaRepositoryManager::MetaRepositoryManager() {
     // creates the whole repository
     this->createRepository();
     this->createDefaultDataTypes();
-
-    this->operators = new Bat_Operators();
 
     // test table
     table_name->append(make_pair(0, "tables"));
@@ -148,15 +147,15 @@ unsigned MetaRepositoryManager::getBatIdOfAttribute(const char *nameOfTable, con
     int tableId = this->selectPKId(pk_table_id, static_cast<unsigned> (batIdForTableName));
 
     if (tableId != -1) {
-        Bat<unsigned, unsigned> *batForTableId = operators->selection_eq(fk_table_id, (unsigned) tableId);
+        Bat<unsigned, unsigned> *batForTableId = v2::bat::ops::selection_eq(fk_table_id, (unsigned) tableId);
 
         // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
         // reverse will not work here, because we need the bat id, not the table id
-        Bat<unsigned, unsigned> *mirrorTableIdBat = operators->mirror(batForTableId);
-        Bat<unsigned, const char*> *attributesForTable = operators->col_selectjoin(mirrorTableIdBat, attribute_name);
+        Bat<unsigned, unsigned> *mirrorTableIdBat = v2::bat::ops::mirror(batForTableId);
+        Bat<unsigned, const char*> *attributesForTable = v2::bat::ops::col_selectjoin(mirrorTableIdBat, attribute_name);
 
         int batId = this->selectBatId(attributesForTable, attribute);
-        Bat<unsigned, unsigned> *reverse = operators->reverse(BAT_number);
+        Bat<unsigned, unsigned> *reverse = v2::bat::ops::reverse(BAT_number);
 
         batNrPair = this->unique_selection(reverse, (unsigned) batId);
     }
