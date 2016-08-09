@@ -13,9 +13,6 @@
                 <sourceRootElem>lib</sourceRootElem>
                 <sourceRootElem>tools</sourceRootElem>
                 <sourceRootElem>include</sourceRootElem>
-                <sourceRootElem>lib</sourceRootElem>
-                <sourceRootElem>tools</sourceRootElem>
-                <sourceRootElem>include</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
