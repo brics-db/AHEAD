@@ -119,16 +119,18 @@ int main(int argc, char** argv) {
 
     cout << "\nSSBM Q1.1:\nselect lo_extendedprice\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
 
+    const size_t NUM_RUNS = 10;
+    StopWatch::rep totalTimes[NUM_RUNS] = {0};
     const size_t NUM_OPS = 32;
-    nanoseconds::rep opTimes[NUM_OPS];
-    size_t batSizes[NUM_OPS];
-    size_t batConsumptions[NUM_OPS];
-    bool hasTwoTypes[NUM_OPS];
+    StopWatch::rep opTimes[NUM_OPS] = {0};
+    size_t batSizes[NUM_OPS] = {0};
+    size_t batConsumptions[NUM_OPS] = {0};
+    bool hasTwoTypes[NUM_OPS] = {false};
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
 
     typedef ColumnBat<unsigned, resint_t> resintColType;
-    //typedef ColumnBat<unsigned, fxd_t> fxdColType;
+    // typedef ColumnBat<unsigned, fxd_t> fxdColType;
     const size_t LEN_TYPES = 13;
     string emptyString;
     size_t x = 0;
@@ -154,7 +156,7 @@ int main(int argc, char** argv) {
     }
     cout << '\n' << endl;
 
-    for (size_t i = 0; i < 1; ++i) {
+    for (size_t i = 0; i < NUM_RUNS; ++i) {
         sw1.start();
         x = 0;
 
@@ -237,7 +239,7 @@ int main(int argc, char** argv) {
         delete batD;
         delete batE;
 
-        sw1.stop();
+        totalTimes[i] = sw1.stop();
 
         cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t count: " << count1 << " | " << count2 << "\n\t  time: " << setw(13) << sw1 << " ns.";
         cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
@@ -246,6 +248,12 @@ int main(int argc, char** argv) {
         }
         cout << endl;
     }
+
+    cout << "TotalTimes:";
+    for (size_t i = 0; i < NUM_RUNS; ++i) {
+        cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
+    }
+    cout << endl;
 
     delete batDYenc;
     delete batDDenc;
