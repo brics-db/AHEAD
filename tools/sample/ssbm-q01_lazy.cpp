@@ -17,6 +17,7 @@
 #include <column_storage/ColumnBat.h>
 #include <column_storage/TransactionManager.h>
 #include <column_operators/operators.h>
+#include <column_operators/operatorsAN.tcc>
 #include <util/stopwatch.hpp>
 
 using namespace std;
@@ -106,11 +107,11 @@ int main(int argc, char** argv) {
     StopWatch sw1, sw2;
 
     sw1.start();
-    loadTable(baseDir, "customerAN");
+    // loadTable(baseDir, "customerAN");
     loadTable(baseDir, "dateAN");
     loadTable(baseDir, "lineorderAN");
-    loadTable(baseDir, "partAN");
-    loadTable(baseDir, "supplierAN");
+    // loadTable(baseDir, "partAN");
+    // loadTable(baseDir, "supplierAN");
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
@@ -147,6 +148,12 @@ int main(int argc, char** argv) {
     MEASURE_OP(sw1, x, batLDenc, v2::bat::ops::copy(batLDcb));
     MEASURE_OP(sw1, x, batLOenc, v2::bat::ops::copy(batLOcb));
     MEASURE_OP(sw1, x, batLEenc, v2::bat::ops::copy(batLEcb));
+    delete batDYcb;
+    delete batDDcb;
+    delete batLQcb;
+    delete batLDcb;
+    delete batLOcb;
+    delete batLEcb;
 
     for (size_t i = 0; i < x; ++i) {
         cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
@@ -157,54 +164,46 @@ int main(int argc, char** argv) {
         sw1.start();
         x = 0;
 
-        // 0) Eager Check
-        // MEASURE_OP(sw2, x, auto, batDYpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batDYenc)), batDYpair.first->size(), batDYpair.first->consumption());
-        // auto batDY = batDYpair.first;
-        // SAVE_TYPE(x - 1, batDY);
-        // MEASURE_OP(sw2, x, auto, batDDpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batDDenc)), batDDpair.first->size(), batDDpair.first->consumption());
-        // auto batDD = batDDpair.first;
-        // SAVE_TYPE(x - 1, batDD);
-        // MEASURE_OP(sw2, x, auto, batLQpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batLQenc)), batLQpair.first->size(), batLQpair.first->consumption());
-        // auto batLQ = batLQpair.first;
-        // SAVE_TYPE(x - 1, batLQ);
-        // MEASURE_OP(sw2, x, auto, batLDpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batLDenc)), batLDpair.first->size(), batLDpair.first->consumption());
-        // auto batLD = batLDpair.first;
-        // SAVE_TYPE(x - 1, batLD);
-        // MEASURE_OP(sw2, x, auto, batLOpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batLOenc)), batLOpair.first->size(), batLOpair.first->consumption());
-        // auto batLO = batLOpair.first;
-        // SAVE_TYPE(x - 1, batLO);
-        // MEASURE_OP(sw2, x, auto, batLEpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batLEenc)), batLEpair.first->size(), batLEpair.first->consumption());
-        // auto batLE = batLEpair.first;
-        // SAVE_TYPE(x - 1, batLO);
-
         // 1) select from lineorder
         MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQenc, (25 * ::A))); // lo_quantity < 25
         PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
         MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLDenc, 1 * ::A, 3 * ::A)); // lo_discount between 1 and 3
         PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirror(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
+        delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::col_hashjoin(bat3, bat2)); // join selection
+        delete bat3;
+        delete bat2;
         MEASURE_OP(sw2, x, bat5, v2::bat::ops::mirror(bat4)); // prepare joined selection with lo_orderdate (contains positions in tail)
         PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity < 25 and lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::col_hashjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
+        delete bat5;
         PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity < 25 and lo_discount between 1 and 3"));
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDYenc, 1993 * ::A)); // d_year = 1993
         PRINT_BAT(sw1, printBat(bat7->begin(), "d_year = 1993"));
         MEASURE_OP(sw2, x, bat8, v2::bat::ops::mirror(bat7)); // prepare joined selection over d_year and d_datekey
+        delete bat7;
         MEASURE_OP(sw2, x, bat9, v2::bat::ops::col_hashjoin(bat8, batDDenc)); // only those d_datekey where d_year...
+        delete bat8;
         PRINT_BAT(sw1, printBat(bat9->begin(), "d_datekey where d_year = 1993"));
 
         // 3) join lineorder and date
         MEASURE_OP(sw2, x, batA, v2::bat::ops::reverse(bat9));
+        delete bat9;
         MEASURE_OP(sw2, x, batB, v2::bat::ops::col_hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        delete bat6;
+        delete batA;
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
         MEASURE_OP(sw2, x, batC, v2::bat::ops::mirror(batB)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
+        delete batB;
         // BatF only contains the 
         MEASURE_OP(sw2, x, batD, v2::bat::ops::col_hashjoin(batC, batLEenc));
         PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
         MEASURE_OP(sw2, x, batE, v2::bat::ops::col_hashjoin(batC, bat4));
+        delete batC;
+        delete bat4;
         PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
         MEASURE_OP(sw2, x, unsigned, count1, batD->size());
         MEASURE_OP(sw2, x, unsigned, count2, batE->size());
@@ -213,30 +212,17 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batD)), batFpair.first->size(), batFpair.first->consumption());
         auto batF = batFpair.first;
         SAVE_TYPE(x - 1, batF);
+        delete batFpair.second;
+        delete batD;
         MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batE)), batGpair.first->size(), batGpair.first->consumption());
         auto batG = batGpair.first;
         SAVE_TYPE(x - 1, batG);
-
-        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batF, batG, 0));
-
-        delete batF;
-        delete batFpair.second;
-        delete batG;
         delete batGpair.second;
-        delete bat1;
-        delete bat2;
-        delete bat3;
-        delete bat4;
-        delete bat5;
-        delete bat6;
-        delete bat7;
-        delete bat8;
-        delete bat9;
-        delete batA;
-        delete batB;
-        delete batC;
-        delete batD;
         delete batE;
+        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batF, batG, 0));
+        delete batF;
+        delete batG;
+
 
         totalTimes[i] = sw1.stop();
 
@@ -260,12 +246,6 @@ int main(int argc, char** argv) {
     delete batLDenc;
     delete batLOenc;
     delete batLEenc;
-    delete batDYcb;
-    delete batDDcb;
-    delete batLQcb;
-    delete batLDcb;
-    delete batLOcb;
-    delete batLEcb;
 
     return 0;
 }

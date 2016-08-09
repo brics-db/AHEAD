@@ -18,6 +18,7 @@
 #include <column_storage/ColumnBat.h>
 #include <column_storage/TransactionManager.h>
 #include <column_operators/operators.h>
+#include <column_operators/operatorsAN.tcc>
 #include <util/stopwatch.hpp>
 
 using namespace std;
