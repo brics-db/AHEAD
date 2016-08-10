@@ -32,17 +32,21 @@
 
 using namespace std;
 
+typedef enum size_e {
+    B = 0, KB, MB, GB, TB
+} size_enum_t;
+
 /**
  * Returns the peak (maximum so far) resident set size (physical
  * memory use) measured in bytes, or zero if the value cannot be
  * determined on this OS.
  */
-size_t getPeakRSS();
+size_t getPeakRSS(size_enum_t size_enum = size_enum_t::B);
 
 /**
  * Returns the current resident set size (physical memory use) measured
  * in bytes, or zero if the value cannot be determined on this OS.
  */
-size_t getCurrentRSS();
+size_t getCurrentRSS(size_enum_t size_enum = size_enum_t::B);
 
 #endif /* RSS_HPP */

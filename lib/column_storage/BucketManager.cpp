@@ -1,13 +1,33 @@
 #include "column_storage/BucketManager.h"
 
-BucketManager* BucketManager::instance = 0;
+BucketManager* BucketManager::instance = nullptr;
 
 BucketManager* BucketManager::getInstance() {
-    if (BucketManager::instance == 0) {
+    if (BucketManager::instance == nullptr) {
         BucketManager::instance = new BucketManager();
     }
 
     return BucketManager::instance;
+}
+
+void BucketManager::destroyInstance() {
+    if (BucketManager::instance) {
+        delete BucketManager::instance;
+        BucketManager::instance = nullptr;
+    }
+}
+
+BucketManager::BucketManager() {
+}
+
+BucketManager::~BucketManager() {
+    for (auto mypair : streams) {
+        for (auto pBucket : mypair.second.index) {
+            delete pBucket;
+        }
+        mypair.second.index.clear();
+    }
+    streams.clear();
 }
 
 BucketManager::BucketIterator* BucketManager::openStream(unsigned int id, unsigned int *version) {
@@ -33,9 +53,6 @@ void BucketManager::printDebugInformation() {
 }
 #endif
 
-BucketManager::BucketManager() {
-}
-
 BucketManager::BucketIterator::BucketIterator(BucketManager::BucketStream *stream, unsigned int *version) {
     if (stream != 0 && version != 0) {
         this->stream = stream;
@@ -52,6 +69,9 @@ BucketManager::BucketIterator::BucketIterator(const BucketManager::BucketIterato
     this->version = copy.version;
     this->currentBucket = copy.currentBucket;
     this->previousBucket = copy.previousBucket;
+}
+
+BucketManager::BucketIterator::~BucketIterator() {
 }
 
 unsigned int BucketManager::BucketIterator::countBuckets() {
@@ -212,9 +232,9 @@ BucketManager::Chunk* BucketManager::BucketIterator::append() {
 
     newBucket = new BucketManager::Bucket;
 
-    newBucket->next = 0;
-    newBucket->older = 0;
-    newBucket->newer = 0;
+    newBucket->next = nullptr;
+    newBucket->older = nullptr;
+    newBucket->newer = nullptr;
 
     newBucket->version = this->version;
     newBucket->number = this->stream->size;
@@ -228,7 +248,7 @@ BucketManager::Chunk* BucketManager::BucketIterator::append() {
     this->previousBucket = this->stream->tail;
     this->currentBucket = newBucket;
 
-    if (this->stream->tail == 0) {
+    if (this->stream->tail == nullptr) {
         this->stream->head = newBucket;
         this->stream->tail = newBucket;
     } else {
@@ -236,8 +256,9 @@ BucketManager::Chunk* BucketManager::BucketIterator::append() {
         this->stream->tail = newBucket;
     }
 
-    this->stream->index.resize(this->stream->size + 1, 0);
-    this->stream->index[this->stream->size] = newBucket;
+    // this->stream->index.resize(this->stream->size + 1, 0);
+    // this->stream->index[this->stream->size] = newBucket;
+    this->stream->index.emplace_back(std::move(newBucket));
     this->stream->size++;
 
     return newBucket->chunk;
@@ -249,11 +270,11 @@ void BucketManager::BucketIterator::undo() {
         this->log.pop();
 
         // Atomic Block Start
-        if (this->previousBucket == 0) {
+        if (this->previousBucket == nullptr) {
             this->currentBucket = this->stream->head;
 
-            if (this->currentBucket->older != 0) {
-                this->currentBucket->older->newer = 0;
+            if (this->currentBucket->older != nullptr) {
+                this->currentBucket->older->newer = nullptr;
             }
 
             this->stream->head = this->currentBucket->older;
@@ -261,8 +282,8 @@ void BucketManager::BucketIterator::undo() {
         } else {
             this->currentBucket = this->previousBucket->next;
 
-            if (this->currentBucket->older != 0) {
-                this->currentBucket->older->newer = 0;
+            if (this->currentBucket->older != nullptr) {
+                this->currentBucket->older->newer = nullptr;
             }
 
             this->previousBucket->next = this->currentBucket->older;
@@ -270,7 +291,7 @@ void BucketManager::BucketIterator::undo() {
         }
 
         if (this->stream->tail == this->currentBucket) {
-            if (this->currentBucket->older == 0) {
+            if (this->currentBucket->older == nullptr) {
                 this->stream->tail = this->previousBucket;
                 this->stream->index.resize(this->stream->size);
                 this->stream->size--;
@@ -285,8 +306,8 @@ void BucketManager::BucketIterator::undo() {
         delete this->currentBucket;
     }
 
-    this->previousBucket = 0;
-    this->currentBucket = 0;
+    this->previousBucket = nullptr;
+    this->currentBucket = nullptr;
 }
 
 #ifdef DEBUG

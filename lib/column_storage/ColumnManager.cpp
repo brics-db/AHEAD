@@ -13,6 +13,20 @@ ColumnManager* ColumnManager::getInstance() {
     return ColumnManager::instance;
 }
 
+void ColumnManager::destroyInstance() {
+    if (ColumnManager::instance) {
+        delete ColumnManager::instance;
+        ColumnManager::instance = nullptr;
+    }
+}
+
+ColumnManager::ColumnManager() {
+}
+
+ColumnManager::~ColumnManager() {
+    columns.clear();
+}
+
 ColumnManager::ColumnIterator* ColumnManager::openColumn(unsigned int id, unsigned int *version) {
     if (columns.find(id) != columns.end()) {
         return new ColumnManager::ColumnIterator(&columns.find(id)->second, BucketManager::getInstance()->openStream(id, version));
@@ -39,9 +53,6 @@ void ColumnManager::createColumn(unsigned int id, unsigned int width) {
     } else {
         // Problem : Spalte existiert bereits
     }
-}
-
-ColumnManager::ColumnManager() {
 }
 
 size_t ColumnManager::ColumnIterator::size() {
@@ -217,4 +228,8 @@ ColumnManager::ColumnIterator::ColumnIterator(const ColumnIterator& copy) : reco
     this->column->width = copy.column->width;
     this->currentChunk = copy.currentChunk;
     this->currentPosition = copy.currentPosition;
+}
+
+ColumnManager::ColumnIterator::~ColumnIterator() {
+    delete iterator;
 }

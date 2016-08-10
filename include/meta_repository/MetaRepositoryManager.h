@@ -3,15 +3,20 @@
 
 #include <cstring>
 
-#include "ColumnStore.h"
-#include "column_storage/Bat.h"
+#include <ColumnStore.h>
+#include <column_storage/Bat.h>
 
 using namespace std;
 
+extern const char* NAME_TINYINT;
+extern const char* NAME_SHORTINT;
 extern const char* NAME_INTEGER;
+extern const char* NAME_LARGEINT;
 extern const char* NAME_STRING;
 extern const char* NAME_FIXED;
 extern const char* NAME_CHAR;
+extern const char* NAME_RESTINY;
+extern const char* NAME_RESSHORT;
 extern const char* NAME_RESINT;
 
 extern const size_t MAXLEN_STRING;
@@ -33,6 +38,8 @@ extern const size_t MAXLEN_STRING;
  */
 class MetaRepositoryManager {
 public:
+    friend class TransactionManager;
+
     /**
      * @author Christian Vogel
      *
@@ -69,38 +76,38 @@ private:
     static MetaRepositoryManager *instance;
     static char* strBaseDir;
 
+    static void destroyInstance();
+
     // all attributes for the table table :)
 
-    Bat<unsigned, unsigned> *pk_table_id;
-    Bat<unsigned, const char*> *table_name;
+    Bat<oid_t, unsigned> *pk_table_id;
+    Bat<oid_t, const char*> *table_name;
 
     // all attributes for the attribute table
 
-    Bat<unsigned, unsigned> *pk_attribute_id;
-    Bat<unsigned, const char*> *attribute_name;
-    __attribute__((unused)) Bat<unsigned, bool> *is_dropped; //unused now
-    Bat<unsigned, unsigned> *fk_table_id;
-    Bat<unsigned, unsigned> *fk_type_id;
-    Bat<unsigned, unsigned> *BAT_number;
+    Bat<oid_t, unsigned> *pk_attribute_id;
+    Bat<oid_t, const char*> *attribute_name;
+    Bat<oid_t, unsigned> *fk_table_id;
+    Bat<oid_t, unsigned> *fk_type_id;
+    Bat<oid_t, unsigned> *BAT_number;
 
     // all attributes for the layout table
 
-    Bat<unsigned, unsigned> *pk_layout_id;
-    Bat<unsigned, const char*> *layout_name;
-    Bat<unsigned, unsigned> *size;
+    Bat<oid_t, unsigned> *pk_layout_id;
+    Bat<oid_t, const char*> *layout_name;
+    Bat<oid_t, unsigned> *size;
 
     // all attributes for the operator table
 
-    Bat<unsigned, unsigned> *pk_operator_id;
-    Bat<unsigned, const char*> *operator_name;
+    Bat<oid_t, unsigned> *pk_operator_id;
+    Bat<oid_t, const char*> *operator_name;
 
     // all attributes for the datatypes table
 
-    Bat<unsigned, unsigned> *pk_datatype_id;
-    Bat<unsigned, const char*> *datatype_name;
-    Bat<unsigned, unsigned> *length;
-    Bat<unsigned, char> *typ_category;
-    Bat<unsigned, unsigned> *fk_datatype_id;
+    Bat<oid_t, unsigned> *pk_datatype_id;
+    Bat<oid_t, const char*> *datatype_name;
+    Bat<oid_t, unsigned> *datatype_length;
+    Bat<oid_t, char> *datatype_category;
 
     // path where all table files are located
     char* META_PATH;
@@ -139,9 +146,9 @@ private:
 
 public:
 
-    class TablesIterator : public BatIterator<unsigned, const char*> {
-        typedef BatIterator<unsigned, unsigned> table_key_iter_t;
-        typedef BatIterator<unsigned, const char*> table_name_iter_t;
+    class TablesIterator : public BatIterator<oid_t, const char*> {
+        typedef BatIterator<oid_t, unsigned> table_key_iter_t;
+        typedef BatIterator<oid_t, const char*> table_name_iter_t;
 
         table_key_iter_t *pKeyIter;
         table_name_iter_t *pNameIter;
@@ -181,9 +188,8 @@ public:
         friend class MetaRepositoryManager;
     };
 
-    TablesIterator listTables() {
-        TablesIterator iter;
-        return iter;
+    TablesIterator* listTables() {
+        return new TablesIterator;
     }
 };
 

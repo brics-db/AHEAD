@@ -37,8 +37,8 @@
 
 using namespace std;
 
-template<class Head, class Tail>
-class ColumnBat : public Bat<Head, Tail> {
+template<class Tail>
+class ColumnBat : public Bat<oid_t, Tail> {
 private:
     unsigned mColumnId;
 
@@ -57,12 +57,15 @@ public:
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail> * begin() override {
-        return new ColumnBatIterator<Head, Tail>(mColumnId);
+    virtual BatIterator<oid_t, Tail> * begin() override {
+        return new ColumnBatIterator<Tail>(mColumnId);
     }
 
     /** append an item */
-    virtual void append(pair<Head, Tail> p) override {
+    virtual void append(pair<oid_t, Tail>& p) override {
+    }
+
+    virtual void append(pair<oid_t, Tail>&& p) override {
     }
 
     virtual unsigned size() override {
@@ -78,7 +81,17 @@ public:
         delete iter;
         return size;
     }
-
 };
+
+typedef ColumnBat<tinyint_t> tinyint_col_t;
+typedef ColumnBat<shortint_t> shortint_col_t;
+typedef ColumnBat<int_t> int_col_t;
+typedef ColumnBat<largeint_t> largeint_col_t;
+typedef ColumnBat<char_t> char_col_t;
+typedef ColumnBat<str_t> str_col_t;
+typedef ColumnBat<fixed_t> fixed_col_t;
+typedef ColumnBat<restiny_t> restiny_col_t;
+typedef ColumnBat<resshort_t> resshort_col_t;
+typedef ColumnBat<resint_t> resint_col_t;
 
 #endif

@@ -25,25 +25,31 @@
  * Created on 29. Juli 2016, 12:09
  */
 
-#include "util/resilience.hpp"
+#include <util/resilience.hpp>
 
-const resint_t AN_UNENC_MAX = 0x7FFFFFFF;
-const resint_t AN_UNENC_MAX_U = 0xFFFFFFFF;
+const restiny_t A_TINY_UNENC_MAX = 0x0000007F;
+const restiny_t A_TINY_UNENC_MIN = 0xFFFFFF80;
+const restiny_t A_TINY_UNENC_MAX_U = 0x000000FF;
+const restiny_t A_TINY_UNENC_MIN_U = 0x00000000;
+const restiny_t A_TINY = 233;
+const restiny_t A_TINY_INV = 0x1fdcd759;
+const restiny_t A2_TINY = 55831;
+const restiny_t A2_TINY_INV = 0x4dfffda7;
 
-const resint_t A = 881;
-const resint_t A_INV = 0xC87FDACE4F9E5D91;
-// The min / max encoded values are computed for 64-bit (un-)signed integers as
-// Signed: ENCMAX = (0x7FFFFFFF - (0x7FFFFFFF mod A)) / A
-// Unsigned: ENCMAX = (0xFFFFFFFF - (0xFFFFFFFF mod A)) / A
-// and for ENCMIN appropriately
-const int64_t A_ENCMAX = 0x7FFFFFFF * A;
-const int64_t A_ENCMIN = 0xFFFFFFFF80000000 * A;
-const resint_t A_ENCMAX_U = 0xFFFFFFFFu * A;
-const resint_t A_ENCMIN_U = 0x1u * A;
+const resshort_t A_SHORT_UNENC_MAX = 0x00007FFF;
+const resshort_t A_SHORT_UNENC_MIN = 0xFFFF8000;
+const resshort_t A_SHORT_UNENC_MAX_U = 0x0000FFFF;
+const resshort_t A_SHORT_UNENC_MIN_U = 0x00000000;
+const resshort_t A_SHORT = 233;
+const resshort_t A_SHORT_INV = 0x1fdcd759;
+const resshort_t A2_SHORT = 63877;
+const resshort_t A2_SHORT_INV = 0xd142174d;
 
-const resint_t A2 = 64311;
-const resint_t A2_INV = 0xAA86FFFEFB1FAA87;
-const int64_t A2_ENCMAX = 0x7FFFFFFF * A2;
-const int64_t A2_ENCMIN = 0xFFFFFFFF80000000 * A2;
-const resint_t A2_ENCMAX_U = 0xFFFFFFFFu * A2;
-const resint_t A2_ENCMIN_U = 0x1u * A2;
+const resint_t A_INT_UNENC_MAX = 0x000000007FFFFFFFull;
+const resint_t A_INT_UNENC_MIN = 0xFFFFFFFF80000000ull;
+const resint_t A_INT_UNENC_MAX_U = 0x00000000FFFFFFFFull;
+const resint_t A_INT_UNENC_MIN_U = 0x0000000000000000ull;
+const resint_t A_INT = 225;
+const resint_t A_INT_INV = 0x0FEDCBA987654321ull;
+const resint_t A2_INT = 64311;
+const resint_t A2_INT_INV = 0xAA86FFFEFB1FAA87ull;

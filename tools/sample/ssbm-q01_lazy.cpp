@@ -5,98 +5,11 @@
  * Created on 1. August 2016, 12:20
  */
 
-#include <cstdlib>
-#include <algorithm>
-#include <vector>
-#include <iostream>
-#include <iomanip>
-#include <cassert>
-
-#include <boost/filesystem.hpp>
-
-#include <column_storage/ColumnBat.h>
-#include <column_storage/TransactionManager.h>
-#include <column_operators/operators.h>
-#include <column_operators/operatorsAN.tcc>
-#include <util/stopwatch.hpp>
-
-using namespace std;
-
-// define
-// boost::throw_exception(std::runtime_error("Type name demangling failed"));
-namespace boost {
-
-    void throw_exception(std::exception const & e) { // user defined
-        throw e;
-    }
-}
-
-template<typename Head, typename Tail>
-void printBat(BatIterator<Head, Tail > *iter, const char* message = nullptr, bool doDelete = true) {
-    if (message) {
-        cout << message << '\n';
-    }
-    size_t i = 0;
-    while (iter->hasNext()) {
-        auto p = iter->next();
-        cout << i++ << ": " << p.first << " = " << p.second << '\n';
-    }
-    cout << flush;
-    if (doDelete) {
-        delete iter;
-    }
-}
-
-#if not defined NDEBUG
-#define PRINT_BAT(SW, PRINT) \
-do {                         \
-    SW.stop();               \
-    PRINT;                   \
-    SW.resume();             \
-} while (false)
-#else
-#define PRINT_BAT(SW, PRINT)
-#endif
-
-#define SAVE_TYPE(I, BAT)          \
-headTypes[I] = BAT->type_head();   \
-tailTypes[I] = BAT->type_tail();   \
-hasTwoTypes[I] = true
-
-#define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
-
-#define MEASURE_OP7(SW, I, TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP) \
-SW.start();                                \
-TYPE VAR = OP;                             \
-opTimes[I] = SW.stop();                    \
-batSizes[I] = STORE_SIZE_OP;               \
-batConsumptions[I] = STORE_CONSUMPTION_OP; \
-++I
-
-#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                       \
-MEASURE_OP7(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE));             \
-headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info(); \
-hasTwoTypes[I-1] = false
-
-#define MEASURE_OP4(SW, I, BAT, OP)                                     \
-MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());     \
-SAVE_TYPE(I-1, BAT)
-
-StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
-    static StopWatch sw;
-    TransactionManager* tm = TransactionManager::getInstance();
-    TransactionManager::Transaction* t = tm->beginTransaction(true);
-    assert(t != nullptr);
-    string path = baseDir + "/" + columnName;
-    sw.start();
-    size_t num = t->load(path.c_str(), columnName);
-    sw.stop();
-    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw << " ns." << endl;
-    tm->endTransaction(t);
-    return sw.duration();
-}
+#include "ssbm.hpp"
 
 int main(int argc, char** argv) {
+    cout << "ssbm-q01_lazy\n=============" << endl;
+
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
     if (boost::filesystem::is_regular(p)) {
         p.remove_filename();
@@ -127,19 +40,17 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
 
-    typedef ColumnBat<unsigned, resint_t> resintColType;
-    // typedef ColumnBat<unsigned, fxd_t> fxdColType;
-    const size_t LEN_TYPES = 13;
+    const size_t LEN_TYPES = 16;
     string emptyString;
     size_t x = 0;
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new resintColType("dateAN", "year"));
-    MEASURE_OP(sw1, x, batDDcb, new resintColType("dateAN", "datekey"));
-    MEASURE_OP(sw1, x, batLQcb, new resintColType("lineorderAN", "quantity"));
-    MEASURE_OP(sw1, x, batLDcb, new resintColType("lineorderAN", "discount"));
-    MEASURE_OP(sw1, x, batLOcb, new resintColType("lineorderAN", "orderdate"));
-    MEASURE_OP(sw1, x, batLEcb, new resintColType("lineorderAN", "extendedprice"));
+    MEASURE_OP(sw1, x, batDYcb, new resshort_col_t("dateAN", "year"));
+    MEASURE_OP(sw1, x, batDDcb, new resint_col_t("dateAN", "datekey"));
+    MEASURE_OP(sw1, x, batLQcb, new restiny_col_t("lineorderAN", "quantity"));
+    MEASURE_OP(sw1, x, batLDcb, new restiny_col_t("lineorderAN", "discount"));
+    MEASURE_OP(sw1, x, batLOcb, new resint_col_t("lineorderAN", "orderdate"));
+    MEASURE_OP(sw1, x, batLEcb, new resint_col_t("lineorderAN", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(sw1, x, batDYenc, v2::bat::ops::copy(batDYcb));
@@ -155,19 +66,20 @@ int main(int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
 
+    cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
     for (size_t i = 0; i < x; ++i) {
         cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
     }
-    cout << '\n' << endl;
+    cout << endl;
 
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         sw1.start();
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQenc, (25 * ::A))); // lo_quantity < 25
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQenc, 25 * ::A_TINY)); // lo_quantity < 25
         PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
-        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLDenc, 1 * ::A, 3 * ::A)); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLDenc, 1 * ::A_TINY, 3 * ::A_TINY)); // lo_discount between 1 and 3
         PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirror(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
@@ -181,7 +93,7 @@ int main(int argc, char** argv) {
         PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity < 25 and lo_discount between 1 and 3"));
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDYenc, 1993 * ::A)); // d_year = 1993
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDYenc, 1993 * ::A_SHORT)); // d_year = 1993
         PRINT_BAT(sw1, printBat(bat7->begin(), "d_year = 1993"));
         MEASURE_OP(sw2, x, bat8, v2::bat::ops::mirror(bat7)); // prepare joined selection over d_year and d_datekey
         delete bat7;
@@ -205,16 +117,14 @@ int main(int argc, char** argv) {
         delete batC;
         delete bat4;
         PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
-        MEASURE_OP(sw2, x, unsigned, count1, batD->size());
-        MEASURE_OP(sw2, x, unsigned, count2, batE->size());
 
         // 4) lazy decode
-        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batD)), batFpair.first->size(), batFpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<int_t>(batD, ::A_INT_INV, ::A_INT_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
         auto batF = batFpair.first;
         SAVE_TYPE(x - 1, batF);
         delete batFpair.second;
         delete batD;
-        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batE)), batGpair.first->size(), batGpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batE, ::A_TINY_INV, ::A_TINY_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
         auto batG = batGpair.first;
         SAVE_TYPE(x - 1, batG);
         delete batGpair.second;
@@ -226,14 +136,14 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t count: " << count1 << " | " << count2 << "\n\t  time: " << setw(13) << sw1 << " ns.";
+        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << setw(13) << sw1 << " ns.";
         cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
         for (size_t j = 0; j < x; ++j) {
             cout << "\n\t  op" << setw(2) << j << "\t" << setw(13) << hrc_duration(opTimes[j]) << "\t" << setw(10) << batSizes[j] << "\t" << setw(10) << batConsumptions[j] << "\t" << setw(LEN_TYPES) << headTypes[j].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[j] ? tailTypes[j].pretty_name() : emptyString);
         }
-        cout << endl;
     }
 
+    cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
     cout << "TotalTimes:";
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
@@ -246,6 +156,8 @@ int main(int argc, char** argv) {
     delete batLDenc;
     delete batLOenc;
     delete batLEenc;
+
+    TransactionManager::destroyInstance();
 
     return 0;
 }

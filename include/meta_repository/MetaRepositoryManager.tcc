@@ -17,25 +17,23 @@
 template<class Head, class Tail>
 pair<Head, Tail> MetaRepositoryManager::getLastValue(Bat<Head, Tail> *bat) {
     BatIterator<unsigned, unsigned> *iter = bat->begin();
-
-    return iter->get(bat->size() - 1);
+    pair<Head, Tail> value = iter->get(bat->size() - 1);
+    delete iter;
+    return value;
 }
 
 template<class Head, class Tail>
 pair<Head, Tail> MetaRepositoryManager::unique_selection(Bat<Head, Tail> *bat, Tail value) {
-    BatIterator<Head, Tail> *iter = bat->begin();
-
-    pair<Head, Tail> nullResult;
-
+    auto iter = bat->begin();
     while (iter->hasNext()) {
         pair<Head, Tail> p = iter->next();
         if (p.second == value) {
+            delete iter;
             return p;
         }
     }
-    delete(iter);
-
-    return nullResult;
+    delete iter;
+    return make_pair<Head, Tail>(0, 0);
 }
 
 template<class Head, class Tail>
@@ -43,87 +41,77 @@ bool MetaRepositoryManager::isBatEmpty(Bat<Head, Tail> *bat) {
     if (bat->size() == 0) {
         return true;
     }
-
     return false;
 }
 
 template<class Head, class Tail>
 int MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, const char *value) {
-    BatIterator<Head, Tail> *iter = bat->begin();
-
+    auto iter = bat->begin();
+    size_t len = strnlen(value, 256);
     while (iter->hasNext()) {
         pair<Head, Tail> p = iter->next();
-        if (strcmp(p.second, value) == 0) {
-            delete(iter);
+        if (strncmp(p.second, value, len) == 0) {
+            delete iter;
             return p.first;
         }
     }
-    delete(iter);
-
+    delete iter;
     return -1;
 }
 
 template<class Head, class Tail>
 int MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, int value) {
-    BatIterator<Head, Tail> *iter = bat->begin();
-
+    auto iter = bat->begin();
     while (iter->hasNext()) {
         pair<Head, Tail> p = iter->next();
         if (p.second == value) {
-            delete(iter);
+            delete iter;
             return p.first;
         }
     }
-    delete(iter);
-
+    delete iter;
     return -1;
 }
 
 template<class Head, class Tail>
 Tail MetaRepositoryManager::selection(Bat<Head, Tail> *bat, Tail value) {
-    BatIterator<Head, Tail> *iter = bat->begin();
-
+    auto iter = bat->begin();
     while (iter->hasNext()) {
         pair<Head, Tail> p = iter->next();
         if (p.second == value) {
-            delete(iter);
+            delete iter;
             return p.first;
         }
     }
-    delete(iter);
-
+    delete iter;
     return 0;
 }
 
 template<class Head, class Tail>
 int MetaRepositoryManager::selectPKId(Bat<Head, Tail> *bat, Head batId) {
-    BatIterator<Head, Tail> *iter = bat->begin();
-
+    auto iter = bat->begin();
     while (iter->hasNext()) {
         pair<Head, Tail> p = iter->next();
         if (p.first == batId) {
-            delete(iter);
+            delete iter;
             return p.second;
         }
     }
-    delete(iter);
-
+    delete iter;
     return -1;
 }
 
 template<class Head, class Tail>
 bool MetaRepositoryManager::dataAlreadyExists(Bat<Head, Tail> *bat, const char* name_value) {
-    BatIterator<Head, Tail> *iter = bat->begin();
-
+    auto iter = bat->begin();
     while (iter->hasNext()) {
         pair<Head, Tail> p = iter->next();
         if (strcmp(p.second, name_value) == 0) {
-            delete(iter);
+            delete iter;
             return true;
         }
     }
-    delete(iter);
-
+    delete iter;
     return false;
 }
 

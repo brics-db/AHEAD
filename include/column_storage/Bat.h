@@ -44,7 +44,8 @@ public:
     virtual BatIterator<Head, Tail > * begin() = 0;
 
     /** append an item */
-    virtual void append(pair<Head, Tail> p) = 0;
+    virtual void append(pair<Head, Tail>& p) = 0;
+    virtual void append(pair<Head, Tail>&& p) = 0;
 
     /** size of column, obtained through the iterator */
     virtual unsigned size() = 0;

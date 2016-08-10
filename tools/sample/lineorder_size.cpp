@@ -5,84 +5,11 @@
  * Created on 1. August 2016, 12:20
  */
 
-#include <cstdlib>
-#include <algorithm>
-#include <vector>
-#include <iostream>
-#include <iomanip>
-#include <cassert>
-
-#include <boost/filesystem.hpp>
-
-#include <ColumnStore.h>
-#include <column_storage/ColumnBat.h>
-#include <column_storage/TransactionManager.h>
-#include <column_operators/operators.h>
-#include <column_operators/operatorsAN.tcc>
-#include <util/stopwatch.hpp>
-
-using namespace std;
-
-// define
-// boost::throw_exception(std::runtime_error("Type name demangling failed"));
-namespace boost {
-
-    void throw_exception(std::exception const & e) { // user defined
-        throw e;
-    }
-}
-
-template<typename Head, typename Tail>
-void printBat(BatIterator<Head, Tail > *iter, const char* message = nullptr, bool doDelete = true) {
-    if (message) {
-        cout << message << '\n';
-    }
-    size_t i = 0;
-    while (iter->hasNext()) {
-        auto p = iter->next();
-        cout << i++ << ": " << p.first << " = " << p.second << '\n';
-    }
-    cout << flush;
-    if (doDelete) {
-        delete iter;
-    }
-}
-
-#if not defined NDEBUG
-#define PRINT_BAT(SW, PRINT) \
-do {                         \
-    SW.stop();               \
-    PRINT;                   \
-    SW.resume();             \
-} while (false)
-#else
-#define PRINT_BAT(SW, PRINT)
-#endif
-
-#define SAVE_TYPE(I, BAT)          \
-headTypes[I] = BAT->type_head();   \
-tailTypes[I] = BAT->type_tail();   \
-hasTwoTypes[I] = true
-
-#define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
-
-#define MEASURE_OP7(SW, I, TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP) \
-SW.start();                               \
-TYPE VAR = OP;                            \
-opTimes[I] = SW.stop();                   \
-batSizes[I] = STORE_SIZE_OP;              \
-batConsumptions[I] = STORE_CONSUMPTION_OP
-
-#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                     \
-MEASURE_OP7(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE));           \
-headTypes[I] = boost::typeindex::type_id<TYPE>().type_info(); \
-hasTwoTypes[I] = false
-
-#define MEASURE_OP4(SW, I, BAT, OP)                                     \
-MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());     \
-SAVE_TYPE(I, BAT)
+#include "ssbm.hpp"
 
 int main(int argc, char** argv) {
+    cout << "lineorder_size\n==============" << endl;
+
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
     if (boost::filesystem::is_regular(p)) {
         p.remove_filename();
@@ -124,8 +51,6 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
 
-    typedef ColumnBat<unsigned, int_t> intColType;
-    typedef ColumnBat<unsigned, resint_t> resintColType;
     const size_t LEN_TYPES = 13;
     string emptyString;
 
@@ -134,45 +59,50 @@ int main(int argc, char** argv) {
     // RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|STRING|STRING|RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|RESINT|STRING
 
     size_t x = 0;
-    MEASURE_OP(sw1, x, batOKbcOrg, new intColType("lineorder", "orderkey"));
+    MEASURE_OP(sw1, x, batOKbcOrg, new int_col_t("lineorder", "orderkey"));
     x++;
-    MEASURE_OP(sw1, x, batOKbcEnc, new resintColType("lineorderAN", "orderkey"));
+    MEASURE_OP(sw1, x, batOKbcEnc, new resint_col_t("lineorderAN", "orderkey"));
     x++;
     MEASURE_OP(sw1, x, batOKtcEnc, v2::bat::ops::copy(batOKbcEnc));
     x++;
     MEASURE_OP(sw1, x, batOKtcEnc2, v2::bat::ops::copy(batOKtcEnc));
     x++;
     delete batOKtcEnc2;
+    cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
     for (size_t i = 0; i < x; ++i) {
         cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
     }
-    cout << "\n\n";
+    cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n" << endl;
     cout << " num |         check |        decode |  check+decode\n";
     cout << "-----+---------------+---------------+--------------" << endl;
 
-    for (size_t i = 0; i < 10; ++i) {
+    for (size_t i = 0; i < 1; ++i) {
         sw1.start();
-        auto result1 = v2::bat::ops::checkA(batOKtcEnc);
+        auto result1 = v2::bat::ops::checkA(batOKtcEnc, ::A_INT_INV, ::A_INT_UNENC_MAX_U);
         sw1.stop();
         cout << "  " << setw(2) << i << "   " << setw(13) << sw1.duration();
 
         delete result1;
 
         sw1.start();
-        auto result2 = v2::bat::ops::decodeA<unsigned, int_t>(batOKtcEnc);
+        auto result2 = v2::bat::ops::decodeA<int_t>(batOKtcEnc, ::A_INT_INV, ::A_INT_UNENC_MAX_U);
         sw1.stop();
         cout << "   " << setw(13) << sw1.duration();
 
         delete result2;
 
         sw1.start();
-        auto result3 = v2::bat::ops::checkAndDecodeA<unsigned, int_t>(batOKtcEnc);
+        auto result3 = v2::bat::ops::checkAndDecodeA<int_t>(batOKtcEnc, ::A_INT_INV, ::A_INT_UNENC_MAX_U);
         sw1.stop();
         cout << "   " << setw(13) << sw1.duration() << '\n';
 
         delete result3.first;
         delete result3.second;
     }
+
+    delete batOKbcOrg;
+    delete batOKbcEnc;
+    delete batOKtcEnc;
 
     return 0;
 }

@@ -23,6 +23,7 @@
  */
 class ColumnManager {
 public:
+    friend class TransactionManager;
 
     /**
      * Die Datenstruktur enth�lt die Metadaten einer Spalte, wie etwa die Gr��e eines Records innerhalb dieser Spalte.
@@ -121,6 +122,9 @@ public:
 
         ColumnIterator(Column *column, BucketManager::BucketIterator *iterator);
         ColumnIterator(const ColumnIterator &copy);
+
+    public:
+        virtual ~ColumnIterator();
     };
 
     /**
@@ -160,11 +164,13 @@ public:
 private:
     static ColumnManager *instance;
 
+    static void destroyInstance();
+
     std::map<unsigned int, Column> columns;
 
     ColumnManager();
     ColumnManager(const ColumnManager &copy);
-    ~ColumnManager();
+    virtual ~ColumnManager();
 };
 
 #endif

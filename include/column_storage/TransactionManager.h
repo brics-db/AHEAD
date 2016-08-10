@@ -162,6 +162,8 @@ public:
      */
     static TransactionManager* getInstance();
 
+    static void destroyInstance();
+
     /**
      * @author Julian Hollender
      *

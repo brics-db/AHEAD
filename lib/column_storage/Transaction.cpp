@@ -48,9 +48,9 @@ TransactionManager::Transaction::Transaction(bool isUpdater, unsigned int curren
 }
 
 TransactionManager::Transaction::~Transaction() {
-    for (unsigned int id = 0; id < this->iterators.size(); id++) {
-        if (this->iterators[id] != 0) {
-            delete this->iterators[id];
+    for (auto pIter : iterators) {
+        if (pIter) {
+            delete pIter;
         }
     }
 }
@@ -212,27 +212,47 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 // Spaltentyp einpflegen
                 bun = append(ID_BAT_COLTYPES);
 
-                if (strncmp(buffer, "INTEGER", 7) == 0) {
+                if (strncmp(buffer, "INTEGER", 7) == 0 || strncmp(buffer, "INT", 3) == 0) {
                     *((type_t*) bun->tail) = type_int;
                     cm->createColumn(column, sizeof (int_t));
-                    //cerr << "Type integer" << column << endl;
+                    strncpy(datatype, NAME_INTEGER, LEN_VALUE);
+                } else if (strncmp(buffer, "TINYINT", 7) == 0) {
+                    *((type_t*) bun->tail) = type_tinyint;
+                    cm->createColumn(column, sizeof (tinyint_t));
+                    strncpy(datatype, NAME_TINYINT, LEN_VALUE);
+                } else if (strncmp(buffer, "SHORTINT", 8) == 0) {
+                    *((type_t*) bun->tail) = type_shortint;
+                    cm->createColumn(column, sizeof (shortint_t));
+                    strncpy(datatype, NAME_SHORTINT, LEN_VALUE);
+                } else if (strncmp(buffer, "LARGEINT", 8) == 0) {
+                    *((type_t*) bun->tail) = type_largeint;
+                    cm->createColumn(column, sizeof (largeint_t));
+                    strncpy(datatype, NAME_LARGEINT, LEN_VALUE);
                 } else if (strncmp(buffer, "STRING", 6) == 0) {
-                    *((type_t*) bun->tail) = type_str;
+                    *((type_t*) bun->tail) = type_string;
                     cm->createColumn(column, sizeof (char_t) * MAXLEN_STRING); // TODO warum genau 45 zeichen?!
-                    //cerr << "Type string" << column << endl;
+                    strncpy(datatype, NAME_STRING, LEN_VALUE);
                 } else if (strncmp(buffer, "FIXED", 5) == 0) {
-                    // data type fixed
-                    *((type_t*) bun->tail) = type_fxd;
-                    cm->createColumn(column, sizeof (fxd_t));
-                    //cerr << "Type double" << column << endl;
+                    *((type_t*) bun->tail) = type_fixed;
+                    cm->createColumn(column, sizeof (fixed_t));
+                    strncpy(datatype, NAME_FIXED, LEN_VALUE);
                 } else if (strncmp(buffer, "CHAR", 4) == 0) {
-                    *((type_t*) bun->tail) = type_chr;
+                    *((type_t*) bun->tail) = type_char;
                     cm->createColumn(column, sizeof (char_t));
+                    strncpy(datatype, NAME_CHAR, LEN_VALUE);
+                } else if (strncmp(buffer, "RESTINY", 7) == 0) {
+                    *((type_t*) bun->tail) = type_restiny;
+                    cm->createColumn(column, sizeof (restiny_t));
+                    strncpy(datatype, NAME_RESTINY, LEN_VALUE);
+                } else if (strncmp(buffer, "RESSHORT", 8) == 0) {
+                    *((type_t*) bun->tail) = type_resshort;
+                    cm->createColumn(column, sizeof (resshort_t));
+                    strncpy(datatype, NAME_RESSHORT, LEN_VALUE);
                 } else if (strncmp(buffer, "RESINT", 6) == 0) {
                     *((type_t*) bun->tail) = type_resint;
                     cm->createColumn(column, sizeof (resint_t));
+                    strncpy(datatype, NAME_RESINT, LEN_VALUE);
                 } else {
-                    // data type unknown
                     cerr << "TransactionManager::Transaction::load() data type " << buffer << " in header unknown" << endl;
                     abort();
                 }
@@ -299,26 +319,46 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                         size_t bufLen;
 
                         switch (type) {
-                            case type_int:
-                                *(static_cast<int_t*> (record->content)) = atoi(buffer);
+                            case type_tinyint:
+                                *(static_cast<tinyint_t*> (record->content)) = static_cast<tinyint_t> (atoi(buffer));
                                 break;
 
-                            case type_str:
+                            case type_shortint:
+                                *(static_cast<shortint_t*> (record->content)) = static_cast<shortint_t> (atoi(buffer));
+                                break;
+
+                            case type_int:
+                                *(static_cast<int_t*> (record->content)) = atol(buffer);
+                                break;
+
+                            case type_largeint:
+                                *(static_cast<largeint_t*> (record->content)) = static_cast<largeint_t> (atoll(buffer));
+                                break;
+
+                            case type_string:
                                 bufLen = strlen(buffer); // strtok already replaced the token separator with a null char
                                 // TODO make sure the string is at most MAXLEN_STRING bytes long (incl. null byte)
                                 strncpy(static_cast<str_t> (record->content), buffer, bufLen + 1);
                                 break;
 
-                            case type_fxd:
-                                *(static_cast<fxd_t*> (record->content)) = atof(buffer);
+                            case type_fixed:
+                                *(static_cast<fixed_t*> (record->content)) = atof(buffer);
                                 break;
 
-                            case type_chr:
+                            case type_char:
                                 *(static_cast<char_t*> (record->content)) = buffer[0];
                                 break;
 
+                            case type_restiny:
+                                *(static_cast<restiny_t*> (record->content)) = atol(buffer) * ::A_TINY;
+                                break;
+
+                            case type_resshort:
+                                *(static_cast<resshort_t*> (record->content)) = atol(buffer) * ::A_SHORT;
+                                break;
+
                             case type_resint:
-                                *(static_cast<resint_t*> (record->content)) = atoll(buffer) * ::A;
+                                *(static_cast<resint_t*> (record->content)) = atoll(buffer) * ::A_INT;
                                 break;
 
                             default:
@@ -354,10 +394,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
             while (bun != 0) {
                 close(*((unsigned int*) bun->tail));
-
-                // delete static_cast<unsigned int*> (bun->head);
                 delete bun;
-
                 bun = next(ID_BAT_COLIDENT);
             }
 
@@ -435,11 +472,11 @@ TransactionManager::BinaryUnit* TransactionManager::Transaction::next(unsigned i
             return bun;
         } else {
             // Problem : Ende der Spalte
-            return 0;
+            return nullptr;
         }
     } else {
         // Problem : Spalte nicht geoffnet
-        return 0;
+        return nullptr;
     }
 }
 

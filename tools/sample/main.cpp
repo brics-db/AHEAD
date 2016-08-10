@@ -10,6 +10,7 @@
 #include <column_storage/TransactionManager.h>
 #include <column_operators/operators.h>
 #include <column_operators/operatorsAN.tcc>
+#include <util/rss.hpp>
 #include <util/stopwatch.hpp>
 
 using namespace std;
@@ -21,9 +22,6 @@ int main(int argc, char ** argv) {
     }
     string baseDir = p.remove_trailing_separator().generic_string();
     MetaRepositoryManager::init(baseDir.c_str());
-
-    // create a column manager
-    __attribute__((unused)) ColumnManager *cm = ColumnManager::getInstance();
 
     // create a transaction manager
     TransactionManager* tm = TransactionManager::getInstance();
@@ -80,14 +78,14 @@ int main(int argc, char ** argv) {
     tm->endTransaction(t);
 
     // Test Query
-    __attribute__((unused)) auto batCustKey = new ColumnBat<unsigned, int_t>("customer", "custkey");
+    auto batCustKey = new int_col_t("customer", "custkey");
     sw.start();
-    __attribute__((unused)) auto bat0 = v2::bat::ops::selection_lt(batCustKey, static_cast<int_t> (12345));
+    auto bat0 = v2::bat::ops::selection_lt(batCustKey, static_cast<int_t> (12345));
     sw.stop();
     cout << "[customer] Selection over " << numCust << " tuples took " << sw << " ns" << endl;
 
     /*
-    auto batLineOrderKey = new ColumnBat<unsigned, int_t>("lineorder", "orderkey");
+    auto batLineOrderKey = new ColumnBat<int_t>("lineorder", "orderkey");
     sw.start();
     __attribute__((unused)) auto bat1 = v2::bat::ops::selection_lt(batLineOrderKey, static_cast<int_t> (123450));
     sw.stop();
@@ -95,7 +93,7 @@ int main(int argc, char ** argv) {
      */
 
     sw.start();
-    __attribute__((unused)) auto batA = v2::bat::ops::encodeA(batCustKey);
+    auto batA = v2::bat::ops::encodeA(batCustKey, A_INT);
     sw.stop();
     cout << "[customer] Converted " << numCust << " tuples from int_t to resint_t took " << sw << " ns" << endl;
 
@@ -118,7 +116,10 @@ int main(int argc, char ** argv) {
     cout << endl;
     delete iter2;
 
-    return 0;
+    cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB." << endl;
 
+    TransactionManager::destroyInstance();
+
+    return 0;
 }
 

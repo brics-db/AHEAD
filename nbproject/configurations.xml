@@ -32,6 +32,7 @@
         <in>ssbm-q01.cpp</in>
         <in>ssbm-q01_eager.cpp</in>
         <in>ssbm-q01_lazy.cpp</in>
+        <in>ssbm.hpp</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -268,6 +269,8 @@
             <Elem>__STDC_LIMIT_MACROS</Elem>
           </preprocessorList>
         </ccTool>
+      </item>
+      <item path="tools/sample/ssbm.hpp" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

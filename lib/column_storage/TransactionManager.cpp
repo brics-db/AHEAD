@@ -9,13 +9,6 @@ const unsigned TransactionManager::Transaction::ID_BAT_COLTYPES = 1;
 const unsigned TransactionManager::Transaction::ID_BAT_COLIDENT = 2;
 const unsigned TransactionManager::Transaction::ID_BAT_FIRST_USER = 3;
 
-TransactionManager::TransactionManager() {
-    this->currentVersion = 0;
-}
-
-TransactionManager::~TransactionManager() {
-}
-
 TransactionManager* TransactionManager::getInstance() {
     if (TransactionManager::instance == 0) {
         TransactionManager::instance = new TransactionManager();
@@ -24,20 +17,38 @@ TransactionManager* TransactionManager::getInstance() {
     return TransactionManager::instance;
 }
 
+void TransactionManager::destroyInstance() {
+    if (TransactionManager::instance) {
+        delete TransactionManager::instance;
+        TransactionManager::instance = nullptr;
+    }
+}
+
+TransactionManager::TransactionManager() {
+    this->currentVersion = 0;
+}
+
+TransactionManager::~TransactionManager() {
+    for (auto pT : transactions) {
+        delete pT;
+    }
+    transactions.clear();
+    BucketManager::destroyInstance();
+    ColumnManager::destroyInstance();
+    MetaRepositoryManager::destroyInstance();
+}
+
 TransactionManager::Transaction* TransactionManager::beginTransaction(bool isUpdater) {
     if (isUpdater) {
         // Atomic Block Start
-        set<Transaction*>::iterator it;
-
-        for (it = this->transactions.begin(); it != this->transactions.end(); it++) {
-            if ((*it)->isUpdater) {
+        for (auto pT : this->transactions) {
+            if (pT->isUpdater) {
                 // Problem : Another Active Updater
                 return nullptr;
             }
         }
         // Atomic Block Ende
     }
-
     auto result = this->transactions.insert(new TransactionManager::Transaction(isUpdater, this->currentVersion));
     return result.second ? *result.first : nullptr;
 }

@@ -28,23 +28,33 @@
 #ifndef RESILIENCE_HPP
 #define RESILIENCE_HPP
 
-#include "../ColumnStore.h"
+#include <ColumnStore.h>
 
-extern const resint_t AN_UNENC_MAX;
-extern const resint_t AN_UNENC_MAX_U;
+extern const restiny_t A_TINY_UNENC_MAX;
+extern const restiny_t A_TINY_UNENC_MIN;
+extern const restiny_t A_TINY_UNENC_MAX_U;
+extern const restiny_t A_TINY_UNENC_MIN_U;
+extern const restiny_t A_TINY;
+extern const restiny_t A_TINY_INV;
+extern const restiny_t A2_TINY;
+extern const restiny_t A2_TINY_INV;
 
-extern const resint_t A;
-extern const resint_t A_INV;
-extern const int64_t A_ENCMAX;
-extern const int64_t A_ENCMIN;
-extern const resint_t A_ENCMAX_U;
-extern const resint_t A_ENCMIN_U;
+extern const resshort_t A_SHORT_UNENC_MAX;
+extern const resshort_t A_SHORT_UNENC_MIN;
+extern const resshort_t A_SHORT_UNENC_MAX_U;
+extern const resshort_t A_SHORT_UNENC_MIN_U;
+extern const resshort_t A_SHORT;
+extern const resshort_t A_SHORT_INV;
+extern const resshort_t A2_SHORT;
+extern const resshort_t A2_SHORT_INV;
 
-extern const resint_t A2;
-extern const resint_t A2_INV;
-extern const int64_t A2_ENCMAX;
-extern const int64_t A2_ENCMIN;
-extern const resint_t A2_ENCMAX_U;
-extern const resint_t A2_ENCMIN_U;
+extern const resint_t A_INT_UNENC_MAX;
+extern const resint_t A_INT_UNENC_MIN;
+extern const resint_t A_INT_UNENC_MAX_U;
+extern const resint_t A_INT_UNENC_MIN_U;
+extern const resint_t A_INT;
+extern const resint_t A_INT_INV;
+extern const resint_t A2_INT;
+extern const resint_t A2_INT_INV;
 
 #endif /* RESILIENCE_HPP */

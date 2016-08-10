@@ -63,12 +63,13 @@
  * memory use) measured in bytes, or zero if the value cannot be
  * determined on this OS.
  */
-size_t getPeakRSS() {
+size_t getPeakRSS(size_enum_t size_enum) {
+    size_t result = 0ull;
 #if defined(_WIN32)
     /* Windows -------------------------------------------------- */
     PROCESS_MEMORY_COUNTERS info;
     GetProcessMemoryInfo(GetCurrentProcess(), &info, sizeof (info));
-    return (size_t) info.PeakWorkingSetSize;
+    result = (size_t) info.PeakWorkingSetSize;
 
 #elif (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__)))
     /* AIX and Solaris ------------------------------------------ */
@@ -81,34 +82,49 @@ size_t getPeakRSS() {
         return (size_t) 0L; /* Can't read? */
     }
     close(fd);
-    return (size_t) (psinfo.pr_rssize * 1024L);
+    result = (size_t) (psinfo.pr_rssize * 1024L);
 
 #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
     /* BSD, Linux, and OSX -------------------------------------- */
     struct rusage rusage;
     getrusage(RUSAGE_SELF, &rusage);
 #if defined(__APPLE__) && defined(__MACH__)
-    return (size_t) rusage.ru_maxrss;
+    result = (size_t) rusage.ru_maxrss;
 #else
-    return (size_t) (rusage.ru_maxrss * 1024L);
+    result = (size_t) (rusage.ru_maxrss * 1024L);
 #endif
 
 #else
     /* Unknown OS ----------------------------------------------- */
-    return (size_t) 0L; /* Unsupported. */
+    /* Unsupported. */
 #endif
+
+    switch (size_enum) {
+        case size_enum_t::B:
+            return result;
+        case size_enum_t::KB:
+            return result / 1024ull;
+        case size_enum_t::MB:
+            return result / (1024ull * 1024ull);
+        case size_enum_t::GB:
+            return result / (1024ull * 1024ull * 1024ull);
+        case size_enum_t::TB:
+            return result / (1024ull * 1024ull * 1024ull * 1024ull);
+        default: return result;
+    }
 }
 
 /**
  * Returns the current resident set size (physical memory use) measured
  * in bytes, or zero if the value cannot be determined on this OS.
  */
-size_t getCurrentRSS() {
+size_t getCurrentRSS(size_enum_t size_enum) {
+    size_t result = 0ull;
 #if defined(_WIN32)
     /* Windows -------------------------------------------------- */
     PROCESS_MEMORY_COUNTERS info;
     GetProcessMemoryInfo(GetCurrentProcess(), &info, sizeof (info));
-    return (size_t) info.WorkingSetSize;
+    result = (size_t) info.WorkingSetSize;
 
 #elif defined(__APPLE__) && defined(__MACH__)
     /* OSX ------------------------------------------------------ */
@@ -117,7 +133,7 @@ size_t getCurrentRSS() {
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO,
             (task_info_t) & info, &infoCount) != KERN_SUCCESS)
         return (size_t) 0L; /* Can't access? */
-    return (size_t) info.resident_size;
+    result = (size_t) info.resident_size;
 
 #elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
     /* Linux ---------------------------------------------------- */
@@ -130,10 +146,24 @@ size_t getCurrentRSS() {
         return (size_t) 0L; /* Can't read? */
     }
     fclose(fp);
-    return (size_t) rss * (size_t) sysconf(_SC_PAGESIZE);
+    result = (size_t) rss * (size_t) sysconf(_SC_PAGESIZE);
 
 #else
     /* AIX, BSD, Solaris, and Unknown OS ------------------------ */
-    return (size_t) 0L; /* Unsupported. */
+    /* Unsupported. */
 #endif
+
+    switch (size_enum) {
+        case size_enum_t::B:
+            return result;
+        case size_enum_t::KB:
+            return result / 1024ull;
+        case size_enum_t::MB:
+            return result / (1024ull * 1024ull);
+        case size_enum_t::GB:
+            return result / (1024ull * 1024ull * 1024ull);
+        case size_enum_t::TB:
+            return result / (1024ull * 1024ull * 1024ull * 1024ull);
+        default: return result;
+    }
 }

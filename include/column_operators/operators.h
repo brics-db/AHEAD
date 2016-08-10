@@ -21,6 +21,7 @@
 
 /***
  * @author Dirk Habich
+ * @author Till Kolditz
  */
 #ifndef OPERATORS_H
 #define OPERATORS_H
@@ -53,13 +54,12 @@ namespace v2 {
     namespace bat {
         namespace ops {
 
-            template<class Head, class Tail>
-            static void prn_vecOfPair(Bat<Head, Tail> *arg) {
-                BatIterator<Head, Tail> * iter = arg->begin();
-
+            template<class Tail>
+            void prn_vecOfPair(Bat<oid_t, Tail> *arg) {
+                auto iter = arg->begin();
                 unsigned step = 0;
                 while (iter->hasNext()) {
-                    pair<Head, Tail> p = iter->next();
+                    pair<oid_t, Tail> p = iter->next();
                     cout << p.first << " | " << p.second << endl;
                     if (iter->size() > 10 && step == 3) {
                         step = iter->size() - 3;
@@ -71,236 +71,176 @@ namespace v2 {
                 delete iter;
             }
 
-            template<class Head, class Tail>
-            static Bat<Head, Tail>* copy(Bat<Head, Tail>* arg, unsigned start = 0, size_t size = 0) {
-                auto result = new TempBat<Head, Tail>(arg->size());
-                BatIterator<Head, Tail> *vcpi = arg->begin();
-                if (vcpi->hasNext()) {
-                    result->append(vcpi->get(start));
+            template<class Tail>
+            Bat<oid_t, Tail>* copy(Bat<oid_t, Tail>* arg, unsigned start = 0, size_t size = 0) {
+                auto result = new TempBat<oid_t, Tail>(arg->size());
+                auto iter = arg->begin();
+                if (iter->hasNext()) {
+                    result->append(iter->get(start));
                     if (size) {
-                        for (size_t step = 1; step < size && vcpi->hasNext(); ++step) {
-                            result->append(vcpi->next());
+                        for (size_t step = 1; step < size && iter->hasNext(); ++step) {
+                            result->append(iter->next());
                         }
                     } else {
-                        while (vcpi->hasNext()) {
-                            result->append(vcpi->next());
+                        while (iter->hasNext()) {
+                            result->append(iter->next());
                         }
                     }
                 }
+                delete iter;
                 return result; // possibly empty
             }
 
-            template<class Head, class Tail>
-            static Bat<Head, Tail>* selection(Bat<Head, Tail>* arg, unsigned OP, Tail treshold, Tail treshold2 = Tail(0)) {
-                auto result = new TempBat<Head, Tail>();
-                BatIterator<Head, Tail> *iter = arg->begin();
+            template<class Tail>
+            Bat<oid_t, Tail>* selection(Bat<oid_t, Tail>* arg, unsigned OP, Tail treshold, Tail treshold2 = Tail(0)) {
                 switch (OP) {
                     case SEL_EQ:
-                        while (iter->hasNext()) {
-                            pair<Head, Tail> p = iter->next();
-                            if (p.second == treshold) {
-                                pair<Head, Tail> np;
-                                memcpy(&np.first, &p.first, sizeof (Head));
-                                memcpy(&np.second, &p.second, sizeof (Tail));
-                                result->append(np);
-                            }
-                        }
-                        break;
+                        return selection_eq(arg, treshold);
                     case SEL_LT:
-                        while (iter->hasNext()) {
-                            pair<Head, Tail> p = iter->next();
-                            if (p.second < treshold) {
-                                pair<Head, Tail> np;
-                                memcpy(&np.first, &p.first, sizeof (Head));
-                                memcpy(&np.second, &p.second, sizeof (Tail));
-                                result->append(np);
-                            }
-                        }
-                        break;
+                        return selection_lt(arg, treshold);
                     case SEL_LE:
-                        while (iter->hasNext()) {
-                            pair<Head, Tail> p = iter->next();
-                            if (p.second <= treshold) {
-                                pair<Head, Tail> np;
-                                memcpy(&np.first, &p.first, sizeof (Head));
-                                memcpy(&np.second, &p.second, sizeof (Tail));
-                                result->append(np);
-                            }
-                        }
-                        break;
+                        return selection_le(arg, treshold);
                     case SEL_GT:
-                        while (iter->hasNext()) {
-                            pair<Head, Tail> p = iter->next();
-                            if (p.second > treshold) {
-                                pair<Head, Tail> np;
-                                memcpy(&np.first, &p.first, sizeof (Head));
-                                memcpy(&np.second, &p.second, sizeof (Tail));
-                                result->append(np);
-                            }
-                        }
-                        break;
+                        return selection_gt(arg, treshold);
                     case SEL_GE:
-                        while (iter->hasNext()) {
-                            pair<Head, Tail> p = iter->next();
-                            if (p.second >= treshold) {
-                                pair<Head, Tail> np;
-                                memcpy(&np.first, &p.first, sizeof (Head));
-                                memcpy(&np.second, &p.second, sizeof (Tail));
-                                result->append(np);
-                            }
-                        }
-                        break;
+                        return selection_ge(arg, treshold);
                     case SEL_BT:
-                        while (iter->hasNext()) {
-                            pair<Head, Tail> p = iter->next();
-                            if (p.second >= treshold && p.second <= treshold2) {
-                                pair<Head, Tail> np;
-                                memcpy(&np.first, &p.first, sizeof (Head));
-                                memcpy(&np.second, &p.second, sizeof (Tail));
-                                result->append(np);
-                            }
-                        }
-                        break;
+                        return selection_bt(arg, treshold, treshold2);
                 }
-
-                delete iter;
-
-                return result;
             }
 
-            template<class Head, class Tail>
-            static Bat<Head, Tail>* selection_lq(Bat<Head, Tail>* arg, Tail treshold) {
-                auto result = new TempBat<Head, Tail>();
-                BatIterator<Head, Tail> *iter = arg->begin();
+            template<class Tail>
+            Bat<oid_t, Tail>* selection_le(Bat<oid_t, Tail>* arg, Tail treshold) {
+                auto result = new TempBat<oid_t, Tail>();
+                auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<Head, Tail> p = iter->next();
+                    pair<oid_t, Tail> p = iter->next();
                     if (p.second <= treshold) {
-                        pair<Head, Tail> np;
-                        memcpy(&np.first, &p.first, sizeof (Head));
-                        memcpy(&np.second, &p.second, sizeof (Tail));
-                        result->append(np);
+                        result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
                 }
-
                 delete iter;
-
                 return result;
             }
 
-            template<class Head, class Tail>
-            static Bat<Head, Tail>* selection_lt(Bat<Head, Tail>* arg, Tail treshold) {
-                auto result = new TempBat<Head, Tail>();
-                BatIterator<Head, Tail> *iter = arg->begin();
+            template<class Tail>
+            Bat<oid_t, Tail>* selection_lt(Bat<oid_t, Tail>* arg, Tail treshold) {
+                auto result = new TempBat<oid_t, Tail>();
+                auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<Head, Tail> p = iter->next();
+                    pair<oid_t, Tail> p = iter->next();
                     if (p.second < treshold) {
-                        pair<Head, Tail> np;
-                        memcpy(&np.first, &p.first, sizeof (Head));
-                        memcpy(&np.second, &p.second, sizeof (Tail));
-                        result->append(np);
+                        result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
                 }
-
                 delete iter;
-
                 return result;
             }
 
-            template<class Head, class Tail>
-            static Bat<Head, Tail>* selection_bt(Bat<Head, Tail>* arg, Tail start, Tail end) {
-                auto result = new TempBat<Head, Tail>();
-                BatIterator<Head, Tail> *iter = arg->begin();
+            template<class Tail>
+            Bat<oid_t, Tail>* selection_bt(Bat<oid_t, Tail>* arg, Tail start, Tail end) {
+                auto result = new TempBat<oid_t, Tail>();
+                auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<Head, Tail> p = iter->next();
+                    pair<oid_t, Tail> p = iter->next();
                     if (p.second <= end && p.second >= start) {
-                        pair<Head, Tail> np;
-                        memcpy(&np.first, &p.first, sizeof (Head));
-                        memcpy(&np.second, &p.second, sizeof (Tail));
-                        result->append(np);
+                        result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
                 }
-
                 delete iter;
-
                 return result;
             }
 
-            template<class Head, class Tail>
-            static Bat<Head, Tail>* selection_eq(Bat<Head, Tail>* arg, Tail value) {
-                auto result = new TempBat<Head, Tail>();
+            template<class Tail>
+            Bat<oid_t, Tail>* selection_eq(Bat<oid_t, Tail>* arg, Tail value) {
+                auto result = new TempBat<oid_t, Tail>();
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<Head, Tail> p = iter->next();
+                    pair<oid_t, Tail> p = iter->next();
                     if (p.second == value) {
-                        // pair<Head, Tail> np;
-                        // memcpy(&np.first, &p.first, sizeof (Head));
-                        // memcpy(&np.second, &p.second, sizeof (Tail));
-                        result->append(make_pair(p.first, p.second));
+                        result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
                 }
                 delete iter;
                 return result;
             }
 
-            template <class Head, class Tail>
-            static Bat<Tail, Head>* reverse(Bat<Head, Tail> *arg) {
-                auto result = new TempBat<Tail, Head>(arg->size());
-                auto iter = arg->begin();
+            template<class Tail>
+            Bat<oid_t, Tail>* selection_gt(Bat<oid_t, Tail>* arg, Tail treshold) {
+                auto result = new TempBat<oid_t, Tail>();
+                auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<Head, Tail> p = iter->next();
-                    // pair<Tail, Head> np;
-                    // memcpy(&np.first, &p.second, sizeof (Tail));
-                    // memcpy(&np.second, &p.first, sizeof (Head));
-                    result->append(make_pair(p.second, p.first));
+                    pair<oid_t, Tail> p = iter->next();
+                    if (p.second > treshold) {
+                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                    }
                 }
                 delete iter;
                 return result;
             }
 
-            template<class Head, class Tail>
-            static Bat<Head, Head>* mirror(Bat<Head, Tail> *arg) {
-                auto result = new TempBat<Head, Head>(arg->size());
+            template<class Tail>
+            Bat<oid_t, Tail>* selection_ge(Bat<oid_t, Tail>* arg, Tail treshold) {
+                auto result = new TempBat<oid_t, Tail>();
+                auto *iter = arg->begin();
+                while (iter->hasNext()) {
+                    pair<oid_t, Tail> p = iter->next();
+                    if (p.second >= treshold) {
+                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                    }
+                }
+                delete iter;
+                return result;
+            }
+
+            template <class Tail>
+            Bat<Tail, oid_t>* reverse(Bat<oid_t, Tail> *arg) {
+                auto result = new TempBat<Tail, oid_t>(arg->size());
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<Head, Tail> p = iter->next();
-                    // pair<Head, Head> np;
-                    // memcpy(&np.first, &p.first, sizeof (Head));
-                    // memcpy(&np.second, &p.first, sizeof (Head));
-                    result->append(make_pair(p.first, p.first));
+                    pair<oid_t, Tail> p = iter->next();
+                    result->append(make_pair(std::move(p.second), std::move(p.first)));
+                }
+                delete iter;
+                return result;
+            }
+
+            template<class Tail>
+            Bat<oid_t, oid_t>* mirror(Bat<oid_t, Tail> *arg) {
+                auto result = new TempBat<oid_t, oid_t>(arg->size());
+                auto iter = arg->begin();
+                while (iter->hasNext()) {
+                    pair<oid_t, Tail> p = iter->next();
+                    result->append(make_pair(std::move(p.first), std::move(p.first)));
                 }
                 delete iter;
                 return result;
             }
 
             template<class T1, class T2, class T3, class T4>
-            static Bat<T1, T4>* col_nestedloop_join(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2) {
+            Bat<T1, T4>* col_nestedloop_join(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2) {
                 auto result = new TempBat<T1, T4>();
-                BatIterator<T1, T2> *iter1 = arg1->begin();
+                auto iter1 = arg1->begin();
                 while (iter1->hasNext()) {
                     pair<T1, T2> p1 = iter1->next();
-
-                    BatIterator<T3, T4> *iter2 = arg2->begin();
+                    auto iter2 = arg2->begin();
                     while (iter2->hasNext()) {
                         pair<T3, T4> p2 = iter2->next();
                         if (p1.second == p2.first) {
-                            pair<T1, T4> np;
-                            memcpy(&np.first, &p1.first, sizeof (T1));
-                            memcpy(&np.second, &p2.second, sizeof (T4));
-                            result->append(np);
+                            result->append(make_pair(std::move(p1.first), std::move(p2.second)));
                         }
                     }
                     delete iter2;
                 }
                 delete iter1;
-                //cout<<arg1->size()<<"x"<<arg2->size()<<"="<<result->size();
                 return result;
             }
 
             template<class T1, class T2, class T3, class T4>
-            static Bat<T1, T4>* col_selectjoin(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2) {
+            Bat<T1, T4>* col_selectjoin(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2) {
                 auto result = new TempBat<T1, T4>();
-                BatIterator<T1, T2> *iter1 = arg1->begin();
-                BatIterator<T3, T4> *iter2 = arg2->begin();
+                auto iter1 = arg1->begin();
+                auto iter2 = arg2->begin();
                 pair<T1, T2> p1;
                 pair<T3, T4> p2;
                 bool working = true;
@@ -318,12 +258,8 @@ namespace v2 {
                             working = true;
                         }
                     }
-                    //cout <<p1.second<<" "<<p2.first<<endl;
                     if (p1.second == p2.first) {
-                        // pair<T1, T4> np;
-                        // memcpy(&np.first, &p1.first, sizeof (T1));
-                        // memcpy(&np.second, &p2.second, sizeof (T4));
-                        result->append(make_pair(p1.first, p2.second));
+                        result->append(make_pair(std::move(p1.first), std::move(p2.second)));
                     }
                 }
                 delete iter1;
@@ -332,54 +268,45 @@ namespace v2 {
             }
 
             template<class T1, class T2, class T3>
-            static Bat<T1, T3>* col_hashjoin(Bat<T1, T2> *arg1, Bat<T2, T3> *arg2, int SIDE = 0) {
-                //cout<<"hashjoin must be checked - strange errors while compiling indicate copy n paste errors"<<endl;
+            Bat<T1, T3>* col_hashjoin(Bat<T1, T2> *arg1, Bat<T2, T3> *arg2, int SIDE = 0) {
                 auto result = new TempBat<T1, T3>();
-                BatIterator<T1, T2> *iter1 = arg1->begin();
-                BatIterator<T2, T3> *iter2 = arg2->begin();
+                auto iter1 = arg1->begin();
+                auto iter2 = arg2->begin();
                 unordered_map<T2, vector<T1>* > hashMapLeft;
                 unordered_map<T2, vector<T3>* > hashMapRight;
-                // building hash map
                 if (SIDE == JOIN_LEFT) {
                     while (iter1->hasNext()) {
-                        pair<T1, T2> p1 = iter1->next();
+                        auto p1 = iter1->next();
+                        vector<T1> *vec;
                         if (hashMapLeft.find(p1.second) == hashMapLeft.end()) {
-                            vector<T1> *vec = new vector<T1>();
-                            vec->emplace_back(p1.first);
-                            hashMapLeft[p1.second] = vec;
+                            vec = new vector<T1>();
                         } else {
-                            vector<T1>* vec = (vector<T1>*)hashMapLeft[(T2) p1.second];
-                            vec->emplace_back(p1.first);
-                            hashMapLeft[p1.second] = vec;
+                            vec = (vector<T1>*)hashMapLeft[(T2) p1.second];
                         }
+                        vec->emplace_back(std::move(p1.first));
+                        hashMapLeft[p1.second] = vec;
                     }
                 } else {
                     while (iter2->hasNext()) {
                         pair<T2, T3> p1 = iter2->next();
+                        vector<T3> *vec;
                         if (hashMapRight.find(p1.first) == hashMapRight.end()) {
-                            vector<T3> *vec = new vector<T3>();
-                            vec->emplace_back(p1.second);
-                            hashMapRight[p1.first] = vec;
+                            vec = new vector<T3>();
                         } else {
-                            vector<T3>* vec = (vector<T3>*)hashMapRight[(T2) p1.first];
-                            vec->emplace_back(p1.second);
-                            hashMapRight[p1.first] = vec;
+                            vec = (vector<T3>*)hashMapRight[(T2) p1.first];
                         }
+                        vec->emplace_back(std::move(p1.second));
+                        hashMapRight[p1.first] = vec;
                     }
                 }
                 // probing against hash map
                 if (SIDE == JOIN_LEFT) {
                     while (iter2->hasNext()) {
-                        pair<T2, T3> p2 = iter2->next();
+                        auto p2 = iter2->next();
                         if (hashMapLeft.find((T2) p2.first) != hashMapLeft.end()) {
                             vector<T1>* vec = (vector<T1>*)hashMapLeft[(T2) p2.first];
-                            for (unsigned i = 0; i < (unsigned) vec->size(); i++) {
-                                pair<T1, T3> np;
-                                T1 value = (T1) (*vec)[i];
-                                //cout <<value<<" "<<p2.second<<endl;
-                                memcpy(&np.first, &value, sizeof (T1));
-                                memcpy(&np.second, &p2.second, sizeof (T3));
-                                result->append(np);
+                            for (size_t i = 0; i < vec->size(); i++) {
+                                result->append(make_pair(std::move((*vec)[i]), std::move(p2.second)));
                             }
                         }
                     }
@@ -388,82 +315,44 @@ namespace v2 {
                         pair<T1, T2> p2 = iter1->next();
                         if (hashMapRight.find((T2) p2.second) != hashMapRight.end()) {
                             vector<T3>* vec = (vector<T3>*)hashMapRight[(T3) p2.second];
-                            for (unsigned i = 0; i < (unsigned) vec->size(); i++) {
-                                pair<T1, T3> np;
-                                T3 value = (T3) (*vec)[i];
-                                //cout <<value<<" "<<p2.second<<endl;
-                                memcpy(&np.second, &value, sizeof (T3));
-                                memcpy(&np.first, &p2.first, sizeof (T1));
-                                result->append(np);
+                            for (size_t i = 0; i < vec->size(); i++) {
+                                result->append(make_pair(std::move((*vec)[i]), std::move(p2.first)));
                             }
                         }
                     }
 
                 }
+                for (auto elem : hashMapLeft) {
+                    delete elem.second;
+                }
+                for (auto elem : hashMapRight) {
+                    delete elem.second;
+                }
                 delete iter1;
                 delete iter2;
-                //delete hashMap;
                 return result;
             }
 
-            template<class T1, class T2, class T3>
-            static Bat<T1, T3>* col_fill(Bat<T1, T2> *arg, T3 value) {
-                auto result = new TempBat<T1, T3>(arg->size());
-                BatIterator<T1, T2> *iter = arg->begin();
+            template<class Tail1, class Tail2>
+            Bat<oid_t, Tail2>* col_fill(Bat<oid_t, Tail1> *arg, Tail2 value) {
+                auto result = new TempBat<oid_t, Tail2>(arg->size());
+                auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<T1, T2> p = iter->next();
-                    pair<T1, T3> np;
-                    memcpy(&np.first, &p.first, sizeof (T1));
-                    memcpy(&np.second, &value, sizeof (T3));
-                    result->append(np);
+                    auto p = iter->next();
+                    result->append(make_pair(std::move(p.first), std::move(value)));
                 }
                 delete iter;
                 return result;
             }
 
-            template<class T1, class T2>
-            static Bat<T1, T2>* col_aggregate(Bat<T1, T2> *arg, T2 initValue) {
-                auto result = new TempBat<T1, T2>();
-                BatIterator<T1, T2> *iter = arg->begin();
-                map<string, T2> *values = new map<string, T2>();
-                map<string, T1> *tt = new map<string, T1>();
+            template<class Tail>
+            Bat<oid_t, Tail>* col_aggregate_sum(Bat<oid_t, Tail> *arg, Tail initValue) {
+                auto result = new TempBat<oid_t, Tail>();
+                auto values = new map<oid_t, Tail>();
+                auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<T1, T2> p = iter->next();
-                    string s = p.first.mS;
-                    if (values->find(s) == values->end()) {
-                        //	cout <<"not found"<<endl;
-                        (*tt)[s] = p.first;
-                        (*values)[s] = initValue;
-                    } else {
-                        (*values)[s] = (*values)[s] + (unsigned) 1;
-                    }
-                }
-                delete iter;
-                typedef typename std::map<string, T2>::iterator mapIter;
-                for (mapIter m = values->begin(); m != values->end(); m++) {
-                    T1 first = (*tt)[m->first];
-                    T2 value = m->second;
-
-                    string s = m->first;
-
-                    cout << first << endl;
-                    cout << value << endl;
-                    //	result->append(make_pair(m->first, m->second));
-                }
-                delete values;
-                return result;
-            }
-
-            template<class T1, class T2>
-            static Bat<T1, T2>* col_aggregate_sum(Bat<T1, T2> *arg, T2 initValue) {
-                auto result = new TempBat<T1, T2>();
-                map<T1, T2> *values = new map<T1, T2>();
-                BatIterator<T1, T2> *iter = arg->begin();
-                while (iter->hasNext()) {
-                    pair<T1, T2> p = iter->next();
-
+                    auto p = iter->next();
                     if (values->find(p.first) == values->end()) {
-                        //	cout <<"not found"<<endl;
                         (*values)[p.first] = initValue + p.second;
                     } else {
                         (*values)[p.first] = (*values)[p.first] + p.second;
@@ -471,9 +360,7 @@ namespace v2 {
                 }
                 delete iter;
                 for (auto iter = values->begin(); iter != values->end(); iter++) {
-                    //cout <<first<<endl;
-                    //cout <<value<<endl;
-                    result->append(make_pair(iter->first, iter->second));
+                    result->append(make_pair(std::move(iter->first), std::move(iter->second)));
                 }
                 delete values;
                 return result;
@@ -484,17 +371,15 @@ namespace v2 {
              * "valn = sum(val0..valn)"
              * @Author: burkhard
              **/
-            template<class T1, class T2>
-            static Bat<T1, T2>* sum_op(Bat<T1, T2> *arg) {
-                auto result = new TempBat<T1, T2>(arg->size());
-                BatIterator<T1, T2> *iter = arg->begin();
-                T1 a = (T1) 0; //sum of p.first
-                T2 b = (T2) 0; //sum of p.second
+            template<class Tail>
+            Bat<oid_t, Tail>* sum_op(Bat<oid_t, Tail> *arg) {
+                auto result = new TempBat<oid_t, Tail>(arg->size());
+                auto iter = arg->begin();
+                oid_t a = 0; //sum of p.first
+                Tail b = (Tail) 0; //sum of p.second
                 while (iter->hasNext()) {
-                    pair<T1, T2> p = iter->next();
-                    a += p.first;
-                    b += p.second;
-                    result->append(make_pair(a, b));
+                    auto p = iter->next();
+                    result->append(make_pair(std::move(a += p.first), std::move(b += p.second)));
                 }
                 delete iter;
                 return result;
@@ -505,8 +390,8 @@ namespace v2 {
              * @param arg a Bat
              * @return a single sum value
              */
-            template<typename Head, typename Tail>
-            static Tail aggregate_sum(Bat<Head, Tail>* arg) {
+            template<typename Tail>
+            Tail aggregate_sum(Bat<oid_t, Tail>* arg) {
                 Tail sum = 0;
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
@@ -522,8 +407,8 @@ namespace v2 {
              * @param arg2
              * @return A single sum of the pair-wise products of the two Bats
              */
-            template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-            static Result aggregate_mul_sum(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, Result init) {
+            template<typename Result, typename Tail1, typename Tail2>
+            Result aggregate_mul_sum(Bat<oid_t, Tail1>* arg1, Bat<oid_t, Tail2>* arg2, Result init) {
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 Result total = init;
@@ -539,16 +424,17 @@ namespace v2 {
              * Exponential smoothing operator
              * @Author: burkhard
              **/
-            template<class T1, class T2>
-            static Bat<T1, T2>* exp_sm_op(Bat<T1, T2> *arg, double alpha) {
-                auto result = new TempBat<T1, T2>(arg->size());
-                BatIterator<T1, T2> *iter = arg->begin();
+            template<class Tail>
+            Bat<oid_t, Tail>* exp_sm_op(Bat<oid_t, Tail> *arg, double alpha) {
+                auto result = new TempBat<oid_t, Tail>(arg->size());
+                auto iter = arg->begin();
                 bool first = true; //the first element is added as it i.e. without being influenced by alpha
-                pair<T1, T2> s; //last pair added to result
+                pair<oid_t, Tail> s; //last pair added to result
                 while (iter->hasNext()) {
-                    pair<T1, T2> p = iter->next(); //current pair
-                    if (!first) s = make_pair((T1) (alpha * p.first + (1 - alpha) * s.first), (T2) (alpha * p.second + (1 - alpha) * s.second));
-                    else {
+                    auto p = iter->next(); //current pair
+                    if (!first) {
+                        s = make_pair(std::move(p.first), std::move((Tail) (alpha * p.second + (1 - alpha) * s.second)));
+                    } else {
                         s = p;
                         first = false;
                     }
@@ -565,16 +451,16 @@ namespace v2 {
              * a point is on the same segment iif the angular difference is less or equal to 'tolerance'
              * @Author: burkhard
              **/
-            template<class T1, class T2>
-            static Bat<T1, T2>* find_wp_op(Bat<T1, T2> *arg, double tolerance = 0.5) {
-                auto result = new TempBat<T1, T2>();
-                BatIterator<T1, T2> *iter = arg->begin();
+            template<class Tail>
+            Bat<oid_t, Tail>* find_wp_op(Bat<oid_t, Tail> *arg, double tolerance = 0.5) {
+                auto result = new TempBat<oid_t, Tail>();
+                auto iter = arg->begin();
                 if (!iter->hasNext()) return result; //without elements, no WPs
-                pair<T1, T2> lastwp = iter->next();
+                auto lastwp = iter->next();
                 result->append(lastwp); //the first point is always a WP
                 std::cout << "WP: " << lastwp.first << "|" << lastwp.second << std::endl;
                 if (!iter->hasNext()) return result; //without a second element we cannot find more WPs
-                pair<T1, T2> tmp = iter->next();
+                auto tmp = iter->next();
                 double dir = -100; //direction determined by the last WP and the following point. Less than -10 means dir has to be recalculated
                 while (iter->hasNext()) {//main loop
                     if (dir < -10) {//WP was added, calculate new dir
@@ -591,6 +477,7 @@ namespace v2 {
                         dir = -50; //forces calculation of new direction
                     }
                 }
+                delete iter;
                 result->append(tmp); //last element is always a WP
                 return result;
             }

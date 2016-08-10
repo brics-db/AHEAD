@@ -2,6 +2,7 @@
 *.a
 *.o
 *.out
+*.err
 *_dbg
 /database
 /nbproject/private

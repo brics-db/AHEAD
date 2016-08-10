@@ -57,17 +57,23 @@
 
 
 enum type_t {
-    type_int = 0, type_str, type_fxd, type_chr, type_resint
+    type_tinyint = 0, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
 };
 
-typedef int int_t;
+typedef uint8_t tinyint_t;
+typedef uint16_t shortint_t;
+typedef uint32_t int_t;
+typedef uint64_t largeint_t;
 typedef char char_t, *str_t;
-typedef double fxd_t;
+typedef double fixed_t;
+
+typedef uint32_t restiny_t;
+typedef uint32_t resshort_t;
 typedef uint64_t resint_t;
 
 typedef unsigned oid_t;
 
-typedef uint32_t id_t;
+typedef int_t id_t;
 
 #define OID_INVALID (static_cast<oid_t>(-1))
 
@@ -101,9 +107,9 @@ class Bat;
 template<class Head, class Tail>
 class BatIterator;
 class BucketManager;
-template<class Head, class Tail>
+template<class Tail>
 class ColumnBat;
-template<class Head, class Tail>
+template<class Tail>
 class ColumnBatIterator;
 class ColumnManager;
 template<class Head, class Tail>

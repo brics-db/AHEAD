@@ -36,6 +36,7 @@
  */
 class BucketManager {
 public:
+    friend class TransactionManager;
 
     /**
      * Die Datenstruktur kapselt einen Zeiger auf einen Speicherbereich fester Gr��e f�r die Datenstruktur Bucket.
@@ -158,6 +159,7 @@ public:
 
         BucketIterator(BucketStream *stream, unsigned int *version);
         BucketIterator(const BucketIterator &copy);
+        virtual ~BucketIterator();
 
         friend class ColumnManager;
     };
@@ -189,11 +191,13 @@ public:
 private:
     static BucketManager *instance;
 
+    static void destroyInstance();
+
     std::map<unsigned int, BucketStream> streams;
 
     BucketManager();
     BucketManager(const BucketManager &copy);
-    ~BucketManager();
+    virtual ~BucketManager();
 };
 
 #endif

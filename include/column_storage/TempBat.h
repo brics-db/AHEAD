@@ -25,6 +25,8 @@
 #ifndef TEMPBAT_H
 #define TEMPBAT_H
 
+#include <utility>
+
 #include "ColumnStore.h"
 #include "column_storage/Bat.h"
 #include "column_storage/TempBatIterator.h"
@@ -55,8 +57,13 @@ public:
     }
 
     /** append an item */
-    virtual void append(pair<Head, Tail> p) override {
-        items.emplace_back(p);
+    virtual void append(pair<Head, Tail>& p) override {
+        items.emplace_back(std::move(p));
+    }
+
+    /** append an item */
+    virtual void append(pair<Head, Tail>&& p) override {
+        items.emplace_back(std::move(p));
     }
 
     virtual unsigned size() override {
