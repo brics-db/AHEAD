@@ -377,7 +377,6 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 }
                 memset(line, 0, LEN_LINE);
             }
-            cout << "Transaction::load() imported " << n << " records." << endl;
 
             // Spalten schließen
             close(ID_BAT_COLNAMES);
