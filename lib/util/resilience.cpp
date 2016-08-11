@@ -27,14 +27,14 @@
 
 #include <util/resilience.hpp>
 
-const restiny_t A_TINY_UNENC_MAX = 0x0000007F;
-const restiny_t A_TINY_UNENC_MIN = 0xFFFFFF80;
-const restiny_t A_TINY_UNENC_MAX_U = 0x000000FF;
-const restiny_t A_TINY_UNENC_MIN_U = 0x00000000;
+const restiny_t A_TINY_UNENC_MAX = 0x007F;
+const restiny_t A_TINY_UNENC_MIN = 0xFF80;
+const restiny_t A_TINY_UNENC_MAX_U = 0x00FF;
+const restiny_t A_TINY_UNENC_MIN_U = 0x0000;
 const restiny_t A_TINY = 233;
-const restiny_t A_TINY_INV = 0x1fdcd759;
-const restiny_t A2_TINY = 55831;
-const restiny_t A2_TINY_INV = 0x4dfffda7;
+const restiny_t A_TINY_INV = 0xd759;
+// const restiny_t A2_TINY = 55831;
+// const restiny_t A2_TINY_INV = 0x4dfffda7;
 
 const resshort_t A_SHORT_UNENC_MAX = 0x00007FFF;
 const resshort_t A_SHORT_UNENC_MIN = 0xFFFF8000;
@@ -42,8 +42,8 @@ const resshort_t A_SHORT_UNENC_MAX_U = 0x0000FFFF;
 const resshort_t A_SHORT_UNENC_MIN_U = 0x00000000;
 const resshort_t A_SHORT = 233;
 const resshort_t A_SHORT_INV = 0x1fdcd759;
-const resshort_t A2_SHORT = 63877;
-const resshort_t A2_SHORT_INV = 0xd142174d;
+// const resshort_t A2_SHORT = 63877;
+// const resshort_t A2_SHORT_INV = 0xd142174d;
 
 const resint_t A_INT_UNENC_MAX = 0x000000007FFFFFFFull;
 const resint_t A_INT_UNENC_MIN = 0xFFFFFFFF80000000ull;
@@ -51,5 +51,5 @@ const resint_t A_INT_UNENC_MAX_U = 0x00000000FFFFFFFFull;
 const resint_t A_INT_UNENC_MIN_U = 0x0000000000000000ull;
 const resint_t A_INT = 225;
 const resint_t A_INT_INV = 0x0FEDCBA987654321ull;
-const resint_t A2_INT = 64311;
-const resint_t A2_INT_INV = 0xAA86FFFEFB1FAA87ull;
+// const resint_t A2_INT = 64311;
+// const resint_t A2_INT_INV = 0xAA86FFFEFB1FAA87ull;

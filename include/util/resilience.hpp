@@ -36,8 +36,8 @@ extern const restiny_t A_TINY_UNENC_MAX_U;
 extern const restiny_t A_TINY_UNENC_MIN_U;
 extern const restiny_t A_TINY;
 extern const restiny_t A_TINY_INV;
-extern const restiny_t A2_TINY;
-extern const restiny_t A2_TINY_INV;
+// extern const restiny_t A2_TINY;
+// extern const restiny_t A2_TINY_INV;
 
 extern const resshort_t A_SHORT_UNENC_MAX;
 extern const resshort_t A_SHORT_UNENC_MIN;
@@ -45,8 +45,8 @@ extern const resshort_t A_SHORT_UNENC_MAX_U;
 extern const resshort_t A_SHORT_UNENC_MIN_U;
 extern const resshort_t A_SHORT;
 extern const resshort_t A_SHORT_INV;
-extern const resshort_t A2_SHORT;
-extern const resshort_t A2_SHORT_INV;
+// extern const resshort_t A2_SHORT;
+// extern const resshort_t A2_SHORT_INV;
 
 extern const resint_t A_INT_UNENC_MAX;
 extern const resint_t A_INT_UNENC_MIN;
@@ -54,7 +54,7 @@ extern const resint_t A_INT_UNENC_MAX_U;
 extern const resint_t A_INT_UNENC_MIN_U;
 extern const resint_t A_INT;
 extern const resint_t A_INT_INV;
-extern const resint_t A2_INT;
-extern const resint_t A2_INT_INV;
+// extern const resint_t A2_INT;
+// extern const resint_t A2_INT_INV;
 
 #endif /* RESILIENCE_HPP */

@@ -64,10 +64,11 @@ typedef uint8_t tinyint_t;
 typedef uint16_t shortint_t;
 typedef uint32_t int_t;
 typedef uint64_t largeint_t;
+
 typedef char char_t, *str_t;
 typedef double fixed_t;
 
-typedef uint32_t restiny_t;
+typedef uint16_t restiny_t;
 typedef uint32_t resshort_t;
 typedef uint64_t resint_t;
 

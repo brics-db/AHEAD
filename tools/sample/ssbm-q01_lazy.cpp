@@ -77,9 +77,9 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQenc, 25 * ::A_TINY)); // lo_quantity < 25
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt<restiny_t>(batLQenc, static_cast<restiny_t> (25) * ::A_TINY)); // lo_quantity < 25
         PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
-        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLDenc, 1 * ::A_TINY, 3 * ::A_TINY)); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt<restiny_t>(batLDenc, static_cast<restiny_t> (1) * ::A_TINY, static_cast<restiny_t> (3) * ::A_TINY)); // lo_discount between 1 and 3
         PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirror(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
