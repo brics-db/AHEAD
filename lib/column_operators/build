@@ -13,7 +13,9 @@ FILES=(operators)
 CD=`pwd | sed 's#.*/##'`
 
 for f in "${FILES[@]}"; do
+    echo "${f}_dbg: "
     clang++ -I$BASEDIR/lib -I$BASEDIR/include `llvm-config --cxxflags` -g3 -O0 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
+    echo "${f}: "
     clang++ -I$BASEDIR/lib -I$BASEDIR/include `llvm-config --cxxflags` -O3 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}.o || exit 1
 done
 

@@ -69,11 +69,11 @@ namespace v2 {
                     result->emplace_back(std::move((static_cast<TypeA> (iter->get(start).second) * aInv) <= unEncMaxU));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
-                            result->emplace_back(std::move((static_cast<TypeA> (iter->get(start).second) * aInv) <= unEncMaxU));
+                            result->emplace_back(std::move((static_cast<TypeA> (iter->next().second) * aInv) <= unEncMaxU));
                         }
                     } else {
                         while (iter->hasNext()) {
-                            result->emplace_back(std::move((static_cast<TypeA> (iter->get(start).second) * aInv) <= unEncMaxU));
+                            result->emplace_back(std::move((static_cast<TypeA> (iter->next().second) * aInv) <= unEncMaxU));
                         }
                     }
                 }
@@ -87,19 +87,16 @@ namespace v2 {
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
                     auto current = iter->get(start);
-                    current.second *= aInv;
-                    result->append(make_pair(std::move(current.first), std::move(static_cast<Tail> (current.second))));
+                    result->append(make_pair(std::move(current.first), std::move(static_cast<Tail> (current.second * aInv))));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
                             current = iter->next();
-                            current.second *= aInv;
-                            result->append(make_pair(std::move(current.first), std::move(static_cast<Tail> (current.second))));
+                            result->append(make_pair(std::move(current.first), std::move(static_cast<Tail> (current.second * aInv))));
                         }
                     } else {
                         while (iter->hasNext()) {
                             current = iter->next();
-                            current.second *= aInv;
-                            result->append(make_pair(std::move(current.first), std::move(static_cast<Tail> (current.second))));
+                            result->append(make_pair(std::move(current.first), std::move(static_cast<Tail> (current.second * aInv))));
                         }
                     }
                 }
