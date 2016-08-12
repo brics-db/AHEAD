@@ -29,11 +29,11 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "column_storage/Bat.h"
-#include "column_storage/ColumnManager.h"
-#include "column_storage/TransactionManager.h"
-#include "meta_repository/MetaRepositoryManager.h"
-#include "column_storage/ColumnBatIterator.h"
+#include <column_storage/Bat.h>
+#include <column_storage/ColumnManager.h>
+#include <column_storage/TransactionManager.h>
+#include <meta_repository/MetaRepositoryManager.h>
+#include <column_storage/ColumnBatIterator.h>
 
 using namespace std;
 
@@ -90,8 +90,13 @@ typedef ColumnBat<largeint_t> largeint_col_t;
 typedef ColumnBat<char_t> char_col_t;
 typedef ColumnBat<str_t> str_col_t;
 typedef ColumnBat<fixed_t> fixed_col_t;
-typedef ColumnBat<restiny_t> restiny_col_t;
-typedef ColumnBat<resshort_t> resshort_col_t;
-typedef ColumnBat<resint_t> resint_col_t;
+
+typedef Bat<oid_t, tinyint_t> tinyint_bat_t;
+typedef Bat<oid_t, shortint_t> shortint_bat_t;
+typedef Bat<oid_t, int_t> int_bat_t;
+typedef Bat<oid_t, largeint_t> largeint_bat_t;
+typedef Bat<oid_t, char_t> char_bat_t;
+typedef Bat<oid_t, str_t> str_bat_t;
+typedef Bat<oid_t, fixed_t> fixed_bat_t;
 
 #endif

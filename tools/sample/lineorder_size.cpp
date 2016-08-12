@@ -10,7 +10,7 @@
 #include "ssbm.hpp"
 
 StopWatch sw1;
-const size_t NUM_OPS = 17;
+const size_t NUM_OPS = 32;
 nanoseconds::rep opTimes[NUM_OPS];
 size_t batSizes[NUM_OPS];
 size_t batConsumptions[NUM_OPS];
@@ -24,94 +24,6 @@ const size_t LEN_SIZES = 12;
 const size_t LEN_TYPES = 16;
 string emptyString;
 
-template<typename T>
-struct TypeSelector;
-
-template<>
-struct TypeSelector<tinyint_t> {
-    typedef tinyint_t base_t;
-    typedef tinyint_col_t col_t;
-    typedef restiny_t res_t;
-    typedef restiny_col_t res_col_t;
-
-    static const char* BaseTypeName;
-    static const res_t A;
-    static const res_t A_INV;
-    static const res_t A_UNENC_MAX;
-    static const res_t A_UNENC_MAX_U;
-};
-
-const TypeSelector<tinyint_t>::res_t TypeSelector<tinyint_t>::A = ::A_TINY;
-const TypeSelector<tinyint_t>::res_t TypeSelector<tinyint_t>::A_INV = ::A_TINY_INV;
-const TypeSelector<tinyint_t>::res_t TypeSelector<tinyint_t>::A_UNENC_MAX = ::A_TINY_UNENC_MAX;
-const TypeSelector<tinyint_t>::res_t TypeSelector<tinyint_t>::A_UNENC_MAX_U = ::A_TINY_UNENC_MAX_U;
-
-template<>
-struct TypeSelector<shortint_t> {
-    typedef shortint_t base_t;
-    typedef shortint_col_t col_t;
-    typedef resshort_t res_t;
-    typedef resshort_col_t res_col_t;
-
-    static const char* BaseTypeName;
-    static const res_t A;
-    static const res_t A_INV;
-    static const res_t A_UNENC_MAX;
-    static const res_t A_UNENC_MAX_U;
-};
-
-const TypeSelector<shortint_t>::res_t TypeSelector<shortint_t>::A = ::A_SHORT;
-const TypeSelector<shortint_t>::res_t TypeSelector<shortint_t>::A_INV = ::A_SHORT_INV;
-const TypeSelector<shortint_t>::res_t TypeSelector<shortint_t>::A_UNENC_MAX = ::A_SHORT_UNENC_MAX;
-const TypeSelector<shortint_t>::res_t TypeSelector<shortint_t>::A_UNENC_MAX_U = ::A_SHORT_UNENC_MAX_U;
-
-template<>
-struct TypeSelector<int_t> {
-    typedef int_t base_t;
-    typedef int_col_t col_t;
-    typedef resint_t res_t;
-    typedef resint_col_t res_col_t;
-
-    static const char* BaseTypeName;
-    static const res_t A;
-    static const res_t A_INV;
-    static const res_t A_UNENC_MAX;
-    static const res_t A_UNENC_MAX_U;
-};
-
-const TypeSelector<int_t>::res_t TypeSelector<int_t>::A = ::A_INT;
-const TypeSelector<int_t>::res_t TypeSelector<int_t>::A_INV = ::A_INT_INV;
-const TypeSelector<int_t>::res_t TypeSelector<int_t>::A_UNENC_MAX = ::A_INT_UNENC_MAX;
-const TypeSelector<int_t>::res_t TypeSelector<int_t>::A_UNENC_MAX_U = ::A_INT_UNENC_MAX_U;
-
-template<typename T>
-struct TypeName;
-
-template<>
-struct TypeName<uint8_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint16_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint32_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint64_t> {
-    static const char* NAME;
-};
-
-const char* TypeName<uint8_t>::NAME = "tinyint";
-const char* TypeName<uint16_t>::NAME = "shortint";
-const char* TypeName<uint32_t>::NAME = "int";
-const char* TypeName<uint64_t>::NAME = "bigint";
-
 template<typename BaseType>
 void runTable(const char* strTable, const char* strTableAN, const char* strColumn) {
     size_t x = 0;
@@ -119,7 +31,7 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
     MEASURE_OP(sw1, x, batBcAN, new typename TypeSelector<BaseType>::res_col_t(strTableAN, strColumn));
     MEASURE_OP(sw1, x, batTcAN, v2::bat::ops::copy(batBcAN));
 
-    cout << "\n" << strTable << '.' << strColumn << ":";
+    cout << "\n#runTable(" << strTable << '.' << strColumn << ")";
 
     cout << "\nname\t" << setw(LEN_TIMES) << "time [ns]" << '\t' << setw(LEN_SIZES) << "size [#]" << '\t' << setw(LEN_SIZES) << "consum [B]" << '\t' << setw(LEN_TYPES) << "type head" << '\t' << setw(LEN_TYPES) << "type tail";
     for (size_t i = 0; i < x; ++i) {
@@ -166,6 +78,72 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
     delete batBc;
 }
 
+template<typename BaseType>
+void runTable2(const char* strTable, const char* strTableAN, const char* strColumn) {
+    const size_t MAX_SCALE = 10;
+    typename TypeSelector<BaseType>::res_bat_t * bats[MAX_SCALE];
+    auto batBc = new typename TypeSelector<BaseType>::col_t(strTable, strColumn);
+    auto batBcAN = new typename TypeSelector<BaseType>::res_col_t(strTableAN, strColumn);
+
+    cout << "\n#runTable2(" << strTable << '.' << strColumn << ')';
+
+    cout << "\n#sizes";
+    size_t szBats = 0;
+    for (size_t i = 0; i < MAX_SCALE; ++i) {
+        bats[i] = v2::bat::ops::copy(batBcAN);
+        szBats += bats[i]->size();
+        cout << '\n' << setw(2) << i << '\t' << szBats << flush;
+    }
+
+    cout << "\n#NUM_RUNS=" << NUM_RUNS << " (times are averages over as many runs)\nnum\tcheck\tdecode\tcheck+decode" << flush;
+
+    for (size_t scale = 1; scale <= MAX_SCALE; ++scale) {
+        cout << '\n' << setw(3) << scale << flush;
+
+        StopWatch::rep totalTime = 0;
+        for (size_t i = 0; i < NUM_RUNS; ++i) {
+            sw1.start();
+            for (size_t scale2 = 0; scale2 < scale; ++scale2) {
+                auto result = v2::bat::ops::checkA(bats[scale2], TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+                delete result;
+            }
+            sw1.stop();
+            totalTime += sw1.duration();
+        }
+        cout << '\t' << setw(LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
+
+        totalTime = 0;
+        for (size_t i = 0; i < NUM_RUNS; ++i) {
+            sw1.start();
+            for (size_t scale2 = 0; scale2 < scale; ++scale2) {
+                auto result = v2::bat::ops::decodeA<typename TypeSelector<BaseType>::base_t > (bats[scale2], TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+                delete result;
+            }
+            sw1.stop();
+            totalTime += sw1.duration();
+        }
+        cout << '\t' << setw(LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
+
+        totalTime = 0;
+        for (size_t i = 0; i < NUM_RUNS; ++i) {
+            sw1.start();
+            for (size_t scale2 = 0; scale2 < scale; ++scale2) {
+                auto result = v2::bat::ops::checkAndDecodeA<typename TypeSelector<BaseType>::base_t > (bats[scale2], TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+                delete result.first;
+                delete result.second;
+            }
+            sw1.stop();
+            totalTime += sw1.duration();
+        }
+        cout << '\t' << setw(LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
+    }
+    for (size_t i = 0; i < MAX_SCALE; ++i) {
+        delete bats[i];
+    }
+    delete batBcAN;
+    delete batBc;
+}
+
 int main(int argc, char** argv) {
     cout << "lineorder_size\n==============" << endl;
 
@@ -187,6 +165,7 @@ int main(int argc, char** argv) {
 
     // RESINT
     // ORDERKEY
+    runTable2<int_t>("lineorder", "lineorderAN", "orderkey");
     runTable<int_t>("lineorder", "lineorderAN", "orderkey");
 
     // RESSHORT
