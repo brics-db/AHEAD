@@ -2,7 +2,6 @@
 
 LIB=column_storage
 LIBFILE=lib${LIB}.a
-FILES=(BucketManager ColumnManager TransactionManager Transaction)
 CD=`pwd | sed 's#.*/##'`
 
 rm *.o 2>/dev/null

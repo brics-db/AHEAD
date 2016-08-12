@@ -6,8 +6,9 @@ if [[ $# -ne 1 ]]; then
 fi
 
 BASEDIR="$1"
+DIRS=(column_operators column_storage meta_repository util)
 
-for p in column_operators column_storage meta_repository util; do
+for p in "${DIRS[@]}"; do
 	pushd $p
 	./build "${BASEDIR}" || exit 1
 	popd

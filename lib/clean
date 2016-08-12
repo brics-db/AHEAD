@@ -1,6 +1,8 @@
 #!/bin/bash
 
-for p in column_operators column_storage meta_repository util; do
+DIRS=(column_operators column_storage meta_repository util)
+
+for p in "${DIRS[@]}"; do
 	pushd $p
 	./clean || exit 1
 	popd

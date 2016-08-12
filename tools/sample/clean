@@ -1,6 +1,8 @@
 #!/bin/bash
 
-for file in main ssbm-q01; do
+FILES=(main ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded lineorder_size)
+
+for file in "${FILES[@]}"; do
     rm ${file} ${file}_dbg 2>/dev/null
 done
 

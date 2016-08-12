@@ -1,6 +1,8 @@
 #!/bin/bash
 
-for p in sample; do
+DIRS=(sample)
+
+for p in "${DIRS[@]}"; do
 	pushd $p
 	./clean || exit 1
 	popd

@@ -2,7 +2,6 @@
 
 LIB=column_operators
 LIBFILE=lib${LIB}.a
-FILES=(operators)
 CD=`pwd | sed 's#.*/##'`
 
 rm *.o 2>/dev/null

@@ -2,7 +2,6 @@
 
 LIB=util
 LIBFILE=lib${LIB}.a
-FILES=(stopwatch)
 CD=`pwd | sed 's#.*/##'`
 
 rm *.o 2>/dev/null

@@ -2,7 +2,6 @@
 
 LIB=meta_repository
 LIBFILE=lib${LIB}.a
-FILES=(MetaRepositoryManager)
 CD=`pwd | sed 's#.*/##'`
 
 rm *.o 2>/dev/null
