@@ -59,7 +59,7 @@ public:
      *
      * Creates an entry for a table into the meta repository.
      */
-    int createTable(const char *name);
+    id_t createTable(const char *name);
 
     /**
      * @author Christian Vogel
@@ -79,32 +79,27 @@ private:
     static void destroyInstance();
 
     // all attributes for the table table :)
-
-    Bat<oid_t, unsigned> *pk_table_id;
+    Bat<oid_t, id_t> *pk_table_id;
     Bat<oid_t, const char*> *table_name;
 
     // all attributes for the attribute table
-
-    Bat<oid_t, unsigned> *pk_attribute_id;
+    Bat<oid_t, id_t> *pk_attribute_id;
     Bat<oid_t, const char*> *attribute_name;
-    Bat<oid_t, unsigned> *fk_table_id;
+    Bat<oid_t, id_t> *fk_table_id;
     Bat<oid_t, unsigned> *fk_type_id;
     Bat<oid_t, unsigned> *BAT_number;
 
     // all attributes for the layout table
-
-    Bat<oid_t, unsigned> *pk_layout_id;
+    Bat<oid_t, id_t> *pk_layout_id;
     Bat<oid_t, const char*> *layout_name;
     Bat<oid_t, unsigned> *size;
 
     // all attributes for the operator table
-
-    Bat<oid_t, unsigned> *pk_operator_id;
+    Bat<oid_t, id_t> *pk_operator_id;
     Bat<oid_t, const char*> *operator_name;
 
     // all attributes for the datatypes table
-
-    Bat<oid_t, unsigned> *pk_datatype_id;
+    Bat<oid_t, id_t> *pk_datatype_id;
     Bat<oid_t, const char*> *datatype_name;
     Bat<oid_t, unsigned> *datatype_length;
     Bat<oid_t, char> *datatype_category;

@@ -80,7 +80,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     ColumnManager::ColumnIterator *ci;
     ColumnManager::Record *record;
 
-    set<unsigned int> columns;
+    set<id_t> columns;
     string valuesPath(path);
     valuesPath.append(".tbl");
     string headerPath(path);
@@ -92,14 +92,15 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     memset(value, 0, LEN_VALUE);
     char *buffer;
     TransactionManager::BinaryUnit *bun;
-    unsigned int offset, column;
+    size_t offset;
+    id_t column;
     type_t type;
     bool firstAppend = true;
     size_t n = 0; // line counter
     size_t lenPrefix = prefix ? strlen(prefix) : 0;
 
-    unsigned newTableId; // unique id of the created table
-    unsigned BATId;
+    id_t newTableId; // unique id of the created table
+    id_t BATId;
     char datatype[LEN_VALUE];
     vector<char*> attribute_names;
 

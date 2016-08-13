@@ -165,16 +165,16 @@ int main(int argc, char** argv) {
 
     // RESINT
     // ORDERKEY
-    runTable2<int_t>("lineorder", "lineorderAN", "orderkey");
-    runTable<int_t>("lineorder", "lineorderAN", "orderkey");
+    runTable2<v2_int_t>("lineorder", "lineorderAN", "orderkey");
+    runTable<v2_int_t>("lineorder", "lineorderAN", "orderkey");
 
     // RESSHORT
     // LINENUMBER
-    runTable<shortint_t>("lineorder", "lineorderAN", "linenumber");
+    runTable<v2_shortint_t>("lineorder", "lineorderAN", "linenumber");
 
     // RESTINY
     // QUANTITY
-    runTable<tinyint_t>("lineorder", "lineorderAN", "quantity");
+    runTable<v2_tinyint_t>("lineorder", "lineorderAN", "quantity");
 
     cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB." << endl;
 

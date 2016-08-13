@@ -160,16 +160,16 @@ void MetaRepositoryManager::createRepository() {
     datatype_category = new TempBat<oid_t, char>();
 }
 
-int MetaRepositoryManager::createTable(const char *name) {
-    int newTableId = -1;
+id_t MetaRepositoryManager::createTable(const char *name) {
+    id_t newTableId = ID_INVALID;
 
     if (!dataAlreadyExists(table_name, name)) {
-        pair<oid_t, unsigned> value = getLastValue(pk_table_id);
+        pair<oid_t, id_t> value = getLastValue(pk_table_id);
         // value.first is the last given head id
-        unsigned newId = value.first + 1;
+        id_t newId = value.first + 1;
 
         // value.second is the last given id for a table
-        newTableId = (int) value.second + 1;
+        newTableId = value.second + 1;
 
         pk_table_id->append(make_pair(newId, newTableId));
         table_name->append(make_pair(newId, name));
@@ -181,7 +181,7 @@ int MetaRepositoryManager::createTable(const char *name) {
     return newTableId;
 }
 
-unsigned MetaRepositoryManager::getBatIdOfAttribute(const char *nameOfTable, const char *attribute) {
+id_t MetaRepositoryManager::getBatIdOfAttribute(const char *nameOfTable, const char *attribute) {
     pair<unsigned, unsigned> batNrPair;
 
     int batIdForTableName = this->selectBatId(table_name, nameOfTable);

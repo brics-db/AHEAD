@@ -29,7 +29,7 @@
 
 using namespace std;
 
-template<class Head, class Tail>
+template<typename Head, typename Tail>
 class BatIterator {
 public:
 

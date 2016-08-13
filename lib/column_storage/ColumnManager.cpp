@@ -36,9 +36,9 @@ ColumnManager::ColumnIterator* ColumnManager::openColumn(unsigned int id, unsign
     }
 }
 
-std::set<unsigned int> ColumnManager::listColumns() {
-    std::set<unsigned int> list;
-    std::map<unsigned int, Column>::iterator it;
+std::set<id_t> ColumnManager::listColumns() {
+    std::set<id_t> list;
+    std::map<id_t, Column>::iterator it;
 
     for (it = this->columns.begin(); it != this->columns.end(); it++) {
         list.insert(it->first);
@@ -47,7 +47,7 @@ std::set<unsigned int> ColumnManager::listColumns() {
     return list;
 }
 
-void ColumnManager::createColumn(unsigned int id, unsigned int width) {
+void ColumnManager::createColumn(id_t id, size_t width) {
     if (columns.find(id) == columns.end()) {
         columns[id].width = width; // map auto-generates new entries
     } else {
@@ -125,8 +125,8 @@ ColumnManager::Record* ColumnManager::ColumnIterator::next() {
     }
 }
 
-ColumnManager::Record* ColumnManager::ColumnIterator::seek(unsigned int index) {
-    const unsigned int recordsPerBucket = (unsigned int) ((CHUNK_CONTENT_SIZE - sizeof (unsigned int)) / this->column->width);
+ColumnManager::Record* ColumnManager::ColumnIterator::seek(size_t index) {
+    const size_t recordsPerBucket = (size_t) ((CHUNK_CONTENT_SIZE - sizeof (size_t)) / this->column->width);
 
     this->currentChunk = this->iterator->seek(index / recordsPerBucket);
 

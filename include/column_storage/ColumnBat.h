@@ -37,15 +37,13 @@
 
 using namespace std;
 
-template<class Tail>
-class ColumnBat : public Bat<oid_t, Tail> {
-private:
-    unsigned mColumnId;
+template<class Head, class Tail>
+class ColumnBat : public Bat<Head, Tail> {
+    id_t mColumnId;
 
 public:
 
-    /** default constructor */
-    ColumnBat(unsigned columnId) : mColumnId(columnId) {
+    ColumnBat(id_t columnId) : mColumnId(columnId) {
     }
 
     ColumnBat(const char *table_name, const char *attribute) {
@@ -57,15 +55,15 @@ public:
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<oid_t, Tail> * begin() override {
-        return new ColumnBatIterator<Tail>(mColumnId);
+    virtual BatIterator<Head, Tail> * begin() override {
+        return new ColumnBatIterator<Head, Tail>(mColumnId);
     }
 
     /** append an item */
-    virtual void append(pair<oid_t, Tail>& p) override {
+    virtual void append(pair<Head, Tail>& p) override {
     }
 
-    virtual void append(pair<oid_t, Tail>&& p) override {
+    virtual void append(pair<Head, Tail>&& p) override {
     }
 
     virtual unsigned size() override {
@@ -83,14 +81,16 @@ public:
     }
 };
 
-typedef ColumnBat<tinyint_t> tinyint_col_t;
-typedef ColumnBat<shortint_t> shortint_col_t;
-typedef ColumnBat<int_t> int_col_t;
-typedef ColumnBat<largeint_t> largeint_col_t;
-typedef ColumnBat<char_t> char_col_t;
-typedef ColumnBat<str_t> str_col_t;
-typedef ColumnBat<fixed_t> fixed_col_t;
+typedef ColumnBat<oid_t, oid_t> oid_col_t;
+typedef ColumnBat<oid_t, tinyint_t> tinyint_col_t;
+typedef ColumnBat<oid_t, shortint_t> shortint_col_t;
+typedef ColumnBat<oid_t, int_t> int_col_t;
+typedef ColumnBat<oid_t, largeint_t> largeint_col_t;
+typedef ColumnBat<oid_t, char_t> char_col_t;
+typedef ColumnBat<oid_t, str_t> str_col_t;
+typedef ColumnBat<oid_t, fixed_t> fixed_col_t;
 
+typedef Bat<oid_t, oid_t> oid_bat_t;
 typedef Bat<oid_t, tinyint_t> tinyint_bat_t;
 typedef Bat<oid_t, shortint_t> shortint_bat_t;
 typedef Bat<oid_t, int_t> int_bat_t;

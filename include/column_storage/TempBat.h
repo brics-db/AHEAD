@@ -47,7 +47,7 @@ public:
     }
 
     /** constructor for n elements */
-    TempBat(int n) {
+    TempBat(oid_t n) {
         items.reserve(n);
     }
 

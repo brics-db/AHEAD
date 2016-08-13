@@ -31,13 +31,15 @@
 #include <ColumnStore.h>
 #include <column_storage/ColumnBat.h>
 
-typedef ColumnBat<restiny_t> restiny_col_t;
-typedef ColumnBat<resshort_t> resshort_col_t;
-typedef ColumnBat<resint_t> resint_col_t;
+typedef ColumnBat<resoid_t, resoid_t> resoid_col_t;
+typedef ColumnBat<resoid_t, restiny_t> restiny_col_t;
+typedef ColumnBat<resoid_t, resshort_t> resshort_col_t;
+typedef ColumnBat<resoid_t, resint_t> resint_col_t;
 
-typedef Bat<oid_t, restiny_t> restiny_bat_t;
-typedef Bat<oid_t, resshort_t> resshort_bat_t;
-typedef Bat<oid_t, resint_t> resint_bat_t;
+typedef Bat<resoid_t, resoid_t> resoid_bat_t;
+typedef Bat<resoid_t, restiny_t> restiny_bat_t;
+typedef Bat<resoid_t, resshort_t> resshort_bat_t;
+typedef Bat<resoid_t, resint_t> resint_bat_t;
 
 extern const restiny_t A_TINY_UNENC_MAX;
 extern const restiny_t A_TINY_UNENC_MIN;
@@ -69,8 +71,21 @@ extern const resint_t A_INT_INV;
 template<typename T>
 struct TypeSelector;
 
+#define DEFINE_TYPE_SELECTOR_ALIASES(v2Type, resType, colType, resColType)    \
+template<>                                                                    \
+struct TypeSelector<resType> : public TypeSelector<v2Type> {                  \
+};                                                                            \
+                                                                              \
+template<>                                                                    \
+struct TypeSelector<colType> : public TypeSelector<v2Type> {                  \
+};                                                                            \
+                                                                              \
+template<>                                                                    \
+struct TypeSelector<resColType> : public TypeSelector<v2Type> {               \
+};
+
 template<>
-struct TypeSelector<tinyint_t> {
+struct TypeSelector<v2_tinyint_t> {
     typedef tinyint_t base_t;
     typedef tinyint_col_t col_t;
     typedef tinyint_bat_t bat_t;
@@ -85,8 +100,10 @@ struct TypeSelector<tinyint_t> {
     static const res_t A_UNENC_MAX_U;
 };
 
+
+
 template<>
-struct TypeSelector<shortint_t> {
+struct TypeSelector<v2_shortint_t> {
     typedef shortint_t base_t;
     typedef shortint_bat_t bat_t;
     typedef shortint_col_t col_t;
@@ -102,7 +119,11 @@ struct TypeSelector<shortint_t> {
 };
 
 template<>
-struct TypeSelector<int_t> {
+struct TypeSelector<v2_resshort_t> : public TypeSelector<v2_shortint_t> {
+};
+
+template<>
+struct TypeSelector<v2_int_t> {
     typedef int_t base_t;
     typedef int_bat_t bat_t;
     typedef int_col_t col_t;
@@ -115,6 +136,10 @@ struct TypeSelector<int_t> {
     static const res_t A_INV;
     static const res_t A_UNENC_MAX;
     static const res_t A_UNENC_MAX_U;
+};
+
+template<>
+struct TypeSelector<v2_resint_t> : public TypeSelector<v2_int_t> {
 };
 
 template<typename T>
@@ -138,6 +163,74 @@ struct TypeName<uint32_t> {
 template<>
 struct TypeName<uint64_t> {
     static const char* NAME;
+};
+
+template<typename Tail>
+class ColumnBatIterator<resoid_t, Tail> : public ColumnBatIteratorBase<resoid_t, Tail> {
+public:
+    using ColumnBatIteratorBase<resoid_t, Tail>::ColumnBatIteratorBase;
+
+    virtual ~ColumnBatIterator() {
+    }
+
+    virtual pair<resoid_t, Tail> get(unsigned index) override {
+        this->bu = this->ta->get(this->mColumnId, index);
+        pair<resoid_t, Tail> p = make_pair(std::move(*reinterpret_cast<resoid_t*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
+        delete this->bu;
+        this->bu = this->ta->next(this->mColumnId);
+        return p;
+    }
+
+    virtual pair<resoid_t, Tail> next() override {
+        pair<resoid_t, Tail> p = make_pair(std::move(*reinterpret_cast<resoid_t*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
+        delete this->bu;
+        this->bu = this->ta->next(this->mColumnId);
+        return p;
+    }
+};
+
+template<typename Tail>
+class ColumnBat<resoid_t, Tail> : public Bat<resoid_t, Tail> {
+    id_t mColumnId;
+
+public:
+
+    ColumnBat(id_t columnId) : mColumnId(columnId) {
+    }
+
+    ColumnBat(const char *table_name, const char *attribute) {
+        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
+        mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
+    }
+
+    virtual ~ColumnBat() {
+    }
+
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<resoid_t, Tail> * begin() override {
+        return new ColumnBatIterator<resoid_t, Tail>(mColumnId);
+    }
+
+    /** append an item */
+    virtual void append(pair<resoid_t, Tail>& p) override {
+    }
+
+    virtual void append(pair<resoid_t, Tail>&& p) override {
+    }
+
+    virtual unsigned size() override {
+        auto iter = begin();
+        unsigned size = iter->size();
+        delete iter;
+        return size;
+    }
+
+    virtual size_t consumption() override {
+        auto iter = begin();
+        unsigned size = iter->consumption();
+        delete iter;
+        return size;
+    }
 };
 
 #endif /* RESILIENCE_HPP */

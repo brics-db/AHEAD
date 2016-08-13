@@ -47,10 +47,10 @@ public:
     class Transaction {
         friend class TransactionManager;
 
-        static const unsigned ID_BAT_COLNAMES;
-        static const unsigned ID_BAT_COLTYPES;
-        static const unsigned ID_BAT_COLIDENT;
-        static const unsigned ID_BAT_FIRST_USER;
+        static const id_t ID_BAT_COLNAMES;
+        static const id_t ID_BAT_COLTYPES;
+        static const id_t ID_BAT_COLIDENT;
+        static const id_t ID_BAT_FIRST_USER;
 
     public:
         /**

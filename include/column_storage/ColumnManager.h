@@ -81,7 +81,7 @@ public:
          *
          * Die Funktion gibt einen Zeiger auf den Record an der �bergebenen Position zur�ck. Hierbei ist zu beachten, dass die Nummerierung der Positionen innerhalb einer Spalte bei 0 beginnt. Falls zur �bergebenen Position kein entsprechender Record gefunden wurde, wird rewind() aufgerufen und ein NULL-Zeiger zur�ckgegeben. Um die Datenintegrit�t zu erhalten, darf der Inhalt des Records nicht ver�ndert werden.
          */
-        Record* seek(unsigned int index);
+        Record* seek(size_t index);
         /**
          * @author Julian Hollender
          *
@@ -117,8 +117,8 @@ public:
         BucketManager::BucketIterator *iterator;
         Column *column;
         BucketManager::Chunk *currentChunk;
-        unsigned int currentPosition;
-        const unsigned int recordsPerBucket;
+        size_t currentPosition;
+        const size_t recordsPerBucket;
 
         ColumnIterator(Column *column, BucketManager::BucketIterator *iterator);
         ColumnIterator(const ColumnIterator &copy);
@@ -145,7 +145,7 @@ public:
      *
      * Die Funktion erzeugt ein Objekt der Klasse ColumnIterator zum Bearbeiten einer Spalte mit der Identifikationsnummer id. Hierbei sind nur die Records mit der gr��ten Versionsnummer kleiner oder gleich dem Inhalt des Zeigers version sichtbar. Bei jeder �nderung am Datenbestand durch den erzeugten ColumnIterator, wird der Zeiger version in die Verwaltungsstrukturen der Spalte kopiert. Daher darf der Speicher, auf den der Zeiger version zeigt, nach �nderungen an der Datenbasis nicht mehr freigegeben werden. Falls eine Spalte mit der �bergebenen Identifikationsnummer nicht existiert, wird ein NULL-Zeiger zur�ckgegeben. Es ist darauf zu achten, dass zu einem festen Zeitpunkt maximal einen Iterator der �nderung durchgef�hrt hat oder �nderungen durchf�hren wird pro Spalte gibt.
      */
-    ColumnIterator* openColumn(unsigned int id, unsigned int *version);
+    ColumnIterator* openColumn(id_t id, version_t *version);
     /**
      * @author Julian Hollender
      *
@@ -153,20 +153,20 @@ public:
      *
      * Die Funktion liefert die Menge von Identifikationsnummern aller existierenden Spalten.
      */
-    std::set<unsigned int> listColumns();
+    std::set<id_t> listColumns();
     /**
      * @author Julian Hollender
      *
      * Die Funktion legt eine leere Spalte mit der Identifikationsnummer id und Spaltenbreite width, d.h. die Gr��e eines enthaltenden Records, an. Falls bereits eine Spalte mit der Identifikationsnummer id existiert, wird keine Operation ausgef�hrt.
      */
-    void createColumn(unsigned int id, unsigned int width);
+    void createColumn(id_t id, size_t width);
 
 private:
     static ColumnManager *instance;
 
     static void destroyInstance();
 
-    std::map<unsigned int, Column> columns;
+    std::map<id_t, Column> columns;
 
     ColumnManager();
     ColumnManager(const ColumnManager &copy);

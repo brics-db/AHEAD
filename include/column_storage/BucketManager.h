@@ -49,8 +49,8 @@ public:
      * Die Datenstruktur stellt den Zustand eines Buckets zu einer festen Version dar und beinhaltet neben einem Zeiger auf einen Chunk auch einen Zeiger auf den im Bucket-Stream nachfolgenden Bucket, sowie jeweils einen Zeiger auf die n�chst aktuellere und die �ltere Version des Buckets. Au�erdem enth�lt die Datenstruktur die Version und die Position eines Buckets innerhalb des Bucket-Stream.
      */
     struct Bucket {
-        unsigned int number;
-        unsigned int *version;
+        id_t number;
+        version_t *version;
         Bucket *next, *older, *newer;
         Chunk *chunk;
     };
@@ -61,7 +61,7 @@ public:
     struct BucketStream {
         Bucket *head, *tail;
         std::vector<Bucket*> index;
-        unsigned int size;
+        size_t size;
     };
 
     /**
@@ -80,7 +80,7 @@ public:
          *
          * Die Funktion gibt die Anzahl der sichtbaren Buckets innerhalb des Bucket-Streams zur�ck.
          */
-        unsigned int countBuckets();
+        size_t countBuckets();
         /**
          * @author Julian Hollender
          *
@@ -88,7 +88,7 @@ public:
          *
          * Die Funktion gibt die Position des Buckets innerhalb des Bucket-Streams zur�ck, welcher beim n�chsten Aufruf der Funktion next() zur�ckgegeben wird. Falls das Ende des Bucket-Streams erreicht wurde, wird die Anzahl der sichtbaren Buckets innerhalb des Bucket-Streams zur�ckgegeben. Hierbei ist zu beachten, dass die Nummerierung der Positionen innerhalb eines Bucket-Streams bei 0 beginnt.
          */
-        unsigned int position();
+        size_t position();
 
         /**
          * @author Julian Hollender
@@ -113,7 +113,7 @@ public:
          *
          * Die Funktion gibt einen Zeiger auf den Inhalt des Buckets an der �bergebenen Position zur�ck. Hierbei ist zu beachten, dass die Nummerierung der Positionen innerhalb eines Bucket-Streams bei 0 beginnt. Falls zur �bergebenen Position kein entsprechender Bucket gefunden wurde, wird ein NULL-Zeiger zur�ckgegeben. Um die Datenintegrit�t zu erhalten, darf der Inhalt des Buckets nicht ver�ndert werden.
          */
-        Chunk* seek(unsigned int number);
+        Chunk* seek(size_t number);
 
         /**
          * @author Julian Hollender
@@ -146,7 +146,7 @@ public:
 #endif
 
     private:
-        unsigned int *version;
+        version_t *version;
         BucketStream *stream;
 
         Bucket *currentBucket;
@@ -157,7 +157,7 @@ public:
          */
         std::stack<Bucket*> log;
 
-        BucketIterator(BucketStream *stream, unsigned int *version);
+        BucketIterator(BucketStream *stream, version_t *version);
         BucketIterator(const BucketIterator &copy);
         virtual ~BucketIterator();
 
@@ -182,7 +182,7 @@ public:
      *
      * Die Funktion erzeugt ein Objekt der Klasse BucketIterator zum Bearbeiten eines BucketStreams mit der Identifikationsnummer id. Hierbei sind nur die aktuellsten Buckets, deren Versionsnummer kleiner oder gleich dem Inhalt des Zeigers version ist, sichtbar. Bei jeder �nderung am Datenbestand durch den erzeugten BucketIterator, wird der Zeiger version in die Verwaltungsstrukturen des BucketStreams kopiert. Daher darf der Speicher, auf den der Zeiger version zeigt, nach �nderungen an der Datenbasis nicht mehr freigegeben werden. Falls ein BucketStream mit der �bergebenen Identifikationsnummer bisher nicht existiert, wird ein leerer BucketStream angelegt. Es ist darauf zu achten, dass zu einem festen Zeitpunkt maximal einen Iterator der �nderung durchgef�hrt hat oder �nderungen durchf�hren wird pro BucketStream gibt.
      */
-    BucketIterator* openStream(unsigned int id, unsigned int *version);
+    BucketIterator* openStream(id_t id, version_t *version);
 
 #ifdef DEBUG
     void printDebugInformation();
@@ -193,7 +193,7 @@ private:
 
     static void destroyInstance();
 
-    std::map<unsigned int, BucketStream> streams;
+    std::map<id_t, BucketStream> streams;
 
     BucketManager();
     BucketManager(const BucketManager &copy);

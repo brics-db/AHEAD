@@ -119,12 +119,12 @@ int main(int argc, char** argv) {
         PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
 
         // 4) lazy decode
-        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<int_t>(batD, ::A_INT_INV, ::A_INT_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<int_t>(batD, TypeSelector<int_t>::A_INV, TypeSelector<int_t>::A_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
         auto batF = batFpair.first;
         SAVE_TYPE(x - 1, batF);
         delete batFpair.second;
         delete batD;
-        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batE, ::A_TINY_INV, ::A_TINY_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batE, TypeSelector<tinyint_t>::A_INV, TypeSelector<tinyint_t>::A_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
         auto batG = batGpair.first;
         SAVE_TYPE(x - 1, batG);
         delete batGpair.second;

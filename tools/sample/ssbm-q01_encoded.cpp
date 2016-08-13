@@ -77,15 +77,17 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt<restiny_t>(batLQenc, static_cast<restiny_t> (25) * ::A_TINY)); // lo_quantity < 25
-        PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
-        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt<restiny_t>(batLDenc, static_cast<restiny_t> (1) * ::A_TINY, static_cast<restiny_t> (3) * ::A_TINY)); // lo_discount between 1 and 3
-        PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
-        MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirror(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        delete bat1;
-        MEASURE_OP(sw2, x, bat4, v2::bat::ops::col_hashjoin(bat3, bat2)); // join selection
-        delete bat3;
-        delete bat2;
+        MEASURE_OP(sw2, x, pair1, v2::bat::ops::selection_ltA<restiny_t>(batLQenc, static_cast<restiny_t> (25) * ::A_TINY)); // lo_quantity < 25
+        PRINT_BAT(sw1, printBat(pair1.first->begin(), "lo_quantity < 25"));
+        delete pair1.second;
+        MEASURE_OP(sw2, x, pair2, v2::bat::ops::selection_btA<restiny_t>(batLDenc, static_cast<restiny_t> (1) * ::A_TINY, static_cast<restiny_t> (3) * ::A_TINY)); // lo_discount between 1 and 3
+        delete pair2.second;
+        PRINT_BAT(sw1, printBat(pair2.first->begin(), "lo_discount between 1 and 3"));
+        MEASURE_OP(sw2, x, pair3, v2::bat::ops::mirror(pair1.first)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
+        delete pair1.first;
+        MEASURE_OP(sw2, x, bat4, v2::bat::ops::col_hashjoin(pair3, pair2.first)); // join selection
+        delete pair3;
+        delete pair2.first;
         MEASURE_OP(sw2, x, bat5, v2::bat::ops::mirror(bat4)); // prepare joined selection with lo_orderdate (contains positions in tail)
         PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity < 25 and lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::col_hashjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
@@ -119,12 +121,12 @@ int main(int argc, char** argv) {
         PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
 
         // 4) lazy decode
-        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<int_t>(batD, ::A_INT_INV, ::A_INT_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<int_t>(batD, TypeSelector<int_t>::A_INV, TypeSelector<int_t>::A_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
         auto batF = batFpair.first;
         SAVE_TYPE(x - 1, batF);
         delete batFpair.second;
         delete batD;
-        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batE, ::A_TINY_INV, ::A_TINY_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batE, TypeSelector<tinyint_t>::A_INV, TypeSelector<tinyint_t>::A_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
         auto batG = batGpair.first;
         SAVE_TYPE(x - 1, batG);
         delete batGpair.second;

@@ -30,7 +30,7 @@ BucketManager::~BucketManager() {
     streams.clear();
 }
 
-BucketManager::BucketIterator* BucketManager::openStream(unsigned int id, unsigned int *version) {
+BucketManager::BucketIterator* BucketManager::openStream(id_t id, version_t *version) {
     if (this->streams.find(id) == this->streams.end()) {
         this->streams[id].head = 0;
         this->streams[id].tail = 0;
@@ -53,7 +53,7 @@ void BucketManager::printDebugInformation() {
 }
 #endif
 
-BucketManager::BucketIterator::BucketIterator(BucketManager::BucketStream *stream, unsigned int *version) {
+BucketManager::BucketIterator::BucketIterator(BucketManager::BucketStream *stream, version_t *version) {
     if (stream != 0 && version != 0) {
         this->stream = stream;
         this->version = version;
@@ -74,8 +74,8 @@ BucketManager::BucketIterator::BucketIterator(const BucketManager::BucketIterato
 BucketManager::BucketIterator::~BucketIterator() {
 }
 
-unsigned int BucketManager::BucketIterator::countBuckets() {
-    unsigned int position;
+size_t BucketManager::BucketIterator::countBuckets() {
+    size_t position;
     BucketManager::Bucket *bucket;
 
     if (this->stream->size > 0) {
@@ -97,7 +97,7 @@ unsigned int BucketManager::BucketIterator::countBuckets() {
     return 0;
 }
 
-unsigned int BucketManager::BucketIterator::position() {
+size_t BucketManager::BucketIterator::position() {
     if (this->previousBucket == 0 && this->currentBucket == 0) {
         return 0;
     } else if (this->previousBucket == 0) {
@@ -134,7 +134,7 @@ BucketManager::Chunk* BucketManager::BucketIterator::next() {
     return this->currentBucket->chunk;
 }
 
-BucketManager::Chunk* BucketManager::BucketIterator::seek(unsigned int number) {
+BucketManager::Chunk* BucketManager::BucketIterator::seek(size_t number) {
     if (number < this->stream->size) {
         if (number == 0) {
             this->previousBucket = 0;

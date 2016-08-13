@@ -33,9 +33,11 @@
 
 using namespace std;
 
-template<class Head, class Tail>
+template<typename Head, typename Tail>
 class Bat {
 public:
+    typedef Head head_t;
+    typedef Tail tail_t;
 
     virtual ~Bat() {
     }
