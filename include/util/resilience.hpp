@@ -31,15 +31,20 @@
 #include <ColumnStore.h>
 #include <column_storage/ColumnBat.h>
 
-typedef ColumnBat<resoid_t, resoid_t> resoid_col_t;
-typedef ColumnBat<resoid_t, restiny_t> restiny_col_t;
-typedef ColumnBat<resoid_t, resshort_t> resshort_col_t;
-typedef ColumnBat<resoid_t, resint_t> resint_col_t;
+typedef ColumnBat<oid_t, resoid_t> resoid_col_t;
+typedef ColumnBat<oid_t, restiny_t> restiny_col_t;
+typedef ColumnBat<oid_t, resshort_t> resshort_col_t;
+typedef ColumnBat<oid_t, resint_t> resint_col_t;
 
-typedef Bat<resoid_t, resoid_t> resoid_bat_t;
-typedef Bat<resoid_t, restiny_t> restiny_bat_t;
-typedef Bat<resoid_t, resshort_t> resshort_bat_t;
-typedef Bat<resoid_t, resint_t> resint_bat_t;
+typedef TempBat<oid_t, resoid_t> resoid_tmp_t;
+typedef TempBat<oid_t, restiny_t> restiny_tmp_t;
+typedef TempBat<oid_t, resshort_t> resshort_tmp_t;
+typedef TempBat<oid_t, resint_t> resint_tmp_t;
+
+typedef Bat<oid_t, resoid_t> resoid_bat_t;
+typedef Bat<oid_t, restiny_t> restiny_bat_t;
+typedef Bat<oid_t, resshort_t> resshort_bat_t;
+typedef Bat<oid_t, resint_t> resint_bat_t;
 
 extern const restiny_t A_TINY_UNENC_MAX;
 extern const restiny_t A_TINY_UNENC_MIN;
@@ -68,30 +73,54 @@ extern const resint_t A_INT_INV;
 // extern const resint_t A2_INT;
 // extern const resint_t A2_INT_INV;
 
+/*
+#define TYPE_SELECTOR_ALIASES(TYPE, RESTYPE)                                  \
+template<>                                                                    \
+struct TypeSelector<MKT(TYPE, _bat)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(TYPE, _col)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(TYPE, _tmp)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(v2_, RESTYPE, _t)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(RESTYPE, _bat)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(RESTYPE, _col)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(RESTYPE, _tmp)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+}
+ */
+#define TYPE_SELECTOR_ALIASES(TYPE, RESTYPE)                                  \
+template<>                                                                    \
+struct TypeSelector<MKT(TYPE, _bat)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(TYPE, _col)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(TYPE, _tmp)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};
+
 template<typename T>
 struct TypeSelector;
-
-#define DEFINE_TYPE_SELECTOR_ALIASES(v2Type, resType, colType, resColType)    \
-template<>                                                                    \
-struct TypeSelector<resType> : public TypeSelector<v2Type> {                  \
-};                                                                            \
-                                                                              \
-template<>                                                                    \
-struct TypeSelector<colType> : public TypeSelector<v2Type> {                  \
-};                                                                            \
-                                                                              \
-template<>                                                                    \
-struct TypeSelector<resColType> : public TypeSelector<v2Type> {               \
-};
 
 template<>
 struct TypeSelector<v2_tinyint_t> {
     typedef tinyint_t base_t;
-    typedef tinyint_col_t col_t;
     typedef tinyint_bat_t bat_t;
+    typedef tinyint_col_t col_t;
+    typedef tinyint_tmp_t tmp_t;
     typedef restiny_t res_t;
     typedef restiny_bat_t res_bat_t;
     typedef restiny_col_t res_col_t;
+    typedef restiny_tmp_t res_tmp_t;
 
     static const char* BaseTypeName;
     static const res_t A;
@@ -100,16 +129,18 @@ struct TypeSelector<v2_tinyint_t> {
     static const res_t A_UNENC_MAX_U;
 };
 
-
+TYPE_SELECTOR_ALIASES(tinyint, restiny);
 
 template<>
 struct TypeSelector<v2_shortint_t> {
     typedef shortint_t base_t;
     typedef shortint_bat_t bat_t;
     typedef shortint_col_t col_t;
+    typedef shortint_tmp_t tmp_t;
     typedef resshort_t res_t;
     typedef resshort_bat_t res_bat_t;
     typedef resshort_col_t res_col_t;
+    typedef resshort_tmp_t res_tmp_t;
 
     static const char* BaseTypeName;
     static const res_t A;
@@ -118,18 +149,18 @@ struct TypeSelector<v2_shortint_t> {
     static const res_t A_UNENC_MAX_U;
 };
 
-template<>
-struct TypeSelector<v2_resshort_t> : public TypeSelector<v2_shortint_t> {
-};
+TYPE_SELECTOR_ALIASES(shortint, resshort);
 
 template<>
 struct TypeSelector<v2_int_t> {
     typedef int_t base_t;
     typedef int_bat_t bat_t;
     typedef int_col_t col_t;
+    typedef int_tmp_t tmp_t;
     typedef resint_t res_t;
     typedef resint_bat_t res_bat_t;
     typedef resint_col_t res_col_t;
+    typedef resint_tmp_t res_tmp_t;
 
     static const char* BaseTypeName;
     static const res_t A;
@@ -139,7 +170,15 @@ struct TypeSelector<v2_int_t> {
 };
 
 template<>
-struct TypeSelector<v2_resint_t> : public TypeSelector<v2_int_t> {
+struct TypeSelector<v2_oid_t> {
+    typedef oid_t base_t;
+    typedef oid_bat_t bat_t;
+    typedef oid_col_t col_t;
+    typedef oid_tmp_t tmp_t;
+    typedef resoid_t res_t;
+    typedef resoid_bat_t res_bat_t;
+    typedef resoid_col_t res_col_t;
+    typedef resoid_tmp_t res_tmp_t;
 };
 
 template<typename T>

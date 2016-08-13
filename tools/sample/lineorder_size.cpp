@@ -19,16 +19,15 @@ boost::typeindex::type_index headTypes[NUM_OPS];
 boost::typeindex::type_index tailTypes[NUM_OPS];
 
 const size_t NUM_RUNS = 10;
-const size_t LEN_TIMES = 13;
-const size_t LEN_SIZES = 12;
-const size_t LEN_TYPES = 16;
 string emptyString;
 
-template<typename BaseType>
+template<typename V2Type>
 void runTable(const char* strTable, const char* strTableAN, const char* strColumn) {
+    typedef typename TypeSelector<V2Type>::base_t base_t;
+    typedef typename TypeSelector<V2Type>::res_t res_t;
     size_t x = 0;
-    MEASURE_OP(sw1, x, batBc, new typename TypeSelector<BaseType>::col_t(strTable, strColumn));
-    MEASURE_OP(sw1, x, batBcAN, new typename TypeSelector<BaseType>::res_col_t(strTableAN, strColumn));
+    MEASURE_OP(sw1, x, batBc, new typename TypeSelector<V2Type>::col_t(strTable, strColumn));
+    MEASURE_OP(sw1, x, batBcAN, new typename TypeSelector<V2Type>::res_col_t(strTableAN, strColumn));
     MEASURE_OP(sw1, x, batTcAN, v2::bat::ops::copy(batBcAN));
 
     cout << "\n#runTable(" << strTable << '.' << strColumn << ")";
@@ -37,7 +36,7 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
     for (size_t i = 0; i < x; ++i) {
         cout << "\nop" << setw(2) << i << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[i]) << "\t" << setw(LEN_SIZES) << batSizes[i] << "\t" << setw(LEN_SIZES) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
     }
-    cout << "\nnum\tcopy-" << TypeName<typename TypeSelector<BaseType>::res_t>::NAME << "\tcheck\tdecode\tcheck+decode\tcopy-" << TypeName<typename TypeSelector<BaseType>::base_t>::NAME << endl;
+    cout << "\nnum\tcopy-" << TypeName<res_t>::NAME << "\tcheck\tdecode\tcheck+decode\tcopy-" << TypeName<base_t>::NAME << endl;
 
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         cout << setw(3) << i << flush;
@@ -49,19 +48,19 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
         delete result0;
 
         sw1.start();
-        auto result1 = v2::bat::ops::checkA(batTcAN, TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+        auto result1 = v2::bat::ops::checkA<V2Type>(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
         delete result1;
 
         sw1.start();
-        auto result2 = v2::bat::ops::decodeA<typename TypeSelector<BaseType>::base_t > (batTcAN, TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+        auto result2 = v2::bat::ops::decodeA<V2Type>(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
         delete result2;
 
         sw1.start();
-        auto result3 = v2::bat::ops::checkAndDecodeA<typename TypeSelector<BaseType>::base_t > (batTcAN, TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+        auto result3 = v2::bat::ops::checkAndDecodeA<V2Type>(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
 
@@ -78,12 +77,12 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
     delete batBc;
 }
 
-template<typename BaseType>
+template<typename V2Type>
 void runTable2(const char* strTable, const char* strTableAN, const char* strColumn) {
     const size_t MAX_SCALE = 10;
-    typename TypeSelector<BaseType>::res_bat_t * bats[MAX_SCALE];
-    auto batBc = new typename TypeSelector<BaseType>::col_t(strTable, strColumn);
-    auto batBcAN = new typename TypeSelector<BaseType>::res_col_t(strTableAN, strColumn);
+    typename TypeSelector<V2Type>::res_bat_t * bats[MAX_SCALE];
+    auto batBc = new typename TypeSelector<V2Type>::col_t(strTable, strColumn);
+    auto batBcAN = new typename TypeSelector<V2Type>::res_col_t(strTableAN, strColumn);
 
     cout << "\n#runTable2(" << strTable << '.' << strColumn << ')';
 
@@ -104,7 +103,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::checkA(bats[scale2], TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+                auto result = v2::bat::ops::checkA<V2Type>(bats[scale2]);
                 delete result;
             }
             sw1.stop();
@@ -116,7 +115,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::decodeA<typename TypeSelector<BaseType>::base_t > (bats[scale2], TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+                auto result = v2::bat::ops::decodeA<V2Type> (bats[scale2]);
                 delete result;
             }
             sw1.stop();
@@ -128,7 +127,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::checkAndDecodeA<typename TypeSelector<BaseType>::base_t > (bats[scale2], TypeSelector<BaseType>::A_INV, TypeSelector<BaseType>::A_UNENC_MAX_U);
+                auto result = v2::bat::ops::checkAndDecodeA<V2Type> (bats[scale2]);
                 delete result.first;
                 delete result.second;
             }

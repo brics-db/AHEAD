@@ -60,20 +60,21 @@ namespace v2 {
                 return result; // possibly empty
             }
 
-            template<typename Tail, typename TypeRes>
-            vector<bool>* checkA(Bat<oid_t, Tail>* arg, TypeRes aInv, TypeRes unEncMaxU, size_t start = 0, size_t size = 0) {
+            template<typename V2Type>
+            vector<bool>* checkA(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+                typedef typename TypeSelector<V2Type>::res_t Tail;
                 auto result = new vector<bool>();
                 result->reserve(arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
-                    result->emplace_back(std::move((static_cast<TypeRes> (iter->get(start).second) * aInv) <= unEncMaxU));
+                    result->emplace_back(std::move((static_cast<Tail> (iter->get(start).second) * aInv) <= unEncMaxU));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
-                            result->emplace_back(std::move((static_cast<TypeRes> (iter->next().second) * aInv) <= unEncMaxU));
+                            result->emplace_back(std::move((static_cast<Tail> (iter->next().second) * aInv) <= unEncMaxU));
                         }
                     } else {
                         while (iter->hasNext()) {
-                            result->emplace_back(std::move((static_cast<TypeRes> (iter->next().second) * aInv) <= unEncMaxU));
+                            result->emplace_back(std::move((static_cast<Tail> (iter->next().second) * aInv) <= unEncMaxU));
                         }
                     }
                 }
@@ -81,9 +82,10 @@ namespace v2 {
                 return result; // possibly empty
             }
 
-            template<typename Tail, typename TypeRes>
-            Bat<oid_t, Tail>* decodeA(Bat<oid_t, TypeRes>* arg, TypeRes aInv, TypeRes unEncMaxU, size_t start = 0, size_t size = 0) {
-                auto result = new TempBat<oid_t, Tail>(arg->size());
+            template<typename V2Type>
+            typename TypeSelector<V2Type>::bat_t* decodeA(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+                typedef typename TypeSelector<V2Type>::base_t Tail;
+                auto result = new typename TypeSelector<V2Type>::tmp_t(arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
                     auto current = iter->get(start);
@@ -104,29 +106,29 @@ namespace v2 {
                 return result;
             }
 
-            template<typename Tail, typename TypeRes>
-            pair<Bat<oid_t, Tail>*, vector<bool>*> checkAndDecodeA(Bat<oid_t, TypeRes>* arg, TypeRes aInv, TypeRes unEncMaxU, size_t start = 0, size_t size = 0) {
+            template<typename V2Type>
+            pair<typename TypeSelector<V2Type>::bat_t*, vector<bool>*> checkAndDecodeA(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
                 size_t sizeBAT = arg->size();
-                auto result = make_pair(new TempBat<oid_t, Tail>(sizeBAT), new vector<bool>());
+                auto result = make_pair(new typename TypeSelector<V2Type>::tmp_t(sizeBAT), new vector<bool>());
                 result.second->reserve(sizeBAT);
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
                     auto current = iter->get(start);
-                    Tail dec = current.second * aInv;
-                    result.first->append(std::move(make_pair(std::move(current.first), std::move(dec))));
+                    typename TypeSelector<V2Type>::res_t dec = current.second * aInv;
+                    result.first->append(std::move(make_pair(std::move(current.first), std::move(static_cast<typename TypeSelector<V2Type>::base_t> (dec)))));
                     result.second->emplace_back(std::move(dec <= unEncMaxU));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
                             current = iter->next();
-                            Tail dec = current.second * aInv;
-                            result.first->append(std::move(make_pair(std::move(current.first), std::move(dec))));
+                            dec = current.second * aInv;
+                            result.first->append(std::move(make_pair(std::move(current.first), std::move(static_cast<typename TypeSelector<V2Type>::base_t> (dec)))));
                             result.second->emplace_back(std::move(dec <= unEncMaxU));
                         }
                     } else {
                         while (iter->hasNext()) {
                             current = iter->next();
-                            Tail dec = current.second * aInv;
-                            result.first->append(std::move(make_pair(std::move(current.first), std::move(dec))));
+                            dec = current.second * aInv;
+                            result.first->append(std::move(make_pair(std::move(current.first), std::move(static_cast<typename TypeSelector<V2Type>::base_t> (dec)))));
                             result.second->emplace_back(std::move(dec <= unEncMaxU));
                         }
                     }
@@ -135,53 +137,37 @@ namespace v2 {
                 return result;
             }
 
-            template<class TypeRes>
-            Bat<oid_t, resoid_t>* mirrorA(Bat<oid_t, TypeRes> *arg, TypeRes A = TypeSelector<TypeRes>::A) {
-                auto result = new TempBat<oid_t, resoid_t>(arg->size());
-                auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    pair<oid_t, TypeRes> p = iter->next();
-                    result->append(std::move(make_pair(std::move(p.first), std::move(static_cast<resoid_t> (p.first) * A))));
-                }
-                delete iter;
-                return result;
-            }
-
-            template<class TypeRes>
-            pair<Bat<oid_t, TypeRes>*, vector<bool>*> selection_ltA(Bat<oid_t, TypeRes>* arg, TypeRes treshold, TypeRes aInv = TypeSelector<TypeRes>::A_INV, TypeRes unEncMaxU = TypeSelector<TypeRes>::A_UNENC_MAX_U) {
+            template<class V2Type>
+            pair<typename TypeSelector<V2Type>::res_bat_t*, vector<bool>*> selection_ltA(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t treshold, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U) {
                 size_t sizeBAT = arg->size();
-                auto result = make_pair(new TempBat<oid_t, TypeRes>(), new vector<bool>);
+                auto result = make_pair(new typename TypeSelector<V2Type>::res_tmp_t, new vector<bool>);
                 result.second->reserve(sizeBAT);
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, TypeRes> p = iter->next();
+                    auto p = iter->next();
                     result.second->emplace_back((p.second * aInv) <= unEncMaxU);
                     if (p.second < treshold) {
                         result.first->append(std::move(make_pair(std::move(p.first), std::move(p.second))));
                     }
                 }
-
                 delete iter;
-
                 return result;
             }
 
-            template<class TypeRes>
-            pair<Bat<oid_t, TypeRes>*, vector<bool>*> selection_btA(Bat<oid_t, TypeRes>* arg, TypeRes start, TypeRes end, TypeRes aInv = TypeSelector<TypeRes>::A_INV, TypeRes unEncMaxU = TypeSelector<TypeRes>::A_UNENC_MAX_U) {
+            template<class V2Type>
+            pair<typename TypeSelector<V2Type>::res_bat_t*, vector<bool>*> selection_btA(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t start, typename TypeSelector<V2Type>::res_t end, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U) {
                 size_t sizeBAT = arg->size();
-                auto result = make_pair(new TempBat<oid_t, TypeRes>(), new vector<bool>);
+                auto result = make_pair(new typename TypeSelector<V2Type>::res_tmp_t(), new vector<bool>);
                 result.second->reserve(sizeBAT);
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, TypeRes> p = iter->next();
+                    auto p = iter->next();
                     result.second->emplace_back((p.second * aInv) <= unEncMaxU);
                     if (p.second <= end && p.second >= start) {
                         result.first->append(std::move(make_pair(std::move(p.first), std::move(p.second))));
                     }
                 }
-
                 delete iter;
-
                 return result;
             }
 

@@ -18,6 +18,20 @@
 
 #include <cinttypes>
 
+#define TOSTRING0(str) #str
+#define TOSTRING(str) TOSTRING0(str)
+
+/*
+ * Concatenate preprocessor tokens A and B without expanding macro definitions
+ * (however, if invoked from a macro, macro arguments are expanded).
+ */
+#define CONCAT0(A, B) A ## B
+
+/*
+ * Concatenate preprocessor tokens A and B after macro-expanding them.
+ */
+#define CONCAT(A, B) CONCAT0(A, B)
+
 /***********************************************************/
 /* Definition of meta-macro for variable-length macros     */
 /***********************************************************/
@@ -55,6 +69,11 @@
 
 /***********************************************************/
 
+/* META MACRO intended for generating type names */
+#define MKT(...) VFUNC(MKT, __VA_ARGS__)
+#define MKT1(BASE) CONCAT(BASE, _t)
+#define MKT2(BASE, SUFFIX) MKT1(CONCAT(BASE, SUFFIX))
+#define MKT3(PREFIX, BASE, SUFFIX) CONCAT(PREFIX, CONCAT(BASE, SUFFIX))
 
 enum type_t {
     type_tinyint = 0, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint

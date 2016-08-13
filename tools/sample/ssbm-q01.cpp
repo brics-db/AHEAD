@@ -39,8 +39,6 @@ int main(int argc, char** argv) {
     bool hasTwoTypes[NUM_OPS] = {false};
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
-
-    const size_t LEN_TYPES = 16;
     string emptyString;
     size_t x = 0;
 
@@ -66,10 +64,8 @@ int main(int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
 
-    cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
-    for (size_t i = 0; i < x; ++i) {
-        cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
-    }
+    COUT_HEADLINE;
+    COUT_RESULT(0, x);
     cout << endl;
 
     for (size_t i = 0; i < NUM_RUNS; ++i) {
@@ -122,11 +118,9 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << setw(13) << sw1 << " ns.";
-        cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
-        for (size_t j = 5; j < x; ++j) {
-            cout << "\n\t  op" << setw(2) << j << "\t" << setw(13) << hrc_duration(opTimes[j]) << "\t" << setw(10) << batSizes[j] << "\t" << setw(10) << batConsumptions[j] << "\t" << setw(LEN_TYPES) << headTypes[j].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[j] ? tailTypes[j].pretty_name() : emptyString);
-        }
+        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
+        COUT_HEADLINE;
+        COUT_RESULT(5, x);
     }
 
     cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";

@@ -66,10 +66,8 @@ int main(int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
 
-    cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
-    for (size_t i = 0; i < x; ++i) {
-        cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
-    }
+    COUT_HEADLINE;
+    COUT_RESULT(0, x);
     cout << endl;
 
     for (size_t i = 0; i < NUM_RUNS; ++i) {
@@ -77,10 +75,10 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, pair1, v2::bat::ops::selection_ltA<restiny_t>(batLQenc, static_cast<restiny_t> (25) * ::A_TINY)); // lo_quantity < 25
+        MEASURE_OP(sw2, x, auto, pair1, v2::bat::ops::selection_ltA<v2_tinyint_t>(batLQenc, static_cast<restiny_t> (25) * ::A_TINY), pair1.first->size(), pair1.first->consumption()); // lo_quantity < 25
         PRINT_BAT(sw1, printBat(pair1.first->begin(), "lo_quantity < 25"));
         delete pair1.second;
-        MEASURE_OP(sw2, x, pair2, v2::bat::ops::selection_btA<restiny_t>(batLDenc, static_cast<restiny_t> (1) * ::A_TINY, static_cast<restiny_t> (3) * ::A_TINY)); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, x, auto, pair2, v2::bat::ops::selection_btA<v2_tinyint_t>(batLDenc, static_cast<restiny_t> (1) * ::A_TINY, static_cast<restiny_t> (3) * ::A_TINY), pair2.first->size(), pair2.first->consumption()); // lo_discount between 1 and 3
         delete pair2.second;
         PRINT_BAT(sw1, printBat(pair2.first->begin(), "lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, pair3, v2::bat::ops::mirror(pair1.first)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
@@ -121,12 +119,12 @@ int main(int argc, char** argv) {
         PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
 
         // 4) lazy decode
-        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<int_t>(batD, TypeSelector<int_t>::A_INV, TypeSelector<int_t>::A_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecodeA<v2_int_t>(batD, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
         auto batF = batFpair.first;
         SAVE_TYPE(x - 1, batF);
         delete batFpair.second;
         delete batD;
-        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batE, TypeSelector<tinyint_t>::A_INV, TypeSelector<tinyint_t>::A_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecodeA<v2_tinyint_t>(batE, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
         auto batG = batGpair.first;
         SAVE_TYPE(x - 1, batG);
         delete batGpair.second;
@@ -138,11 +136,9 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << setw(13) << sw1 << " ns.";
-        cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
-        for (size_t j = 0; j < x; ++j) {
-            cout << "\n\t  op" << setw(2) << j << "\t" << setw(13) << hrc_duration(opTimes[j]) << "\t" << setw(10) << batSizes[j] << "\t" << setw(10) << batConsumptions[j] << "\t" << setw(LEN_TYPES) << headTypes[j].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[j] ? tailTypes[j].pretty_name() : emptyString);
-        }
+        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
+        COUT_HEADLINE;
+        COUT_RESULT(0, x);
     }
 
     cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";

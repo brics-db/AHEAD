@@ -66,10 +66,8 @@ int main(int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
 
-    cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
-    for (size_t i = 0; i < x; ++i) {
-        cout << "\n\t  op" << setw(2) << i << "\t" << setw(13) << hrc_duration(opTimes[i]) << "\t" << setw(10) << batSizes[i] << "\t" << setw(10) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
-    }
+    COUT_HEADLINE;
+    COUT_RESULT(0, x);
     cout << endl;
 
     for (size_t i = 0; i < NUM_RUNS; ++i) {
@@ -77,27 +75,27 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 0) Eager Check
-        MEASURE_OP(sw2, x, auto, batDYpair, (v2::bat::ops::checkAndDecodeA<shortint_t>(batDYenc, TypeSelector<shortint_t>::A_INV, TypeSelector<shortint_t>::A_UNENC_MAX_U)), batDYpair.first->size(), batDYpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batDYpair, (v2::bat::ops::checkAndDecodeA<v2_shortint_t>(batDYenc, TypeSelector<v2_shortint_t>::A_INV, TypeSelector<v2_shortint_t>::A_UNENC_MAX_U)), batDYpair.first->size(), batDYpair.first->consumption());
         auto batDY = batDYpair.first;
         SAVE_TYPE(x - 1, batDY);
         delete batDYpair.second;
-        MEASURE_OP(sw2, x, auto, batDDpair, (v2::bat::ops::checkAndDecodeA<int_t>(batDDenc, TypeSelector<int_t>::A_INV, TypeSelector<int_t>::A_UNENC_MAX_U)), batDDpair.first->size(), batDDpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batDDpair, (v2::bat::ops::checkAndDecodeA<v2_int_t>(batDDenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batDDpair.first->size(), batDDpair.first->consumption());
         auto batDD = batDDpair.first;
         SAVE_TYPE(x - 1, batDD);
         delete batDDpair.second;
-        MEASURE_OP(sw2, x, auto, batLQpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batLQenc, TypeSelector<tinyint_t>::A_INV, TypeSelector<tinyint_t>::A_UNENC_MAX_U)), batLQpair.first->size(), batLQpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLQpair, (v2::bat::ops::checkAndDecodeA<v2_tinyint_t>(batLQenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLQpair.first->size(), batLQpair.first->consumption());
         auto batLQ = batLQpair.first;
         SAVE_TYPE(x - 1, batLQ);
         delete batLQpair.second;
-        MEASURE_OP(sw2, x, auto, batLDpair, (v2::bat::ops::checkAndDecodeA<tinyint_t>(batLDenc, TypeSelector<tinyint_t>::A_INV, TypeSelector<tinyint_t>::A_UNENC_MAX_U)), batLDpair.first->size(), batLDpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLDpair, (v2::bat::ops::checkAndDecodeA<v2_tinyint_t>(batLDenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLDpair.first->size(), batLDpair.first->consumption());
         auto batLD = batLDpair.first;
         SAVE_TYPE(x - 1, batLD);
         delete batLDpair.second;
-        MEASURE_OP(sw2, x, auto, batLOpair, (v2::bat::ops::checkAndDecodeA<int_t>(batLOenc, TypeSelector<int_t>::A_INV, TypeSelector<int_t>::A_UNENC_MAX_U)), batLOpair.first->size(), batLOpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLOpair, (v2::bat::ops::checkAndDecodeA<v2_int_t>(batLOenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLOpair.first->size(), batLOpair.first->consumption());
         auto batLO = batLOpair.first;
         SAVE_TYPE(x - 1, batLO);
         delete batLOpair.second;
-        MEASURE_OP(sw2, x, auto, batLEpair, (v2::bat::ops::checkAndDecodeA<int_t>(batLEenc, TypeSelector<int_t>::A_INV, TypeSelector<int_t>::A_UNENC_MAX_U)), batLEpair.first->size(), batLEpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLEpair, (v2::bat::ops::checkAndDecodeA<v2_int_t>(batLEenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLEpair.first->size(), batLEpair.first->consumption());
         auto batLE = batLEpair.first;
         SAVE_TYPE(x - 1, batLE);
         delete batLEpair.second;
@@ -153,11 +151,9 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << setw(13) << sw1 << " ns.";
-        cout << "\n\t  name\t" << setw(13) << "time [ns]\t" << setw(10) << "size [#]\t" << setw(10) << "consum [B]\t" << setw(LEN_TYPES) << "type head\t" << setw(LEN_TYPES) << "type tail";
-        for (size_t j = 0; j < x; ++j) {
-            cout << "\n\t  op" << setw(2) << j << "\t" << setw(13) << hrc_duration(opTimes[j]) << "\t" << setw(10) << batSizes[j] << "\t" << setw(10) << batConsumptions[j] << "\t" << setw(LEN_TYPES) << headTypes[j].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[j] ? tailTypes[j].pretty_name() : emptyString);
-        }
+        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
+        COUT_HEADLINE;
+        COUT_RESULT(0, x);
     }
 
     cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";

@@ -90,6 +90,15 @@ typedef ColumnBat<oid_t, char_t> char_col_t;
 typedef ColumnBat<oid_t, str_t> str_col_t;
 typedef ColumnBat<oid_t, fixed_t> fixed_col_t;
 
+typedef TempBat<oid_t, oid_t> oid_tmp_t;
+typedef TempBat<oid_t, tinyint_t> tinyint_tmp_t;
+typedef TempBat<oid_t, shortint_t> shortint_tmp_t;
+typedef TempBat<oid_t, int_t> int_tmp_t;
+typedef TempBat<oid_t, largeint_t> largeint_tmp_t;
+typedef TempBat<oid_t, char_t> char_tmp_t;
+typedef TempBat<oid_t, str_t> str_tmp_t;
+typedef TempBat<oid_t, fixed_t> fixed_tmp_t;
+
 typedef Bat<oid_t, oid_t> oid_bat_t;
 typedef Bat<oid_t, tinyint_t> tinyint_bat_t;
 typedef Bat<oid_t, shortint_t> shortint_bat_t;

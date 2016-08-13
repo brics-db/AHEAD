@@ -71,9 +71,9 @@ namespace v2 {
                 delete iter;
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* copy(Bat<oid_t, Tail>* arg, unsigned start = 0, size_t size = 0) {
-                auto result = new TempBat<oid_t, Tail>(arg->size());
+            template<class Head, class Tail>
+            Bat<Head, Tail>* copy(Bat<Head, Tail>* arg, unsigned start = 0, size_t size = 0) {
+                auto result = new TempBat<Head, Tail>(arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
                     result->append(iter->get(start));

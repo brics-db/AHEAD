@@ -108,6 +108,18 @@ hasTwoTypes[I-1] = false
 MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());     \
 SAVE_TYPE(I-1, BAT)
 
+#define COUT_HEADLINE \
+do { \
+    cout << "\n\tname\t" << setw(LEN_TIMES) << "time [ns]" << "\t" << setw(LEN_SIZES) << "size [#]" << "\t" << setw(LEN_SIZES) << "consum [B]" << "\t" << setw(LEN_TYPES) << "type head" << "\t" << setw(LEN_TYPES) << "type tail"; \
+} while (0)
+
+#define COUT_RESULT(start, max) \
+do { \
+    for (size_t k = start; k < max; ++k) { \
+        cout << "\n\top" << setw(2) << k << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
+    } \
+} while (0)
+
 StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
     StopWatch sw;
     TransactionManager* tm = TransactionManager::getInstance();
@@ -121,5 +133,9 @@ StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
     tm->endTransaction(t);
     return sw.duration();
 }
+
+const size_t LEN_TIMES = 13;
+const size_t LEN_TYPES = 16;
+const size_t LEN_SIZES = 12;
 
 #endif /* SSBM_HPP */
