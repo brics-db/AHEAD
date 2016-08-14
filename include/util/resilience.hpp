@@ -46,6 +46,11 @@ typedef Bat<oid_t, restiny_t> restiny_bat_t;
 typedef Bat<oid_t, resshort_t> resshort_bat_t;
 typedef Bat<oid_t, resint_t> resint_bat_t;
 
+typedef Bat<resoid_t, oid_t> resoid_bat_mir_t;
+typedef Bat<oid_t, restiny_t> restiny_bat_mir_t;
+typedef Bat<resshort_t, oid_t> resshort_bat_mir_t;
+typedef Bat<resint_t, oid_t> resint_bat_mir_t;
+
 extern const restiny_t A_TINY_UNENC_MAX;
 extern const restiny_t A_TINY_UNENC_MIN;
 extern const restiny_t A_TINY_UNENC_MAX_U;
@@ -72,6 +77,38 @@ extern const resint_t A_INT;
 extern const resint_t A_INT_INV;
 // extern const resint_t A2_INT;
 // extern const resint_t A2_INT_INV;
+
+extern const resint_t A_BIG_UNENC_MAX;
+extern const resint_t A_BIG_UNENC_MIN;
+extern const resint_t A_BIG_UNENC_MAX_U;
+extern const resint_t A_BIG_UNENC_MIN_U;
+extern const resint_t A_BIG;
+extern const resint_t A_BIG_INV;
+// extern const resint_t A2_BIG;
+// extern const resint_t A2_BIG_INV;
+
+template<typename T>
+struct TypeName;
+
+template<>
+struct TypeName<uint8_t> {
+    static const char* NAME;
+};
+
+template<>
+struct TypeName<uint16_t> {
+    static const char* NAME;
+};
+
+template<>
+struct TypeName<uint32_t> {
+    static const char* NAME;
+};
+
+template<>
+struct TypeName<uint64_t> {
+    static const char* NAME;
+};
 
 /*
 #define TYPE_SELECTOR_ALIASES(TYPE, RESTYPE)                                  \
@@ -106,6 +143,9 @@ struct TypeSelector<MKT(TYPE, _col)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
 };                                                                            \
 template<>                                                                    \
 struct TypeSelector<MKT(TYPE, _tmp)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
+};                                                                            \
+template<>                                                                    \
+struct TypeSelector<MKT(v2_, RESTYPE, _t)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
 };
 
 template<typename T>
@@ -115,14 +155,16 @@ template<>
 struct TypeSelector<v2_tinyint_t> {
     typedef tinyint_t base_t;
     typedef tinyint_bat_t bat_t;
+    typedef tinyint_bat_mir_t mir_t;
     typedef tinyint_col_t col_t;
     typedef tinyint_tmp_t tmp_t;
     typedef restiny_t res_t;
     typedef restiny_bat_t res_bat_t;
+    typedef restiny_bat_mir_t res_mir_t;
     typedef restiny_col_t res_col_t;
     typedef restiny_tmp_t res_tmp_t;
 
-    static const char* BaseTypeName;
+    static const char* BASENAME;
     static const res_t A;
     static const res_t A_INV;
     static const res_t A_UNENC_MAX;
@@ -135,14 +177,16 @@ template<>
 struct TypeSelector<v2_shortint_t> {
     typedef shortint_t base_t;
     typedef shortint_bat_t bat_t;
+    typedef shortint_bat_mir_t mir_t;
     typedef shortint_col_t col_t;
     typedef shortint_tmp_t tmp_t;
     typedef resshort_t res_t;
     typedef resshort_bat_t res_bat_t;
+    typedef resshort_bat_mir_t res_mir_t;
     typedef resshort_col_t res_col_t;
     typedef resshort_tmp_t res_tmp_t;
 
-    static const char* BaseTypeName;
+    static const char* BASENAME;
     static const res_t A;
     static const res_t A_INV;
     static const res_t A_UNENC_MAX;
@@ -155,14 +199,16 @@ template<>
 struct TypeSelector<v2_int_t> {
     typedef int_t base_t;
     typedef int_bat_t bat_t;
+    typedef int_bat_mir_t mir_t;
     typedef int_col_t col_t;
     typedef int_tmp_t tmp_t;
     typedef resint_t res_t;
     typedef resint_bat_t res_bat_t;
+    typedef resint_bat_mir_t res_mir_t;
     typedef resint_col_t res_col_t;
     typedef resint_tmp_t res_tmp_t;
 
-    static const char* BaseTypeName;
+    static const char* BASENAME;
     static const res_t A;
     static const res_t A_INV;
     static const res_t A_UNENC_MAX;
@@ -173,35 +219,20 @@ template<>
 struct TypeSelector<v2_oid_t> {
     typedef oid_t base_t;
     typedef oid_bat_t bat_t;
+    typedef oid_bat_t mir_t;
     typedef oid_col_t col_t;
     typedef oid_tmp_t tmp_t;
     typedef resoid_t res_t;
     typedef resoid_bat_t res_bat_t;
+    typedef resoid_bat_t res_mir_t;
     typedef resoid_col_t res_col_t;
     typedef resoid_tmp_t res_tmp_t;
-};
 
-template<typename T>
-struct TypeName;
-
-template<>
-struct TypeName<uint8_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint16_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint32_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint64_t> {
-    static const char* NAME;
+    static const char* BASENAME;
+    static const res_t A;
+    static const res_t A_INV;
+    static const res_t A_UNENC_MAX;
+    static const res_t A_UNENC_MAX_U;
 };
 
 template<typename Tail>

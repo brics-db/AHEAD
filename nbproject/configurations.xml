@@ -30,6 +30,7 @@
         <in>ssbm-q01_eager.cpp</in>
         <in>ssbm-q01_encoded.cpp</in>
         <in>ssbm-q01_lazy.cpp</in>
+        <in>test_hashjoin.cpp</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -149,57 +150,29 @@
       </item>
       <item path="tools/sample/lineorder_size.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
-          <incDir>
-            <pElem>include</pElem>
-            <pElem>lib</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/main.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01_eager.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01_encoded.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01_lazy.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
+      </item>
+      <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
   </confs>

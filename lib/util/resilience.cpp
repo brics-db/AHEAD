@@ -54,22 +54,40 @@ const resint_t A_INT_INV = 0x0FEDCBA987654321ull;
 // const resint_t A2_INT = 64311;
 // const resint_t A2_INT_INV = 0xAA86FFFEFB1FAA87ull;
 
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A = ::A_TINY;
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_INV = ::A_TINY_INV;
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_UNENC_MAX = ::A_TINY_UNENC_MAX;
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U = ::A_TINY_UNENC_MAX_U;
-
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A = ::A_SHORT;
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_INV = ::A_SHORT_INV;
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_UNENC_MAX = ::A_SHORT_UNENC_MAX;
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_UNENC_MAX_U = ::A_SHORT_UNENC_MAX_U;
-
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A = ::A_INT;
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_INV = ::A_INT_INV;
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_UNENC_MAX = ::A_INT_UNENC_MAX;
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_UNENC_MAX_U = ::A_INT_UNENC_MAX_U;
+const resoid_t A_BIG_UNENC_MAX = 0x007FFFFFFFFFFFFFull;
+const resoid_t A_BIG_UNENC_MIN = 0xFF80000000000000ull;
+const resoid_t A_BIG_UNENC_MAX_U = 0x00FFFFFFFFFFFFFFull;
+const resoid_t A_BIG_UNENC_MIN_U = 0x0000000000000000ull;
+const resoid_t A_BIG = 225;
+const resoid_t A_BIG_INV = 0x0FEDCBA987654321ull;
+// const resint_t A2_BIG = 64311;
+// const resint_t A2_BIG_INV = 0xAA86FFFEFB1FAA87ull;
 
 const char* TypeName<uint8_t>::NAME = "tinyint";
 const char* TypeName<uint16_t>::NAME = "shortint";
 const char* TypeName<uint32_t>::NAME = "int";
 const char* TypeName<uint64_t>::NAME = "bigint";
+
+const char* TypeSelector<v2_tinyint_t>::BASENAME = TypeName<uint8_t>::NAME;
+const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A = ::A_TINY;
+const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_INV = ::A_TINY_INV;
+const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_UNENC_MAX = ::A_TINY_UNENC_MAX;
+const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U = ::A_TINY_UNENC_MAX_U;
+
+const char* TypeSelector<v2_shortint_t>::BASENAME = TypeName<uint16_t>::NAME;
+const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A = ::A_SHORT;
+const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_INV = ::A_SHORT_INV;
+const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_UNENC_MAX = ::A_SHORT_UNENC_MAX;
+const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_UNENC_MAX_U = ::A_SHORT_UNENC_MAX_U;
+
+const char* TypeSelector<v2_int_t>::BASENAME = TypeName<uint32_t>::NAME;
+const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A = ::A_INT;
+const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_INV = ::A_INT_INV;
+const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_UNENC_MAX = ::A_INT_UNENC_MAX;
+const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_UNENC_MAX_U = ::A_INT_UNENC_MAX_U;
+
+const char* TypeSelector<v2_oid_t>::BASENAME = TypeName<uint64_t>::NAME;
+const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A = ::A_BIG;
+const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A_INV = ::A_BIG_INV;
+const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A_UNENC_MAX = ::A_BIG_UNENC_MAX;
+const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A_UNENC_MAX_U = ::A_BIG_UNENC_MAX_U;

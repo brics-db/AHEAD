@@ -29,26 +29,20 @@
 #include <vector>
 #include <iostream>
 #include <map>
-#include <cstdlib>
 #include <unordered_map>
 #include <cmath>
-#include <utility>
 
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
 
-#define SEL_EQ 1
-#define SEL_LT 2
-#define SEL_LE 3
-#define SEL_GT 4
-#define SEL_GE 5
-#define SEL_BT 6
+typedef enum {
+    EQ, LT, LE, GT, GE, BT
+} selection_type_t;
 
-#define JOIN_LEFT 0
-#define JOIN_RIGHT 1
-
-using namespace std;
+typedef enum {
+    left, right
+} join_side_t;
 
 namespace v2 {
     namespace bat {
@@ -92,19 +86,19 @@ namespace v2 {
             }
 
             template<class Tail>
-            Bat<oid_t, Tail>* selection(Bat<oid_t, Tail>* arg, unsigned OP, Tail treshold, Tail treshold2 = Tail(0)) {
-                switch (OP) {
-                    case SEL_EQ:
+            Bat<oid_t, Tail>* selection(Bat<oid_t, Tail>* arg, selection_type_t op, Tail treshold, Tail treshold2 = Tail(0)) {
+                switch (op) {
+                    case EQ:
                         return selection_eq(arg, treshold);
-                    case SEL_LT:
+                    case LT:
                         return selection_lt(arg, treshold);
-                    case SEL_LE:
+                    case LE:
                         return selection_le(arg, treshold);
-                    case SEL_GT:
+                    case GT:
                         return selection_gt(arg, treshold);
-                    case SEL_GE:
+                    case GE:
                         return selection_ge(arg, treshold);
-                    case SEL_BT:
+                    case BT:
                         return selection_bt(arg, treshold, treshold2);
                 }
             }
@@ -205,13 +199,25 @@ namespace v2 {
                 return result;
             }
 
-            template<class Tail>
-            Bat<oid_t, oid_t>* mirror(Bat<oid_t, Tail> *arg) {
-                auto result = new TempBat<oid_t, oid_t>(arg->size());
+            template<class Head, class Tail>
+            Bat<Head, Head>* mirrorHead(Bat<Head, Tail> *arg) {
+                auto result = new TempBat<Head, Head>(arg->size());
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
+                    auto p = iter->next();
                     result->append(make_pair(std::move(p.first), std::move(p.first)));
+                }
+                delete iter;
+                return result;
+            }
+
+            template<class Head, class Tail>
+            Bat<Tail, Tail>* mirrorTail(Bat<Head, Tail> *arg) {
+                auto result = new TempBat<Tail, Tail>(arg->size());
+                auto iter = arg->begin();
+                while (iter->hasNext()) {
+                    auto p = iter->next();
+                    result->append(make_pair(std::move(p.second), std::move(p.second)));
                 }
                 delete iter;
                 return result;
@@ -268,65 +274,104 @@ namespace v2 {
             }
 
             template<class T1, class T2, class T3>
-            Bat<T1, T3>* col_hashjoin(Bat<T1, T2> *arg1, Bat<T2, T3> *arg2, int SIDE = 0) {
+            Bat<T1, T3>* col_hashjoin_old(Bat<T1, T2> *arg1, Bat<T2, T3> *arg2, join_side_t side = join_side_t::left) {
                 auto result = new TempBat<T1, T3>();
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
-                unordered_map<T2, vector<T1>* > hashMapLeft;
-                unordered_map<T2, vector<T3>* > hashMapRight;
-                if (SIDE == JOIN_LEFT) {
+                if (side == join_side_t::left) {
+                    unordered_map<T2, vector<T1>* > hashMapLeft;
                     while (iter1->hasNext()) {
                         auto p1 = iter1->next();
                         vector<T1> *vec;
                         if (hashMapLeft.find(p1.second) == hashMapLeft.end()) {
-                            vec = new vector<T1>();
+                            hashMapLeft[p1.second] = (vec = new vector<T1>);
                         } else {
-                            vec = (vector<T1>*)hashMapLeft[(T2) p1.second];
+                            vec = hashMapLeft[p1.second];
                         }
                         vec->emplace_back(std::move(p1.first));
-                        hashMapLeft[p1.second] = vec;
                     }
-                } else {
-                    while (iter2->hasNext()) {
-                        pair<T2, T3> p1 = iter2->next();
-                        vector<T3> *vec;
-                        if (hashMapRight.find(p1.first) == hashMapRight.end()) {
-                            vec = new vector<T3>();
-                        } else {
-                            vec = (vector<T3>*)hashMapRight[(T2) p1.first];
-                        }
-                        vec->emplace_back(std::move(p1.second));
-                        hashMapRight[p1.first] = vec;
-                    }
-                }
-                // probing against hash map
-                if (SIDE == JOIN_LEFT) {
                     while (iter2->hasNext()) {
                         auto p2 = iter2->next();
-                        if (hashMapLeft.find((T2) p2.first) != hashMapLeft.end()) {
-                            vector<T1>* vec = (vector<T1>*)hashMapLeft[(T2) p2.first];
+                        if (hashMapLeft.find(p2.first) != hashMapLeft.end()) {
+                            auto vec = hashMapLeft[p2.first];
                             for (size_t i = 0; i < vec->size(); i++) {
                                 result->append(make_pair(std::move((*vec)[i]), std::move(p2.second)));
                             }
                         }
                     }
+                    for (auto elem : hashMapLeft) {
+                        delete elem.second;
+                    }
                 } else {
+                    unordered_map<T2, vector<T3>* > hashMapRight;
+                    while (iter2->hasNext()) {
+                        auto p1 = iter2->next();
+                        vector<T3> *vec;
+                        if (hashMapRight.find(p1.first) == hashMapRight.end()) {
+                            hashMapRight[p1.first] = (vec = new vector<T3>);
+                        } else {
+                            vec = hashMapRight[p1.first];
+                        }
+                        vec->emplace_back(std::move(p1.second));
+                    }
                     while (iter1->hasNext()) {
-                        pair<T1, T2> p2 = iter1->next();
-                        if (hashMapRight.find((T2) p2.second) != hashMapRight.end()) {
-                            vector<T3>* vec = (vector<T3>*)hashMapRight[(T3) p2.second];
+                        auto p2 = iter1->next();
+                        auto iterMap = hashMapRight.find(p2.second);
+                        if (iterMap != hashMapRight.end()) {
+                            auto vec = iterMap->second;
                             for (size_t i = 0; i < vec->size(); i++) {
                                 result->append(make_pair(std::move((*vec)[i]), std::move(p2.first)));
                             }
                         }
                     }
+                    for (auto elem : hashMapRight) {
+                        delete elem.second;
+                    }
+                }
+                delete iter1;
+                delete iter2;
+                return result;
+            }
 
-                }
-                for (auto elem : hashMapLeft) {
-                    delete elem.second;
-                }
-                for (auto elem : hashMapRight) {
-                    delete elem.second;
+            template<class T1, class T2, class T3>
+            Bat<T1, T3>* col_hashjoin(Bat<T1, T2> *arg1, Bat<T2, T3> *arg2, join_side_t side = join_side_t::left) {
+                auto result = new TempBat<T1, T3>();
+                auto iter1 = arg1->begin();
+                auto iter2 = arg2->begin();
+                if (iter1->hasNext() && iter2->hasNext()) {
+                    if (side == join_side_t::left) {
+                        unordered_map<T2, vector<T1> > hashMap;
+                        while (iter1->hasNext()) {
+                            auto pairLeft = iter1->next();
+                            hashMap[pairLeft.second].emplace_back(move(pairLeft.first));
+                        }
+                        auto mapEnd = hashMap.end();
+                        while (iter2->hasNext()) {
+                            auto pairRight = iter2->next();
+                            auto iterMap = hashMap.find(pairRight.first);
+                            if (iterMap != mapEnd) {
+                                for (auto matched : iterMap->second) {
+                                    result->append(make_pair(matched, pairRight.second));
+                                }
+                            }
+                        }
+                    } else {
+                        unordered_map<T2, vector<T3> > hashMap;
+                        while (iter2->hasNext()) {
+                            auto pairRight = iter2->next();
+                            hashMap[pairRight.first].emplace_back(pairRight.second);
+                        }
+                        auto mapEnd = hashMap.end();
+                        while (iter1->hasNext()) {
+                            auto pairLeft = iter1->next();
+                            auto iterMap = hashMap.find(pairLeft.second);
+                            if (iterMap != mapEnd) {
+                                for (auto matched : iterMap->second) {
+                                    result->append(make_pair(pairLeft.first, matched));
+                                }
+                            }
+                        }
+                    }
                 }
                 delete iter1;
                 delete iter2;

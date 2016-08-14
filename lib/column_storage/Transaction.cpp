@@ -27,11 +27,11 @@
 
 #include <stdexcept>
 #include <cstring>
-#include <cinttypes>
 #include <sstream>
 
-#include "column_storage/TransactionManager.h"
-#include "util/resilience.hpp"
+#include <ColumnStore.h>
+#include <column_storage/TransactionManager.h>
+#include <util/resilience.hpp>
 
 using namespace std;
 
@@ -227,7 +227,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                     strncpy(datatype, NAME_SHORTINT, LEN_VALUE);
                 } else if (strncmp(buffer, "LARGEINT", 8) == 0) {
                     *((type_t*) bun->tail) = type_largeint;
-                    cm->createColumn(column, sizeof (largeint_t));
+                    cm->createColumn(column, sizeof (bigint_t));
                     strncpy(datatype, NAME_LARGEINT, LEN_VALUE);
                 } else if (strncmp(buffer, "STRING", 6) == 0) {
                     *((type_t*) bun->tail) = type_string;
@@ -333,7 +333,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                                 break;
 
                             case type_largeint:
-                                *(static_cast<largeint_t*> (record->content)) = static_cast<largeint_t> (atoll(buffer));
+                                *(static_cast<bigint_t*> (record->content)) = static_cast<bigint_t> (atoll(buffer));
                                 break;
 
                             case type_string:

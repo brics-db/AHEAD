@@ -112,7 +112,7 @@ void MetaRepositoryManager::createDefaultDataTypes() {
     datatype_length->append(make_pair(0, sizeof (tinyint_t)));
     datatype_length->append(make_pair(1, sizeof (shortint_t)));
     datatype_length->append(make_pair(2, sizeof (int_t)));
-    datatype_length->append(make_pair(3, sizeof (largeint_t)));
+    datatype_length->append(make_pair(3, sizeof (bigint_t)));
     datatype_length->append(make_pair(4, sizeof (char_t) * MAXLEN_STRING));
     datatype_length->append(make_pair(5, sizeof (fixed_t)));
     datatype_length->append(make_pair(6, sizeof (char_t)));
@@ -192,7 +192,7 @@ id_t MetaRepositoryManager::getBatIdOfAttribute(const char *nameOfTable, const c
 
         // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
         // reverse will not work here, because we need the bat id, not the table id
-        auto mirrorTableIdBat = v2::bat::ops::mirror(batForTableId);
+        auto mirrorTableIdBat = v2::bat::ops::mirrorHead(batForTableId);
         delete batForTableId;
         auto attributesForTable = v2::bat::ops::col_selectjoin(mirrorTableIdBat, attribute_name);
         delete mirrorTableIdBat;

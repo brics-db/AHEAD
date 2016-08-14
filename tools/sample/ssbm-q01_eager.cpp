@@ -75,27 +75,27 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 0) Eager Check
-        MEASURE_OP(sw2, x, auto, batDYpair, (v2::bat::ops::checkAndDecodeA<v2_shortint_t>(batDYenc, TypeSelector<v2_shortint_t>::A_INV, TypeSelector<v2_shortint_t>::A_UNENC_MAX_U)), batDYpair.first->size(), batDYpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batDYpair, (v2::bat::ops::checkAndDecode_AN<v2_shortint_t>(batDYenc, TypeSelector<v2_shortint_t>::A_INV, TypeSelector<v2_shortint_t>::A_UNENC_MAX_U)), batDYpair.first->size(), batDYpair.first->consumption());
         auto batDY = batDYpair.first;
         SAVE_TYPE(x - 1, batDY);
         delete batDYpair.second;
-        MEASURE_OP(sw2, x, auto, batDDpair, (v2::bat::ops::checkAndDecodeA<v2_int_t>(batDDenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batDDpair.first->size(), batDDpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batDDpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(batDDenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batDDpair.first->size(), batDDpair.first->consumption());
         auto batDD = batDDpair.first;
         SAVE_TYPE(x - 1, batDD);
         delete batDDpair.second;
-        MEASURE_OP(sw2, x, auto, batLQpair, (v2::bat::ops::checkAndDecodeA<v2_tinyint_t>(batLQenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLQpair.first->size(), batLQpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLQpair, (v2::bat::ops::checkAndDecode_AN<v2_tinyint_t>(batLQenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLQpair.first->size(), batLQpair.first->consumption());
         auto batLQ = batLQpair.first;
         SAVE_TYPE(x - 1, batLQ);
         delete batLQpair.second;
-        MEASURE_OP(sw2, x, auto, batLDpair, (v2::bat::ops::checkAndDecodeA<v2_tinyint_t>(batLDenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLDpair.first->size(), batLDpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLDpair, (v2::bat::ops::checkAndDecode_AN<v2_tinyint_t>(batLDenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLDpair.first->size(), batLDpair.first->consumption());
         auto batLD = batLDpair.first;
         SAVE_TYPE(x - 1, batLD);
         delete batLDpair.second;
-        MEASURE_OP(sw2, x, auto, batLOpair, (v2::bat::ops::checkAndDecodeA<v2_int_t>(batLOenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLOpair.first->size(), batLOpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLOpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(batLOenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLOpair.first->size(), batLOpair.first->consumption());
         auto batLO = batLOpair.first;
         SAVE_TYPE(x - 1, batLO);
         delete batLOpair.second;
-        MEASURE_OP(sw2, x, auto, batLEpair, (v2::bat::ops::checkAndDecodeA<v2_int_t>(batLEenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLEpair.first->size(), batLEpair.first->consumption());
+        MEASURE_OP(sw2, x, auto, batLEpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(batLEenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLEpair.first->size(), batLEpair.first->consumption());
         auto batLE = batLEpair.first;
         SAVE_TYPE(x - 1, batLE);
         delete batLEpair.second;
@@ -107,12 +107,12 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLD, static_cast<tinyint_t> (1), static_cast<tinyint_t> (3))); // lo_discount between 1 and 3
         PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
         delete batLD;
-        MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirror(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
+        MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirrorHead(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::col_hashjoin(bat3, bat2)); // join selection
         delete bat3;
         delete bat2;
-        MEASURE_OP(sw2, x, bat5, v2::bat::ops::mirror(bat4)); // prepare joined selection with lo_orderdate (contains positions in tail)
+        MEASURE_OP(sw2, x, bat5, v2::bat::ops::mirrorHead(bat4)); // prepare joined selection with lo_orderdate (contains positions in tail)
         PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity < 25 and lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::col_hashjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDY, static_cast<shortint_t> (1993))); // d_year = 1993
         delete batDY;
         PRINT_BAT(sw1, printBat(bat7->begin(), "d_year = 1993"));
-        MEASURE_OP(sw2, x, bat8, v2::bat::ops::mirror(bat7)); // prepare joined selection over d_year and d_datekey
+        MEASURE_OP(sw2, x, bat8, v2::bat::ops::mirrorHead(bat7)); // prepare joined selection over d_year and d_datekey
         delete bat7;
         MEASURE_OP(sw2, x, bat9, v2::bat::ops::col_hashjoin(bat8, batDD)); // only those d_datekey where d_year...
         delete bat8;
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
         delete batA;
         delete bat6;
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
-        MEASURE_OP(sw2, x, batC, v2::bat::ops::mirror(batB)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP(sw2, x, batC, v2::bat::ops::mirrorHead(batB)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batB;
         MEASURE_OP(sw2, x, batD, v2::bat::ops::col_hashjoin(batC, batLE));
         delete batLE;

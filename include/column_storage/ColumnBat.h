@@ -85,7 +85,7 @@ typedef ColumnBat<oid_t, oid_t> oid_col_t;
 typedef ColumnBat<oid_t, tinyint_t> tinyint_col_t;
 typedef ColumnBat<oid_t, shortint_t> shortint_col_t;
 typedef ColumnBat<oid_t, int_t> int_col_t;
-typedef ColumnBat<oid_t, largeint_t> largeint_col_t;
+typedef ColumnBat<oid_t, bigint_t> bigint_col_t;
 typedef ColumnBat<oid_t, char_t> char_col_t;
 typedef ColumnBat<oid_t, str_t> str_col_t;
 typedef ColumnBat<oid_t, fixed_t> fixed_col_t;
@@ -94,7 +94,7 @@ typedef TempBat<oid_t, oid_t> oid_tmp_t;
 typedef TempBat<oid_t, tinyint_t> tinyint_tmp_t;
 typedef TempBat<oid_t, shortint_t> shortint_tmp_t;
 typedef TempBat<oid_t, int_t> int_tmp_t;
-typedef TempBat<oid_t, largeint_t> largeint_tmp_t;
+typedef TempBat<oid_t, bigint_t> bigint_tmp_t;
 typedef TempBat<oid_t, char_t> char_tmp_t;
 typedef TempBat<oid_t, str_t> str_tmp_t;
 typedef TempBat<oid_t, fixed_t> fixed_tmp_t;
@@ -103,9 +103,18 @@ typedef Bat<oid_t, oid_t> oid_bat_t;
 typedef Bat<oid_t, tinyint_t> tinyint_bat_t;
 typedef Bat<oid_t, shortint_t> shortint_bat_t;
 typedef Bat<oid_t, int_t> int_bat_t;
-typedef Bat<oid_t, largeint_t> largeint_bat_t;
+typedef Bat<oid_t, bigint_t> bigint_bat_t;
 typedef Bat<oid_t, char_t> char_bat_t;
 typedef Bat<oid_t, str_t> str_bat_t;
 typedef Bat<oid_t, fixed_t> fixed_bat_t;
+
+typedef Bat<oid_t, oid_t> oid_bat_mir_t;
+typedef Bat<tinyint_t, oid_t> tinyint_bat_mir_t;
+typedef Bat<shortint_t, oid_t> shortint_bat_mir_t;
+typedef Bat<int_t, oid_t> int_bat_mir_t;
+typedef Bat<bigint_t, oid_t> bigint_bat_mir_t;
+typedef Bat<char_t, oid_t> char_bat_mir_t;
+typedef Bat<str_t, oid_t> str_bat_mir_t;
+typedef Bat<fixed_t, oid_t> fixed_bat_mir_t;
 
 #endif

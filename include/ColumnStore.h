@@ -16,7 +16,10 @@
 
 // global type definitions
 
+#include <utility>
 #include <cinttypes>
+
+using namespace std;
 
 #define TOSTRING0(str) #str
 #define TOSTRING(str) TOSTRING0(str)
@@ -82,7 +85,7 @@ enum type_t {
 typedef uint8_t tinyint_t;
 typedef uint16_t shortint_t;
 typedef uint32_t int_t;
-typedef uint64_t largeint_t;
+typedef uint64_t bigint_t;
 typedef char char_t, *str_t;
 typedef double fixed_t;
 typedef uint16_t restiny_t;
@@ -104,7 +107,7 @@ typedef union {
 } v2_int_t;
 
 typedef union {
-    largeint_t value;
+    bigint_t value;
 } v2_largeint_t;
 
 typedef union {

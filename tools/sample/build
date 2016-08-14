@@ -6,7 +6,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 BASEDIR="$1"
-FILES=(main ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded lineorder_size)
+FILES=(test_hashjoin main ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded lineorder_size)
 
 for file in "${FILES[@]}"; do
     echo "${file}: "

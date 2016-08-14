@@ -48,19 +48,19 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
         delete result0;
 
         sw1.start();
-        auto result1 = v2::bat::ops::checkA<V2Type>(batTcAN);
+        auto result1 = v2::bat::ops::check_AN<V2Type>(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
         delete result1;
 
         sw1.start();
-        auto result2 = v2::bat::ops::decodeA<V2Type>(batTcAN);
+        auto result2 = v2::bat::ops::decode_AN<V2Type>(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
         delete result2;
 
         sw1.start();
-        auto result3 = v2::bat::ops::checkAndDecodeA<V2Type>(batTcAN);
+        auto result3 = v2::bat::ops::checkAndDecode_AN<V2Type>(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
 
@@ -103,7 +103,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::checkA<V2Type>(bats[scale2]);
+                auto result = v2::bat::ops::check_AN<V2Type>(bats[scale2]);
                 delete result;
             }
             sw1.stop();
@@ -115,7 +115,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::decodeA<V2Type> (bats[scale2]);
+                auto result = v2::bat::ops::decode_AN<V2Type> (bats[scale2]);
                 delete result;
             }
             sw1.stop();
@@ -127,7 +127,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::checkAndDecodeA<V2Type> (bats[scale2]);
+                auto result = v2::bat::ops::checkAndDecode_AN<V2Type> (bats[scale2]);
                 delete result.first;
                 delete result.second;
             }
