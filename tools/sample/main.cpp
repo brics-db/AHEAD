@@ -78,7 +78,7 @@ int main(int argc, char ** argv) {
     tm->endTransaction(t);
 
     // Test Query
-    auto batCustKey = new int_col_t("customer", "custkey");
+    auto batCustKey = new int_colbat_t("customer", "custkey");
     sw.start();
     auto bat0 = v2::bat::ops::selection_lt(batCustKey, static_cast<int_t> (12345));
     sw.stop();
@@ -93,7 +93,7 @@ int main(int argc, char ** argv) {
      */
 
     sw.start();
-    auto batA = v2::bat::ops::encode_AN<v2_int_t>(batCustKey);
+    auto batA = v2::bat::ops::encode_AN(batCustKey);
     sw.stop();
     cout << "[customer] Converted " << numCust << " tuples from int_t to resint_t took " << sw << " ns" << endl;
 

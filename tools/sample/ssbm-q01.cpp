@@ -43,12 +43,12 @@ int main(int argc, char** argv) {
     size_t x = 0;
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new shortint_col_t("date", "year"));
-    MEASURE_OP(sw1, x, batDDcb, new int_col_t("date", "datekey"));
-    MEASURE_OP(sw1, x, batLQcb, new tinyint_col_t("lineorder", "quantity"));
-    MEASURE_OP(sw1, x, batLDcb, new tinyint_col_t("lineorder", "discount"));
-    MEASURE_OP(sw1, x, batLOcb, new int_col_t("lineorder", "orderdate"));
-    MEASURE_OP(sw1, x, batLEcb, new int_col_t("lineorder", "extendedprice"));
+    MEASURE_OP(sw1, x, batDYcb, new shortint_colbat_t("date", "year"));
+    MEASURE_OP(sw1, x, batDDcb, new int_colbat_t("date", "datekey"));
+    MEASURE_OP(sw1, x, batLQcb, new tinyint_colbat_t("lineorder", "quantity"));
+    MEASURE_OP(sw1, x, batLDcb, new tinyint_colbat_t("lineorder", "discount"));
+    MEASURE_OP(sw1, x, batLOcb, new int_colbat_t("lineorder", "orderdate"));
+    MEASURE_OP(sw1, x, batLEcb, new int_colbat_t("lineorder", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(sw1, x, batDY, v2::bat::ops::copy(batDYcb));

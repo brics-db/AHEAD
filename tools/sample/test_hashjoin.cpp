@@ -34,8 +34,8 @@ int main(int argc, char** argv) {
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
-    auto cbDateDatekey = new int_col_t("date", "datekey");
-    auto cbLineorderOrderdate = new int_col_t("lineorder", "orderdate");
+    auto cbDateDatekey = new int_colbat_t("date", "datekey");
+    auto cbLineorderOrderdate = new int_colbat_t("lineorder", "orderdate");
 
     auto tbDateDatekey = v2::bat::ops::reverse(cbDateDatekey);
     auto tbLineorderOrderdate = v2::bat::ops::copy(cbLineorderOrderdate);

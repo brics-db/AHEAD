@@ -31,11 +31,17 @@
 #include <ColumnStore.h>
 #include <column_storage/ColumnBat.h>
 
+typedef uint16_t restiny_t;
+typedef uint32_t resshort_t;
+typedef uint64_t resint_t;
 typedef uint64_t resoid_t;
 
 #define RESOID_INVALID (static_cast<resoid_t>(-1))
 
-struct v2_restiny_t {
+struct v2_anencoded_t {
+};
+
+struct v2_restiny_t : public v2_anencoded_t {
     typedef restiny_t type_t;
     typedef v2_tinyint_t unenc_v2_t;
 
@@ -47,7 +53,7 @@ struct v2_restiny_t {
     static const restiny_t A_UNENC_MAX_U;
 };
 
-struct v2_resshort_t {
+struct v2_resshort_t : public v2_anencoded_t {
     typedef resshort_t type_t;
     typedef v2_shortint_t unenc_v2_t;
 
@@ -59,7 +65,7 @@ struct v2_resshort_t {
     static const resshort_t A_UNENC_MAX_U;
 };
 
-struct v2_resint_t {
+struct v2_resint_t : public v2_anencoded_t {
     typedef resint_t type_t;
     typedef v2_int_t unenc_v2_t;
 
@@ -71,7 +77,7 @@ struct v2_resint_t {
     static const resint_t A_UNENC_MAX_U;
 };
 
-struct v2_resoid_t {
+struct v2_resoid_t : public v2_anencoded_t {
     typedef resoid_t type_t;
     typedef v2_oid_t unenc_v2_t;
 
@@ -81,6 +87,81 @@ struct v2_resoid_t {
     static const resoid_t A_UNENC_MIN;
     static const resoid_t A_UNENC_MAX;
     static const resoid_t A_UNENC_MAX_U;
+};
+
+// Fast-Forward declare Bat, ColumnBat, TempBat types
+typedef Bat<v2_oid_t, v2_restiny_t> restiny_bat_t;
+typedef Bat<v2_oid_t, v2_resshort_t> resshort_bat_t;
+typedef Bat<v2_oid_t, v2_resint_t> resint_bat_t;
+typedef Bat<v2_oid_t, v2_resoid_t> resoid_bat_t;
+
+typedef ColumnBat<v2_oid_t, v2_restiny_t> restiny_colbat_t;
+typedef ColumnBat<v2_oid_t, v2_resshort_t> resshort_colbat_t;
+typedef ColumnBat<v2_oid_t, v2_resint_t> resint_colbat_t;
+typedef ColumnBat<v2_oid_t, v2_resoid_t> resoid_colbat_t;
+
+typedef TempBat<v2_oid_t, v2_restiny_t> restiny_tmpbat_t;
+typedef TempBat<v2_oid_t, v2_resshort_t> resshort_tmpbat_t;
+typedef TempBat<v2_oid_t, v2_resint_t> resint_tmpbat_t;
+typedef TempBat<v2_oid_t, v2_resoid_t> resoid_tmpbat_t;
+
+template<typename Base>
+struct TypeMap;
+
+template<>
+struct TypeMap<v2_tinyint_t> {
+    typedef v2_tinyint_t v2_base_t;
+    typedef v2_restiny_t v2_encoded_t;
+    typedef v2_tinyint_t v2_actual_t;
+};
+
+template<>
+struct TypeMap<v2_shortint_t> {
+    typedef v2_shortint_t v2_base_t;
+    typedef v2_resshort_t v2_encoded_t;
+    typedef v2_shortint_t v2_actual_t;
+};
+
+template<>
+struct TypeMap<v2_int_t> {
+    typedef v2_int_t v2_base_t;
+    typedef v2_resint_t v2_encoded_t;
+    typedef v2_int_t v2_actual_t;
+};
+
+template<>
+struct TypeMap<v2_oid_t> {
+    typedef v2_oid_t v2_base_t;
+    typedef v2_resoid_t v2_encoded_t;
+    typedef v2_oid_t v2_actual_t;
+};
+
+template<>
+struct TypeMap<v2_restiny_t> {
+    typedef v2_tinyint_t v2_base_t;
+    typedef v2_restiny_t v2_encoded_t;
+    typedef v2_restiny_t v2_actual_t;
+};
+
+template<>
+struct TypeMap<v2_resshort_t> {
+    typedef v2_shortint_t v2_base_t;
+    typedef v2_resshort_t v2_encoded_t;
+    typedef v2_resshort_t v2_actual_t;
+};
+
+template<>
+struct TypeMap<v2_resint_t> {
+    typedef v2_int_t v2_base_t;
+    typedef v2_resint_t v2_encoded_t;
+    typedef v2_resint_t v2_actual_t;
+};
+
+template<>
+struct TypeMap<v2_resoid_t> {
+    typedef v2_oid_t v2_base_t;
+    typedef v2_resoid_t v2_encoded_t;
+    typedef v2_resoid_t v2_actual_t;
 };
 
 template<typename Tail>

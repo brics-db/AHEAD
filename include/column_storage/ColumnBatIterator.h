@@ -87,6 +87,10 @@ public:
     }
 };
 
+template<typename Head, typename Tail>
+class ColumnBatIterator : public ColumnBatIteratorBase<Head, Tail> {
+};
+
 template<typename Tail>
 class ColumnBatIterator<v2_oid_t, Tail> : public ColumnBatIteratorBase<v2_oid_t, Tail> {
     typedef typename Tail::type_t tail_t;
@@ -105,7 +109,7 @@ public:
         return move(p);
     }
 
-    virtual pair<v2_oid_t, Tail>&& next() override {
+    virtual pair<oid_t, tail_t>&& next() override {
         auto p = make_pair(move(*reinterpret_cast<oid_t*> (&this->bu->head)), move(*static_cast<tail_t*> (this->bu->tail)));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);

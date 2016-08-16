@@ -2,6 +2,7 @@
 
 #include <meta_repository/MetaRepositoryManager.h>
 #include <column_operators/operators.h>
+#include <util/resilience.hpp>
 
 MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
 char* MetaRepositoryManager::strBaseDir = nullptr;

@@ -45,12 +45,12 @@ int main(int argc, char** argv) {
     size_t x = 0;
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new resshort_col_t("dateAN", "year"));
-    MEASURE_OP(sw1, x, batDDcb, new resint_col_t("dateAN", "datekey"));
-    MEASURE_OP(sw1, x, batLQcb, new restiny_col_t("lineorderAN", "quantity"));
-    MEASURE_OP(sw1, x, batLDcb, new restiny_col_t("lineorderAN", "discount"));
-    MEASURE_OP(sw1, x, batLOcb, new resint_col_t("lineorderAN", "orderdate"));
-    MEASURE_OP(sw1, x, batLEcb, new resint_col_t("lineorderAN", "extendedprice"));
+    MEASURE_OP(sw1, x, batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(sw1, x, batDDcb, new resint_colbat_t("dateAN", "datekey"));
+    MEASURE_OP(sw1, x, batLQcb, new restiny_colbat_t("lineorderAN", "quantity"));
+    MEASURE_OP(sw1, x, batLDcb, new restiny_colbat_t("lineorderAN", "discount"));
+    MEASURE_OP(sw1, x, batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
+    MEASURE_OP(sw1, x, batLEcb, new resint_colbat_t("lineorderAN", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(sw1, x, batDYenc, v2::bat::ops::copy(batDYcb));
@@ -75,60 +75,42 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 0) Eager Check
-        MEASURE_OP(sw2, x, auto, batDYpair, (v2::bat::ops::checkAndDecode_AN<v2_shortint_t>(batDYenc, TypeSelector<v2_shortint_t>::A_INV, TypeSelector<v2_shortint_t>::A_UNENC_MAX_U)), batDYpair.first->size(), batDYpair.first->consumption());
-        auto batDY = batDYpair.first;
-        SAVE_TYPE(x - 1, batDY);
+        MEASURE_OP_PAIR(sw2, x, batDYpair, (v2::bat::ops::checkAndDecode_AN(batDYenc)));
         delete batDYpair.second;
-        MEASURE_OP(sw2, x, auto, batDDpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(batDDenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batDDpair.first->size(), batDDpair.first->consumption());
-        auto batDD = batDDpair.first;
-        SAVE_TYPE(x - 1, batDD);
+        MEASURE_OP_PAIR(sw2, x, batDDpair, (v2::bat::ops::checkAndDecode_AN(batDDenc)));
         delete batDDpair.second;
-        MEASURE_OP(sw2, x, auto, batLQpair, (v2::bat::ops::checkAndDecode_AN<v2_tinyint_t>(batLQenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLQpair.first->size(), batLQpair.first->consumption());
-        auto batLQ = batLQpair.first;
-        SAVE_TYPE(x - 1, batLQ);
+        MEASURE_OP_PAIR(sw2, x, batLQpair, (v2::bat::ops::checkAndDecode_AN(batLQenc)));
         delete batLQpair.second;
-        MEASURE_OP(sw2, x, auto, batLDpair, (v2::bat::ops::checkAndDecode_AN<v2_tinyint_t>(batLDenc, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batLDpair.first->size(), batLDpair.first->consumption());
-        auto batLD = batLDpair.first;
-        SAVE_TYPE(x - 1, batLD);
+        MEASURE_OP_PAIR(sw2, x, batLDpair, (v2::bat::ops::checkAndDecode_AN(batLDenc)));
         delete batLDpair.second;
-        MEASURE_OP(sw2, x, auto, batLOpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(batLOenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLOpair.first->size(), batLOpair.first->consumption());
-        auto batLO = batLOpair.first;
-        SAVE_TYPE(x - 1, batLO);
+        MEASURE_OP_PAIR(sw2, x, batLOpair, (v2::bat::ops::checkAndDecode_AN(batLOenc)));
         delete batLOpair.second;
-        MEASURE_OP(sw2, x, auto, batLEpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(batLEenc, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batLEpair.first->size(), batLEpair.first->consumption());
-        auto batLE = batLEpair.first;
-        SAVE_TYPE(x - 1, batLE);
+        MEASURE_OP_PAIR(sw2, x, batLEpair, (v2::bat::ops::checkAndDecode_AN(batLEenc)));
         delete batLEpair.second;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQ, static_cast<tinyint_t> (25))); // lo_quantity < 25
-        PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
-        delete batLQ;
-        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLD, static_cast<tinyint_t> (1), static_cast<tinyint_t> (3))); // lo_discount between 1 and 3
-        PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
-        delete batLD;
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQpair.first, 25)); // lo_quantity < 25
+        delete batLQpair.first;
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLDpair.first, 1, 3)); // lo_discount between 1 and 3
+        delete batLDpair.first;
         MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirrorHead(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::col_hashjoin(bat3, bat2)); // join selection
         delete bat3;
         delete bat2;
         MEASURE_OP(sw2, x, bat5, v2::bat::ops::mirrorHead(bat4)); // prepare joined selection with lo_orderdate (contains positions in tail)
-        PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity < 25 and lo_discount between 1 and 3"));
-        MEASURE_OP(sw2, x, bat6, v2::bat::ops::col_hashjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(sw2, x, bat6, v2::bat::ops::col_hashjoin(bat5, batLOpair.first)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
-        PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity < 25 and lo_discount between 1 and 3"));
-        delete batLO;
+        delete batLOpair.first;
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDY, static_cast<shortint_t> (1993))); // d_year = 1993
-        delete batDY;
-        PRINT_BAT(sw1, printBat(bat7->begin(), "d_year = 1993"));
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDYpair.first, 1993)); // d_year = 1993
+        delete batDYpair.first;
         MEASURE_OP(sw2, x, bat8, v2::bat::ops::mirrorHead(bat7)); // prepare joined selection over d_year and d_datekey
         delete bat7;
-        MEASURE_OP(sw2, x, bat9, v2::bat::ops::col_hashjoin(bat8, batDD)); // only those d_datekey where d_year...
+        MEASURE_OP(sw2, x, bat9, v2::bat::ops::col_hashjoin(bat8, batDDpair.first)); // only those d_datekey where d_year...
         delete bat8;
-        delete batDD;
-        PRINT_BAT(sw1, printBat(bat9->begin(), "d_datekey where d_year = 1993"));
+        delete batDDpair.first;
 
         // 3) join lineorder and date
         MEASURE_OP(sw2, x, batA, v2::bat::ops::reverse(bat9));
@@ -139,8 +121,8 @@ int main(int argc, char** argv) {
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
         MEASURE_OP(sw2, x, batC, v2::bat::ops::mirrorHead(batB)); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batB;
-        MEASURE_OP(sw2, x, batD, v2::bat::ops::col_hashjoin(batC, batLE));
-        delete batLE;
+        MEASURE_OP(sw2, x, batD, v2::bat::ops::col_hashjoin(batC, batLEpair.first));
+        delete batLEpair.first;
         PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
         MEASURE_OP(sw2, x, batE, v2::bat::ops::col_hashjoin(batC, bat4));
         delete batC;

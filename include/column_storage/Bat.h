@@ -36,6 +36,8 @@ using namespace std;
 template<typename Head, typename Tail>
 class Bat {
 public:
+    typedef Head v2_head_t;
+    typedef Tail v2_tail_t;
     typedef typename Head::type_t head_t;
     typedef typename Tail::type_t tail_t;
 

@@ -29,6 +29,7 @@
 #define OPERATORSAN_TCC
 
 #include <sstream>
+#include <type_traits>
 
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
@@ -41,22 +42,25 @@ namespace v2 {
     namespace bat {
         namespace ops {
 
-            template<typename Head, typename ResTail>
-            Bat<Head, ResTail>* encode_AN(Bat<Head, typename ResTail::unenc_v2_t>* arg, typename ResTail::type_t A = ResTail::A, size_t start = 0, size_t size = 0) {
-                auto result = new TempBat<Head, ResTail>(arg->size());
+            template<typename Head, typename Tail>
+            Bat<Head, typename TypeMap<Tail>::v2_encoded_t>* encode_AN(Bat<Head, Tail>* arg, typename TypeMap<Tail>::v2_encoded_t::type_t A = TypeMap<Tail>::v2_encoded_t::A, size_t start = 0, size_t size = 0) {
+                typedef typename TypeMap<Tail>::v2_encoded_t::type_t tail_t;
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_base_t, Tail>::value, "Tail must be a base type");
+                auto result = new TempBat<Head, typename TypeMap<Tail>::v2_encoded_t > (arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
                     auto next = iter->get(start);
-                    result->append(std::move(make_pair(move(next.first), move(static_cast<typename ResTail::type_t> (next.second) * A))));
+                    result->append(std::move(make_pair(move(next.first), move(static_cast<tail_t> (next.second) * A))));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
                             next = iter->next();
-                            result->append(move(make_pair(move(next.first), move(static_cast<typename ResTail::type_t> (next.second) * A))));
+                            result->append(move(make_pair(move(next.first), move(static_cast<tail_t> (next.second) * A))));
                         }
                     } else {
                         while (iter->hasNext()) {
                             next = iter->next();
-                            result->append(move(make_pair(move(next.first), move(static_cast<typename ResTail::type_t> (next.second) * A))));
+                            result->append(move(make_pair(move(next.first), move(static_cast<tail_t> (next.second) * A))));
                         }
                     }
                 }
@@ -66,6 +70,8 @@ namespace v2 {
 
             template<typename Head, typename ResTail>
             vector<bool>* check_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 auto result = new vector<bool>();
                 result->reserve(arg->size());
                 auto iter = arg->begin();
@@ -86,7 +92,9 @@ namespace v2 {
             }
 
             template<typename Head, typename ResTail>
-            Bat<Head, typename ResTail::unenc_v2_t>* decode_AN(Bat<Head, ResTail>* arg, typename ResType::type_t aInv = ResType::A_INV, typename ResType::type_t unEncMaxU = ResType::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+            Bat<Head, typename ResTail::unenc_v2_t>* decode_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 typedef typename ResTail::unenc_v2_t Tail;
                 auto result = new TempBat<Head, Tail>(arg->size());
                 auto iter = arg->begin();
@@ -109,30 +117,32 @@ namespace v2 {
                 return result;
             }
 
-            template<typename V2Type>
-            pair<typename TypeSelector<V2Type>::bat_t*, vector<bool>*> checkAndDecode_AN(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+            template<typename Head, typename ResTail>
+            pair<Bat<Head, typename ResTail::unenc_v2_t>*, vector<bool>*> checkAndDecode_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t aUnencMaxU = ResTail::A_UNENC_MAX_U, size_t start = 0, size_t size = 0) {
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 size_t sizeBAT = arg->size();
-                auto result = make_pair(new typename TypeSelector<V2Type>::tmp_t(sizeBAT), new vector<bool>());
+                auto result = make_pair(new TempBat<Head, typename ResTail::unenc_v2_t > (sizeBAT), new vector<bool>());
                 result.second->reserve(sizeBAT);
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
                     auto current = iter->get(start);
-                    typename TypeSelector<V2Type>::res_t dec = current.second * aInv;
-                    result.first->append(move(make_pair(move(current.first), move(static_cast<typename TypeSelector<V2Type>::base_t> (dec)))));
-                    result.second->emplace_back(move(dec <= unEncMaxU));
+                    typename ResTail::type_t dec = current.second * aInv;
+                    result.first->append(move(make_pair(move(current.first), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec)))));
+                    result.second->emplace_back(move(dec <= aUnencMaxU));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
                             current = iter->next();
                             dec = current.second * aInv;
-                            result.first->append(move(make_pair(move(current.first), move(static_cast<typename TypeSelector<V2Type>::base_t> (dec)))));
-                            result.second->emplace_back(move(dec <= unEncMaxU));
+                            result.first->append(move(make_pair(move(current.first), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec)))));
+                            result.second->emplace_back(move(dec <= aUnencMaxU));
                         }
                     } else {
                         while (iter->hasNext()) {
                             current = iter->next();
                             dec = current.second * aInv;
-                            result.first->append(move(make_pair(move(current.first), move(static_cast<typename TypeSelector<V2Type>::base_t> (dec)))));
-                            result.second->emplace_back(move(dec <= unEncMaxU));
+                            result.first->append(move(make_pair(move(current.first), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec)))));
+                            result.second->emplace_back(move(dec <= aUnencMaxU));
                         }
                     }
                 }
@@ -140,17 +150,16 @@ namespace v2 {
                 return result;
             }
 
-            template<typename V2Type, typename Op>
-            pair<typename TypeSelector<V2Type>::res_bat_t*, vector<bool>*> selection_AN(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t threshold, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U) {
-                size_t sizeBAT = arg->size();
-                auto result = make_pair(new typename TypeSelector<V2Type>::res_tmp_t, new vector<bool>);
-                result.second->reserve(sizeBAT);
+            template<typename Head, typename ResTail, typename Op>
+            pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                auto result = make_pair(new TempBat<Head, ResTail>, new vector<bool>);
                 auto iter = arg->begin();
-                Op op;
                 while (iter->hasNext()) {
                     auto p = iter->next();
                     result.second->emplace_back((p.second * aInv) <= unEncMaxU);
-                    if (op(p.second, threshold)) {
+                    if (Op(p.second, threshold)) {
                         result.first->append(move(make_pair(move(p.first), move(p.second))));
                     }
                 }
@@ -158,11 +167,11 @@ namespace v2 {
                 return result;
             }
 
-            template<typename V2Type, typename Op1, typename Op2>
-            pair<typename TypeSelector<V2Type>::res_bat_t*, vector<bool>*> selection_AN(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t threshold1, typename TypeSelector<V2Type>::res_t threshold2, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U) {
-                size_t sizeBAT = arg->size();
-                auto result = make_pair(new typename TypeSelector<V2Type>::res_tmp_t, new vector<bool>);
-                result.second->reserve(sizeBAT);
+            template<typename Head, typename ResTail, typename Op1, typename Op2>
+            pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                auto result = make_pair(new TempBat<Head, ResTail>, new vector<bool>);
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
                     auto p = iter->next();
@@ -175,21 +184,23 @@ namespace v2 {
                 return result;
             }
 
-            template<typename V2Type>
-            pair<typename TypeSelector<V2Type>::res_bat_t*, vector<bool>*> selection_AN(selection_type_t selType, typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<V2Type>::res_t threshold1, typename TypeSelector<V2Type>::res_t threshold2 = typename TypeSelector<V2Type>::res_t(0), typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A_INV, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U) {
+            template<typename Head, typename ResTail>
+            pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(selection_type_t selType, Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2 = typename ResTail::type_t(0), typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 switch (selType) {
                     case selection_type_t::LT:
-                        return selection_AN<V2Type, std::less<typename TypeSelector<V2Type>::res_t >> (arg, threshold1);
+                        return selection_AN<Head, ResTail, std::less> (arg, threshold1);
                     case selection_type_t::LE:
-                        return selection_AN<V2Type, std::less_equal<typename TypeSelector<V2Type>::res_t >> (arg, threshold1);
+                        return selection_AN<Head, ResTail, std::less_equal> (arg, threshold1);
                     case selection_type_t::EQ:
-                        return selection_AN<V2Type, std::equal_to>(arg, threshold1);
+                        return selection_AN<Head, ResTail, std::equal_to>(arg, threshold1);
                     case selection_type_t::GE:
-                        return selection_AN<V2Type, std::equal_to>(arg, threshold1);
+                        return selection_AN<Head, ResTail, std::equal_to>(arg, threshold1);
                     case selection_type_t::GT:
-                        return selection_AN<V2Type, std::equal_to>(arg, threshold1);
+                        return selection_AN<Head, ResTail, std::equal_to>(arg, threshold1);
                     case selection_type_t::BT:
-                        return selection_AN<V2Type, std::equal_to>(arg, threshold1, threshold2);
+                        return selection_AN<Head, ResTail, std::greater_equal, std::less_equal>(arg, threshold1, threshold2);
                     default:
                         stringstream ss;
                         ss << "Unknown selection type \"" << selType << '"';
@@ -197,59 +208,98 @@ namespace v2 {
                 }
             }
 
-            template<typename V2Type>
-            typename TypeSelector<v2_oid_t>::res_bat_t* mirrorHead_AN(typename TypeSelector<V2Type>::res_bat_t* arg, typename TypeSelector<v2_oid_t>::res_t A = TypeSelector<v2_oid_t>::A) {
-                auto result = new typename TypeSelector<v2_oid_t>::res_tmp_t(arg->size());
+            template<typename Head, typename Tail, bool isHeadEnc>
+            struct mirrorHead_AN_priv;
+
+            template<typename Head, typename Tail>
+            struct mirrorHead_AN_priv<Head, Tail, true> {
+
+                pair<Bat<Head, Head>*, vector<bool>*> operator()(Bat<Head, Tail>* arg, typename TypeMap<Head>::v2_encoded_t::type_t A = TypeMap<Head>::v2_encoded_t::A, typename TypeMap<Head>::v2_encoded_t::type_t aInv = TypeMap<Head>::v2_encoded_t::A_INV, typename TypeMap<Head>::v2_encoded_t::type_t aUnencMaxU = TypeMap<Head>::v2_encoded_t::A_UNENC_MAX_U) {
+                    static_assert(is_base_of<v2_anencoded_t, Head>::value, "Head must be an AN-encoded type");
+                    size_t sizeBAT = arg->size();
+                    auto result = make_pair(new TempBat<Head, Head>(sizeBAT), new vector<bool>);
+                    result.second->reserve(sizeBAT);
+                    auto iter = arg->begin();
+                    while (iter->hasNext()) {
+                        auto p = iter->next();
+                        result.second->emplace_back((p.first * aInv) < aUnencMaxU);
+                        result.first->append(make_pair(p.first, p.first));
+                    }
+                    delete iter;
+                    return result;
+                }
+            };
+
+            template<typename Head, typename Tail>
+            struct mirrorHead_AN_priv<Head, Tail, false> {
+
+                pair<Bat<Head, typename TypeMap<Head>::v2_encoded_t>*, vector<bool>*> operator()(Bat<Head, Tail>* arg, typename TypeMap<Head>::v2_encoded_t::type_t A = TypeMap<Head>::v2_encoded_t::A, typename TypeMap<Head>::v2_encoded_t::type_t aInv = TypeMap<Head>::v2_encoded_t::A_INV, typename TypeMap<Head>::v2_encoded_t::type_t aUnencMaxU = TypeMap<Head>::v2_encoded_t::A_UNENC_MAX_U) {
+                    typedef typename TypeMap<Head>::v2_encoded_t ResHead;
+                    static_assert(is_base_of<v2_base_t, Head>::value, "Head must be an base type");
+                    size_t sizeBAT = arg->size();
+                    auto result = make_pair(new TempBat<Head, ResHead>(sizeBAT), new vector<bool>);
+                    result.second->reserve(sizeBAT);
+                    auto iter = arg->begin();
+                    while (iter->hasNext()) {
+                        auto p = iter->next();
+                        result.second->emplace_back(true);
+                        result->append(make_pair(p.first, static_cast<typename ResHead::type_t> (p.first) * A));
+                    }
+                    delete iter;
+                    return result;
+                }
+            };
+
+            template<typename Head, typename Tail>
+            pair<Bat<typename TypeMap<Head>::v2_actual_t, typename TypeMap<Head>::v2_encoded_t>*, vector<bool>*> mirrorHead_AN(Bat<Head, Tail>* arg, typename TypeMap<Head>::v2_encoded_t::type_t A = TypeMap<Head>::v2_encoded_t::A, typename TypeMap<Head>::v2_encoded_t::type_t aInv = TypeMap<Head>::v2_encoded_t::A_INV, typename TypeMap<Head>::v2_encoded_t::type_t aUnencMaxU = TypeMap<Head>::v2_encoded_t::A_UNENC_MAX_U) {
+                return mirrorHead_AN_priv<Head, Tail, is_base_of<v2_anencoded_t, Head >::value> (arg, A, aInv, aUnencMaxU);
+            }
+
+            /*
+            template<typename HeadIn, typename TailIn, typename HeadOut, typename TailOut>
+            Bat<HeadOut, TailOut> reverse_AN(Bat<HeadIn, TailIn>* arg) {
+                size_t sizeBAT = arg->size();
+                if (is_base_of<v2_base_t, HeadIn>) {
+                    if (is_base_of<v2_base_t, TailIn>) {
+                        auto result = make_pair(new TempBat<)
+                    } else {
+                    }
+                } else {
+                    if (is_base_of<v2_base_t, TailIn>) {
+                    } else {
+                    }
+                }
+            }
+             */
+
+            template<typename ResHead, typename ResTail>
+            Bat<ResHead, ResTail>* reverse_AN(Bat<typename ResHead::unenc_v2_t, typename ResHead::unenc_v2_t>* arg, typename ResHead::type_t Ahead, typename ResTail::type_t Atail) {
+                auto result = new TempBat<ResHead, ResTail>(arg->size());
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
                     auto p = iter->next();
-                    result->append(make_pair(p.first, static_cast<resoid_t> (p.first) * A));
+                    result->append(move(make_pair(move(static_cast<typename ResTail::type_t> (p.second) * Atail), move(static_cast<typename ResHead::type_t> (p.first) * Ahead))));
                 }
                 delete iter;
                 return result;
             }
 
-            tuple<typename TypeSelector<v2_oid_t>::res_bat_rev_t*, vector<bool>*, vector<bool>*> mirrorHead_resoid_AN(typename TypeSelector<v2_oid_t>::res_bat_rev_t* arg, resoid_t aInv = TypeSelector<v2_oid_t>::A_INV, resoid_t aUnencMaxU = TypeSelector<v2_oid_t>::A_UNENC_MAX_U) {
-                auto bat = new typename TypeSelector<v2_oid_t>::res_tmp_rev_t(arg->size());
-                auto vec1 = new vector<bool>, vec2 = new vector<bool>;
-                auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    vec1->emplace_back((p.first * aInv) <= aUnencMaxU);
-                    vec2->emplace_back((p.second * aInv) <= aUnencMaxU);
-                    bat->append(make_pair(p.first, p.first));
-                }
-                delete iter;
-                return make_tuple(bat, vec1, vec2);
-            }
-
-            template <class V2Type>
-            pair<typename TypeSelector<V2Type>::res_tmp_rev_t*, vector<bool>*> reverse_AN(typename TypeSelector<V2Type>::res_bat_t *arg, typename TypeSelector<V2Type>::res_t aInv = TypeSelector<V2Type>::A, typename TypeSelector<V2Type>::res_t unEncMaxU = TypeSelector<V2Type>::A_UNENC_MAX_U, resoid_t Aoid = TypeSelector<v2_oid_t>::A) {
+            template <typename ResHead, typename ResTail>
+            pair<Bat<ResTail, ResHead>*, vector<bool>*> reverse_AN(Bat<typename ResHead::unenc_v2_t, ResTail> *arg, typename ResHead::type_t Ahead = ResHead::A, typename ResTail::type_t AtailInv = ResTail::A_INV, typename ResTail::type_t AtailUnencMaxU = ResTail::A_UNENC_MAX_U) {
                 size_t sizeBAT = arg->size();
-                auto result = make_pair(new typename TypeSelector<V2Type>::res_tmp_rev_t(sizeBAT), new vector<bool>);
+                auto result = make_pair(new TempBat<ResTail, ResHead>(sizeBAT), new vector<bool>);
                 result.second->reserve(sizeBAT);
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
                     auto p = iter->next();
-                    result.second->emplace_back((p.second * aInv) <= unEncMaxU);
-                    result.first->append(make_pair(p.second, static_cast<resoid_t> (p.first) * Aoid));
+                    result.second->emplace_back((p.second * AtailInv) <= AtailUnencMaxU);
+                    result.first->append(make_pair(p.second, static_cast<typename ResHead::type_t> (p.first) * Ahead));
                 }
                 delete iter;
                 return result;
             }
 
-            template<typename V2Type1, typename V2Type2>
-            tuple<typename TypeSelector<v2_oid_t>::res_bat_rev_t*, vector<bool>*, vector<bool>*> col_hashjoin_AN(typename TypeSelector<V2Type1>::res_bat_t* arg1, typename TypeSelector<V2Type2>::res_bat_rev_t* arg2, join_side_t joinSide = join_side_t::left, resoid_t A1 = TypeSelector<v2_oid_t>::A, resoid_t Ainv1 = TypeSelector<v2_oid_t>::A_INV, resoid_t maxUnEncU1 = TypeSelector<v2_oid_t>::A_UNENC_MAX_U, typename TypeSelector<V2Type2>::res_t A2 = TypeSelector<V2Type2>::A, typename TypeSelector<V2Type2>::res_t Ainv2 = TypeSelector<V2Type2>::A_INV, typename TypeSelector<V2Type2>::res_t maxUnEncU2 = TypeSelector<V2Type2>::A_UNENC_MAX_U, resoid_t AoidInv = TypeSelector<v2_oid_t>::A) {
-                auto bat = new typename TypeSelector<v2_oid_t>::res_tmp_rev_t;
-                auto v1 = new vector<bool>, v2 = new vector<bool>;
-                auto iter1 = arg1->begin();
-                auto iter2 = arg2->begin();
-                // TODO implement
-                delete iter1;
-                delete iter2;
-                return make_tuple(move(bat), move(v1), move(v2));
-            }
-
+            /*
             template<typename V2Type2>
             tuple<typename TypeSelector<V2Type2>::res_bat_t*, vector<bool>*, vector<bool>*> col_hashjoin_AN(typename TypeSelector<v2_oid_t>::res_bat_t* arg1, typename TypeSelector<V2Type2>::res_bat_t* arg2, join_side_t joinSide = join_side_t::left, resoid_t A1 = TypeSelector<v2_oid_t>::A, resoid_t Ainv1 = TypeSelector<v2_oid_t>::A_INV, resoid_t maxUnEncU1 = TypeSelector<v2_oid_t>::A_UNENC_MAX_U, typename TypeSelector<V2Type2>::res_t A2 = TypeSelector<V2Type2>::A, typename TypeSelector<V2Type2>::res_t Ainv2 = TypeSelector<V2Type2>::A_INV, typename TypeSelector<V2Type2>::res_t maxUnEncU2 = TypeSelector<V2Type2>::A_UNENC_MAX_U) {
                 auto bat = new typename TypeSelector<V2Type2>::res_tmp_t;
@@ -299,6 +349,7 @@ namespace v2 {
                 delete iter2;
                 return make_tuple(move(bat), move(v1), move(v2));
             }
+             */
         }
     }
 }

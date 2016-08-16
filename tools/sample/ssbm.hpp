@@ -108,8 +108,9 @@ hasTwoTypes[I-1] = false
 MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());      \
 SAVE_TYPE(I-1, BAT)
 
-#define MEASURE_OP_PAIR(SW, I, VAR, OP)                                        \
-MEASURE_OP7(SW, I, auto, VAR, OP, VAR.first->size(), VAR.first->consumption())
+#define MEASURE_OP_PAIR(SW, I, PAIR, OP)                                         \
+MEASURE_OP7(SW, I, auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption()); \
+SAVE_TYPE(I-1, PAIR.first)
 
 #define MEASURE_OP_TUPLE(SW, I, VAR, OP)                                          \
 MEASURE_OP7(SW, I, auto, VAR, OP, get<0>(VAR)->size(), get<0>(VAR)->consumption())

@@ -90,9 +90,6 @@ typedef uint64_t bigint_t;
 typedef char char_t, *str_t;
 typedef const char_t *cstr_t;
 typedef double fixed_t;
-typedef uint16_t restiny_t;
-typedef uint32_t resshort_t;
-typedef uint64_t resint_t;
 
 typedef unsigned id_t;
 typedef unsigned oid_t;
@@ -100,136 +97,55 @@ typedef unsigned version_t;
 
 // enforce real different types. The typedef's above result in type-clashes!
 
-struct v2_tinyint_t {
+struct v2_base_t {
+};
+
+struct v2_tinyint_t : public v2_base_t {
     typedef tinyint_t type_t;
-    type_t value;
-
-    v2_tinyint_t(type_t& x) : value(x) {
-    }
-
-    v2_tinyint_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_shortint_t {
+struct v2_shortint_t : public v2_base_t {
     typedef shortint_t type_t;
-    type_t value;
-
-    v2_shortint_t(type_t& x) : value(x) {
-    }
-
-    v2_shortint_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_int_t {
+struct v2_int_t : public v2_base_t {
     typedef int_t type_t;
-    type_t value;
-
-    v2_int_t(type_t& x) : value(x) {
-    }
-
-    v2_int_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_bigint_t {
+struct v2_bigint_t : public v2_base_t {
     typedef bigint_t type_t;
-    type_t value;
-
-    v2_bigint_t(type_t& x) : value(x) {
-    }
-
-    v2_bigint_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_char_t {
+struct v2_char_t : public v2_base_t {
     typedef char_t type_t;
-    type_t value;
-
-    v2_char_t(type_t& x) : value(x) {
-    }
-
-    v2_char_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_str_t {
+struct v2_str_t : public v2_base_t {
     typedef str_t type_t;
-    type_t value;
-
-    v2_str_t(type_t& x) : value(x) {
-    }
-
-    v2_str_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_cstr_t {
+struct v2_cstr_t : public v2_base_t {
     typedef cstr_t type_t;
-    type_t value;
-
-    v2_cstr_t(type_t& x) : value(x) {
-    }
-
-    v2_cstr_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_fixed_t {
+struct v2_fixed_t : public v2_base_t {
     typedef fixed_t type_t;
-    type_t value;
-
-    v2_fixed_t(type_t& x) : value(x) {
-    }
-
-    v2_fixed_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_id_t {
+struct v2_id_t : public v2_base_t {
     typedef id_t type_t;
-    type_t value;
-
-    v2_id_t(type_t& x) : value(x) {
-    }
-
-    v2_id_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_oid_t {
+struct v2_oid_t : public v2_base_t {
     typedef oid_t type_t;
-    type_t value;
-
-    v2_oid_t(type_t& x) : value(x) {
-    }
-
-    v2_oid_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_version_t {
+struct v2_version_t : public v2_base_t {
     typedef version_t type_t;
-    type_t value;
-
-    v2_version_t(type_t& x) : value(x) {
-    }
-
-    v2_version_t(type_t&& x) : value(x) {
-    }
 };
 
-struct v2_size_t {
+struct v2_size_t : public v2_base_t {
     typedef size_t type_t;
-    type_t value;
-
-    v2_size_t(type_t& x) : value(x) {
-    }
-
-    v2_size_t(type_t&& x) : value(x) {
-    }
 };
 
 #define ID_INVALID (static_cast<id_t>(-1))
@@ -239,21 +155,15 @@ struct v2_size_t {
 // Fast-Forward Declarations
 
 // column_storage
+class BucketManager;
+class ColumnManager;
+class TransactionManager;
 template<typename Head, typename Tail>
 class Bat;
 template<typename Head, typename Tail>
-class BatIterator;
-class BucketManager;
-template<typename Head, typename Tail>
 class ColumnBat;
-template<typename Head, typename Tail>
-class ColumnBatIterator;
-class ColumnManager;
 template<class Head, class Tail>
 class TempBat;
-template<class Head, class Tail>
-class TempBatIterator;
-class TransactionManager;
 
 // meta_repository
 class MetaRepositoryManager;

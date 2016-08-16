@@ -45,12 +45,12 @@ int main(int argc, char** argv) {
     size_t x = 0;
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new resshort_col_t("dateAN", "year"));
-    MEASURE_OP(sw1, x, batDDcb, new resint_col_t("dateAN", "datekey"));
-    MEASURE_OP(sw1, x, batLQcb, new restiny_col_t("lineorderAN", "quantity"));
-    MEASURE_OP(sw1, x, batLDcb, new restiny_col_t("lineorderAN", "discount"));
-    MEASURE_OP(sw1, x, batLOcb, new resint_col_t("lineorderAN", "orderdate"));
-    MEASURE_OP(sw1, x, batLEcb, new resint_col_t("lineorderAN", "extendedprice"));
+    MEASURE_OP(sw1, x, batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(sw1, x, batDDcb, new resint_colbat_t("dateAN", "datekey"));
+    MEASURE_OP(sw1, x, batLQcb, new restiny_colbat_t("lineorderAN", "quantity"));
+    MEASURE_OP(sw1, x, batLDcb, new restiny_colbat_t("lineorderAN", "discount"));
+    MEASURE_OP(sw1, x, batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
+    MEASURE_OP(sw1, x, batLEcb, new resint_colbat_t("lineorderAN", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(sw1, x, batDYenc, v2::bat::ops::copy(batDYcb));
@@ -75,9 +75,9 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt<restiny_t>(batLQenc, static_cast<restiny_t> (25) * ::A_TINY)); // lo_quantity < 25
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQenc, 25 * v2_restiny_t::A)); // lo_quantity < 25
         PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
-        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt<restiny_t>(batLDenc, static_cast<restiny_t> (1) * ::A_TINY, static_cast<restiny_t> (3) * ::A_TINY)); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::selection_bt(batLDenc, 1 * v2_restiny_t::A, 3 * v2_restiny_t::A)); // lo_discount between 1 and 3
         PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
         MEASURE_OP(sw2, x, bat3, v2::bat::ops::mirrorHead(bat1)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
         PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity < 25 and lo_discount between 1 and 3"));
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDYenc, 1993 * ::A_SHORT)); // d_year = 1993
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::selection_eq(batDYenc, 1993 * v2_resshort_t::A)); // d_year = 1993
         PRINT_BAT(sw1, printBat(bat7->begin(), "d_year = 1993"));
         MEASURE_OP(sw2, x, bat8, v2::bat::ops::mirrorHead(bat7)); // prepare joined selection over d_year and d_datekey
         delete bat7;
@@ -117,20 +117,15 @@ int main(int argc, char** argv) {
         PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
 
         // 4) lazy decode
-        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(batD, TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
-        auto batF = batFpair.first;
-        SAVE_TYPE(x - 1, batF);
+        MEASURE_OP_PAIR(sw2, x, batFpair, (v2::bat::ops::checkAndDecode_AN(batD)));
         delete batFpair.second;
         delete batD;
-        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecode_AN<v2_tinyint_t>(batE, TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
-        auto batG = batGpair.first;
-        SAVE_TYPE(x - 1, batG);
+        MEASURE_OP_PAIR(sw2, x, batGpair, (v2::bat::ops::checkAndDecode_AN(batE)));
         delete batGpair.second;
         delete batE;
-        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batF, batG, 0));
-        delete batF;
-        delete batG;
-
+        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batFpair.first, batGpair.first, 0));
+        delete batFpair.first;
+        delete batGpair.first;
 
         totalTimes[i] = sw1.stop();
 
