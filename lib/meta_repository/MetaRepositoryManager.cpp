@@ -134,30 +134,30 @@ void MetaRepositoryManager::createDefaultDataTypes() {
 
 void MetaRepositoryManager::createRepository() {
     // create bats for table meta
-    pk_table_id = new TempBat<oid_t, unsigned>();
-    table_name = new TempBat<oid_t, const char*>();
+    pk_table_id = new id_tmpbat_t;
+    table_name = new cstr_tmpbat_t;
 
     // create bats for attribute meta
-    pk_attribute_id = new TempBat<oid_t, unsigned>();
-    attribute_name = new TempBat<oid_t, const char*>();
-    fk_table_id = new TempBat<oid_t, unsigned>();
-    fk_type_id = new TempBat<oid_t, unsigned>();
-    BAT_number = new TempBat<oid_t, unsigned>();
+    pk_attribute_id = new id_tmpbat_t;
+    attribute_name = new cstr_tmpbat_t;
+    fk_table_id = new id_tmpbat_t;
+    fk_type_id = new id_tmpbat_t;
+    BAT_number = new id_tmpbat_t;
 
     // create bats for layout meta
-    pk_layout_id = new TempBat<oid_t, unsigned>();
-    layout_name = new TempBat<oid_t, const char*>();
-    size = new TempBat<oid_t, unsigned>();
+    pk_layout_id = new id_tmpbat_t;
+    layout_name = new cstr_tmpbat_t;
+    size = new size_tmpbat_t;
 
     // create bats for operator meta
-    pk_operator_id = new TempBat<oid_t, unsigned>();
-    operator_name = new TempBat<oid_t, const char*>();
+    pk_operator_id = new id_tmpbat_t;
+    operator_name = new cstr_tmpbat_t;
 
     // create bats for datatype meta
-    pk_datatype_id = new TempBat<oid_t, unsigned>();
-    datatype_name = new TempBat<oid_t, const char*>();
-    datatype_length = new TempBat<oid_t, unsigned>();
-    datatype_category = new TempBat<oid_t, char>();
+    pk_datatype_id = new id_tmpbat_t;
+    datatype_name = new cstr_tmpbat_t;
+    datatype_length = new size_tmpbat_t;
+    datatype_category = new char_tmpbat_t;
 }
 
 id_t MetaRepositoryManager::createTable(const char *name) {
@@ -181,7 +181,7 @@ id_t MetaRepositoryManager::createTable(const char *name) {
     return newTableId;
 }
 
-id_t MetaRepositoryManager::getBatIdOfAttribute(const char *nameOfTable, const char *attribute) {
+id_t MetaRepositoryManager::getBatIdOfAttribute(cstr_t nameOfTable, cstr_t attribute) {
     pair<unsigned, unsigned> batNrPair;
 
     int batIdForTableName = this->selectBatId(table_name, nameOfTable);

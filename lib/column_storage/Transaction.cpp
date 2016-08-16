@@ -351,15 +351,15 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                                 break;
 
                             case type_restiny:
-                                *(static_cast<restiny_t*> (record->content)) = atol(buffer) * ::A_TINY;
+                                *(static_cast<restiny_t*> (record->content)) = atol(buffer) * v2_restiny_t::A;
                                 break;
 
                             case type_resshort:
-                                *(static_cast<resshort_t*> (record->content)) = atol(buffer) * ::A_SHORT;
+                                *(static_cast<resshort_t*> (record->content)) = atol(buffer) * v2_resshort_t::A;
                                 break;
 
                             case type_resint:
-                                *(static_cast<resint_t*> (record->content)) = atoll(buffer) * ::A_INT;
+                                *(static_cast<resint_t*> (record->content)) = atoll(buffer) * v2_resint_t::A;
                                 break;
 
                             default:

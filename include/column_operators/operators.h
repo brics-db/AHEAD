@@ -48,7 +48,7 @@ namespace v2 {
     namespace bat {
         namespace ops {
 
-            template<class Tail>
+            template<typename Tail>
             void prn_vecOfPair(Bat<oid_t, Tail> *arg) {
                 auto iter = arg->begin();
                 unsigned step = 0;
@@ -65,7 +65,7 @@ namespace v2 {
                 delete iter;
             }
 
-            template<class Head, class Tail>
+            template<typename Head, typename Tail>
             Bat<Head, Tail>* copy(Bat<Head, Tail>* arg, unsigned start = 0, size_t size = 0) {
                 auto result = new TempBat<Head, Tail>(arg->size());
                 auto iter = arg->begin();
@@ -85,31 +85,31 @@ namespace v2 {
                 return result; // possibly empty
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* selection(Bat<oid_t, Tail>* arg, selection_type_t op, Tail treshold, Tail treshold2 = Tail(0)) {
+            template<typename Head, typename Tail>
+            Bat<Head, Tail>* selection(Bat<Head, Tail>* arg, selection_type_t op, typename Tail::type_t threshold, typename Tail::type_t threshold2 = typename Tail::type_t(0)) {
                 switch (op) {
                     case EQ:
-                        return selection_eq(arg, treshold);
+                        return selection_eq(arg, threshold);
                     case LT:
-                        return selection_lt(arg, treshold);
+                        return selection_lt(arg, threshold);
                     case LE:
-                        return selection_le(arg, treshold);
+                        return selection_le(arg, threshold);
                     case GT:
-                        return selection_gt(arg, treshold);
+                        return selection_gt(arg, threshold);
                     case GE:
-                        return selection_ge(arg, treshold);
+                        return selection_ge(arg, threshold);
                     case BT:
-                        return selection_bt(arg, treshold, treshold2);
+                        return selection_bt(arg, threshold, threshold2);
                 }
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* selection_le(Bat<oid_t, Tail>* arg, Tail treshold) {
-                auto result = new TempBat<oid_t, Tail>();
+            template<typename Head, typename Tail>
+            Bat<Head, Tail>* selection_le(Bat<Head, Tail>* arg, typename Tail::type_t threshold) {
+                auto result = new TempBat<Head, Tail>;
                 auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
-                    if (p.second <= treshold) {
+                    auto p = iter->next();
+                    if (p.second <= threshold) {
                         result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
                 }
@@ -117,12 +117,12 @@ namespace v2 {
                 return result;
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* selection_lt(Bat<oid_t, Tail>* arg, Tail treshold) {
-                auto result = new TempBat<oid_t, Tail>();
+            template<typename Head, typename Tail>
+            Bat<Head, Tail>* selection_lt(Bat<Head, Tail>* arg, typename Tail::type_t treshold) {
+                auto result = new TempBat<Head, Tail>;
                 auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
+                    auto p = iter->next();
                     if (p.second < treshold) {
                         result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
@@ -131,12 +131,12 @@ namespace v2 {
                 return result;
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* selection_bt(Bat<oid_t, Tail>* arg, Tail start, Tail end) {
-                auto result = new TempBat<oid_t, Tail>();
+            template<typename Head, typename Tail>
+            Bat<Head, Tail>* selection_bt(Bat<Head, Tail>* arg, typename Tail::type_t start, typename Tail::type_t end) {
+                auto result = new TempBat<Head, Tail>;
                 auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
+                    auto p = iter->next();
                     if (p.second <= end && p.second >= start) {
                         result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
@@ -145,12 +145,12 @@ namespace v2 {
                 return result;
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* selection_eq(Bat<oid_t, Tail>* arg, Tail value) {
-                auto result = new TempBat<oid_t, Tail>();
+            template<typename Head, typename Tail>
+            Bat<Head, Tail>* selection_eq(Bat<Head, Tail>* arg, typename Tail::type_t value) {
+                auto result = new TempBat<Head, Tail>;
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
+                    auto p = iter->next();
                     if (p.second == value) {
                         result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
@@ -159,12 +159,12 @@ namespace v2 {
                 return result;
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* selection_gt(Bat<oid_t, Tail>* arg, Tail treshold) {
-                auto result = new TempBat<oid_t, Tail>();
+            template<typename Head, typename Tail>
+            Bat<Head, Tail>* selection_gt(Bat<Head, Tail>* arg, typename Tail::type_t treshold) {
+                auto result = new TempBat<Head, Tail>();
                 auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
+                    auto p = iter->next();
                     if (p.second > treshold) {
                         result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
@@ -173,12 +173,12 @@ namespace v2 {
                 return result;
             }
 
-            template<class Tail>
-            Bat<oid_t, Tail>* selection_ge(Bat<oid_t, Tail>* arg, Tail treshold) {
-                auto result = new TempBat<oid_t, Tail>();
+            template<typename Head, typename Tail>
+            Bat<Head, Tail>* selection_ge(Bat<Head, Tail>* arg, typename Tail::type_t treshold) {
+                auto result = new TempBat<Head, Tail>();
                 auto *iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
+                    auto p = iter->next();
                     if (p.second >= treshold) {
                         result->append(make_pair(std::move(p.first), std::move(p.second)));
                     }
@@ -187,12 +187,12 @@ namespace v2 {
                 return result;
             }
 
-            template <class Tail>
-            Bat<Tail, oid_t>* reverse(Bat<oid_t, Tail> *arg) {
-                auto result = new TempBat<Tail, oid_t>(arg->size());
+            template <typename Head, typename Tail>
+            Bat<Tail, Head>* reverse(Bat<Head, Tail> *arg) {
+                auto result = new TempBat<Tail, Head>(arg->size());
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
-                    pair<oid_t, Tail> p = iter->next();
+                    auto p = iter->next();
                     result->append(make_pair(std::move(p.second), std::move(p.first)));
                 }
                 delete iter;
@@ -228,7 +228,7 @@ namespace v2 {
                 auto result = new TempBat<T1, T4>();
                 auto iter1 = arg1->begin();
                 while (iter1->hasNext()) {
-                    pair<T1, T2> p1 = iter1->next();
+                    auto p1 = iter1->next();
                     auto iter2 = arg2->begin();
                     while (iter2->hasNext()) {
                         pair<T3, T4> p2 = iter2->next();
@@ -247,12 +247,10 @@ namespace v2 {
                 auto result = new TempBat<T1, T4>();
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
-                pair<T1, T2> p1;
-                pair<T3, T4> p2;
                 bool working = true;
                 while (iter1->hasNext() && iter2->hasNext()) {
-                    p1 = iter1->next();
-                    p2 = iter2->next();
+                    auto p1 = iter1->next();
+                    auto p2 = iter2->next();
                     while (p1.second != p2.first && working) {
                         working = false;
                         while (p1.second < p2.first && iter1->hasNext()) {

@@ -24,21 +24,25 @@
 #ifndef COLUMNBATITERATOR_H
 #define COLUMNBATITERATOR_H
 
-#include "column_storage/BatIterator.h"
-#include "column_storage/TransactionManager.h"
+#include <column_storage/BatIterator.h>
+#include <column_storage/TransactionManager.h>
 
 template<typename Head, typename Tail>
 class ColumnBatIteratorBase : public BatIterator<Head, Tail> {
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
+
 protected:
     TransactionManager::Transaction* ta;
     TransactionManager::BinaryUnit* bu;
-    unsigned mColumnId;
+    id_t mColumnId;
     size_t Csize;
     size_t Cconsumption;
+
 public:
 
     /** default constructor */
-    ColumnBatIteratorBase(unsigned columnId) : mColumnId(columnId) {
+    ColumnBatIteratorBase(id_t columnId) : mColumnId(columnId) {
         TransactionManager* tm = TransactionManager::getInstance();
         if (tm == NULL) {
             cerr << "TA manager is not available!" << endl;
@@ -65,14 +69,14 @@ public:
     }
 
     /** iterator next */
-    virtual pair<Head, Tail> next() override = 0;
+    virtual pair<oid_t, tail_t>&& next() override = 0;
 
     /** @return true if a next item is available - otherwise false */
     virtual bool hasNext() override {
         return (bu != NULL);
     }
 
-    virtual pair<Head, Tail> get(unsigned index) override = 0;
+    virtual pair<oid_t, tail_t>&& get(size_t index) override = 0;
 
     virtual size_t size() override {
         return Csize;
@@ -83,51 +87,53 @@ public:
     }
 };
 
-template<typename Head, typename Tail>
-class ColumnBatIterator : public ColumnBatIteratorBase<Head, Tail> {
+template<typename Tail>
+class ColumnBatIterator<v2_oid_t, Tail> : public ColumnBatIteratorBase<v2_oid_t, Tail> {
+    typedef typename Tail::type_t tail_t;
+
 public:
-    using ColumnBatIteratorBase<Head, Tail>::ColumnBatIteratorBase;
+    using ColumnBatIteratorBase<v2_oid_t, Tail>::ColumnBatIteratorBase;
 
     virtual ~ColumnBatIterator() {
     }
 
-    virtual pair<Head, Tail> get(unsigned index) override {
+    virtual pair<oid_t, tail_t>&& get(size_t index) override {
         this->bu = this->ta->get(this->mColumnId, index);
-        pair<Head, Tail> p = make_pair(std::move(*reinterpret_cast<Head*> (&this->bu->head)), std::move(*static_cast<Tail*> (this->bu->tail)));
+        auto p = make_pair(move(*reinterpret_cast<oid_t*> (&this->bu->head)), move(*static_cast<tail_t*> (this->bu->tail)));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
-        return p;
+        return move(p);
     }
 
-    virtual pair<Head, Tail> next() override {
-        pair<Head, Tail> p = make_pair(std::move(*reinterpret_cast<Head*> (&this->bu->head)), std::move(*static_cast<Tail*> (this->bu->tail)));
+    virtual pair<v2_oid_t, Tail>&& next() override {
+        auto p = make_pair(move(*reinterpret_cast<oid_t*> (&this->bu->head)), move(*static_cast<tail_t*> (this->bu->tail)));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
-        return p;
+        return move(p);
     }
 };
 
-template<typename Head>
-class ColumnBatIterator<Head, const char*> : public ColumnBatIteratorBase<Head, const char*> {
+template<>
+class ColumnBatIterator<v2_oid_t, v2_cstr_t> : public ColumnBatIteratorBase<v2_oid_t, v2_cstr_t> {
 public:
-    using ColumnBatIteratorBase<Head, const char*>::ColumnBatIteratorBase;
+    using ColumnBatIteratorBase<v2_oid_t, v2_cstr_t>::ColumnBatIteratorBase;
 
     virtual ~ColumnBatIterator() {
     }
 
-    virtual pair<Head, const char*> get(unsigned index) override {
+    virtual pair<oid_t, cstr_t>&& get(size_t index) override {
         this->bu = this->ta->get(this->mColumnId, index);
-        pair<Head, const char*> p = make_pair(std::move(*reinterpret_cast<Head*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
+        auto p = make_pair(move(*reinterpret_cast<oid_t*> (&this->bu->head)), move(static_cast<cstr_t> (this->bu->tail)));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
-        return p;
+        return move(p);
     }
 
-    virtual pair<Head, const char*> next() override {
-        pair<Head, const char*> p = make_pair(std::move(*reinterpret_cast<Head*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
+    virtual pair<oid_t, cstr_t>&& next() override {
+        auto p = make_pair(move(*reinterpret_cast<oid_t*> (&this->bu->head)), move(static_cast<cstr_t> (this->bu->tail)));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
-        return p;
+        return move(p);
     }
 };
 

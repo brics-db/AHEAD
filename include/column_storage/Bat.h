@@ -29,25 +29,25 @@
 
 #include <boost/type_index.hpp>
 
-#include "column_storage/BatIterator.h"
+#include <column_storage/BatIterator.h>
 
 using namespace std;
 
 template<typename Head, typename Tail>
 class Bat {
 public:
-    typedef Head head_t;
-    typedef Tail tail_t;
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
 
     virtual ~Bat() {
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail > * begin() = 0;
+    virtual BatIterator<Head, Tail>* begin() = 0;
 
     /** append an item */
-    virtual void append(pair<Head, Tail>& p) = 0;
-    virtual void append(pair<Head, Tail>&& p) = 0;
+    virtual void append(pair<head_t, tail_t>& p) = 0;
+    virtual void append(pair<head_t, tail_t>&& p) = 0;
 
     /** size of column, obtained through the iterator */
     virtual unsigned size() = 0;
@@ -56,11 +56,11 @@ public:
     virtual size_t consumption() = 0;
 
     virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<Head>();
+        return boost::typeindex::type_id<head_t>();
     }
 
     virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<Tail>();
+        return boost::typeindex::type_id<tail_t>();
     }
 };
 

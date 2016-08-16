@@ -79,30 +79,30 @@ private:
     static void destroyInstance();
 
     // all attributes for the table table :)
-    Bat<oid_t, id_t> *pk_table_id;
-    Bat<oid_t, const char*> *table_name;
+    id_bat_t *pk_table_id;
+    cstr_bat_t *table_name;
 
     // all attributes for the attribute table
-    Bat<oid_t, id_t> *pk_attribute_id;
-    Bat<oid_t, const char*> *attribute_name;
-    Bat<oid_t, id_t> *fk_table_id;
-    Bat<oid_t, unsigned> *fk_type_id;
-    Bat<oid_t, unsigned> *BAT_number;
+    id_bat_t *pk_attribute_id;
+    cstr_bat_t *attribute_name;
+    id_bat_t *fk_table_id;
+    id_bat_t *fk_type_id;
+    id_bat_t *BAT_number;
 
     // all attributes for the layout table
-    Bat<oid_t, id_t> *pk_layout_id;
-    Bat<oid_t, const char*> *layout_name;
-    Bat<oid_t, unsigned> *size;
+    id_bat_t *pk_layout_id;
+    cstr_bat_t *layout_name;
+    size_bat_t *size;
 
     // all attributes for the operator table
-    Bat<oid_t, id_t> *pk_operator_id;
-    Bat<oid_t, const char*> *operator_name;
+    id_bat_t *pk_operator_id;
+    cstr_bat_t *operator_name;
 
     // all attributes for the datatypes table
-    Bat<oid_t, id_t> *pk_datatype_id;
-    Bat<oid_t, const char*> *datatype_name;
-    Bat<oid_t, unsigned> *datatype_length;
-    Bat<oid_t, char> *datatype_category;
+    id_bat_t *pk_datatype_id;
+    cstr_bat_t *datatype_name;
+    size_bat_t *datatype_length;
+    char_bat_t *datatype_category;
 
     // path where all table files are located
     char* META_PATH;
@@ -113,37 +113,37 @@ private:
     void createDefaultDataTypes();
 
     template<class Head, class Tail>
-    pair<Head, Tail> getLastValue(Bat<Head, Tail> *bat);
+    pair<typename Head::type_t, typename Tail::type_t> getLastValue(Bat<Head, Tail> *bat);
 
     template<class Head, class Tail>
-    pair<Head, Tail> unique_selection(Bat<Head, Tail> *bat, Tail value);
+    pair<typename Head::type_t, typename Tail::type_t> unique_selection(Bat<Head, Tail> *bat, typename Tail::type_t value);
 
     template<class Head, class Tail>
     bool isBatEmpty(Bat<Head, Tail> *bat);
 
     template<class Head, class Tail>
-    int selectBatId(Bat<Head, Tail> *bat, const char *value);
+    id_t selectBatId(Bat<Head, Tail> *bat, cstr_t value);
 
     template<class Head, class Tail>
-    int selectBatId(Bat<Head, Tail> *bat, int value);
+    id_t selectBatId(Bat<Head, Tail> *bat, typename Tail::type_t value);
 
     template<class Head, class Tail>
-    Tail selection(Bat<Head, Tail> *bat, Tail value);
+    typename Head::type_t selection(Bat<Head, Tail> *bat, typename Tail::type_t value);
 
     template<class Head, class Tail>
-    int selectPKId(Bat<Head, Tail> *bat, Head batId);
+    id_t selectPKId(Bat<Head, Tail> *bat, typename Head::type_t batId);
 
     template<class Head, class Tail>
-    bool dataAlreadyExists(Bat<Head, Tail> *bat, const char* name_value);
+    bool dataAlreadyExists(Bat<Head, Tail> *bat, cstr_t name_value);
 
     MetaRepositoryManager();
     virtual ~MetaRepositoryManager();
 
 public:
 
-    class TablesIterator : public BatIterator<oid_t, const char*> {
-        typedef BatIterator<oid_t, unsigned> table_key_iter_t;
-        typedef BatIterator<oid_t, const char*> table_name_iter_t;
+    class TablesIterator : public BatIterator<v2_id_t, v2_cstr_t> {
+        typedef BatIterator<v2_oid_t, v2_id_t> table_key_iter_t;
+        typedef BatIterator<v2_oid_t, v2_cstr_t> table_name_iter_t;
 
         table_key_iter_t *pKeyIter;
         table_name_iter_t *pNameIter;
@@ -160,12 +160,12 @@ public:
             delete pNameIter;
         }
 
-        virtual pair<unsigned, const char*> next() override {
-            return make_pair(pKeyIter->next().second, pNameIter->next().second);
+        virtual pair<id_t, cstr_t>&& next() override {
+            return move(make_pair(pKeyIter->next().second, pNameIter->next().second));
         }
 
-        virtual pair<unsigned, const char*> get(unsigned index) override {
-            return make_pair(pKeyIter->get(index).second, pNameIter->get(index).second);
+        virtual pair<id_t, cstr_t>&& get(size_t index) override {
+            return move(make_pair(pKeyIter->get(index).second, pNameIter->get(index).second));
         }
 
         virtual bool hasNext() override {

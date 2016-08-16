@@ -27,67 +27,38 @@
 
 #include <util/resilience.hpp>
 
-const restiny_t A_TINY_UNENC_MAX = 0x007F;
-const restiny_t A_TINY_UNENC_MIN = 0xFF80;
-const restiny_t A_TINY_UNENC_MAX_U = 0x00FF;
-const restiny_t A_TINY_UNENC_MIN_U = 0x0000;
-const restiny_t A_TINY = 233;
-const restiny_t A_TINY_INV = 0xd759;
-// const restiny_t A2_TINY = 55831;
-// const restiny_t A2_TINY_INV = 0x4dfffda7;
+const char* v2_restiny_t::BASENAME = "restiny";
+const restiny_t v2_restiny_t::A_UNENC_MIN = 0xFF80;
+const restiny_t v2_restiny_t::A_UNENC_MAX = 0x007F;
+const restiny_t v2_restiny_t::A_UNENC_MAX_U = 0x00FF;
+const restiny_t v2_restiny_t::A = 233;
+const restiny_t v2_restiny_t::A_INV = 0xd759;
+// const restiny_t v2_restiny_t::A2 = 55831;
+// const restiny_t v2_restiny_t::A2_INV = 0x4dfffda7;
 
-const resshort_t A_SHORT_UNENC_MAX = 0x00007FFF;
-const resshort_t A_SHORT_UNENC_MIN = 0xFFFF8000;
-const resshort_t A_SHORT_UNENC_MAX_U = 0x0000FFFF;
-const resshort_t A_SHORT_UNENC_MIN_U = 0x00000000;
-const resshort_t A_SHORT = 233;
-const resshort_t A_SHORT_INV = 0x1fdcd759;
-// const resshort_t A2_SHORT = 63877;
-// const resshort_t A2_SHORT_INV = 0xd142174d;
+const char* v2_resshort_t::BASENAME = "resshort";
+const resshort_t v2_resshort_t::A_UNENC_MIN = 0xFFFF8000;
+const resshort_t v2_resshort_t::A_UNENC_MAX = 0x00007FFF;
+const resshort_t v2_resshort_t::A_UNENC_MAX_U = 0x0000FFFF;
+const resshort_t v2_resshort_t::A = 233;
+const resshort_t v2_resshort_t::A_INV = 0x1fdcd759;
+// const resshort_t v2_resshort_t::A2 = 63877;
+// const resshort_t v2_resshort_t::A2_INV = 0xd142174d;
 
-const resint_t A_INT_UNENC_MAX = 0x000000007FFFFFFFull;
-const resint_t A_INT_UNENC_MIN = 0xFFFFFFFF80000000ull;
-const resint_t A_INT_UNENC_MAX_U = 0x00000000FFFFFFFFull;
-const resint_t A_INT_UNENC_MIN_U = 0x0000000000000000ull;
-const resint_t A_INT = 225;
-const resint_t A_INT_INV = 0x0FEDCBA987654321ull;
-// const resint_t A2_INT = 64311;
-// const resint_t A2_INT_INV = 0xAA86FFFEFB1FAA87ull;
+const char* v2_resint_t::BASENAME = "resint";
+const resint_t v2_resint_t::A_UNENC_MIN = 0xFFFFFFFF80000000ull;
+const resint_t v2_resint_t::A_UNENC_MAX = 0x000000007FFFFFFFull;
+const resint_t v2_resint_t::A_UNENC_MAX_U = 0x00000000FFFFFFFFull;
+const resint_t v2_resint_t::A = 225;
+const resint_t v2_resint_t::A_INV = 0x0FEDCBA987654321ull;
+// const resint_t v2_resint_t::A2 = 64311;
+// const resint_t v2_resint_t::A2_INV = 0xAA86FFFEFB1FAA87ull;
 
-const resoid_t A_BIG_UNENC_MAX = 0x007FFFFFFFFFFFFFull;
-const resoid_t A_BIG_UNENC_MIN = 0xFF80000000000000ull;
-const resoid_t A_BIG_UNENC_MAX_U = 0x00FFFFFFFFFFFFFFull;
-const resoid_t A_BIG_UNENC_MIN_U = 0x0000000000000000ull;
-const resoid_t A_BIG = 225;
-const resoid_t A_BIG_INV = 0x0FEDCBA987654321ull;
-// const resint_t A2_BIG = 64311;
-// const resint_t A2_BIG_INV = 0xAA86FFFEFB1FAA87ull;
-
-const char* TypeName<uint8_t>::NAME = "tinyint";
-const char* TypeName<uint16_t>::NAME = "shortint";
-const char* TypeName<uint32_t>::NAME = "int";
-const char* TypeName<uint64_t>::NAME = "bigint";
-
-const char* TypeSelector<v2_tinyint_t>::BASENAME = TypeName<uint8_t>::NAME;
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A = ::A_TINY;
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_INV = ::A_TINY_INV;
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_UNENC_MAX = ::A_TINY_UNENC_MAX;
-const TypeSelector<v2_tinyint_t>::res_t TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U = ::A_TINY_UNENC_MAX_U;
-
-const char* TypeSelector<v2_shortint_t>::BASENAME = TypeName<uint16_t>::NAME;
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A = ::A_SHORT;
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_INV = ::A_SHORT_INV;
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_UNENC_MAX = ::A_SHORT_UNENC_MAX;
-const TypeSelector<v2_shortint_t>::res_t TypeSelector<v2_shortint_t>::A_UNENC_MAX_U = ::A_SHORT_UNENC_MAX_U;
-
-const char* TypeSelector<v2_int_t>::BASENAME = TypeName<uint32_t>::NAME;
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A = ::A_INT;
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_INV = ::A_INT_INV;
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_UNENC_MAX = ::A_INT_UNENC_MAX;
-const TypeSelector<v2_int_t>::res_t TypeSelector<v2_int_t>::A_UNENC_MAX_U = ::A_INT_UNENC_MAX_U;
-
-const char* TypeSelector<v2_oid_t>::BASENAME = TypeName<uint64_t>::NAME;
-const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A = ::A_BIG;
-const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A_INV = ::A_BIG_INV;
-const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A_UNENC_MAX = ::A_BIG_UNENC_MAX;
-const TypeSelector<v2_oid_t>::res_t TypeSelector<v2_oid_t>::A_UNENC_MAX_U = ::A_BIG_UNENC_MAX_U;
+const char* v2_resoid_t::BASENAME = "resoid";
+const resoid_t v2_resoid_t::A_UNENC_MIN = 0xFF80000000000000ull;
+const resoid_t v2_resoid_t::A_UNENC_MAX = 0x007FFFFFFFFFFFFFull;
+const resoid_t v2_resoid_t::A_UNENC_MAX_U = 0x00FFFFFFFFFFFFFFull;
+const resoid_t v2_resoid_t::A = 225;
+const resoid_t v2_resoid_t::A_INV = 0x0FEDCBA987654321ull;
+// const resint_t v2_resoid_t::2 = 64311;
+// const resint_t v2_resoid_t::2_INV = 0xAA86FFFEFB1FAA87ull;

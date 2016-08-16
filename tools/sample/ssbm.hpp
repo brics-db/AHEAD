@@ -100,13 +100,19 @@ batConsumptions[I] = STORE_CONSUMPTION_OP; \
 ++I
 
 #define MEASURE_OP5(SW, I, TYPE, VAR, OP)                       \
-MEASURE_OP7(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE));             \
+MEASURE_OP7(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE));              \
 headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info(); \
 hasTwoTypes[I-1] = false
 
 #define MEASURE_OP4(SW, I, BAT, OP)                                     \
-MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());     \
+MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());      \
 SAVE_TYPE(I-1, BAT)
+
+#define MEASURE_OP_PAIR(SW, I, VAR, OP)                                        \
+MEASURE_OP7(SW, I, auto, VAR, OP, VAR.first->size(), VAR.first->consumption())
+
+#define MEASURE_OP_TUPLE(SW, I, VAR, OP)                                          \
+MEASURE_OP7(SW, I, auto, VAR, OP, get<0>(VAR)->size(), get<0>(VAR)->consumption())
 
 #define COUT_HEADLINE \
 do { \

@@ -27,14 +27,18 @@
 
 #include <utility>
 
-#include "ColumnStore.h"
-#include "column_storage/Bat.h"
-#include "column_storage/TempBatIterator.h"
+#include <ColumnStore.h>
+#include <column_storage/Bat.h>
+#include <column_storage/TempBatIterator.h>
 
 template<class Head, class Tail>
 class TempBat : public Bat<Head, Tail> {
+public:
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
+    typedef vector<std::pair<head_t, tail_t> > container_t;
+
 private:
-    typedef vector<std::pair<Head, Tail> > container_t;
     container_t items;
 
 public:
@@ -47,7 +51,7 @@ public:
     }
 
     /** constructor for n elements */
-    TempBat(oid_t n) {
+    TempBat(size_t n) {
         items.reserve(n);
     }
 
@@ -57,12 +61,12 @@ public:
     }
 
     /** append an item */
-    virtual void append(pair<Head, Tail>& p) override {
+    virtual void append(pair<head_t, tail_t>& p) override {
         items.emplace_back(std::move(p));
     }
 
     /** append an item */
-    virtual void append(pair<Head, Tail>&& p) override {
+    virtual void append(pair<head_t, tail_t>&& p) override {
         items.emplace_back(std::move(p));
     }
 

@@ -32,12 +32,14 @@ using namespace std;
 template<typename Head, typename Tail>
 class BatIterator {
 public:
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
 
     virtual ~BatIterator() {
     }
 
-    virtual pair<Head, Tail> next() = 0;
-    virtual pair<Head, Tail> get(unsigned index) = 0;
+    virtual pair<head_t, tail_t>&& next() = 0;
+    virtual pair<head_t, tail_t>&& get(size_t index) = 0;
     virtual bool hasNext() = 0;
 
     virtual size_t size() = 0;

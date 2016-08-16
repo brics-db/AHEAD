@@ -29,31 +29,38 @@
 
 #include "ColumnStore.h"
 #include "column_storage/BatIterator.h"
+#include "TempBat.h"
 
 using namespace std;
 
 template<class Head, class Tail>
 class TempBatIterator : public BatIterator<Head, Tail> {
 private:
-    vector<pair<Head, Tail> > * mVector;
-    typename vector<pair<Head, Tail> >::iterator iter;
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
+    typedef typename TempBat<Head, Tail>::container_t container_t;
+    typedef typename container_t::iterator iterator_t;
+
+    container_t* mVector;
+    iterator_t iter;
+
 public:
 
-    TempBatIterator(vector<pair<Head, Tail> > * _v) : mVector(_v) {
+    TempBatIterator(vector<pair<head_t, tail_t> > * _v) : mVector(_v) {
         iter = mVector->begin();
     }
 
     virtual ~TempBatIterator() {
     }
 
-    virtual pair<Head, Tail> next() override {
-        return *(iter++);
+    virtual pair<head_t, tail_t>&& next() override {
+        return move(*(iter++));
     }
 
-    virtual pair<Head, Tail> get(unsigned index) override {
+    virtual pair<head_t, tail_t>&& get(size_t index) override {
         iter = mVector->begin();
         advance(iter, index);
-        return next();
+        return move(next());
     }
 
     virtual bool hasNext() override {
@@ -65,7 +72,7 @@ public:
     }
 
     virtual size_t consumption() override {
-        return mVector->capacity() * sizeof (typename vector<pair<Head, Tail>>::value_type);
+        return mVector->capacity() * sizeof (typename container_t::value_type);
     }
 };
 

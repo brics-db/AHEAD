@@ -31,219 +31,67 @@
 #include <ColumnStore.h>
 #include <column_storage/ColumnBat.h>
 
-typedef ColumnBat<oid_t, resoid_t> resoid_col_t;
-typedef ColumnBat<oid_t, restiny_t> restiny_col_t;
-typedef ColumnBat<oid_t, resshort_t> resshort_col_t;
-typedef ColumnBat<oid_t, resint_t> resint_col_t;
+typedef uint64_t resoid_t;
 
-typedef TempBat<oid_t, resoid_t> resoid_tmp_t;
-typedef TempBat<oid_t, restiny_t> restiny_tmp_t;
-typedef TempBat<oid_t, resshort_t> resshort_tmp_t;
-typedef TempBat<oid_t, resint_t> resint_tmp_t;
+#define RESOID_INVALID (static_cast<resoid_t>(-1))
 
-typedef Bat<oid_t, resoid_t> resoid_bat_t;
-typedef Bat<oid_t, restiny_t> restiny_bat_t;
-typedef Bat<oid_t, resshort_t> resshort_bat_t;
-typedef Bat<oid_t, resint_t> resint_bat_t;
-
-typedef Bat<resoid_t, oid_t> resoid_bat_mir_t;
-typedef Bat<oid_t, restiny_t> restiny_bat_mir_t;
-typedef Bat<resshort_t, oid_t> resshort_bat_mir_t;
-typedef Bat<resint_t, oid_t> resint_bat_mir_t;
-
-extern const restiny_t A_TINY_UNENC_MAX;
-extern const restiny_t A_TINY_UNENC_MIN;
-extern const restiny_t A_TINY_UNENC_MAX_U;
-extern const restiny_t A_TINY_UNENC_MIN_U;
-extern const restiny_t A_TINY;
-extern const restiny_t A_TINY_INV;
-// extern const restiny_t A2_TINY;
-// extern const restiny_t A2_TINY_INV;
-
-extern const resshort_t A_SHORT_UNENC_MAX;
-extern const resshort_t A_SHORT_UNENC_MIN;
-extern const resshort_t A_SHORT_UNENC_MAX_U;
-extern const resshort_t A_SHORT_UNENC_MIN_U;
-extern const resshort_t A_SHORT;
-extern const resshort_t A_SHORT_INV;
-// extern const resshort_t A2_SHORT;
-// extern const resshort_t A2_SHORT_INV;
-
-extern const resint_t A_INT_UNENC_MAX;
-extern const resint_t A_INT_UNENC_MIN;
-extern const resint_t A_INT_UNENC_MAX_U;
-extern const resint_t A_INT_UNENC_MIN_U;
-extern const resint_t A_INT;
-extern const resint_t A_INT_INV;
-// extern const resint_t A2_INT;
-// extern const resint_t A2_INT_INV;
-
-extern const resint_t A_BIG_UNENC_MAX;
-extern const resint_t A_BIG_UNENC_MIN;
-extern const resint_t A_BIG_UNENC_MAX_U;
-extern const resint_t A_BIG_UNENC_MIN_U;
-extern const resint_t A_BIG;
-extern const resint_t A_BIG_INV;
-// extern const resint_t A2_BIG;
-// extern const resint_t A2_BIG_INV;
-
-template<typename T>
-struct TypeName;
-
-template<>
-struct TypeName<uint8_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint16_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint32_t> {
-    static const char* NAME;
-};
-
-template<>
-struct TypeName<uint64_t> {
-    static const char* NAME;
-};
-
-/*
-#define TYPE_SELECTOR_ALIASES(TYPE, RESTYPE)                                  \
-template<>                                                                    \
-struct TypeSelector<MKT(TYPE, _bat)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(TYPE, _col)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(TYPE, _tmp)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(v2_, RESTYPE, _t)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(RESTYPE, _bat)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(RESTYPE, _col)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(RESTYPE, _tmp)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-}
- */
-#define TYPE_SELECTOR_ALIASES(TYPE, RESTYPE)                                  \
-template<>                                                                    \
-struct TypeSelector<MKT(TYPE, _bat)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(TYPE, _col)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(TYPE, _tmp)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};                                                                            \
-template<>                                                                    \
-struct TypeSelector<MKT(v2_, RESTYPE, _t)> : public TypeSelector<MKT(v2_,TYPE,_t)> {\
-};
-
-template<typename T>
-struct TypeSelector;
-
-template<>
-struct TypeSelector<v2_tinyint_t> {
-    typedef tinyint_t base_t;
-    typedef tinyint_bat_t bat_t;
-    typedef tinyint_bat_mir_t mir_t;
-    typedef tinyint_col_t col_t;
-    typedef tinyint_tmp_t tmp_t;
-    typedef restiny_t res_t;
-    typedef restiny_bat_t res_bat_t;
-    typedef restiny_bat_mir_t res_mir_t;
-    typedef restiny_col_t res_col_t;
-    typedef restiny_tmp_t res_tmp_t;
+struct v2_restiny_t {
+    typedef restiny_t type_t;
+    typedef v2_tinyint_t unenc_v2_t;
 
     static const char* BASENAME;
-    static const res_t A;
-    static const res_t A_INV;
-    static const res_t A_UNENC_MAX;
-    static const res_t A_UNENC_MAX_U;
+    static const restiny_t A;
+    static const restiny_t A_INV;
+    static const restiny_t A_UNENC_MIN;
+    static const restiny_t A_UNENC_MAX;
+    static const restiny_t A_UNENC_MAX_U;
 };
 
-TYPE_SELECTOR_ALIASES(tinyint, restiny);
-
-template<>
-struct TypeSelector<v2_shortint_t> {
-    typedef shortint_t base_t;
-    typedef shortint_bat_t bat_t;
-    typedef shortint_bat_mir_t mir_t;
-    typedef shortint_col_t col_t;
-    typedef shortint_tmp_t tmp_t;
-    typedef resshort_t res_t;
-    typedef resshort_bat_t res_bat_t;
-    typedef resshort_bat_mir_t res_mir_t;
-    typedef resshort_col_t res_col_t;
-    typedef resshort_tmp_t res_tmp_t;
+struct v2_resshort_t {
+    typedef resshort_t type_t;
+    typedef v2_shortint_t unenc_v2_t;
 
     static const char* BASENAME;
-    static const res_t A;
-    static const res_t A_INV;
-    static const res_t A_UNENC_MAX;
-    static const res_t A_UNENC_MAX_U;
+    static const resshort_t A;
+    static const resshort_t A_INV;
+    static const resshort_t A_UNENC_MIN;
+    static const resshort_t A_UNENC_MAX;
+    static const resshort_t A_UNENC_MAX_U;
 };
 
-TYPE_SELECTOR_ALIASES(shortint, resshort);
-
-template<>
-struct TypeSelector<v2_int_t> {
-    typedef int_t base_t;
-    typedef int_bat_t bat_t;
-    typedef int_bat_mir_t mir_t;
-    typedef int_col_t col_t;
-    typedef int_tmp_t tmp_t;
-    typedef resint_t res_t;
-    typedef resint_bat_t res_bat_t;
-    typedef resint_bat_mir_t res_mir_t;
-    typedef resint_col_t res_col_t;
-    typedef resint_tmp_t res_tmp_t;
+struct v2_resint_t {
+    typedef resint_t type_t;
+    typedef v2_int_t unenc_v2_t;
 
     static const char* BASENAME;
-    static const res_t A;
-    static const res_t A_INV;
-    static const res_t A_UNENC_MAX;
-    static const res_t A_UNENC_MAX_U;
+    static const resint_t A;
+    static const resint_t A_INV;
+    static const resint_t A_UNENC_MIN;
+    static const resint_t A_UNENC_MAX;
+    static const resint_t A_UNENC_MAX_U;
 };
 
-template<>
-struct TypeSelector<v2_oid_t> {
-    typedef oid_t base_t;
-    typedef oid_bat_t bat_t;
-    typedef oid_bat_t mir_t;
-    typedef oid_col_t col_t;
-    typedef oid_tmp_t tmp_t;
-    typedef resoid_t res_t;
-    typedef resoid_bat_t res_bat_t;
-    typedef resoid_bat_t res_mir_t;
-    typedef resoid_col_t res_col_t;
-    typedef resoid_tmp_t res_tmp_t;
+struct v2_resoid_t {
+    typedef resoid_t type_t;
+    typedef v2_oid_t unenc_v2_t;
 
     static const char* BASENAME;
-    static const res_t A;
-    static const res_t A_INV;
-    static const res_t A_UNENC_MAX;
-    static const res_t A_UNENC_MAX_U;
+    static const resoid_t A;
+    static const resoid_t A_INV;
+    static const resoid_t A_UNENC_MIN;
+    static const resoid_t A_UNENC_MAX;
+    static const resoid_t A_UNENC_MAX_U;
 };
 
 template<typename Tail>
-class ColumnBatIterator<resoid_t, Tail> : public ColumnBatIteratorBase<resoid_t, Tail> {
+class ColumnBatIterator<v2_resoid_t, Tail> : public ColumnBatIteratorBase<v2_resoid_t, Tail> {
 public:
-    using ColumnBatIteratorBase<resoid_t, Tail>::ColumnBatIteratorBase;
+    using ColumnBatIteratorBase<v2_resoid_t, Tail>::ColumnBatIteratorBase;
 
     virtual ~ColumnBatIterator() {
     }
 
-    virtual pair<resoid_t, Tail> get(unsigned index) override {
+    virtual pair<resoid_t, Tail>&& get(unsigned index) override {
         this->bu = this->ta->get(this->mColumnId, index);
         pair<resoid_t, Tail> p = make_pair(std::move(*reinterpret_cast<resoid_t*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
         delete this->bu;
@@ -251,7 +99,7 @@ public:
         return p;
     }
 
-    virtual pair<resoid_t, Tail> next() override {
+    virtual pair<resoid_t, Tail>&& next() override {
         pair<resoid_t, Tail> p = make_pair(std::move(*reinterpret_cast<resoid_t*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
@@ -260,7 +108,7 @@ public:
 };
 
 template<typename Tail>
-class ColumnBat<resoid_t, Tail> : public Bat<resoid_t, Tail> {
+class ColumnBat<v2_resoid_t, Tail> : public Bat<v2_resoid_t, Tail> {
     id_t mColumnId;
 
 public:
@@ -277,8 +125,8 @@ public:
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<resoid_t, Tail> * begin() override {
-        return new ColumnBatIterator<resoid_t, Tail>(mColumnId);
+    virtual BatIterator<v2_resoid_t, Tail> * begin() override {
+        return new ColumnBatIterator<v2_resoid_t, Tail>(mColumnId);
     }
 
     /** append an item */
