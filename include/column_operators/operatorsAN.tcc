@@ -154,12 +154,13 @@ namespace v2 {
             pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
-                auto result = make_pair(new TempBat<Head, ResTail>, new vector<bool>);
+                auto result = make_pair(new TempBat<Head, ResTail>(), new vector<bool>());
                 auto iter = arg->begin();
+                Op op;
                 while (iter->hasNext()) {
                     auto p = iter->next();
                     result.second->emplace_back((p.second * aInv) <= unEncMaxU);
-                    if (Op(p.second, threshold)) {
+                    if (op(p.second, threshold)) {
                         result.first->append(move(make_pair(move(p.first), move(p.second))));
                     }
                 }
@@ -171,12 +172,14 @@ namespace v2 {
             pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
-                auto result = make_pair(new TempBat<Head, ResTail>, new vector<bool>);
+                auto result = make_pair(new TempBat<Head, ResTail>(), new vector<bool>());
                 auto iter = arg->begin();
+                Op1 op1;
+                Op2 op2;
                 while (iter->hasNext()) {
                     auto p = iter->next();
                     result.second->emplace_back((p.second * aInv) <= unEncMaxU);
-                    if (Op1(p.second, threshold1) && Op2(p.second, threshold2)) {
+                    if (op1(p.second, threshold1) && op2(p.second, threshold2)) {
                         result.first->append(move(make_pair(move(p.first), move(p.second))));
                     }
                 }
@@ -190,17 +193,17 @@ namespace v2 {
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 switch (selType) {
                     case selection_type_t::LT:
-                        return selection_AN<Head, ResTail, std::less> (arg, threshold1);
+                        return selection_AN<Head, ResTail, std::less<typename ResTail::type_t >> (arg, threshold1);
                     case selection_type_t::LE:
-                        return selection_AN<Head, ResTail, std::less_equal> (arg, threshold1);
+                        return selection_AN<Head, ResTail, std::less_equal<typename ResTail::type_t >> (arg, threshold1);
                     case selection_type_t::EQ:
-                        return selection_AN<Head, ResTail, std::equal_to>(arg, threshold1);
+                        return selection_AN<Head, ResTail, std::equal_to<typename ResTail::type_t >> (arg, threshold1);
                     case selection_type_t::GE:
-                        return selection_AN<Head, ResTail, std::equal_to>(arg, threshold1);
+                        return selection_AN<Head, ResTail, std::equal_to<typename ResTail::type_t >> (arg, threshold1);
                     case selection_type_t::GT:
-                        return selection_AN<Head, ResTail, std::equal_to>(arg, threshold1);
+                        return selection_AN<Head, ResTail, std::equal_to<typename ResTail::type_t >> (arg, threshold1);
                     case selection_type_t::BT:
-                        return selection_AN<Head, ResTail, std::greater_equal, std::less_equal>(arg, threshold1, threshold2);
+                        return selection_AN<Head, ResTail, std::greater_equal<typename ResTail::type_t >, std::less_equal<typename ResTail::type_t >> (arg, threshold1, threshold2);
                     default:
                         stringstream ss;
                         ss << "Unknown selection type \"" << selType << '"';
@@ -217,7 +220,7 @@ namespace v2 {
                 pair<Bat<Head, Head>*, vector<bool>*> operator()(Bat<Head, Tail>* arg, typename TypeMap<Head>::v2_encoded_t::type_t A = TypeMap<Head>::v2_encoded_t::A, typename TypeMap<Head>::v2_encoded_t::type_t aInv = TypeMap<Head>::v2_encoded_t::A_INV, typename TypeMap<Head>::v2_encoded_t::type_t aUnencMaxU = TypeMap<Head>::v2_encoded_t::A_UNENC_MAX_U) {
                     static_assert(is_base_of<v2_anencoded_t, Head>::value, "Head must be an AN-encoded type");
                     size_t sizeBAT = arg->size();
-                    auto result = make_pair(new TempBat<Head, Head>(sizeBAT), new vector<bool>);
+                    auto result = make_pair(new TempBat<Head, Head>(sizeBAT), new vector<bool>());
                     result.second->reserve(sizeBAT);
                     auto iter = arg->begin();
                     while (iter->hasNext()) {
@@ -237,40 +240,22 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t ResHead;
                     static_assert(is_base_of<v2_base_t, Head>::value, "Head must be an base type");
                     size_t sizeBAT = arg->size();
-                    auto result = make_pair(new TempBat<Head, ResHead>(sizeBAT), new vector<bool>);
-                    result.second->reserve(sizeBAT);
+                    auto bat = new TempBat<Head, ResHead>(sizeBAT);
                     auto iter = arg->begin();
                     while (iter->hasNext()) {
                         auto p = iter->next();
-                        result.second->emplace_back(true);
-                        result->append(make_pair(p.first, static_cast<typename ResHead::type_t> (p.first) * A));
+                        bat->append(make_pair(p.first, static_cast<typename ResHead::type_t> (p.first) * A));
                     }
                     delete iter;
-                    return result;
+                    return make_pair(bat, nullptr);
                 }
             };
 
             template<typename Head, typename Tail>
             pair<Bat<typename TypeMap<Head>::v2_actual_t, typename TypeMap<Head>::v2_encoded_t>*, vector<bool>*> mirrorHead_AN(Bat<Head, Tail>* arg, typename TypeMap<Head>::v2_encoded_t::type_t A = TypeMap<Head>::v2_encoded_t::A, typename TypeMap<Head>::v2_encoded_t::type_t aInv = TypeMap<Head>::v2_encoded_t::A_INV, typename TypeMap<Head>::v2_encoded_t::type_t aUnencMaxU = TypeMap<Head>::v2_encoded_t::A_UNENC_MAX_U) {
-                return mirrorHead_AN_priv<Head, Tail, is_base_of<v2_anencoded_t, Head >::value> (arg, A, aInv, aUnencMaxU);
+                mirrorHead_AN_priv<Head, Tail, is_base_of<v2_anencoded_t, Head >::value> impl;
+                return impl(arg, A, aInv, aUnencMaxU);
             }
-
-            /*
-            template<typename HeadIn, typename TailIn, typename HeadOut, typename TailOut>
-            Bat<HeadOut, TailOut> reverse_AN(Bat<HeadIn, TailIn>* arg) {
-                size_t sizeBAT = arg->size();
-                if (is_base_of<v2_base_t, HeadIn>) {
-                    if (is_base_of<v2_base_t, TailIn>) {
-                        auto result = make_pair(new TempBat<)
-                    } else {
-                    }
-                } else {
-                    if (is_base_of<v2_base_t, TailIn>) {
-                    } else {
-                    }
-                }
-            }
-             */
 
             template<typename ResHead, typename ResTail>
             Bat<ResHead, ResTail>* reverse_AN(Bat<typename ResHead::unenc_v2_t, typename ResHead::unenc_v2_t>* arg, typename ResHead::type_t Ahead, typename ResTail::type_t Atail) {
@@ -284,19 +269,55 @@ namespace v2 {
                 return result;
             }
 
-            template <typename ResHead, typename ResTail>
-            pair<Bat<ResTail, ResHead>*, vector<bool>*> reverse_AN(Bat<typename ResHead::unenc_v2_t, ResTail> *arg, typename ResHead::type_t Ahead = ResHead::A, typename ResTail::type_t AtailInv = ResTail::A_INV, typename ResTail::type_t AtailUnencMaxU = ResTail::A_UNENC_MAX_U) {
+            /**
+             * Reverses the given BAT. Will always encode the Head and leave Tail as-is.
+             * When Head is already encoded, only check values. Otherwise, only encode values. The idea is that OID's are conceptually purely virtual and thus are newly instantiated. These values must be encoded.
+             * The same goes for Tail.
+             * Usually the Tail should already be encoded, but we'll handle the case where it is not, as well.
+             * 
+             * @param arg
+             * @param Ahead
+             * @param AtailInv
+             * @param AtailUnencMaxU
+             * @return 
+             */
+            template <typename Hin, typename Tin, typename Hout = typename TypeMap<Tin>::v2_encoded_t, typename Tout = typename TypeMap<Hin>::v2_encoded_t, typename Henc = typename TypeMap<Hin>::v2_encoded_t, typename Tenc = typename TypeMap<Tin>::v2_encoded_t>
+            tuple<Bat<Hout, Tout>*, vector<bool>*, vector<bool>*> reverse_AN(Bat<Hin, Tin> *arg, typename Henc::type_t AH = Henc::A, typename Henc::type_t AHInv = Henc::A_INV, typename Henc::type_t AHUnencMaxU = Henc::A_UNENC_MAX_U, typename Tenc::type_t AT = Tenc::A, typename Tenc::type_t ATInv = Tenc::A_INV, typename Tenc::type_t ATUnencMaxU = Tenc::A_UNENC_MAX_U) {
+                const bool isHeadEncoded = is_base_of<Hin, v2_anencoded_t>::value;
+                const bool isTailEncoded = is_base_of<Tin, v2_anencoded_t>::value;
                 size_t sizeBAT = arg->size();
-                auto result = make_pair(new TempBat<ResTail, ResHead>(sizeBAT), new vector<bool>);
-                result.second->reserve(sizeBAT);
+                auto bat = new TempBat<Hout, Tout>(sizeBAT);
+                vector<bool> *vecH = (isHeadEncoded ? new vector<bool> : nullptr);
+                vector<bool> *vecT = (isTailEncoded ? new vector<bool> : nullptr);
+                if (isHeadEncoded) vecH->reserve(sizeBAT);
+                if (isTailEncoded) vecT->reserve(sizeBAT);
                 auto iter = arg->begin();
                 while (iter->hasNext()) {
                     auto p = iter->next();
-                    result.second->emplace_back((p.second * AtailInv) <= AtailUnencMaxU);
-                    result.first->append(make_pair(p.second, static_cast<typename ResHead::type_t> (p.first) * Ahead));
+                    if (isHeadEncoded) {
+                        vecH->emplace_back((p.first * AHInv) <= AHUnencMaxU);
+                    }
+                    if (isTailEncoded) {
+                        vecT->emplace_back((p.second * ATInv) <= ATUnencMaxU);
+                    }
+                    bat->append(make_pair((isTailEncoded ? p.second : (static_cast<typename Hout::type_t> (p.second) * AT)), (isHeadEncoded ? p.first : (static_cast<typename Tout::type_t> (p.first) * AH))));
                 }
                 delete iter;
-                return result;
+                return make_tuple(bat, vecH, vecT);
+            }
+
+            template<typename Head1, typename Tail1, typename Head2, typename Tail2, typename H1Enc = typename TypeMap<Head1>::v2_encoded_t, typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename H2Enc = typename TypeMap<Head2>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
+            tuple<Bat<Head1, Tail2>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*> hashjoin_AN(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, typename H1Enc::type_t AH1 = H1Enc::A, typename H1Enc::type_t AH1inv = H1Enc::A_INV, typename H1Enc::type_t AH1UnencMaxU = H1Enc::A_UNENC_MAX_U, typename T1Enc::type_t AT1 = T1Enc::A, typename T1Enc::type_t AT1inv = T1Enc::A_INV, typename T1Enc::type_t AT1UnencMaxU = T1Enc::A_UNENC_MAX_U, typename H2Enc::type_t AH2 = H2Enc::A, typename H2Enc::type_t AH2inv = H2Enc::A_INV, typename H2Enc::type_t AH2UnencMaxU = H2Enc::A_UNENC_MAX_U, typename T2Enc::type_t AT2 = T2Enc::A, typename T2Enc::type_t AT2inv = T2Enc::A_INV, typename T2Enc::type_t AT2UnencMaxU = T2Enc::A_UNENC_MAX_U) {
+                const bool isHead1Encoded = is_base_of<Head1, v2_anencoded_t>::value;
+                const bool isTail1Encoded = is_base_of<Tail1, v2_anencoded_t>::value;
+                const bool isHead2Encoded = is_base_of<Head2, v2_anencoded_t>::value;
+                const bool isTail2Encoded = is_base_of<Tail2, v2_anencoded_t>::value;
+                auto bat = new TempBat<Head1, Tail2>;
+                vector<bool> *vec1 = (isHead1Encoded ? new vector<bool> : nullptr);
+                vector<bool> *vec2 = (isTail1Encoded ? new vector<bool> : nullptr);
+                vector<bool> *vec3 = (isHead2Encoded ? new vector<bool> : nullptr);
+                vector<bool> *vec4 = (isTail2Encoded ? new vector<bool> : nullptr);
+                return make_tuple(bat, vec1, vec2, vec3, vec4);
             }
 
             /*

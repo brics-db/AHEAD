@@ -77,69 +77,82 @@ int main(int argc, char** argv) {
         // 1) select from lineorder
         MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selection_AN(selection_type_t::LT, batLQenc, 25 * v2_restiny_t::A)); // lo_quantity < 25
         delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair3, v2::bat::ops::mirrorHead_AN(pair1.first)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        delete pair3.second;
-        delete pair1.first;
         MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selection_AN(selection_type_t::BT, batLDenc, 1 * v2_restiny_t::A, 3 * v2_restiny_t::A)); // lo_discount between 1 and 3
         delete pair2.second;
-        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::col_hashjoin_AN(bat3, pair2.first)); // join selection
-        delete bat3;
+        MEASURE_OP_PAIR(sw2, x, pair3, v2::bat::ops::mirrorHead_AN(pair1.first)); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
+        delete pair1.first;
+        if (pair3.second) delete pair3.second;
+        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::hashjoin_AN(pair3.first, pair2.first)); // join selection
+        delete pair3.first;
         delete pair2.first;
-        delete get<1>(tuple4);
-        delete get<2>(tuple4);
-        MEASURE_OP(sw2, x, bat5, v2::bat::ops::mirrorHead_AN(get<0>(tuple4))); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::col_hashjoin_AN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
-        delete bat5;
-        delete get<1>(tuple6);
-        delete get<2>(tuple6);
+        if (get<1>(tuple4)) delete get<1>(tuple4);
+        if (get<2>(tuple4)) delete get<2>(tuple4);
+        if (get<3>(tuple4)) delete get<3>(tuple4);
+        if (get<4>(tuple4)) delete get<4>(tuple4);
+        MEASURE_OP_PAIR(sw2, x, pair5, v2::bat::ops::mirrorHead_AN(get<0>(tuple4))); // prepare joined selection with lo_orderdate (contains positions in tail)
+        if (pair5.second) delete pair5.second;
+        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::hashjoin_AN(pair5.first, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
+        delete pair5.first;
+        if (get<1>(tuple6)) delete get<1>(tuple6);
+        if (get<2>(tuple6)) delete get<2>(tuple6);
+        if (get<3>(tuple6)) delete get<3>(tuple6);
+        if (get<4>(tuple6)) delete get<4>(tuple6);
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP_PAIR(sw2, x, pair7, v2::bat::ops::selection_AN(selection_type_t::EQ, batDYenc, 1993 * v2_resshort_t::A)); // d_year = 1993
-        delete pair7.second;
+        if (pair7.second) delete pair7.second;
         MEASURE_OP_PAIR(sw2, x, pair8, v2::bat::ops::mirrorHead_AN(pair7.first)); // prepare joined selection over d_year and d_datekey
-        delete pair8.second;
+        if (pair8.second) delete pair8.second;
         delete pair7.first;
-        MEASURE_OP_TUPLE(sw2, x, tuple9, v2::bat::ops::col_hashjoin_AN(pair8.first, batDDenc)); // only those d_datekey where d_year...
-        delete get<1>(tuple9);
-        delete get<2>(tuple9);
+        MEASURE_OP_TUPLE(sw2, x, tuple9, v2::bat::ops::hashjoin_AN(pair8.first, batDDenc)); // only those d_datekey where d_year...
         delete pair8.first;
+        if (get<1>(tuple9)) delete get<1>(tuple9);
+        if (get<2>(tuple9)) delete get<2>(tuple9);
+        if (get<3>(tuple9)) delete get<3>(tuple9);
+        if (get<4>(tuple9)) delete get<4>(tuple9);
 
         // 3) join lineorder and date
-        MEASURE_OP_PAIR(sw2, x, pairA, v2::bat::ops::reverse_AN<v2_int_t>(get<0>(tuple9)));
-        delete pairA.second;
+        MEASURE_OP_TUPLE(sw2, x, tupleA, v2::bat::ops::reverse_AN(get<0>(tuple9)));
+        if (get<1>(tupleA)) delete get<1>(tupleA);
+        if (get<2>(tupleA)) delete get<2>(tupleA);
         delete get<0>(tuple9);
-        MEASURE_OP_TUPLE(sw2, x, tupleB, (v2::bat::ops::col_hashjoin_AN<v2_int_t, v2_int_t>(get<0>(tuple6), pairA.first))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP_TUPLE(sw2, x, tupleB, (v2::bat::ops::hashjoin_AN(get<0>(tuple6), get<0>(tupleA)))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         delete get<0>(tuple6);
-        delete pairA.first;
-        delete get<1>(tupleB);
-        delete get<2>(tupleB);
+        delete get<0>(tupleA);
+        if (get<1>(tupleB)) delete get<1>(tupleB);
+        if (get<2>(tupleB)) delete get<2>(tupleB);
+        if (get<3>(tupleB)) delete get<3>(tupleB);
+        if (get<4>(tupleB)) delete get<4>(tupleB);
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
-        MEASURE_OP_TUPLE(sw2, x, tupleC, v2::bat::ops::mirrorHead_resoid_AN(get<0>(tupleB))); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP_PAIR(sw2, x, pairC, v2::bat::ops::mirrorHead_AN(get<0>(tupleB))); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete get<0>(tupleB);
-        delete get<1>(tupleC);
-        delete get<2>(tupleC);
+        if (pairC.second) delete pairC.second;
         // BatF only contains the 
-        MEASURE_OP_TUPLE(sw2, x, tupleD, v2::bat::ops::col_hashjoin_AN<v2_int_t>(get<0>(tupleC), batLEenc));
-        delete get<1>(tupleD);
-        delete get<2>(tupleD);
-        MEASURE_OP_TUPLE(sw2, x, tupleE, v2::bat::ops::col_hashjoin_AN<v2_tinyint_t>(get<0>(tupleC), get<0>(tuple4)));
-        delete batC;
+        MEASURE_OP_TUPLE(sw2, x, tupleD, v2::bat::ops::hashjoin_AN(get<0>(pairC), batLEenc));
+        if (get<1>(tupleD)) delete get<1>(tupleD);
+        if (get<2>(tupleD)) delete get<2>(tupleD);
+        if (get<3>(tupleD)) delete get<3>(tupleD);
+        if (get<4>(tupleD)) delete get<4>(tupleD);
+        MEASURE_OP_TUPLE(sw2, x, tupleE, v2::bat::ops::hashjoin_AN(get<0>(pairC), get<0>(tuple4)));
+        delete get<0>(pairC);
         delete get<0>(tuple4);
-        delete get<1>(tupleE);
-        delete get<2>(tupleE);
+        if (get<1>(tupleE)) delete get<1>(tupleE);
+        if (get<2>(tupleE)) delete get<2>(tupleE);
+        if (get<3>(tupleE)) delete get<3>(tupleE);
+        if (get<4>(tupleE)) delete get<4>(tupleE);
 
         // 4) lazy decode
-        MEASURE_OP(sw2, x, auto, batFpair, (v2::bat::ops::checkAndDecode_AN<v2_int_t>(get<0>(tupleD), TypeSelector<v2_int_t>::A_INV, TypeSelector<v2_int_t>::A_UNENC_MAX_U)), batFpair.first->size(), batFpair.first->consumption());
+        MEASURE_OP_PAIR(sw2, x, batFpair, (v2::bat::ops::checkAndDecode_AN(get<0>(tupleD))));
         auto batF = batFpair.first;
         SAVE_TYPE(x - 1, batF);
         delete batFpair.second;
         delete get<0>(tupleD);
-        MEASURE_OP(sw2, x, auto, batGpair, (v2::bat::ops::checkAndDecode_AN<v2_tinyint_t>(get<0>(tupleE), TypeSelector<v2_tinyint_t>::A_INV, TypeSelector<v2_tinyint_t>::A_UNENC_MAX_U)), batGpair.first->size(), batGpair.first->consumption());
+        MEASURE_OP_PAIR(sw2, x, batGpair, (v2::bat::ops::checkAndDecode_AN(get<0>(tupleE))));
         auto batG = batGpair.first;
         SAVE_TYPE(x - 1, batG);
         delete batGpair.second;
         delete get<0>(tupleE);
-        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batF, batG, 0));
+        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batF, batG));
         delete batF;
         delete batG;
 

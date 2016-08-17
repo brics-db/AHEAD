@@ -458,7 +458,7 @@ namespace v2 {
              * @return A single sum of the pair-wise products of the two Bats
              */
             template<typename Result, typename Tail1, typename Tail2>
-            Result aggregate_mul_sum(Bat<v2_oid_t, Tail1>* arg1, Bat<v2_oid_t, Tail2>* arg2, Result init) {
+            Result aggregate_mul_sum(Bat<v2_oid_t, Tail1>* arg1, Bat<v2_oid_t, Tail2>* arg2, Result init = Result(0)) {
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 Result total = init;
