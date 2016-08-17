@@ -96,20 +96,21 @@ namespace v2 {
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 typedef typename ResTail::unenc_v2_t Tail;
+                typedef typename Tail::type_t tail_t;
                 auto result = new TempBat<Head, Tail>(arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
                     auto current = iter->get(start);
-                    result->append(make_pair(move(current.first), move(static_cast<Tail> (current.second * aInv))));
+                    result->append(make_pair(move(current.first), move(static_cast<tail_t> (current.second * aInv))));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
                             current = iter->next();
-                            result->append(make_pair(move(current.first), move(static_cast<Tail> (current.second * aInv))));
+                            result->append(make_pair(move(current.first), move(static_cast<tail_t> (current.second * aInv))));
                         }
                     } else {
                         while (iter->hasNext()) {
                             current = iter->next();
-                            result->append(make_pair(move(current.first), move(static_cast<Tail> (current.second * aInv))));
+                            result->append(make_pair(move(current.first), move(static_cast<tail_t> (current.second * aInv))));
                         }
                     }
                 }
@@ -283,8 +284,8 @@ namespace v2 {
              */
             template <typename Hin, typename Tin, typename Hout = typename TypeMap<Tin>::v2_encoded_t, typename Tout = typename TypeMap<Hin>::v2_encoded_t, typename Henc = typename TypeMap<Hin>::v2_encoded_t, typename Tenc = typename TypeMap<Tin>::v2_encoded_t>
             tuple<Bat<Hout, Tout>*, vector<bool>*, vector<bool>*> reverse_AN(Bat<Hin, Tin> *arg, typename Henc::type_t AH = Henc::A, typename Henc::type_t AHInv = Henc::A_INV, typename Henc::type_t AHUnencMaxU = Henc::A_UNENC_MAX_U, typename Tenc::type_t AT = Tenc::A, typename Tenc::type_t ATInv = Tenc::A_INV, typename Tenc::type_t ATUnencMaxU = Tenc::A_UNENC_MAX_U) {
-                const bool isHeadEncoded = is_base_of<Hin, v2_anencoded_t>::value;
-                const bool isTailEncoded = is_base_of<Tin, v2_anencoded_t>::value;
+                const bool isHeadEncoded = is_base_of<v2_anencoded_t, Hin>::value;
+                const bool isTailEncoded = is_base_of<v2_anencoded_t, Tin>::value;
                 size_t sizeBAT = arg->size();
                 auto bat = new TempBat<Hout, Tout>(sizeBAT);
                 vector<bool> *vecH = (isHeadEncoded ? new vector<bool> : nullptr);
@@ -308,15 +309,70 @@ namespace v2 {
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2, typename H1Enc = typename TypeMap<Head1>::v2_encoded_t, typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename H2Enc = typename TypeMap<Head2>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
             tuple<Bat<Head1, Tail2>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*> hashjoin_AN(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, typename H1Enc::type_t AH1 = H1Enc::A, typename H1Enc::type_t AH1inv = H1Enc::A_INV, typename H1Enc::type_t AH1UnencMaxU = H1Enc::A_UNENC_MAX_U, typename T1Enc::type_t AT1 = T1Enc::A, typename T1Enc::type_t AT1inv = T1Enc::A_INV, typename T1Enc::type_t AT1UnencMaxU = T1Enc::A_UNENC_MAX_U, typename H2Enc::type_t AH2 = H2Enc::A, typename H2Enc::type_t AH2inv = H2Enc::A_INV, typename H2Enc::type_t AH2UnencMaxU = H2Enc::A_UNENC_MAX_U, typename T2Enc::type_t AT2 = T2Enc::A, typename T2Enc::type_t AT2inv = T2Enc::A_INV, typename T2Enc::type_t AT2UnencMaxU = T2Enc::A_UNENC_MAX_U) {
-                const bool isHead1Encoded = is_base_of<Head1, v2_anencoded_t>::value;
-                const bool isTail1Encoded = is_base_of<Tail1, v2_anencoded_t>::value;
-                const bool isHead2Encoded = is_base_of<Head2, v2_anencoded_t>::value;
-                const bool isTail2Encoded = is_base_of<Tail2, v2_anencoded_t>::value;
-                auto bat = new TempBat<Head1, Tail2>;
-                vector<bool> *vec1 = (isHead1Encoded ? new vector<bool> : nullptr);
-                vector<bool> *vec2 = (isTail1Encoded ? new vector<bool> : nullptr);
-                vector<bool> *vec3 = (isHead2Encoded ? new vector<bool> : nullptr);
-                vector<bool> *vec4 = (isTail2Encoded ? new vector<bool> : nullptr);
+                const bool isHead1Encoded = is_base_of<v2_anencoded_t, Head1>::value;
+                const bool isTail1Encoded = is_base_of<v2_anencoded_t, Tail1>::value;
+                const bool isHead2Encoded = is_base_of<v2_anencoded_t, Head2>::value;
+                const bool isTail2Encoded = is_base_of<v2_anencoded_t, Tail2>::value;
+                auto bat = new TempBat<Head1, Tail2>();
+                vector<bool> *vec1 = (isHead1Encoded ? new vector<bool>() : nullptr);
+                vector<bool> *vec2 = (isTail1Encoded ? new vector<bool>() : nullptr);
+                vector<bool> *vec3 = (isHead2Encoded ? new vector<bool>() : nullptr);
+                vector<bool> *vec4 = (isTail2Encoded ? new vector<bool>() : nullptr);
+                auto iter1 = arg1->begin();
+                auto iter2 = arg2->begin();
+                if (iter1->hasNext() & iter2->hasNext()) { // only really continue when both BATs are not empty
+                    if (arg1->size() < arg2->size()) { // let's ignore the joinSide for now and use that sizes as a measure, which is of course oversimplified
+                        unordered_map<typename Tail1::type_t, vector<typename Head1::type_t> > hashMap;
+                        while (iter1->hasNext()) { // build
+                            auto pairLeft = iter1->next();
+                            if (isHead1Encoded)
+                                vec1->emplace_back((pairLeft.first * AH1inv) <= AH1UnencMaxU);
+                            if (isTail1Encoded)
+                                vec2->emplace_back((pairLeft.second * AT1inv) <= AT1UnencMaxU);
+                            hashMap[pairLeft.second].emplace_back(pairLeft.first);
+                        }
+                        auto mapEnd = hashMap.end();
+                        while (iter2->hasNext()) { // probe
+                            auto pairRight = iter2->next();
+                            if (isHead2Encoded)
+                                vec3->emplace_back((pairRight.first * AH2inv) <= AH2UnencMaxU);
+                            if (isTail2Encoded)
+                                vec4->emplace_back((pairRight.second * AT2inv) <= AT2UnencMaxU);
+                            auto mapIter = hashMap.find(static_cast<typename Tail1::type_t> (isTail1Encoded ? (isHead2Encoded ? pairRight.first : (static_cast<typename Tail1::type_t> (pairRight.first) * AT1)) : (isHead2Encoded ? (pairRight.first * AH2inv) : pairRight.first)));
+                            if (mapIter != mapEnd) {
+                                for (auto matched : mapIter->second) {
+                                    bat->append(make_pair(matched, pairRight.second));
+                                }
+                            }
+                        }
+                    } else {
+                        unordered_map<typename Head2::type_t, vector<typename Tail2::type_t> > hashMap;
+                        while (iter2->hasNext()) { // build
+                            auto pairRight = iter2->next();
+                            if (isHead2Encoded)
+                                vec3->emplace_back((pairRight.first * AH2inv) <= AH2UnencMaxU);
+                            if (isTail2Encoded)
+                                vec4->emplace_back((pairRight.second * AT2inv) <= AT2UnencMaxU);
+                            hashMap[pairRight.first].emplace_back(pairRight.second);
+                        }
+                        auto mapEnd = hashMap.end();
+                        while (iter1->hasNext()) { // probe
+                            auto pairLeft = iter1->next();
+                            if (isHead1Encoded)
+                                vec1->emplace_back((pairLeft.first * AH1inv) <= AH1UnencMaxU);
+                            if (isTail1Encoded)
+                                vec2->emplace_back((pairLeft.second * AT1inv) <= AT1UnencMaxU);
+                            auto mapIter = hashMap.find(static_cast<typename Head2::type_t> (isHead2Encoded ? (isTail1Encoded ? pairLeft.second : (static_cast<typename Head2::type_t> (pairLeft.second) * AH2)) : (isTail1Encoded ? (pairLeft.second * AT1inv) : pairLeft.second)));
+                            if (mapIter != mapEnd) {
+                                for (auto matched : mapIter->second) {
+                                    bat->append(make_pair(pairLeft.first, matched));
+                                }
+                            }
+                        }
+                    }
+                }
+                delete iter1;
+                delete iter2;
                 return make_tuple(bat, vec1, vec2, vec3, vec4);
             }
 

@@ -120,7 +120,14 @@ do { \
     cout << "\n\tname\t" << setw(LEN_TIMES) << "time [ns]" << "\t" << setw(LEN_SIZES) << "size [#]" << "\t" << setw(LEN_SIZES) << "consum [B]" << "\t" << setw(LEN_TYPES) << "type head" << "\t" << setw(LEN_TYPES) << "type tail"; \
 } while (0)
 
-#define COUT_RESULT(start, max) \
+#define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
+#define COUT_RESULT3(start, max, opName) \
+do { \
+    for (size_t k = start; k < max; ++k) { \
+        cout << "\n\top" << setw(2) << opName[k] << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
+    } \
+} while (0)
+#define COUT_RESULT2(start, max) \
 do { \
     for (size_t k = start; k < max; ++k) { \
         cout << "\n\top" << setw(2) << k << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \

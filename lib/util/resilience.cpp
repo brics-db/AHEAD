@@ -27,7 +27,6 @@
 
 #include <util/resilience.hpp>
 
-const char* v2_restiny_t::BASENAME = "restiny";
 const restiny_t v2_restiny_t::A_UNENC_MIN = 0xFF80;
 const restiny_t v2_restiny_t::A_UNENC_MAX = 0x007F;
 const restiny_t v2_restiny_t::A_UNENC_MAX_U = 0x00FF;
@@ -36,7 +35,6 @@ const restiny_t v2_restiny_t::A_INV = 0xd759;
 // const restiny_t v2_restiny_t::A2 = 55831;
 // const restiny_t v2_restiny_t::A2_INV = 0x4dfffda7;
 
-const char* v2_resshort_t::BASENAME = "resshort";
 const resshort_t v2_resshort_t::A_UNENC_MIN = 0xFFFF8000;
 const resshort_t v2_resshort_t::A_UNENC_MAX = 0x00007FFF;
 const resshort_t v2_resshort_t::A_UNENC_MAX_U = 0x0000FFFF;
@@ -45,7 +43,6 @@ const resshort_t v2_resshort_t::A_INV = 0x1fdcd759;
 // const resshort_t v2_resshort_t::A2 = 63877;
 // const resshort_t v2_resshort_t::A2_INV = 0xd142174d;
 
-const char* v2_resint_t::BASENAME = "resint";
 const resint_t v2_resint_t::A_UNENC_MIN = 0xFFFFFFFF80000000ull;
 const resint_t v2_resint_t::A_UNENC_MAX = 0x000000007FFFFFFFull;
 const resint_t v2_resint_t::A_UNENC_MAX_U = 0x00000000FFFFFFFFull;
@@ -54,7 +51,6 @@ const resint_t v2_resint_t::A_INV = 0x0FEDCBA987654321ull;
 // const resint_t v2_resint_t::A2 = 64311;
 // const resint_t v2_resint_t::A2_INV = 0xAA86FFFEFB1FAA87ull;
 
-const char* v2_resoid_t::BASENAME = "resoid";
 const resoid_t v2_resoid_t::A_UNENC_MIN = 0xFF80000000000000ull;
 const resoid_t v2_resoid_t::A_UNENC_MAX = 0x007FFFFFFFFFFFFFull;
 const resoid_t v2_resoid_t::A_UNENC_MAX_U = 0x00FFFFFFFFFFFFFFull;
@@ -62,3 +58,12 @@ const resoid_t v2_resoid_t::A = 225;
 const resoid_t v2_resoid_t::A_INV = 0x0FEDCBA987654321ull;
 // const resint_t v2_resoid_t::2 = 64311;
 // const resint_t v2_resoid_t::2_INV = 0xAA86FFFEFB1FAA87ull;
+
+cstr_t TypeMap<v2_tinyint_t>::TYPENAME = "v2_tinyint_t";
+cstr_t TypeMap<v2_shortint_t>::TYPENAME = "v2_shortint_t";
+cstr_t TypeMap<v2_int_t>::TYPENAME = "v2_int_t";
+cstr_t TypeMap<v2_oid_t>::TYPENAME = "v2_oid_t";
+cstr_t TypeMap<v2_restiny_t>::TYPENAME = "v2_restiny_t";
+cstr_t TypeMap<v2_resshort_t>::TYPENAME = "v2_resshort_t";
+cstr_t TypeMap<v2_resint_t>::TYPENAME = "v2_int_t";
+cstr_t TypeMap<v2_resoid_t>::TYPENAME = "v2_oid_t";

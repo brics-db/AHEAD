@@ -58,11 +58,11 @@ public:
     virtual size_t consumption() = 0;
 
     virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<head_t>();
+        return boost::typeindex::type_id<v2_head_t>();
     }
 
     virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<tail_t>();
+        return boost::typeindex::type_id<v2_tail_t>();
     }
 };
 

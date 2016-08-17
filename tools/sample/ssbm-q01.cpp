@@ -68,6 +68,8 @@ int main(int argc, char** argv) {
     COUT_RESULT(0, x);
     cout << endl;
 
+    cstr_t OP_NAMES[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"};
+
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         sw1.start();
         x = 5;
@@ -120,7 +122,7 @@ int main(int argc, char** argv) {
 
         cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
         COUT_HEADLINE;
-        COUT_RESULT(5, x);
+        COUT_RESULT(5, x, OP_NAMES);
     }
 
     cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
