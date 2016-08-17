@@ -99,21 +99,22 @@ batSizes[I] = STORE_SIZE_OP;               \
 batConsumptions[I] = STORE_CONSUMPTION_OP; \
 ++I
 
-#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                       \
+#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                        \
 MEASURE_OP7(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE));              \
-headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info(); \
+headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info();  \
 hasTwoTypes[I-1] = false
 
-#define MEASURE_OP4(SW, I, BAT, OP)                                     \
+#define MEASURE_OP4(SW, I, BAT, OP)                                      \
 MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());      \
 SAVE_TYPE(I-1, BAT)
 
-#define MEASURE_OP_PAIR(SW, I, PAIR, OP)                                         \
+#define MEASURE_OP_PAIR(SW, I, PAIR, OP)                                           \
 MEASURE_OP7(SW, I, auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption()); \
 SAVE_TYPE(I-1, PAIR.first)
 
-#define MEASURE_OP_TUPLE(SW, I, VAR, OP)                                          \
-MEASURE_OP7(SW, I, auto, VAR, OP, get<0>(VAR)->size(), get<0>(VAR)->consumption())
+#define MEASURE_OP_TUPLE(SW, I, TUPLE, OP)                                                \
+MEASURE_OP7(SW, I, auto, TUPLE, OP, get<0>(TUPLE)->size(), get<0>(TUPLE)->consumption()); \
+SAVE_TYPE(I-1, (get<0>(TUPLE)))
 
 #define COUT_HEADLINE \
 do { \
@@ -121,15 +122,16 @@ do { \
 } while (0)
 
 #define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
-#define COUT_RESULT3(start, max, opName) \
+#define COUT_RESULT3(START, MAX, OPNAMES) \
 do { \
-    for (size_t k = start; k < max; ++k) { \
-        cout << "\n\top" << setw(2) << opName[k] << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
+    for (size_t k = START; k < MAX; ++k) { \
+        cout << "\n\top" << setw(2) << OPNAMES[k] << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
     } \
+    cout << flush; \
 } while (0)
-#define COUT_RESULT2(start, max) \
+#define COUT_RESULT2(START, MAX) \
 do { \
-    for (size_t k = start; k < max; ++k) { \
+    for (size_t k = START; k < MAX; ++k) { \
         cout << "\n\top" << setw(2) << k << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
     } \
 } while (0)

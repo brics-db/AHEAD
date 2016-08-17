@@ -30,6 +30,7 @@
         <in>ssbm-q01_eager.cpp</in>
         <in>ssbm-q01_encoded.cpp</in>
         <in>ssbm-q01_lazy.cpp</in>
+        <in>test_hashjoin.cpp</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -72,8 +73,13 @@
           <cTool>
             <standard>10</standard>
           </cTool>
-          <ccTool>
+          <ccTool flags="1">
             <standard>11</standard>
+            <incDir>
+              <pElem>lib</pElem>
+              <pElem>include</pElem>
+              <pElem>/usr/lib/llvm-3.8/include</pElem>
+            </incDir>
             <preprocessorList>
               <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
@@ -88,33 +94,6 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <folder path="0">
-        <ccTool>
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
-      <folder path="1">
-        <ccTool>
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
-      <folder path="2">
-        <ccTool>
-          <incDir>
-            <pElem>include</pElem>
-            <pElem>lib</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
-        </ccTool>
-      </folder>
       <item path="lib/column_operators/operators.cpp"
             ex="false"
             tool="1"
@@ -171,72 +150,30 @@
       </item>
       <item path="tools/sample/lineorder_size.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
-          <incDir>
-            <pElem>include</pElem>
-            <pElem>lib</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/main.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01_eager.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01_encoded.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/ssbm-q01_lazy.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>lib</pElem>
-            <pElem>include</pElem>
-            <pElem>/usr/lib/llvm-3.8/include</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-            <Elem>_GNU_SOURCE</Elem>
-            <Elem>__STDC_CONSTANT_MACROS</Elem>
-            <Elem>__STDC_FORMAT_MACROS</Elem>
-            <Elem>__STDC_LIMIT_MACROS</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
     </conf>

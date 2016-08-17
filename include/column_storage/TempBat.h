@@ -75,7 +75,7 @@ public:
     }
 
     virtual size_t consumption() override {
-        return size() * sizeof (Tail);
+        return size() * sizeof (tail_t);
     }
 
 };

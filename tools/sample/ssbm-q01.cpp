@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
-    cout << "\nSSBM Q1.1:\nselect lo_extendedprice\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
+    cout << "\nSSBM Q1.1:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
 
     const size_t NUM_RUNS = 10;
     StopWatch::rep totalTimes[NUM_RUNS] = {0};

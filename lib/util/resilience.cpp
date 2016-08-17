@@ -51,6 +51,14 @@ const resint_t v2_resint_t::A_INV = 0x0FEDCBA987654321ull;
 // const resint_t v2_resint_t::A2 = 64311;
 // const resint_t v2_resint_t::A2_INV = 0xAA86FFFEFB1FAA87ull;
 
+const resbigint_t v2_resbigint_t::A_UNENC_MIN = 0xFF80000000000000ull;
+const resbigint_t v2_resbigint_t::A_UNENC_MAX = 0x007FFFFFFFFFFFFFull;
+const resbigint_t v2_resbigint_t::A_UNENC_MAX_U = 0x00FFFFFFFFFFFFFFull;
+const resbigint_t v2_resbigint_t::A = 225;
+const resbigint_t v2_resbigint_t::A_INV = 0x0FEDCBA987654321ull;
+// const resint_t v2_resbigint_t::2 = 64311;
+// const resint_t v2_resbigint_t::2_INV = 0xAA86FFFEFB1FAA87ull;
+
 const resoid_t v2_resoid_t::A_UNENC_MIN = 0xFF80000000000000ull;
 const resoid_t v2_resoid_t::A_UNENC_MAX = 0x007FFFFFFFFFFFFFull;
 const resoid_t v2_resoid_t::A_UNENC_MAX_U = 0x00FFFFFFFFFFFFFFull;
@@ -62,8 +70,10 @@ const resoid_t v2_resoid_t::A_INV = 0x0FEDCBA987654321ull;
 cstr_t TypeMap<v2_tinyint_t>::TYPENAME = "v2_tinyint_t";
 cstr_t TypeMap<v2_shortint_t>::TYPENAME = "v2_shortint_t";
 cstr_t TypeMap<v2_int_t>::TYPENAME = "v2_int_t";
+cstr_t TypeMap<v2_bigint_t>::TYPENAME = "v2_bigint_t";
 cstr_t TypeMap<v2_oid_t>::TYPENAME = "v2_oid_t";
 cstr_t TypeMap<v2_restiny_t>::TYPENAME = "v2_restiny_t";
 cstr_t TypeMap<v2_resshort_t>::TYPENAME = "v2_resshort_t";
-cstr_t TypeMap<v2_resint_t>::TYPENAME = "v2_int_t";
-cstr_t TypeMap<v2_resoid_t>::TYPENAME = "v2_oid_t";
+cstr_t TypeMap<v2_resint_t>::TYPENAME = "v2_resint_t";
+cstr_t TypeMap<v2_resbigint_t>::TYPENAME = "v2_resbigint_t";
+cstr_t TypeMap<v2_resoid_t>::TYPENAME = "v2_resoid_t";

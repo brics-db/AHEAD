@@ -376,57 +376,43 @@ namespace v2 {
                 return make_tuple(bat, vec1, vec2, vec3, vec4);
             }
 
-            /*
-            template<typename V2Type2>
-            tuple<typename TypeSelector<V2Type2>::res_bat_t*, vector<bool>*, vector<bool>*> col_hashjoin_AN(typename TypeSelector<v2_oid_t>::res_bat_t* arg1, typename TypeSelector<V2Type2>::res_bat_t* arg2, join_side_t joinSide = join_side_t::left, resoid_t A1 = TypeSelector<v2_oid_t>::A, resoid_t Ainv1 = TypeSelector<v2_oid_t>::A_INV, resoid_t maxUnEncU1 = TypeSelector<v2_oid_t>::A_UNENC_MAX_U, typename TypeSelector<V2Type2>::res_t A2 = TypeSelector<V2Type2>::A, typename TypeSelector<V2Type2>::res_t Ainv2 = TypeSelector<V2Type2>::A_INV, typename TypeSelector<V2Type2>::res_t maxUnEncU2 = TypeSelector<V2Type2>::A_UNENC_MAX_U) {
-                auto bat = new typename TypeSelector<V2Type2>::res_tmp_t;
-                auto v1 = new vector<bool>, v2 = new vector<bool>;
+            /**
+             * Multiplies the tail values of each of the two Bat's and sums everything up.
+             * @param arg1
+             * @param arg2
+             * @return A single sum of the pair-wise products of the two Bats
+             */
+            template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
+            tuple<Bat<v2_oid_t, Result>*, vector<bool>*, vector<bool>*> aggregate_mul_sum_AN(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0), typename T1Enc::type_t AT1 = T1Enc::A, typename T1Enc::type_t AT1inv = T1Enc::A_INV, typename T1Enc::type_t AT1unencMaxU = T1Enc::A_UNENC_MAX_U, typename T2Enc::type_t AT2 = T2Enc::A, typename T2Enc::type_t AT2inv = T2Enc::A_INV, typename T2Enc::type_t AT2unencMaxU = T2Enc::A_UNENC_MAX_U, typename ResEnc::type_t RA = ResEnc::A) {
+                typedef typename Result::type_t result_t;
+                const bool isTail1Encoded = is_base_of<v2_anencoded_t, Tail1>::value;
+                const bool isTail2Encoded = is_base_of<v2_anencoded_t, Tail2>::value;
+                const bool isResultEncoded = is_base_of<v2_anencoded_t, Result>::value;
+                typename Result::type_t total = init;
+                vector<bool>* vec1 = (isTail1Encoded ? new vector<bool>() : nullptr);
+                vector<bool>* vec2 = (isTail2Encoded ? new vector<bool>() : nullptr);
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
-                if (iter1->hasNext() & iter2->hasNext()) { // only really continue when both BATs are not empty
-                    if (arg1->size() < arg2->size()) { // let's ignore the joinSide for now and use that sizes as a measure
-                        unordered_map<resoid_t, vector<oid_t> > hashMap;
-                        while (iter1->hasNext()) { // build
-                            auto pairLeft = iter1->next();
-                            v1->emplace_back(static_cast<typename TypeSelector<v2_oid_t>::res_t> (pairLeft.second * Ainv1) <= maxUnEncU1);
-                            hashMap[pairLeft.second].emplace_back(pairLeft.first);
-                        }
-                        auto mapEnd = hashMap.end();
-                        while (iter2->hasNext()) { // probe
-                            auto pairRight = iter2->next();
-                            v2->emplace_back(static_cast<typename TypeSelector<V2Type2>::res_t> (pairRight.second * Ainv2) <= maxUnEncU2);
-                            auto mapIter = hashMap.find(static_cast<resoid_t> (pairRight.first) * A1);
-                            if (mapIter != mapEnd) {
-                                for (auto matched : mapIter->second) {
-                                    bat->append(make_pair(matched, pairRight.second));
-                                }
-                            }
-                        }
-                    } else {
-                        unordered_map<resoid_t, vector<typename TypeSelector<V2Type2>::res_t> > hashMap;
-                        while (iter2->hasNext()) {
-                            auto pairRight = iter2->next();
-                            v2->emplace_back(static_cast<typename TypeSelector<V2Type2>::res_t> (pairRight.second * Ainv2) <= maxUnEncU2);
-                            hashMap[static_cast<resoid_t> (pairRight.first) * A1].emplace_back(pairRight.second);
-                        }
-                        auto mapEnd = hashMap.end();
-                        while (iter1->hasNext()) { // probe
-                            auto pairLeft = iter1->next();
-                            v1->emplace_back(static_cast<typename TypeSelector<v2_oid_t>::res_t> (pairLeft.second * Ainv1) <= maxUnEncU1);
-                            auto mapIter = hashMap.find(pairLeft.second);
-                            if (mapIter != mapEnd) {
-                                for (auto matched : mapIter->second) {
-                                    bat->append(make_pair(pairLeft.first, matched));
-                                }
-                            }
-                        }
-                    }
+                while (iter1->hasNext() && iter2->hasNext()) {
+                    auto p1 = iter1->next();
+                    auto p2 = iter2->next();
+                    typename T1Enc::type_t x1 = p1.second * (isTail1Encoded ? AT1inv : 1);
+                    typename T2Enc::type_t x2 = p2.second * (isTail2Encoded ? AT2inv : 1);
+                    if (isTail1Encoded)
+                        vec1->emplace_back(x1 <= AT1unencMaxU);
+                    if (isTail2Encoded)
+                        vec2->emplace_back(x2 <= AT2unencMaxU);
+                    total += static_cast<result_t> (x1) * static_cast<result_t> (x2);
                 }
-                delete iter1;
+                cout << "total = " << total << endl;
+                if (isResultEncoded)
+                    total *= RA;
                 delete iter2;
-                return make_tuple(move(bat), move(v1), move(v2));
+                delete iter1;
+                auto bat = new TempBat<v2_oid_t, Result>();
+                bat->append(make_pair(0, total));
+                return make_tuple(bat, vec1, vec2);
             }
-             */
         }
     }
 }

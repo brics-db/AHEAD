@@ -34,6 +34,7 @@
 typedef uint16_t restiny_t;
 typedef uint32_t resshort_t;
 typedef uint64_t resint_t;
+typedef uint64_t resbigint_t;
 typedef uint64_t resoid_t;
 
 #define RESOID_INVALID (static_cast<resoid_t>(-1))
@@ -83,6 +84,19 @@ struct v2_resint_t : public v2_anencoded_t {
     static const resint_t A_UNENC_MIN;
     static const resint_t A_UNENC_MAX;
     static const resint_t A_UNENC_MAX_U;
+
+    using v2_anencoded_t::v2_anencoded_t;
+};
+
+struct v2_resbigint_t : public v2_anencoded_t {
+    typedef resbigint_t type_t;
+    typedef v2_bigint_t unenc_v2_t;
+
+    static const resbigint_t A;
+    static const resbigint_t A_INV;
+    static const resbigint_t A_UNENC_MIN;
+    static const resbigint_t A_UNENC_MAX;
+    static const resbigint_t A_UNENC_MAX_U;
 
     using v2_anencoded_t::v2_anencoded_t;
 };
@@ -144,6 +158,14 @@ struct TypeMap<v2_int_t> {
 };
 
 template<>
+struct TypeMap<v2_bigint_t> {
+    typedef v2_bigint_t v2_base_t;
+    typedef v2_resbigint_t v2_encoded_t;
+    typedef v2_bigint_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
 struct TypeMap<v2_oid_t> {
     typedef v2_oid_t v2_base_t;
     typedef v2_resoid_t v2_encoded_t;
@@ -172,6 +194,14 @@ struct TypeMap<v2_resint_t> {
     typedef v2_int_t v2_base_t;
     typedef v2_resint_t v2_encoded_t;
     typedef v2_resint_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
+struct TypeMap<v2_resbigint_t> {
+    typedef v2_bigint_t v2_base_t;
+    typedef v2_resbigint_t v2_encoded_t;
+    typedef v2_resbigint_t v2_actual_t;
     static cstr_t TYPENAME;
 };
 
