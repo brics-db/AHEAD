@@ -404,7 +404,6 @@ namespace v2 {
                         vec2->emplace_back(x2 <= AT2unencMaxU);
                     total += static_cast<result_t> (x1) * static_cast<result_t> (x2);
                 }
-                cout << "total = " << total << endl;
                 if (isResultEncoded)
                     total *= RA;
                 delete iter2;
