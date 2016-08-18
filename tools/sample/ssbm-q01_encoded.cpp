@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        cout << "\n(" << setw(2) << i << "\n\tresult: " << (result * v2_resbigint_t::A_INV) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.";
+        cout << "\n(" << setw(2) << i << ")\n\tresult: " << (result * v2_resbigint_t::A_INV) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
