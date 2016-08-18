@@ -134,6 +134,7 @@ do { \
     for (size_t k = START; k < MAX; ++k) { \
         cout << "\n\top" << setw(2) << k << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
     } \
+    cout << flush; \
 } while (0)
 
 StopWatch::rep loadTable(string& baseDir, const char* const columnName) {

@@ -32,7 +32,8 @@ int main(int argc, char** argv) {
 
     const size_t NUM_RUNS = 10;
     StopWatch::rep totalTimes[NUM_RUNS] = {0};
-    const size_t NUM_OPS = 32;
+    const size_t NUM_OPS = 24;
+    cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
     size_t batSizes[NUM_OPS] = {0};
     size_t batConsumptions[NUM_OPS] = {0};
@@ -68,11 +69,9 @@ int main(int argc, char** argv) {
     COUT_RESULT(0, x);
     cout << endl;
 
-    cstr_t OP_NAMES[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"};
-
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         sw1.start();
-        x = 5;
+        x = 0;
 
         // 1) select from lineorder
         MEASURE_OP(sw2, x, bat1, v2::bat::ops::selection_lt(batLQ, static_cast<tinyint_t> (25))); // lo_quantity < 25

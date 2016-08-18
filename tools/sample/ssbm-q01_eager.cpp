@@ -32,7 +32,8 @@ int main(int argc, char** argv) {
 
     const size_t NUM_RUNS = 10;
     StopWatch::rep totalTimes[NUM_RUNS] = {0};
-    const size_t NUM_OPS = 32;
+    const size_t NUM_OPS = 30;
+    cstr_t OP_NAMES[NUM_OPS] = {"-6", "-5", "-4", "-3", "-2", "-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
     size_t batSizes[NUM_OPS] = {0};
     size_t batConsumptions[NUM_OPS] = {0};
@@ -69,8 +70,6 @@ int main(int argc, char** argv) {
     COUT_HEADLINE;
     COUT_RESULT(0, x);
     cout << endl;
-
-    cstr_t OP_NAMES[] = {"-6", "-5", "-4", "-3", "-2", "-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"};
 
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         sw1.start();
