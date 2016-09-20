@@ -4,9 +4,6 @@
     <df root="include" name="0">
     </df>
     <df root="lib" name="1">
-      <df name="column_operators">
-        <in>operators.cpp</in>
-      </df>
       <df name="column_storage">
         <in>BucketManager.cpp</in>
         <in>ColumnManager.cpp</in>
@@ -26,11 +23,13 @@
       <df name="sample">
         <in>lineorder_size.cpp</in>
         <in>main.cpp</in>
+        <in>test_hashjoin.cpp</in>
+      </df>
+      <df name="ssbm">
         <in>ssbm-q01.cpp</in>
         <in>ssbm-q01_eager.cpp</in>
         <in>ssbm-q01_encoded.cpp</in>
         <in>ssbm-q01_lazy.cpp</in>
-        <in>test_hashjoin.cpp</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -94,13 +93,6 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="lib/column_operators/operators.cpp"
-            ex="false"
-            tool="1"
-            flavor2="11">
-        <ccTool flags="2">
-        </ccTool>
-      </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"
             tool="1"
@@ -156,23 +148,23 @@
         <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="tools/sample/ssbm-q01.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="1">
-        </ccTool>
-      </item>
-      <item path="tools/sample/ssbm-q01_eager.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="1">
-        </ccTool>
-      </item>
-      <item path="tools/sample/ssbm-q01_encoded.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="1">
-        </ccTool>
-      </item>
-      <item path="tools/sample/ssbm-q01_lazy.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="1">
-        </ccTool>
-      </item>
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q01.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q01_eager.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q01_encoded.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q01_lazy.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
       </item>

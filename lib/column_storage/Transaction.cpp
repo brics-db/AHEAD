@@ -78,7 +78,6 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     std::list<type_t>::iterator typesIterator;
 
     ColumnManager::ColumnIterator *ci;
-    ColumnManager::Record *record;
 
     set<id_t> columns;
     string valuesPath(path);
@@ -91,8 +90,8 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     char value[LEN_VALUE];
     memset(value, 0, LEN_VALUE);
     char *buffer;
-    TransactionManager::BinaryUnit *bun;
-    size_t offset;
+    TransactionManager::BinaryUnit bun;
+    oid_t offset;
     id_t column;
     type_t type;
     bool firstAppend = true;
@@ -171,16 +170,13 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 strncpy(attribute_name, value, attr_name_len);
                 attribute_names.push_back(attribute_name);
 
-                strncpy(static_cast<char*> (bun->tail), value, attr_name_len);
+                strncpy(static_cast<str_t> (bun.tail), value, attr_name_len);
 
                 // Berechnung der Anzahl bisher vorhandener Spalten
                 if (firstAppend) {
-                    offset = *reinterpret_cast<unsigned*> (&bun->head);
+                    offset = *reinterpret_cast<oid_t*> (&bun.head);
                     firstAppend = false;
                 }
-
-                // delete static_cast<unsigned int*> (bun->head);
-                delete bun;
 
                 buffer = strtok(nullptr, actDelim);
             }
@@ -214,43 +210,43 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 bun = append(ID_BAT_COLTYPES);
 
                 if (strncmp(buffer, "INTEGER", 7) == 0 || strncmp(buffer, "INT", 3) == 0) {
-                    *((type_t*) bun->tail) = type_int;
+                    *static_cast<type_t*> (bun.tail) = type_int;
                     cm->createColumn(column, sizeof (int_t));
                     strncpy(datatype, NAME_INTEGER, LEN_VALUE);
                 } else if (strncmp(buffer, "TINYINT", 7) == 0) {
-                    *((type_t*) bun->tail) = type_tinyint;
+                    *static_cast<type_t*> (bun.tail) = type_tinyint;
                     cm->createColumn(column, sizeof (tinyint_t));
                     strncpy(datatype, NAME_TINYINT, LEN_VALUE);
                 } else if (strncmp(buffer, "SHORTINT", 8) == 0) {
-                    *((type_t*) bun->tail) = type_shortint;
+                    *static_cast<type_t*> (bun.tail) = type_shortint;
                     cm->createColumn(column, sizeof (shortint_t));
                     strncpy(datatype, NAME_SHORTINT, LEN_VALUE);
                 } else if (strncmp(buffer, "LARGEINT", 8) == 0) {
-                    *((type_t*) bun->tail) = type_largeint;
+                    *static_cast<type_t*> (bun.tail) = type_largeint;
                     cm->createColumn(column, sizeof (bigint_t));
                     strncpy(datatype, NAME_LARGEINT, LEN_VALUE);
                 } else if (strncmp(buffer, "STRING", 6) == 0) {
-                    *((type_t*) bun->tail) = type_string;
+                    *static_cast<type_t*> (bun.tail) = type_string;
                     cm->createColumn(column, sizeof (char_t) * MAXLEN_STRING); // TODO warum genau 45 zeichen?!
                     strncpy(datatype, NAME_STRING, LEN_VALUE);
                 } else if (strncmp(buffer, "FIXED", 5) == 0) {
-                    *((type_t*) bun->tail) = type_fixed;
+                    *static_cast<type_t*> (bun.tail) = type_fixed;
                     cm->createColumn(column, sizeof (fixed_t));
                     strncpy(datatype, NAME_FIXED, LEN_VALUE);
                 } else if (strncmp(buffer, "CHAR", 4) == 0) {
-                    *((type_t*) bun->tail) = type_char;
+                    *static_cast<type_t*> (bun.tail) = type_char;
                     cm->createColumn(column, sizeof (char_t));
                     strncpy(datatype, NAME_CHAR, LEN_VALUE);
                 } else if (strncmp(buffer, "RESTINY", 7) == 0) {
-                    *((type_t*) bun->tail) = type_restiny;
+                    *static_cast<type_t*> (bun.tail) = type_restiny;
                     cm->createColumn(column, sizeof (restiny_t));
                     strncpy(datatype, NAME_RESTINY, LEN_VALUE);
                 } else if (strncmp(buffer, "RESSHORT", 8) == 0) {
-                    *((type_t*) bun->tail) = type_resshort;
+                    *static_cast<type_t*> (bun.tail) = type_resshort;
                     cm->createColumn(column, sizeof (resshort_t));
                     strncpy(datatype, NAME_RESSHORT, LEN_VALUE);
                 } else if (strncmp(buffer, "RESINT", 6) == 0) {
-                    *((type_t*) bun->tail) = type_resint;
+                    *static_cast<type_t*> (bun.tail) = type_resint;
                     cm->createColumn(column, sizeof (resint_t));
                     strncpy(datatype, NAME_RESINT, LEN_VALUE);
                 } else {
@@ -259,16 +255,11 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 }
 
 
-                types.push_back(*((type_t*) bun->tail));
-
-                // delete static_cast<unsigned int*> (bun->head);
-                delete bun;
+                types.push_back(*static_cast<type_t*> (bun.tail));
 
                 // Spaltenidentifikation einpflegen
                 bun = append(ID_BAT_COLIDENT);
-                *static_cast<unsigned*> (bun->tail) = column;
-                // delete static_cast<unsigned int*> (bun->head);
-                delete bun;
+                *static_cast<unsigned*> (bun.tail) = column;
 
                 open(column);
                 iterators.push_back(this->iterators[column]);
@@ -316,58 +307,56 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                         type = *typesIterator;
                         ci = *iteratorsIterator;
 
-                        record = ci->append();
+                        ColumnManager::Record record = ci->append();
                         size_t bufLen;
 
                         switch (type) {
                             case type_tinyint:
-                                *(static_cast<tinyint_t*> (record->content)) = static_cast<tinyint_t> (atoi(buffer));
+                                *(static_cast<tinyint_t*> (record.content)) = static_cast<tinyint_t> (atoi(buffer));
                                 break;
 
                             case type_shortint:
-                                *(static_cast<shortint_t*> (record->content)) = static_cast<shortint_t> (atoi(buffer));
+                                *(static_cast<shortint_t*> (record.content)) = static_cast<shortint_t> (atoi(buffer));
                                 break;
 
                             case type_int:
-                                *(static_cast<int_t*> (record->content)) = atol(buffer);
+                                *(static_cast<int_t*> (record.content)) = atol(buffer);
                                 break;
 
                             case type_largeint:
-                                *(static_cast<bigint_t*> (record->content)) = static_cast<bigint_t> (atoll(buffer));
+                                *(static_cast<bigint_t*> (record.content)) = static_cast<bigint_t> (atoll(buffer));
                                 break;
 
                             case type_string:
                                 bufLen = strlen(buffer); // strtok already replaced the token separator with a null char
                                 // TODO make sure the string is at most MAXLEN_STRING bytes long (incl. null byte)
-                                strncpy(static_cast<str_t> (record->content), buffer, bufLen + 1);
+                                strncpy(static_cast<str_t> (record.content), buffer, bufLen + 1);
                                 break;
 
                             case type_fixed:
-                                *(static_cast<fixed_t*> (record->content)) = atof(buffer);
+                                *(static_cast<fixed_t*> (record.content)) = atof(buffer);
                                 break;
 
                             case type_char:
-                                *(static_cast<char_t*> (record->content)) = buffer[0];
+                                *(static_cast<char_t*> (record.content)) = buffer[0];
                                 break;
 
                             case type_restiny:
-                                *(static_cast<restiny_t*> (record->content)) = atol(buffer) * v2_restiny_t::A;
+                                *(static_cast<restiny_t*> (record.content)) = atol(buffer) * v2_restiny_t::A;
                                 break;
 
                             case type_resshort:
-                                *(static_cast<resshort_t*> (record->content)) = atol(buffer) * v2_resshort_t::A;
+                                *(static_cast<resshort_t*> (record.content)) = atol(buffer) * v2_resshort_t::A;
                                 break;
 
                             case type_resint:
-                                *(static_cast<resint_t*> (record->content)) = atoll(buffer) * v2_resint_t::A;
+                                *(static_cast<resint_t*> (record.content)) = atoll(buffer) * v2_resint_t::A;
                                 break;
 
                             default:
                                 cerr << "TransactionManager::Transaction::load() data type unknown" << endl;
                                 abort();
                         }
-
-                        delete record;
 
                         typesIterator++;
                         iteratorsIterator++;
@@ -385,19 +374,11 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             close(ID_BAT_COLIDENT);
 
             open(ID_BAT_COLIDENT);
-
-            if (offset > 0) {
-                bun = get(ID_BAT_COLIDENT, offset);
-            } else {
+            bun = get(ID_BAT_COLIDENT, offset);
+            while (bun.tail != nullptr) {
+                close(*static_cast<oid_t*> (bun.tail));
                 bun = next(ID_BAT_COLIDENT);
             }
-
-            while (bun != 0) {
-                close(*((unsigned int*) bun->tail));
-                delete bun;
-                bun = next(ID_BAT_COLIDENT);
-            }
-
             close(ID_BAT_COLIDENT);
 
             // Dateien schließen
@@ -418,7 +399,7 @@ set<unsigned int> TransactionManager::Transaction::list() {
     return ColumnManager::getInstance()->listColumns();
 }
 
-pair<size_t, size_t> TransactionManager::Transaction::open(unsigned int id) {
+pair<size_t, size_t> TransactionManager::Transaction::open(id_t id) {
     bool isOK = false;
     if (id >= this->iterators.size()) {
         this->iterators.resize(id + 1);
@@ -452,7 +433,7 @@ pair<size_t, size_t> TransactionManager::Transaction::open(unsigned int id) {
     return isOK ? make_pair<size_t, size_t>(this->iterators[id]->size(), this->iterators[id]->consumption()) : make_pair<size_t, size_t>(0, 0);
 }
 
-void TransactionManager::Transaction::close(unsigned int id) {
+void TransactionManager::Transaction::close(id_t id) {
     if (id >= this->iterators.size() || (id < this->iterators.size() && this->iterators[id] == nullptr)) {
         // Problem : Spalte nicht geoeffnet
     } else {
@@ -460,96 +441,90 @@ void TransactionManager::Transaction::close(unsigned int id) {
     }
 }
 
-TransactionManager::BinaryUnit* TransactionManager::Transaction::next(unsigned int id) {
+TransactionManager::BinaryUnit&& TransactionManager::Transaction::next(id_t id) {
     if (id < this->iterators.size() && this->iterators[id] != nullptr && this->iteratorPositions[id] != -1) {
-        ColumnManager::Record *record = this->iterators[id]->next();
+        const ColumnManager::Record &record = this->iterators[id]->next();
 
-        if (record != 0) {
-            TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-            *reinterpret_cast<unsigned*> (&bun->head) = this->iteratorPositions[id]++;
-            bun->tail = record->content;
-            delete record;
-            return bun;
+        if (record.content != nullptr) {
+            TransactionManager::BinaryUnit bun;
+            *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
+            bun.tail = record.content;
+            return move(bun);
         } else {
             // Problem : Ende der Spalte
-            return nullptr;
+            return move(TransactionManager::BinaryUnit());
         }
     } else {
         // Problem : Spalte nicht geoffnet
-        return nullptr;
+        return move(TransactionManager::BinaryUnit());
     }
 }
 
-TransactionManager::BinaryUnit* TransactionManager::Transaction::get(unsigned int id, unsigned int index) {
+TransactionManager::BinaryUnit&& TransactionManager::Transaction::get(id_t id, oid_t index) {
     if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
-        ColumnManager::Record *record = this->iterators[id]->seek(index);
+        const ColumnManager::Record &record = this->iterators[id]->seek(index);
 
-        if (record != 0) {
-            TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-            *reinterpret_cast<unsigned*> (&bun->head) = index++;
-            bun->tail = record->content;
-            this->iteratorPositions[id] = index;
-            delete record;
-            return bun;
+        if (record.content != nullptr) {
+            TransactionManager::BinaryUnit bun;
+            *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
+            bun.tail = record.content;
+            return move(bun);
         } else {
             // Problem : Falscher Index
             this->iteratorPositions[id] = 0;
-            return 0;
+            return move(TransactionManager::BinaryUnit());
         }
     } else {
         // Problem : Spalte nicht geoeffnet
-        return 0;
+        return move(TransactionManager::BinaryUnit());
     }
 }
 
-TransactionManager::BinaryUnit* TransactionManager::Transaction::edit(unsigned int id) {
+TransactionManager::BinaryUnit&& TransactionManager::Transaction::edit(id_t id) {
     if (this->isUpdater) {
         if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
-            ColumnManager::Record *record = this->iterators[id]->edit();
+            const ColumnManager::Record &record = this->iterators[id]->edit();
 
-            if (record != 0) {
-                TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-                *reinterpret_cast<unsigned*> (&bun->head) = this->iteratorPositions[id] - 1;
-                bun->tail = record->content;
-                delete record;
-                return bun;
+            if (record.content != nullptr) {
+                TransactionManager::BinaryUnit bun;
+                *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id] - 1;
+                bun.tail = record.content;
+                return move(bun);
             } else {
                 // Problem : Ende der Spalte
-                return 0;
+                return move(TransactionManager::BinaryUnit());
             }
         } else {
             // Problem : Spalte nicht geoffnet
-            return 0;
+            return move(TransactionManager::BinaryUnit());
         }
     } else {
         // Problem : Transaktion darf keine ?nderungen vornehmen
-        return 0;
+        return move(TransactionManager::BinaryUnit());
     }
 }
 
-TransactionManager::BinaryUnit* TransactionManager::Transaction::append(unsigned int id) {
+TransactionManager::BinaryUnit&& TransactionManager::Transaction::append(id_t id) {
     if (this->isUpdater) {
         if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
-            ColumnManager::Record *record = this->iterators[id]->append();
+            const ColumnManager::Record &record = this->iterators[id]->append();
 
-            if (record != 0) {
-                TransactionManager::BinaryUnit *bun = new TransactionManager::BinaryUnit;
-                // this->iteratorPositions[id] = this->iterators[id]->size();
-                *reinterpret_cast<unsigned*> (&bun->head) = this->iteratorPositions[id]++;
-                bun->tail = record->content;
-                delete record;
-                return bun;
+            if (record.content != nullptr) {
+                TransactionManager::BinaryUnit bun;
+                *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
+                bun.tail = record.content;
+                return move(bun);
             } else {
                 // Problem : Record konnte nicht an Spalte angehängt werden
-                return nullptr;
+                return move(TransactionManager::BinaryUnit());
             }
         } else {
             // Problem : Spalte nicht geoffnet
-            return nullptr;
+            return move(TransactionManager::BinaryUnit());
         }
     } else {
         // Problem : Transaktion darf keine Änderungen vornehmen
-        return nullptr;
+        return move(TransactionManager::BinaryUnit());
     }
 }
 

@@ -29,9 +29,56 @@
 
 #include <boost/type_index.hpp>
 
+#include <ColumnStore.h>
 #include <column_storage/BatIterator.h>
 
 using namespace std;
+
+template<typename Type, typename Container>
+class ColumnDescriptor {
+public:
+    typedef Type v2_type_t;
+    typedef Container container_t;
+    typedef typename Type::type_t type_t;
+
+    Container *container;
+
+    ColumnDescriptor() : container(new Container) {
+    }
+
+    ColumnDescriptor(Container* heap) : container(heap) {
+    }
+
+    ColumnDescriptor(ColumnDescriptor& cd) : container(cd.container) {
+    }
+
+    ColumnDescriptor(ColumnDescriptor&& cd) : container(cd.container) {
+    }
+
+    virtual ~ColumnDescriptor() {
+        if (container) {
+            delete container;
+        }
+    }
+};
+
+template<>
+class ColumnDescriptor<v2_void_t, void> {
+public:
+    typedef v2_void_t v2_type_t;
+    typedef v2_void_t::type_t type_t;
+
+    oid_t seqbase;
+
+    ColumnDescriptor() : seqbase(0) {
+    }
+
+    ColumnDescriptor(oid_t seqbase) : seqbase(seqbase) {
+    }
+
+    virtual ~ColumnDescriptor() {
+    }
+};
 
 template<typename Head, typename Tail>
 class Bat {
@@ -50,6 +97,12 @@ public:
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) = 0;
     virtual void append(pair<head_t, tail_t>&& p) = 0;
+
+    virtual Bat<Tail, Head>* reverse() = 0;
+
+    virtual Bat<Head, Head>* mirror_head() = 0;
+
+    virtual Bat<Tail, Tail>* mirror_tail() = 0;
 
     /** size of column, obtained through the iterator */
     virtual unsigned size() = 0;

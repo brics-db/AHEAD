@@ -142,8 +142,8 @@ private:
 public:
 
     class TablesIterator : public BatIterator<v2_id_t, v2_cstr_t> {
-        typedef BatIterator<v2_oid_t, v2_id_t> table_key_iter_t;
-        typedef BatIterator<v2_oid_t, v2_cstr_t> table_name_iter_t;
+        typedef BatIterator<v2_void_t, v2_id_t> table_key_iter_t;
+        typedef BatIterator<v2_void_t, v2_cstr_t> table_name_iter_t;
 
         table_key_iter_t *pKeyIter;
         table_name_iter_t *pNameIter;
@@ -160,16 +160,31 @@ public:
             delete pNameIter;
         }
 
-        virtual pair<id_t, cstr_t>&& next() override {
-            return move(make_pair(pKeyIter->next().second, pNameIter->next().second));
+        virtual void next() override {
+            pKeyIter->next();
+            pNameIter->next();
         }
 
-        virtual pair<id_t, cstr_t>&& get(size_t index) override {
-            return move(make_pair(pKeyIter->get(index).second, pNameIter->get(index).second));
+        virtual TablesIterator& operator++() override {
+            next();
+            return *this;
+        }
+
+        virtual void position(oid_t index) override {
+            pKeyIter->position(index);
+            pNameIter->position(index);
         }
 
         virtual bool hasNext() override {
             return pKeyIter->hasNext();
+        }
+
+        virtual id_t&& head() override {
+            return move(pKeyIter->tail());
+        }
+
+        virtual cstr_t&& tail() override {
+            return move(pNameIter->tail());
         }
 
         virtual size_t size() override {

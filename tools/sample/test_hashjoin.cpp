@@ -11,7 +11,7 @@
  * Created on 13. August 2016, 22:58
  */
 
-#include "ssbm.hpp"
+#include "../ssbm/ssbm.hpp"
 
 /*
  * 

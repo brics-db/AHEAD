@@ -50,15 +50,14 @@ namespace v2 {
 
             template<typename Tail>
             void prn_vecOfPair(Bat<v2_oid_t, Tail> *arg) {
-                auto iter = arg->begin();
                 unsigned step = 0;
-                while (iter->hasNext()) {
-                    pair<v2_oid_t, Tail> p = iter->next();
-                    cout << p.first << " | " << p.second << endl;
+                auto *iter = arg->begin();
+                for (; iter->hasNext(); ++*iter) {
+                    cout << iter->head() << " | " << iter->tail() << endl;
                     if (iter->size() > 10 && step == 3) {
                         step = iter->size() - 3;
                         cout << "... jumping to " << step << endl;
-                        iter->get(step);
+                        iter->position(step);
                     }
                     step++;
                 }
@@ -68,16 +67,18 @@ namespace v2 {
             template<typename Head, typename Tail>
             Bat<Head, Tail>* copy(Bat<Head, Tail>* arg, unsigned start = 0, size_t size = 0) {
                 auto result = new TempBat<Head, Tail>(arg->size());
-                auto iter = arg->begin();
+                auto *iter = arg->begin();
                 if (iter->hasNext()) {
-                    result->append(iter->get(start));
+                    iter->position(start);
+                    result->append(make_pair(iter->head(), iter->tail()));
                     if (size) {
                         for (size_t step = 1; step < size && iter->hasNext(); ++step) {
-                            result->append(iter->next());
+                            result->append(make_pair(move(iter->head()), move(iter->tail())));
+                            ++*iter;
                         }
                     } else {
-                        while (iter->hasNext()) {
-                            result->append(iter->next());
+                        for (; iter->hasNext(); ++*iter) {
+                            result->append(make_pair(move(iter->head()), move(iter->tail())));
                         }
                     }
                 }
@@ -108,10 +109,10 @@ namespace v2 {
                 typename Tail::type_t threshold = static_cast<typename Tail::type_t> (th);
                 auto result = new TempBat<Head, Tail>;
                 auto *iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    if (p.second <= threshold) {
-                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                for (; iter->hasNext(); ++*iter) {
+                    auto t = iter->tail();
+                    if (t <= threshold) {
+                        result->append(make_pair(move(iter->head()), t));
                     }
                 }
                 delete iter;
@@ -123,10 +124,10 @@ namespace v2 {
                 typename Tail::type_t threshold = static_cast<typename Tail::type_t> (th);
                 auto result = new TempBat<Head, Tail>;
                 auto *iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    if (p.second < threshold) {
-                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                for (; iter->hasNext(); ++*iter) {
+                    auto t = iter->tail();
+                    if (t < threshold) {
+                        result->append(make_pair(move(iter->head()), t));
                     }
                 }
                 delete iter;
@@ -139,10 +140,10 @@ namespace v2 {
                 typename Tail::type_t end = static_cast<typename Tail::type_t> (thEnd);
                 auto result = new TempBat<Head, Tail>;
                 auto *iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    if (p.second <= end && p.second >= start) {
-                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                for (; iter->hasNext(); ++*iter) {
+                    auto t = iter->tail();
+                    if (t <= end && t >= start) {
+                        result->append(make_pair(move(iter->head()), t));
                     }
                 }
                 delete iter;
@@ -153,11 +154,11 @@ namespace v2 {
             Bat<Head, Tail>* selection_eq(Bat<Head, Tail>* arg, Val&& val) {
                 typename Tail::type_t value = static_cast<typename Tail::type_t> (val);
                 auto result = new TempBat<Head, Tail>;
-                auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    if (p.second == value) {
-                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                auto *iter = arg->begin();
+                for (; iter->hasNext(); ++*iter) {
+                    auto t = iter->tail();
+                    if (t == value) {
+                        result->append(make_pair(move(iter->head()), t));
                     }
                 }
                 delete iter;
@@ -169,10 +170,10 @@ namespace v2 {
                 typename Tail::type_t threshold = static_cast<typename Tail::type_t> (th);
                 auto result = new TempBat<Head, Tail>();
                 auto *iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    if (p.second > threshold) {
-                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                for (; iter->hasNext(); ++*iter) {
+                    auto t = iter->tail();
+                    if (t > threshold) {
+                        result->append(make_pair(move(iter->head()), t));
                     }
                 }
                 delete iter;
@@ -184,10 +185,10 @@ namespace v2 {
                 typename Tail::type_t threshold = static_cast<typename Tail::type_t> (th);
                 auto result = new TempBat<Head, Tail>();
                 auto *iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    if (p.second >= threshold) {
-                        result->append(make_pair(std::move(p.first), std::move(p.second)));
+                for (; iter->hasNext(); ++*iter) {
+                    auto t = iter->tail();
+                    if (t >= threshold) {
+                        result->append(make_pair(move(iter->head()), t));
                     }
                 }
                 delete iter;
@@ -196,11 +197,10 @@ namespace v2 {
 
             template <typename Head, typename Tail>
             Bat<Tail, Head>* reverse(Bat<Head, Tail> *arg) {
-                auto result = new TempBat<Tail, Head>(arg->size());
+                auto result = new TempBat<Tail, Head>();
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result->append(make_pair(std::move(p.second), std::move(p.first)));
+                for (; iter->hasNext(); ++*iter) {
+                    result->append(make_pair(move(iter->tail()), move(iter->head())));
                 }
                 delete iter;
                 return result;
@@ -210,9 +210,9 @@ namespace v2 {
             Bat<Head, Head>* mirrorHead(Bat<Head, Tail> *arg) {
                 auto result = new TempBat<Head, Head>(arg->size());
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result->append(make_pair(std::move(p.first), std::move(p.first)));
+                for (; iter->hasNext(); ++*iter) {
+                    auto h = iter->head();
+                    result->append(make_pair(move(h), move(h)));
                 }
                 delete iter;
                 return result;
@@ -222,9 +222,9 @@ namespace v2 {
             Bat<Tail, Tail>* mirrorTail(Bat<Head, Tail> *arg) {
                 auto result = new TempBat<Tail, Tail>(arg->size());
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result->append(make_pair(std::move(p.second), std::move(p.second)));
+                for (; iter->hasNext(); ++*iter) {
+                    auto t = iter->tail();
+                    result->append(make_pair(move(t), move(t)));
                 }
                 delete iter;
                 return result;
@@ -235,15 +235,16 @@ namespace v2 {
                 auto result = new TempBat<T1, T4>();
                 auto iter1 = arg1->begin();
                 while (iter1->hasNext()) {
-                    auto p1 = iter1->next();
+                    auto h = iter1->head();
                     auto iter2 = arg2->begin();
                     while (iter2->hasNext()) {
                         pair<T3, T4> p2 = iter2->next();
-                        if (p1.second == p2.first) {
-                            result->append(make_pair(std::move(p1.first), std::move(p2.second)));
+                        if (iter1->tail() == p2.first) {
+                            result->append(make_pair(move(h), move(iter2->tail())));
                         }
                     }
                     delete iter2;
+                    iter1->next();
                 }
                 delete iter1;
                 return result;
@@ -255,22 +256,24 @@ namespace v2 {
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 bool working = true;
-                while (iter1->hasNext() && iter2->hasNext()) {
-                    auto p1 = iter1->next();
-                    auto p2 = iter2->next();
-                    while (p1.second != p2.first && working) {
+                for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
+                    auto t1 = iter1->tail();
+                    auto h2 = iter2->head();
+                    while (t1 != h2 && working) {
                         working = false;
-                        while (p1.second < p2.first && iter1->hasNext()) {
-                            p1 = iter1->next();
+                        while (t1 < h2 && iter1->hasNext()) {
+                            ++*iter1;
+                            t1 = iter1->tail();
                             working = true;
                         }
-                        while (p1.second > p2.first && iter2->hasNext()) {
-                            p2 = iter2->next();
+                        while (t1 > h2 && iter2->hasNext()) {
+                            ++*iter2;
+                            h2 = iter2->head();
                             working = true;
                         }
                     }
-                    if (p1.second == p2.first) {
-                        result->append(make_pair(std::move(p1.first), std::move(p2.second)));
+                    if (t1 == h2) {
+                        result->append(make_pair(move(iter1->head()), move(iter2->tail())));
                     }
                 }
                 delete iter1;
@@ -285,22 +288,22 @@ namespace v2 {
                 auto iter2 = arg2->begin();
                 if (side == join_side_t::left) {
                     unordered_map<typename T2::type_t, vector<typename T1::type_t>* > hashMapLeft;
-                    while (iter1->hasNext()) {
-                        auto p1 = iter1->next();
+                    for (; iter1->hasNext(); ++*iter1) {
+                        auto t1 = iter1->tail();
                         vector<typename T1::type_t> *vec;
-                        if (hashMapLeft.find(p1.second) == hashMapLeft.end()) {
-                            hashMapLeft[p1.second] = (vec = new vector<typename T1::type_t>);
+                        if (hashMapLeft.find(t1) == hashMapLeft.end()) {
+                            hashMapLeft[t1] = (vec = new vector<typename T1::type_t>);
                         } else {
-                            vec = hashMapLeft[p1.second];
+                            vec = hashMapLeft[t1];
                         }
-                        vec->emplace_back(std::move(p1.first));
+                        vec->emplace_back(move(iter1->head()));
                     }
-                    while (iter2->hasNext()) {
-                        auto p2 = iter2->next();
-                        if (hashMapLeft.find(p2.first) != hashMapLeft.end()) {
-                            auto vec = hashMapLeft[p2.first];
+                    for (; iter2->hasNext(); ++iter2) {
+                        if (hashMapLeft.find(iter2->head()) != hashMapLeft.end()) {
+                            auto t2 = iter2->tail();
+                            auto vec = hashMapLeft[iter2->head()];
                             for (size_t i = 0; i < vec->size(); i++) {
-                                result->append(make_pair(std::move((*vec)[i]), std::move(p2.second)));
+                                result->append(make_pair(move((*vec)[i]), move(t2)));
                             }
                         }
                     }
@@ -309,23 +312,23 @@ namespace v2 {
                     }
                 } else {
                     unordered_map<typename T2::type_t, vector<typename T3::type_t>* > hashMapRight;
-                    while (iter2->hasNext()) {
-                        auto p1 = iter2->next();
+                    for (; iter2->hasNext(); ++iter2) {
+                        auto h2 = iter2->head();
                         vector<typename T3::type_t> *vec;
-                        if (hashMapRight.find(p1.first) == hashMapRight.end()) {
-                            hashMapRight[p1.first] = (vec = new vector<typename T3::type_t>);
+                        if (hashMapRight.find(h2) == hashMapRight.end()) {
+                            hashMapRight[h2] = (vec = new vector<typename T3::type_t>);
                         } else {
-                            vec = hashMapRight[p1.first];
+                            vec = hashMapRight[h2];
                         }
-                        vec->emplace_back(std::move(p1.second));
+                        vec->emplace_back(move(iter2->tail()));
                     }
-                    while (iter1->hasNext()) {
-                        auto p2 = iter1->next();
-                        auto iterMap = hashMapRight.find(p2.second);
+                    for (; iter1->hasNext(); ++iter1) {
+                        auto iterMap = hashMapRight.find(iter1->tail());
                         if (iterMap != hashMapRight.end()) {
+                            auto h1 = iter1->head();
                             auto vec = iterMap->second;
                             for (size_t i = 0; i < vec->size(); i++) {
-                                result->append(make_pair(std::move((*vec)[i]), std::move(p2.first)));
+                                result->append(make_pair(move((*vec)[i]), move(h1)));
                             }
                         }
                     }
@@ -346,33 +349,31 @@ namespace v2 {
                 if (iter1->hasNext() && iter2->hasNext()) {
                     if (side == join_side_t::left) {
                         unordered_map<typename T2::type_t, vector<typename T1::type_t> > hashMap;
-                        while (iter1->hasNext()) {
-                            auto pairLeft = iter1->next();
-                            hashMap[pairLeft.second].emplace_back(move(pairLeft.first));
+                        for (; iter1->hasNext(); ++iter1) {
+                            hashMap[iter1->tail()].emplace_back(move(iter1->head()));
                         }
                         auto mapEnd = hashMap.end();
-                        while (iter2->hasNext()) {
-                            auto pairRight = iter2->next();
-                            auto iterMap = hashMap.find(pairRight.first);
+                        for (; iter2->hasNext(); ++iter2) {
+                            auto iterMap = hashMap.find(iter2->head());
                             if (iterMap != mapEnd) {
+                                auto t2 = iter2->tail();
                                 for (auto matched : iterMap->second) {
-                                    result->append(make_pair(matched, pairRight.second));
+                                    result->append(make_pair(move(matched), move(t2)));
                                 }
                             }
                         }
                     } else {
                         unordered_map<typename T2::type_t, vector<typename T3::type_t> > hashMap;
-                        while (iter2->hasNext()) {
-                            auto pairRight = iter2->next();
-                            hashMap[pairRight.first].emplace_back(pairRight.second);
+                        for (; iter2->hasNext(); ++iter2) {
+                            hashMap[iter2->head()].emplace_back(iter2->tail());
                         }
                         auto mapEnd = hashMap.end();
-                        while (iter1->hasNext()) {
-                            auto pairLeft = iter1->next();
-                            auto iterMap = hashMap.find(pairLeft.second);
+                        for (; iter1->hasNext(); ++iter1) {
+                            auto iterMap = hashMap.find(iter1->tail());
                             if (iterMap != mapEnd) {
+                                auto h1 = iter1->head();
                                 for (auto matched : iterMap->second) {
-                                    result->append(make_pair(pairLeft.first, matched));
+                                    result->append(make_pair(move(h1), move(matched)));
                                 }
                             }
                         }
@@ -383,34 +384,33 @@ namespace v2 {
                 return result;
             }
 
-            template<class Tail1, class Tail2>
-            Bat<v2_oid_t, Tail2>* col_fill(Bat<v2_oid_t, Tail1> *arg, Tail2 value) {
-                auto result = new TempBat<v2_oid_t, Tail2>(arg->size());
+            template<class Head, class Tail1, class Tail2>
+            Bat<Head, Tail2>* col_fill(Bat<Head, Tail1> *arg, Tail2 value) {
+                auto result = new TempBat<Head, Tail2>(arg->size());
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result->append(make_pair(std::move(p.first), std::move(value)));
+                for (; iter->hasNext(); ++iter) {
+                    result->append(make_pair(move(iter->head()), move(value)));
                 }
                 delete iter;
                 return result;
             }
 
-            template<class Tail>
-            Bat<v2_oid_t, Tail>* col_aggregate_sum(Bat<v2_oid_t, Tail> *arg, Tail initValue) {
-                auto result = new TempBat<v2_oid_t, Tail>();
-                auto values = new map<v2_oid_t, Tail>();
+            template<class Head, class Tail>
+            Bat<Head, Tail>* col_aggregate_sum(Bat<Head, Tail> *arg, Tail initValue) {
+                auto result = new TempBat<Head, Tail>();
+                auto values = new map<Head, Tail>();
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    if (values->find(p.first) == values->end()) {
-                        (*values)[p.first] = initValue + p.second;
+                for (; iter->hasNext(); ++iter) {
+                    auto h = iter->head();
+                    if (values->find(h) == values->end()) {
+                        (*values)[h] = initValue + iter->tail();
                     } else {
-                        (*values)[p.first] = (*values)[p.first] + p.second;
+                        (*values)[h] = (*values)[h] + iter->tail();
                     }
                 }
                 delete iter;
-                for (auto iter = values->begin(); iter != values->end(); iter++) {
-                    result->append(make_pair(std::move(iter->first), std::move(iter->second)));
+                for (auto v : values) {
+                    result->append(v);
                 }
                 delete values;
                 return result;
@@ -421,15 +421,14 @@ namespace v2 {
              * "valn = sum(val0..valn)"
              * @Author: burkhard
              **/
-            template<class Tail>
-            Bat<v2_oid_t, Tail>* sum_op(Bat<v2_oid_t, Tail> *arg) {
-                auto result = new TempBat<v2_oid_t, Tail>(arg->size());
+            template<class Head, class Tail>
+            Bat<v2_oid_t, Tail>* sum_op(Bat<Head, Tail> *arg) {
+                auto result = new TempBat<Head, Tail>(arg->size());
                 auto iter = arg->begin();
                 oid_t a = 0; //sum of p.first
                 Tail b = (Tail) 0; //sum of p.second
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result->append(make_pair(std::move(a += p.first), std::move(b += p.second)));
+                for (; iter->hasNext(); ++iter) {
+                    result->append(make_pair(move(a += iter->head()), move(b += iter->tail())));
                 }
                 delete iter;
                 return result;
@@ -440,12 +439,12 @@ namespace v2 {
              * @param arg a Bat
              * @return a single sum value
              */
-            template<typename Tail>
-            Tail aggregate_sum(Bat<v2_oid_t, Tail>* arg) {
+            template<typename Head, typename Tail>
+            Tail aggregate_sum(Bat<Head, Tail>* arg) {
                 Tail sum = 0;
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    sum += iter->next().second;
+                for (; iter->hasNext(); ++iter) {
+                    sum += iter->tail();
                 }
                 delete iter;
                 return sum;
@@ -457,13 +456,13 @@ namespace v2 {
              * @param arg2
              * @return A single sum of the pair-wise products of the two Bats
              */
-            template<typename Result, typename Tail1, typename Tail2>
-            Result aggregate_mul_sum(Bat<v2_oid_t, Tail1>* arg1, Bat<v2_oid_t, Tail2>* arg2, Result init = Result(0)) {
+            template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+            Result aggregate_mul_sum(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, Result init = Result(0)) {
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 Result total = init;
-                while (iter1->hasNext() && iter2->hasNext()) {
-                    total += (static_cast<Result> (iter1->next().second) * static_cast<Result> (iter2->next().second));
+                for (; iter1->hasNext() && iter2->hasNext(); ++iter1, ++iter2) {
+                    total += (static_cast<Result> (iter1->tail()) * static_cast<Result> (iter2->tail()));
                 }
                 delete iter2;
                 delete iter1;
@@ -474,18 +473,17 @@ namespace v2 {
              * Exponential smoothing operator
              * @Author: burkhard
              **/
-            template<class Tail>
-            Bat<v2_oid_t, Tail>* exp_sm_op(Bat<v2_oid_t, Tail> *arg, double alpha) {
-                auto result = new TempBat<v2_oid_t, Tail>(arg->size());
+            template<class Head, class Tail>
+            Bat<Head, Tail>* exp_sm_op(Bat<Head, Tail> *arg, double alpha) {
+                auto result = new TempBat<Head, Tail>(arg->size());
                 auto iter = arg->begin();
                 bool first = true; //the first element is added as it i.e. without being influenced by alpha
                 pair<v2_oid_t, Tail> s; //last pair added to result
-                while (iter->hasNext()) {
-                    auto p = iter->next(); //current pair
+                for (; iter->hasNext(); ++iter) {
                     if (!first) {
-                        s = make_pair(std::move(p.first), std::move((Tail) (alpha * p.second + (1 - alpha) * s.second)));
+                        s = make_pair(move(iter->head()), move((Tail) (alpha * iter->tail() + (1 - alpha) * s.second)));
                     } else {
-                        s = p;
+                        s = make_pair(move(iter->head()), move(iter->tail()));
                         first = false;
                     }
                     result->append(s);
@@ -501,25 +499,29 @@ namespace v2 {
              * a point is on the same segment iif the angular difference is less or equal to 'tolerance'
              * @Author: burkhard
              **/
-            template<class Tail>
-            Bat<v2_oid_t, Tail>* find_wp_op(Bat<v2_oid_t, Tail> *arg, double tolerance = 0.5) {
-                auto result = new TempBat<v2_oid_t, Tail>();
+            template<class Head, class Tail>
+            Bat<Head, Tail>* find_wp_op(Bat<Head, Tail> *arg, double tolerance = 0.5) {
+                auto result = new TempBat<Head, Tail>();
                 auto iter = arg->begin();
                 if (!iter->hasNext()) return result; //without elements, no WPs
-                auto lastwp = iter->next();
+                auto lastwp = make_pair(move(iter->head()), move(iter->tail()));
                 result->append(lastwp); //the first point is always a WP
                 std::cout << "WP: " << lastwp.first << "|" << lastwp.second << std::endl;
+                ++iter;
                 if (!iter->hasNext()) return result; //without a second element we cannot find more WPs
-                auto tmp = iter->next();
                 double dir = -100; //direction determined by the last WP and the following point. Less than -10 means dir has to be recalculated
-                while (iter->hasNext()) {//main loop
+                auto tmp = lastwp;
+                for (; iter->hasNext(); ++iter) {//main loop
+                    tmp.first = iter->head();
+                    tmp.second = iter->tail();
                     if (dir < -10) {//WP was added, calculate new dir
-                        tmp = iter->next();
-                        dir = atan2(tmp.second - lastwp.second, tmp.first - lastwp.first);
+                        dir = atan2(iter->tail() - lastwp.second, tmp.first - lastwp.first);
                         std::cout << "dir: " << dir << std::endl;
                     }
                     if (!iter->hasNext()) return result; //no more elements
-                    tmp = iter->next(); //next element
+                    ++iter;
+                    tmp.first = iter->head();
+                    tmp.second = iter->tail();
                     if (fabs(atan2(tmp.second - lastwp.second, tmp.first - lastwp.first) - dir) > tolerance) {//new WP found!
                         lastwp = tmp;
                         result->append(lastwp);
@@ -527,8 +529,8 @@ namespace v2 {
                         dir = -50; //forces calculation of new direction
                     }
                 }
-                delete iter;
                 result->append(tmp); //last element is always a WP
+                delete iter;
                 return result;
             }
 

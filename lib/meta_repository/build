@@ -1,11 +1,6 @@
 #!/bin/bash
 
-if [[ $# -ne 1 ]]; then
-    echo "build script must be called with single parameter <base path of git repository>"
-    exit 1
-fi
-
-BASEDIR="$1"
+BASEDIR="../.."
 LIB=meta_repository
 LIBFILE_R=lib${LIB}.a
 LIBFILE_D=lib${LIB}_dbg.a

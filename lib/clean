@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIRS=(column_operators column_storage meta_repository util)
+DIRS=(column_storage meta_repository util)
 
 for p in "${DIRS[@]}"; do
 	pushd $p

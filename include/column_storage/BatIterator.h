@@ -38,9 +38,13 @@ public:
     virtual ~BatIterator() {
     }
 
-    virtual pair<head_t, tail_t>&& next() = 0;
-    virtual pair<head_t, tail_t>&& get(size_t index) = 0;
+    virtual void next() = 0;
+    virtual BatIterator& operator++() = 0;
+    virtual void position(oid_t index) = 0;
     virtual bool hasNext() = 0;
+
+    virtual head_t&& head() = 0;
+    virtual tail_t&& tail() = 0;
 
     virtual size_t size() = 0;
     virtual size_t consumption() = 0;

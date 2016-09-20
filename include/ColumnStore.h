@@ -157,6 +157,11 @@ struct v2_oid_t : public v2_base_t {
     using v2_base_t::v2_base_t;
 };
 
+struct v2_void_t : public v2_base_t {
+    typedef oid_t type_t;
+    using v2_base_t::v2_base_t;
+};
+
 struct v2_version_t : public v2_base_t {
     typedef version_t type_t;
     using v2_base_t::v2_base_t;
@@ -188,44 +193,44 @@ class TempBat;
 class MetaRepositoryManager;
 
 // Fast-Forward declare Bat, ColumnBat, TempBat types
-typedef Bat<v2_oid_t, v2_tinyint_t> tinyint_bat_t;
-typedef Bat<v2_oid_t, v2_shortint_t> shortint_bat_t;
-typedef Bat<v2_oid_t, v2_int_t> int_bat_t;
-typedef Bat<v2_oid_t, v2_bigint_t> bigint_bat_t;
-typedef Bat<v2_oid_t, v2_char_t> char_bat_t;
-typedef Bat<v2_oid_t, v2_str_t> str_bat_t;
-typedef Bat<v2_oid_t, v2_cstr_t> cstr_bat_t;
-typedef Bat<v2_oid_t, v2_fixed_t> fixed_bat_t;
-typedef Bat<v2_oid_t, v2_oid_t> oid_bat_t;
-typedef Bat<v2_oid_t, v2_id_t> id_bat_t;
-typedef Bat<v2_oid_t, v2_version_t> version_bat_t;
-typedef Bat<v2_oid_t, v2_size_t> size_bat_t;
+typedef Bat<v2_void_t, v2_tinyint_t> tinyint_bat_t;
+typedef Bat<v2_void_t, v2_shortint_t> shortint_bat_t;
+typedef Bat<v2_void_t, v2_int_t> int_bat_t;
+typedef Bat<v2_void_t, v2_bigint_t> bigint_bat_t;
+typedef Bat<v2_void_t, v2_char_t> char_bat_t;
+typedef Bat<v2_void_t, v2_str_t> str_bat_t;
+typedef Bat<v2_void_t, v2_cstr_t> cstr_bat_t;
+typedef Bat<v2_void_t, v2_fixed_t> fixed_bat_t;
+typedef Bat<v2_void_t, v2_oid_t> oid_bat_t;
+typedef Bat<v2_void_t, v2_id_t> id_bat_t;
+typedef Bat<v2_void_t, v2_version_t> version_bat_t;
+typedef Bat<v2_void_t, v2_size_t> size_bat_t;
 
-typedef ColumnBat<v2_oid_t, v2_tinyint_t> tinyint_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_shortint_t> shortint_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_int_t> int_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_bigint_t> bigint_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_char_t> char_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_str_t> str_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_cstr_t> cstr_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_fixed_t> fixed_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_oid_t> oid_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_id_t> id_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_version_t> version_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_size_t> size_colbat_t;
+typedef ColumnBat<v2_void_t, v2_tinyint_t> tinyint_colbat_t;
+typedef ColumnBat<v2_void_t, v2_shortint_t> shortint_colbat_t;
+typedef ColumnBat<v2_void_t, v2_int_t> int_colbat_t;
+typedef ColumnBat<v2_void_t, v2_bigint_t> bigint_colbat_t;
+typedef ColumnBat<v2_void_t, v2_char_t> char_colbat_t;
+typedef ColumnBat<v2_void_t, v2_str_t> str_colbat_t;
+typedef ColumnBat<v2_void_t, v2_cstr_t> cstr_colbat_t;
+typedef ColumnBat<v2_void_t, v2_fixed_t> fixed_colbat_t;
+typedef ColumnBat<v2_void_t, v2_oid_t> oid_colbat_t;
+typedef ColumnBat<v2_void_t, v2_id_t> id_colbat_t;
+typedef ColumnBat<v2_void_t, v2_version_t> version_colbat_t;
+typedef ColumnBat<v2_void_t, v2_size_t> size_colbat_t;
 
-typedef TempBat<v2_oid_t, v2_tinyint_t> tinyint_tmp_t;
-typedef TempBat<v2_oid_t, v2_shortint_t> shortint_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_int_t> int_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_bigint_t> bigint_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_char_t> char_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_str_t> str_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_cstr_t> cstr_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_fixed_t> fixed_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_oid_t> oid_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_id_t> id_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_version_t> version_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_size_t> size_tmpbat_t;
+typedef TempBat<v2_void_t, v2_tinyint_t> tinyint_tmp_t;
+typedef TempBat<v2_void_t, v2_shortint_t> shortint_tmpbat_t;
+typedef TempBat<v2_void_t, v2_int_t> int_tmpbat_t;
+typedef TempBat<v2_void_t, v2_bigint_t> bigint_tmpbat_t;
+typedef TempBat<v2_void_t, v2_char_t> char_tmpbat_t;
+typedef TempBat<v2_void_t, v2_str_t> str_tmpbat_t;
+typedef TempBat<v2_void_t, v2_cstr_t> cstr_tmpbat_t;
+typedef TempBat<v2_void_t, v2_fixed_t> fixed_tmpbat_t;
+typedef TempBat<v2_void_t, v2_oid_t> oid_tmpbat_t;
+typedef TempBat<v2_void_t, v2_id_t> id_tmpbat_t;
+typedef TempBat<v2_void_t, v2_version_t> version_tmpbat_t;
+typedef TempBat<v2_void_t, v2_size_t> size_tmpbat_t;
 
 #endif /* COLUMNSTORE_H */
 

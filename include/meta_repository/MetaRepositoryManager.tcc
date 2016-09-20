@@ -17,7 +17,8 @@
 template<class Head, class Tail>
 pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::getLastValue(Bat<Head, Tail> *bat) {
     auto *iter = bat->begin();
-    auto value = iter->get(bat->size() - 1);
+    iter->position(bat->size() - 1);
+    auto value = make_pair(iter->head(), iter->tail());
     delete iter;
     return value;
 }
@@ -26,8 +27,9 @@ template<class Head, class Tail>
 pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::unique_selection(Bat<Head, Tail> *bat, typename Tail::type_t value) {
     auto iter = bat->begin();
     while (iter->hasNext()) {
-        auto p = iter->next();
-        if (p.second == value) {
+        iter->next();
+        if (iter->tail() == value) {
+            auto p = make_pair(iter->head(), iter->tail());
             delete iter;
             return p;
         }
@@ -38,10 +40,7 @@ pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::unique
 
 template<class Head, class Tail>
 bool MetaRepositoryManager::isBatEmpty(Bat<Head, Tail> *bat) {
-    if (bat->size() == 0) {
-        return true;
-    }
-    return false;
+    return bat->size() == 0;
 }
 
 template<class Head, class Tail>
@@ -49,10 +48,11 @@ id_t MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, cstr_t value) {
     auto iter = bat->begin();
     size_t len = strnlen(value, 256);
     while (iter->hasNext()) {
-        auto p = iter->next();
-        if (strncmp(p.second, value, len) == 0) {
+        iter->next();
+        if (strncmp(iter->tail(), value, len) == 0) {
+            auto id = iter->head();
             delete iter;
-            return p.first;
+            return id;
         }
     }
     delete iter;
@@ -63,10 +63,11 @@ template<class Head, class Tail>
 id_t MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, typename Tail::type_t value) {
     auto iter = bat->begin();
     while (iter->hasNext()) {
-        auto p = iter->next();
-        if (p.second == value) {
+        iter->next();
+        if (iter->tail() == value) {
+            auto id = iter->head();
             delete iter;
-            return p.first;
+            return id;
         }
     }
     delete iter;
@@ -77,10 +78,11 @@ template<class Head, class Tail>
 typename Head::type_t MetaRepositoryManager::selection(Bat<Head, Tail> *bat, typename Tail::type_t value) {
     auto iter = bat->begin();
     while (iter->hasNext()) {
-        auto p = iter->next();
-        if (p.second == value) {
+        iter->next();
+        if (iter->tail() == value) {
+            auto h = iter->head();
             delete iter;
-            return p.first;
+            return h;
         }
     }
     delete iter;
@@ -91,10 +93,11 @@ template<class Head, class Tail>
 id_t MetaRepositoryManager::selectPKId(Bat<Head, Tail> *bat, typename Head::type_t batId) {
     auto iter = bat->begin();
     while (iter->hasNext()) {
-        auto p = iter->next();
-        if (p.first == batId) {
+        iter->next();
+        if (iter->head() == batId) {
+            auto t = iter->tail();
             delete iter;
-            return p.second;
+            return t;
         }
     }
     delete iter;
@@ -105,8 +108,8 @@ template<class Head, class Tail>
 bool MetaRepositoryManager::dataAlreadyExists(Bat<Head, Tail> *bat, cstr_t name_value) {
     auto iter = bat->begin();
     while (iter->hasNext()) {
-        auto p = iter->next();
-        if (strcmp(p.second, name_value) == 0) {
+        iter->next();
+        if (strcmp(iter->tail(), name_value) == 0) {
             delete iter;
             return true;
         }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILES=(test_hashjoin main lineorder_size)
+FILES=(ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded)
 
 for file in "${FILES[@]}"; do
     rm ${file} ${file}_dbg 2>/dev/null

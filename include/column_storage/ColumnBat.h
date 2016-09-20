@@ -69,6 +69,18 @@ public:
     virtual void append(pair<head_t, tail_t>&& p) override {
     }
 
+    virtual Bat<Tail, Head>* reverse() override {
+        return nullptr;
+    }
+
+    virtual Bat<Head, Head>* mirror_head() override {
+        return nullptr;
+    }
+
+    virtual Bat<Tail, Tail>* mirror_tail() override {
+        return nullptr;
+    }
+
     virtual unsigned size() override {
         auto iter = begin();
         unsigned size = iter->size();

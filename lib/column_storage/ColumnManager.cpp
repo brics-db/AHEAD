@@ -79,7 +79,7 @@ size_t ColumnManager::ColumnIterator::consumption() {
     return this->iterator->countBuckets() * CHUNK_CONTENT_SIZE;
 }
 
-ColumnManager::Record* ColumnManager::ColumnIterator::next() {
+ColumnManager::Record&& ColumnManager::ColumnIterator::next() {
     if (this->currentChunk != 0) {
         unsigned int *elementCounter = (unsigned int*) this->currentChunk->content;
 
@@ -88,44 +88,35 @@ ColumnManager::Record* ColumnManager::ColumnIterator::next() {
 
             if (chunk == 0) {
                 // Problem : Ende der Spalte
-
                 this->currentChunk = 0;
-
-                return 0;
+                return move(Record(nullptr));
             } else {
                 this->currentChunk = chunk;
                 this->currentPosition = 0;
-
-                return next();
+                return move(next());
             }
         } else {
-            Record *record = new Record;
-            record->content = (char*) this->currentChunk->content + sizeof (unsigned int) + this->currentPosition * this->column->width;
-
+            Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
             this->currentPosition++;
-
-            return record;
+            return move(rec);
         }
     } else {
         if (this->currentPosition == 0) {
             this->currentChunk = this->iterator->next();
-
             if (this->currentChunk != 0) {
-                return next();
+                return move(next());
             } else {
-                // Problem : Spalte enth�lt keine Elemente
-
-                return 0;
+                // Problem : Spalte enthält keine Elemente
+                return move(Record(nullptr));
             }
         } else {
             // Problem : Ende der Spalte
-
-            return 0;
+            return move(Record(nullptr));
         }
     }
 }
 
-ColumnManager::Record* ColumnManager::ColumnIterator::seek(size_t index) {
+ColumnManager::Record&& ColumnManager::ColumnIterator::seek(oid_t index) {
     const size_t recordsPerBucket = (size_t) ((CHUNK_CONTENT_SIZE - sizeof (size_t)) / this->column->width);
 
     this->currentChunk = this->iterator->seek(index / recordsPerBucket);
@@ -138,19 +129,16 @@ ColumnManager::Record* ColumnManager::ColumnIterator::seek(size_t index) {
         if (this->currentPosition >= *elementCounter) {
             // Problem : Falscher Index
             rewind();
-            return 0;
+            return move(Record(nullptr));
         } else {
-            Record *record = new Record;
-            record->content = (char*) this->currentChunk->content + sizeof (unsigned int) + this->currentPosition * this->column->width;
-
+            Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
             this->currentPosition++;
-
-            return record;
+            return move(rec);
         }
     } else {
         // Problem : Falscher Index
         rewind();
-        return 0;
+        return move(Record(nullptr));
     }
 }
 
@@ -160,23 +148,17 @@ void ColumnManager::ColumnIterator::rewind() {
     this->currentPosition = 0;
 }
 
-ColumnManager::Record* ColumnManager::ColumnIterator::edit() {
+ColumnManager::Record&& ColumnManager::ColumnIterator::edit() {
     if (this->currentChunk != 0) {
         this->currentChunk = this->iterator->edit();
-
-        // TODO unsigned int *elementCounter = (unsigned int*) this->currentChunk->content;
-
-        Record *record = new Record;
-        record->content = (char*) this->currentChunk->content + sizeof (unsigned int) + (this->currentPosition - 1) * this->column->width;
-
-        return record;
+        return move(Record(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + (this->currentPosition - 1) * this->column->width));
     } else {
         // Problem : Anfang/Ende der Spalte
-        return 0;
+        return move(Record(nullptr));
     }
 }
 
-ColumnManager::Record* ColumnManager::ColumnIterator::append() {
+ColumnManager::Record&& ColumnManager::ColumnIterator::append() {
     unsigned int *elementCounter = nullptr;
 
     unsigned numBuckets = this->iterator->countBuckets();
@@ -199,13 +181,10 @@ ColumnManager::Record* ColumnManager::ColumnIterator::append() {
 
     this->currentPosition = *elementCounter;
 
-    Record *record = new Record;
-    record->content = (char*) this->currentChunk->content + sizeof (unsigned int) + this->currentPosition * this->column->width;
-
+    Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
     this->currentPosition++;
     (*elementCounter)++;
-
-    return record;
+    return move(rec);
 }
 
 void ColumnManager::ColumnIterator::undo() {

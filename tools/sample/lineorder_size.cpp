@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-#include "ssbm.hpp"
+#include "../ssbm/ssbm.hpp"
 
 StopWatch sw1;
 const size_t NUM_OPS = 32;

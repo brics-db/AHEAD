@@ -100,18 +100,16 @@ int main(int argc, char ** argv) {
     const size_t max = 10;
     cout << "Customer::custkey (int_t) top " << max << ":\n";
     auto iter = bat0->begin();
-    for (size_t i = 0; iter->hasNext() && i < max; ++i) {
-        auto data = iter->next();
-        cout << data.second << '\n';
+    for (size_t i = 0; iter->hasNext() && i < max; ++i, ++iter) {
+        cout << iter->tail() << '\n';
     }
     cout << endl;
     delete iter;
 
     cout << "Customer::custkey (resint_t) top " << max << ":\n";
     auto iter2 = batA->begin();
-    for (size_t i = 0; iter2->hasNext() && i < max; ++i) {
-        auto data = iter2->next();
-        cout << data.second << '\n';
+    for (size_t i = 0; iter2->hasNext() && i < max; ++i, ++iter2) {
+        cout << iter2->tail() << '\n';
     }
     cout << endl;
     delete iter2;

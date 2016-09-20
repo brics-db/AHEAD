@@ -6,10 +6,10 @@
 *_dbg
 /database
 /nbproject/private
-/tools/sample/main
-/tools/sample/ssbm-q01
-/tools/sample/ssbm-q01_eager
-/tools/sample/ssbm-q01_lazy
-/tools/sample/ssbm-q01_encoded
 /tools/sample/lineorder_size
+/tools/sample/main
 /tools/sample/test_hashjoin
+/tools/ssbm/ssbm-q01
+/tools/ssbm/ssbm-q01_eager
+/tools/ssbm/ssbm-q01_lazy
+/tools/ssbm/ssbm-q01_encoded

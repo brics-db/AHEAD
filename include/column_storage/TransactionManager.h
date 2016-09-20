@@ -37,6 +37,12 @@ public:
     struct BinaryUnit {
         void *head;
         void *tail;
+
+        BinaryUnit() : head(nullptr), tail(nullptr) {
+        }
+
+        BinaryUnit(void *head, void *tail) : head(head), tail(tail) {
+        }
     };
 
     /**
@@ -83,7 +89,7 @@ public:
          *
          * Die Funktion öffnet die Spalte mit der übergebenen Identifikationsnummer. Falls die Spalte bereits geöffnet ist oder keine Spalte zur übergebenen Identifikationsnummer existiert, wird keine Operation ausgeführt.
          */
-        pair<size_t, size_t> open(unsigned int id);
+        pair<size_t, size_t> open(id_t id);
         /**
          * @author Julian Hollender
          *
@@ -91,7 +97,7 @@ public:
          *
          * Die Funktion schließt die Spalte mit der übergebenen Identifikationsnummer. Falls die Spalte nicht geöffnet ist oder keine Spalte zur übergebenen Identifikationsnummer existiert, wird keine Operation ausgeführt.
          */
-        void close(unsigned int id);
+        void close(id_t id);
 
         /**
          * @author Julian Hollender
@@ -101,7 +107,7 @@ public:
          *
          * Die Funktion liefert den nächsten Wert aus der Spalte mit der übergebenen Identifikationsnummer id. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Zu beachten ist, dass der Inhalt, auf den die zweite Komponente zeigt, nicht verändert werden darf. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder das Ende der Spalte erreicht wurde, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit* next(unsigned int id);
+        BinaryUnit&& next(id_t id);
         /**
          * @author Julian Hollender
          *
@@ -111,7 +117,7 @@ public:
          *
          * Die Funktion liefert den Wert aus der Spalte mit der übergebenen Identifikationsnummer id an der Position index. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Zu beachten ist, dass der Inhalt, auf den die zweite Komponente zeigt, nicht verändert werden darf. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder die Position innerhalb der Spalte nicht belegt ist, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit* get(unsigned int id, unsigned int index);
+        BinaryUnit&& get(id_t id, oid_t index);
 
         /**
          * @author Julian Hollender
@@ -121,7 +127,7 @@ public:
          *
          * Die Funktion liefert den Wert aus der Spalte mit der übergebenen Identifikationsnummer id auf dem der zugehörige Iterator gerade steht. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder das Ende der Spalte erreicht wurde, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit* edit(unsigned int id);
+        BinaryUnit&& edit(id_t id);
         /**
          * @author Julian Hollender
          *
@@ -130,7 +136,7 @@ public:
          *
          * Die Funktion hängt einen Wert aus der Spalte mit der übergebenen Identifikationsnummer id an. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Der zur Spalte gehörige Iterator steht nach den Aufruf auf dem neu eingefügten Element. Ein erneutes Aufrufen der Funktion edit() würde also einen BinaryUnit mit gleichem Inhalt liefern. Falls die Spalte nicht geöffnet ist oder keine Spalte zur übergebenen Identifikationsnummer existiert, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit* append(unsigned int id);
+        BinaryUnit&& append(id_t id);
 
     private:
         unsigned int botVersion;
@@ -144,7 +150,7 @@ public:
          */
         //		std::map<unsigned int, std::pair<ColumnManager::ColumnIterator*, unsigned int> > iterators;
         std::vector<ColumnManager::ColumnIterator*> iterators;
-        std::vector<long int> iteratorPositions;
+        std::vector<ssize_t> iteratorPositions;
 
         Transaction(bool isUpdater, unsigned int currentVersion);
         Transaction(const Transaction &copy);

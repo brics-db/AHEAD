@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BASEDIR="../.."
-FILES=(test_hashjoin main lineorder_size)
+FILES=(ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded)
 
 for file in "${FILES[@]}"; do
     echo "${file}: "
