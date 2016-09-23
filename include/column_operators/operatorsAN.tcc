@@ -105,17 +105,17 @@ namespace v2 {
             template<typename Op, typename Head, typename ResTail>
             struct SelectionAN1 {
 
-                pair<Bat<typename Head::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> operator()(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> operator()(Bat<Head, ResTail>* arg, typename ResTail::type_t&& th, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
                     static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                     static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
-                    auto result = make_pair(new TempBat<typename Head::v2_select_t, typename ResTail::v2_select_t > (), new vector<bool>());
+                    auto result = make_pair(new TempBat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename ResTail::v2_select_t > (), new vector<bool>());
                     auto iter = arg->begin();
                     Op op;
                     for (; iter->hasNext(); ++*iter) {
                         auto t = iter->tail();
                         result.second->emplace_back((t * aInv) <= unEncMaxU);
-                        if (op(t, threshold)) {
-                            result.first->append(make_pair(iter->head(), t));
+                        if (op(t, th)) {
+                            result.first->append(make_pair(iter->head() * AHead, t));
                         }
                     }
                     delete iter;
@@ -126,18 +126,18 @@ namespace v2 {
             template<typename Op1, typename Op2, typename Head, typename ResTail>
             struct SelectionAN2 {
 
-                pair<Bat<typename Head::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> operator()(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> operator()(Bat<Head, ResTail>* arg, typename ResTail::type_t&& th1, typename ResTail::type_t&& th2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
                     static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                     static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
-                    auto result = make_pair(new TempBat<typename Head::v2_select_t, typename ResTail::v2_select_t > (), new vector<bool>());
+                    auto result = make_pair(new TempBat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename ResTail::v2_select_t > (), new vector<bool>());
                     auto iter = arg->begin();
                     Op1 op1;
                     Op2 op2;
                     for (; iter->hasNext(); ++*iter) {
                         auto t = iter->tail();
                         result.second->emplace_back((t * aInv) <= unEncMaxU);
-                        if (op1(t, threshold1) && op2(t, threshold2)) {
-                            result.first->append(make_pair(move(iter->head()), move(t)));
+                        if (op1(t, th1) && op2(t, th2)) {
+                            result.first->append(make_pair(iter->head() * AHead, t));
                         }
                     }
                     delete iter;
@@ -146,15 +146,15 @@ namespace v2 {
             };
 
             template<template<typename> class Op, typename Head, typename ResTail>
-            pair<Bat<typename Head::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> selectAN(Bat<Head, ResTail>* arg, typename ResTail::type_t&& th1, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+            pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> selectAN(Bat<Head, ResTail>* arg, typename ResTail::type_t&& th, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 SelectionAN1 < Op<typename ResTail::type_t>, Head, ResTail> impl;
-                return impl(arg, move(th1));
+                return impl(arg, move(th));
             }
 
             template<template<typename> class Op1 = greater_equal, template<typename> class Op2 = less_equal, typename Head, typename ResTail>
-            pair<Bat<typename Head::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> selectAN(Bat<Head, ResTail>* arg, typename ResTail::type_t&& th1, typename ResTail::type_t&& th2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+            pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename ResTail::v2_select_t>*, vector<bool>*> selectAN(Bat<Head, ResTail>* arg, typename ResTail::type_t&& th1, typename ResTail::type_t&& th2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 SelectionAN2 < Op1<typename ResTail::type_t>, Op2<typename ResTail::type_t>, Head, ResTail> impl;
@@ -243,7 +243,7 @@ namespace v2 {
              * @return A single sum of the pair-wise products of the two Bats
              */
             template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-            tuple<Bat<v2_oid_t, Result>*, vector<bool>*, vector<bool>*> aggregate_mul_sumAN(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0), typename T1Enc::type_t AT1 = T1Enc::A, typename T1Enc::type_t AT1inv = T1Enc::A_INV, typename T1Enc::type_t AT1unencMaxU = T1Enc::A_UNENC_MAX_U, typename T2Enc::type_t AT2 = T2Enc::A, typename T2Enc::type_t AT2inv = T2Enc::A_INV, typename T2Enc::type_t AT2unencMaxU = T2Enc::A_UNENC_MAX_U, typename ResEnc::type_t RA = ResEnc::A) {
+            tuple<Bat<v2_resoid_t, Result>*, vector<bool>*, vector<bool>*> aggregate_mul_sumAN(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0), typename T1Enc::type_t AT1 = T1Enc::A, typename T1Enc::type_t AT1inv = T1Enc::A_INV, typename T1Enc::type_t AT1unencMaxU = T1Enc::A_UNENC_MAX_U, typename T2Enc::type_t AT2 = T2Enc::A, typename T2Enc::type_t AT2inv = T2Enc::A_INV, typename T2Enc::type_t AT2unencMaxU = T2Enc::A_UNENC_MAX_U, typename ResEnc::type_t RA = ResEnc::A, typename v2_resoid_t::type_t AOID = v2_resoid_t::A) {
                 typedef typename Result::type_t result_t;
                 const bool isTail1Encoded = is_base_of<v2_anencoded_t, Tail1>::value;
                 const bool isTail2Encoded = is_base_of<v2_anencoded_t, Tail2>::value;
@@ -266,8 +266,8 @@ namespace v2 {
                     total *= RA;
                 delete iter2;
                 delete iter1;
-                auto bat = new TempBat<v2_oid_t, Result>();
-                bat->append(make_pair(0, total));
+                auto bat = new TempBat<v2_resoid_t, Result>();
+                bat->append(make_pair(0 * AOID, total));
                 return make_tuple(bat, vec1, vec2);
             }
         }
