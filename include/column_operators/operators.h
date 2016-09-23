@@ -102,9 +102,9 @@ namespace v2 {
                 return impl(arg, move(th1));
             }
 
-            template<typename Head, typename Tail, typename TH>
-            Bat<typename Head::v2_select_t, typename Tail::v2_select_t>* select_bt(Bat<Head, Tail>* arg, TH&& th1, TH&& th2) {
-                Selection2 < greater_equal<typename Tail::type_t>, less_equal<typename Tail::type_t>, Head, Tail, TH> impl;
+            template<template<typename> class Op1 = greater_equal, template<typename> class Op2 = less_equal, typename Head, typename Tail, typename TH>
+            Bat<typename Head::v2_select_t, typename Tail::v2_select_t>* select(Bat<Head, Tail>* arg, TH&& th1, TH&& th2) {
+                Selection2 < Op1<typename Tail::type_t>, Op2<typename Tail::type_t>, Head, Tail, TH> impl;
                 return impl(arg, move(th1), move(th2));
             }
 
