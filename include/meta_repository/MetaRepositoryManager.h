@@ -170,6 +170,11 @@ public:
             return *this;
         }
 
+        virtual TablesIterator& operator++(int) override {
+            next();
+            return *this;
+        }
+
         virtual void position(oid_t index) override {
             pKeyIter->position(index);
             pNameIter->position(index);
@@ -179,12 +184,12 @@ public:
             return pKeyIter->hasNext();
         }
 
-        virtual id_t&& head() override {
-            return move(pKeyIter->tail());
+        virtual id_t head() override {
+            return pKeyIter->tail();
         }
 
-        virtual cstr_t&& tail() override {
-            return move(pNameIter->tail());
+        virtual cstr_t tail() override {
+            return pNameIter->tail();
         }
 
         virtual size_t size() override {

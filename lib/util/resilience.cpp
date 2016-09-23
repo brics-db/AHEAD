@@ -72,6 +72,7 @@ cstr_t TypeMap<v2_shortint_t>::TYPENAME = "v2_shortint_t";
 cstr_t TypeMap<v2_int_t>::TYPENAME = "v2_int_t";
 cstr_t TypeMap<v2_bigint_t>::TYPENAME = "v2_bigint_t";
 cstr_t TypeMap<v2_oid_t>::TYPENAME = "v2_oid_t";
+cstr_t TypeMap<v2_void_t>::TYPENAME = "v2_void_t";
 cstr_t TypeMap<v2_restiny_t>::TYPENAME = "v2_restiny_t";
 cstr_t TypeMap<v2_resshort_t>::TYPENAME = "v2_resshort_t";
 cstr_t TypeMap<v2_resint_t>::TYPENAME = "v2_resint_t";

@@ -2,12 +2,20 @@
 
 BASEDIR="../.."
 FILES=(ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded)
+COMP="g++"
+COMPFLAGS=-fexceptions
+LDFLAGS=
+CXXLIBS=
+#COMP=clang++
+#COMPFLAGS=`llvm-config --cxxflags` -fcxx-exceptions
+#LDFLAGS=`llvm-config --ldflags`
+#CXXLIBS=`llvm-config --libs`
 
 for file in "${FILES[@]}"; do
     echo "${file}: "
-    clang++ -I${BASEDIR}/lib -I${BASEDIR}/include `llvm-config --cxxflags` -fcxx-exceptions -O3 -DNDEBUG -std=c++14 ${file}.cpp -o ${file} `llvm-config --ldflags` -L${BASEDIR}/lib `llvm-config --libs` -lcolumn_storage -lmeta_repository -lutil -lffi -ldl -lpthread -lcurses -lboost_system -lboost_filesystem || exit 1
+    ${COMP} -I${BASEDIR}/lib -I${BASEDIR}/include ${COMPFLAGS} -g0 -O3 -std=c++14 -DNDEBUG ${file}.cpp -o ${file} ${LDFLAGS} -L${BASEDIR}/lib ${CXXLIBS} -lcolumn_storage -lmeta_repository -lutil -lffi -ldl -lpthread -lcurses -lboost_system -lboost_filesystem || exit 1
     echo "${file}_dbg: "
-    clang++ -I${BASEDIR}/lib -I${BASEDIR}/include `llvm-config --cxxflags` -fcxx-exceptions -g3 -O2 -std=c++14 ${file}.cpp -o ${file}_dbg `llvm-config --ldflags` -L${BASEDIR}/lib `llvm-config --libs` -lcolumn_storage_dbg -lmeta_repository_dbg -lutil_dbg -lffi -ldl -lpthread -lcurses -lboost_system -lboost_filesystem || exit 1
+    ${COMP} -I${BASEDIR}/lib -I${BASEDIR}/include ${COMPFLAGS} -g3 -O2 -std=c++14 ${file}.cpp -o ${file}_dbg  ${LDFLAGS} -L${BASEDIR}/lib ${CXXLIBS} -lcolumn_storage_dbg -lmeta_repository_dbg -lutil_dbg -lffi -ldl -lpthread -lcurses -lboost_system -lboost_filesystem || exit 1
 done
 
 exit 0

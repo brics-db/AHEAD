@@ -41,15 +41,15 @@ public:
     typedef ColumnDescriptor<v2_head_t, vector<head_t>> coldesc_head_t;
     typedef ColumnDescriptor<v2_tail_t, vector<tail_t>> coldesc_tail_t;
 
+    //    friend class TempBat<Head, v2_void_t>;
+    //    friend class TempBat<v2_void_t, Tail>;
+    //    friend class TempBat<v2_void_t, v2_void_t>;
+    //    template<typename H, typename T> friend class ColumnBat;
+
 private:
     coldesc_head_t head;
     coldesc_tail_t tail;
 
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
-    }
-
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
-    }
 public:
 
     /** default constructor */
@@ -60,6 +60,12 @@ public:
     TempBat(size_t n) {
         head.container->reserve(n);
         tail.container->reserve(n);
+    }
+
+    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
+    }
+
+    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
     }
 
     virtual ~TempBat() {
@@ -101,11 +107,6 @@ public:
     virtual size_t consumption() override {
         return size() * (sizeof (head_t) + sizeof (tail_t));
     }
-
-    friend class TempBat<Head, v2_void_t>;
-    friend class TempBat<v2_void_t, Tail>;
-    friend class TempBat<v2_void_t, v2_void_t>;
-    template<typename H, typename T> friend class ColumnBat;
 };
 
 template<>
@@ -118,40 +119,55 @@ public:
     typedef ColumnDescriptor<v2_void_t, void> coldesc_head_t;
     typedef ColumnDescriptor<v2_void_t, void> coldesc_tail_t;
 
+    //    template<typename H, typename T> friend class TempBat;
+    //    template<typename H, typename T> friend class ColumnBat;
+
 private:
     coldesc_head_t head;
     coldesc_tail_t tail;
-
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
-    }
-
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
-    }
+    oid_t count;
 
 public:
 
     /** default constructor */
-    TempBat() {
+    TempBat() : count(0) {
     }
 
     virtual ~TempBat() {
     }
 
+    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail), count(0) {
+    }
+
+    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail), count(0) {
+    }
+
     /** constructor for n elements */
     TempBat(size_t n) {
+        count = n;
     }
 
     /** returns an iterator pointing at the start of the column */
     virtual BatIterator<v2_void_t, v2_void_t> * begin() override {
-        return new TempBatIterator<v2_void_t, v2_void_t>(head, tail);
+        return new TempBatIterator<v2_void_t, v2_void_t>(head, tail, count);
     }
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) override {
+        ++count;
     }
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>&& p) override {
+        ++count;
+    }
+
+    virtual void append(tail_t& t) {
+        ++count;
+    }
+
+    virtual void append(tail_t&& t) {
+        ++count;
     }
 
     virtual Bat<v2_void_t, v2_void_t>* reverse() override {
@@ -173,9 +189,6 @@ public:
     virtual size_t consumption() override {
         return 0;
     }
-
-    template<typename H, typename T> friend class TempBat;
-    template<typename H, typename T> friend class ColumnBat;
 };
 
 template<class Head>
@@ -189,15 +202,12 @@ public:
     typedef ColumnDescriptor<Head, containerhead_t> coldesc_head_t;
     typedef ColumnDescriptor<v2_void_t, void> coldesc_tail_t;
 
+    template<typename H, typename T> friend class TempBat;
+    template<typename H, typename T> friend class ColumnBat;
+
 private:
     coldesc_head_t head;
     coldesc_tail_t tail;
-
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
-    }
-
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
-    }
 
 public:
 
@@ -206,6 +216,12 @@ public:
     }
 
     virtual ~TempBat() {
+    }
+
+    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
+    }
+
+    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
     }
 
     /** constructor for n elements */
@@ -249,9 +265,6 @@ public:
     virtual size_t consumption() override {
         return size() * sizeof (head_t);
     }
-
-    template<typename H, typename T> friend class TempBat;
-    template<typename H, typename T> friend class ColumnBat;
 };
 
 template<class Tail>
@@ -264,15 +277,12 @@ public:
     typedef ColumnDescriptor<v2_void_t, void> coldesc_head_t;
     typedef ColumnDescriptor<Tail, vector<tail_t>> coldesc_tail_t;
 
+    template<typename H, typename T> friend class TempBat;
+    template<typename H, typename T> friend class ColumnBat;
+
 private:
     coldesc_head_t head;
     coldesc_tail_t tail;
-
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
-    }
-
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
-    }
 
 public:
 
@@ -281,6 +291,12 @@ public:
     }
 
     virtual ~TempBat() {
+    }
+
+    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
+    }
+
+    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
     }
 
     /** constructor for n elements */
@@ -295,14 +311,20 @@ public:
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) override {
-        if (tail.container)
-            tail.container->emplace_back(std::move(p.second));
+        tail.container->emplace_back(move(p.second));
     }
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>&& p) override {
-        if (tail.container)
-            tail.container->emplace_back(std::move(p.second));
+        tail.container->emplace_back(move(p.second));
+    }
+
+    virtual void append(tail_t& t) {
+        tail.container->emplace_back(move(t));
+    }
+
+    virtual void append(tail_t&& t) {
+        tail.container->emplace_back(move(t));
     }
 
     virtual Bat<Tail, v2_void_t>* reverse() override {
@@ -324,9 +346,6 @@ public:
     virtual size_t consumption() override {
         return size() * sizeof (Tail);
     }
-
-    template<typename H, typename T> friend class TempBat;
-    template<typename H, typename T> friend class ColumnBat;
 };
 
 #endif

@@ -63,9 +63,8 @@ void printBat(BatIterator<Head, Tail > *iter, const char* message = nullptr, boo
         cout << message << '\n';
     }
     size_t i = 0;
-    while (iter->hasNext()) {
-        auto p = iter->next();
-        cout << i++ << ": " << p.first << " = " << p.second << '\n';
+    for (; iter->hasNext(); ++iter) {
+        cout << i++ << ": " << iter->head() << " = " << iter->tail() << '\n';
     }
     cout << flush;
     if (doDelete) {

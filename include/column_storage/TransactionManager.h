@@ -107,7 +107,7 @@ public:
          *
          * Die Funktion liefert den nächsten Wert aus der Spalte mit der übergebenen Identifikationsnummer id. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Zu beachten ist, dass der Inhalt, auf den die zweite Komponente zeigt, nicht verändert werden darf. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder das Ende der Spalte erreicht wurde, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit&& next(id_t id);
+        BinaryUnit next(id_t id);
         /**
          * @author Julian Hollender
          *
@@ -117,7 +117,7 @@ public:
          *
          * Die Funktion liefert den Wert aus der Spalte mit der übergebenen Identifikationsnummer id an der Position index. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Zu beachten ist, dass der Inhalt, auf den die zweite Komponente zeigt, nicht verändert werden darf. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder die Position innerhalb der Spalte nicht belegt ist, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit&& get(id_t id, oid_t index);
+        BinaryUnit get(id_t id, oid_t index);
 
         /**
          * @author Julian Hollender
@@ -127,7 +127,7 @@ public:
          *
          * Die Funktion liefert den Wert aus der Spalte mit der übergebenen Identifikationsnummer id auf dem der zugehörige Iterator gerade steht. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder das Ende der Spalte erreicht wurde, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit&& edit(id_t id);
+        BinaryUnit edit(id_t id);
         /**
          * @author Julian Hollender
          *
@@ -136,7 +136,7 @@ public:
          *
          * Die Funktion hängt einen Wert aus der Spalte mit der übergebenen Identifikationsnummer id an. Hierbei wird die Position des Werts innerhalb der Spalte in die erste Komponente der BinaryUnit kopiert und die zweite Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Der zur Spalte gehörige Iterator steht nach den Aufruf auf dem neu eingefügten Element. Ein erneutes Aufrufen der Funktion edit() würde also einen BinaryUnit mit gleichem Inhalt liefern. Falls die Spalte nicht geöffnet ist oder keine Spalte zur übergebenen Identifikationsnummer existiert, wird ein NULL-Zeiger zurückgegeben.
          */
-        BinaryUnit&& append(id_t id);
+        BinaryUnit append(id_t id);
 
     private:
         unsigned int botVersion;

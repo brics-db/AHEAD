@@ -79,7 +79,7 @@ size_t ColumnManager::ColumnIterator::consumption() {
     return this->iterator->countBuckets() * CHUNK_CONTENT_SIZE;
 }
 
-ColumnManager::Record&& ColumnManager::ColumnIterator::next() {
+ColumnManager::Record ColumnManager::ColumnIterator::next() {
     if (this->currentChunk != 0) {
         unsigned int *elementCounter = (unsigned int*) this->currentChunk->content;
 
@@ -89,34 +89,34 @@ ColumnManager::Record&& ColumnManager::ColumnIterator::next() {
             if (chunk == 0) {
                 // Problem : Ende der Spalte
                 this->currentChunk = 0;
-                return move(Record(nullptr));
+                return Record(nullptr);
             } else {
                 this->currentChunk = chunk;
                 this->currentPosition = 0;
-                return move(next());
+                return next();
             }
         } else {
             Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
             this->currentPosition++;
-            return move(rec);
+            return rec;
         }
     } else {
         if (this->currentPosition == 0) {
             this->currentChunk = this->iterator->next();
             if (this->currentChunk != 0) {
-                return move(next());
+                return next();
             } else {
                 // Problem : Spalte enthält keine Elemente
-                return move(Record(nullptr));
+                return Record(nullptr);
             }
         } else {
             // Problem : Ende der Spalte
-            return move(Record(nullptr));
+            return Record(nullptr);
         }
     }
 }
 
-ColumnManager::Record&& ColumnManager::ColumnIterator::seek(oid_t index) {
+ColumnManager::Record ColumnManager::ColumnIterator::seek(oid_t index) {
     const size_t recordsPerBucket = (size_t) ((CHUNK_CONTENT_SIZE - sizeof (size_t)) / this->column->width);
 
     this->currentChunk = this->iterator->seek(index / recordsPerBucket);
@@ -129,16 +129,16 @@ ColumnManager::Record&& ColumnManager::ColumnIterator::seek(oid_t index) {
         if (this->currentPosition >= *elementCounter) {
             // Problem : Falscher Index
             rewind();
-            return move(Record(nullptr));
+            return Record(nullptr);
         } else {
             Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
             this->currentPosition++;
-            return move(rec);
+            return rec;
         }
     } else {
         // Problem : Falscher Index
         rewind();
-        return move(Record(nullptr));
+        return Record(nullptr);
     }
 }
 
@@ -148,17 +148,17 @@ void ColumnManager::ColumnIterator::rewind() {
     this->currentPosition = 0;
 }
 
-ColumnManager::Record&& ColumnManager::ColumnIterator::edit() {
+ColumnManager::Record ColumnManager::ColumnIterator::edit() {
     if (this->currentChunk != 0) {
         this->currentChunk = this->iterator->edit();
-        return move(Record(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + (this->currentPosition - 1) * this->column->width));
+        return Record(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + (this->currentPosition - 1) * this->column->width);
     } else {
         // Problem : Anfang/Ende der Spalte
-        return move(Record(nullptr));
+        return Record(nullptr);
     }
 }
 
-ColumnManager::Record&& ColumnManager::ColumnIterator::append() {
+ColumnManager::Record ColumnManager::ColumnIterator::append() {
     unsigned int *elementCounter = nullptr;
 
     unsigned numBuckets = this->iterator->countBuckets();
@@ -184,7 +184,7 @@ ColumnManager::Record&& ColumnManager::ColumnIterator::append() {
     Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
     this->currentPosition++;
     (*elementCounter)++;
-    return move(rec);
+    return rec;
 }
 
 void ColumnManager::ColumnIterator::undo() {

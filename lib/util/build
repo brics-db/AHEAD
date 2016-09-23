@@ -5,13 +5,17 @@ LIB=util
 LIBFILE_R=lib${LIB}.a
 LIBFILE_D=lib${LIB}_dbg.a
 FILES=(stopwatch resilience rss)
+COMP="g++"
+COMPFLAGS=-fexceptions
+#COMP=clang++
+#COMPFLAGS=`llvm-config --cxxflags` -fcxx-exceptions
 CD=`pwd | sed 's#.*/##'`
 
 for f in "${FILES[@]}"; do
     echo "${f}_dbg: "
-    clang++ -I$BASEDIR/lib -I$BASEDIR/include `llvm-config --cxxflags` -g3 -O0 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
+    ${COMP} -I$BASEDIR/lib -I$BASEDIR/include ${COMPFLAGS} -g3 -O0 -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
     echo "${f}: "
-    clang++ -I$BASEDIR/lib -I$BASEDIR/include `llvm-config --cxxflags` -O3 -fcxx-exceptions -std=c++14 -c $f.cpp -o ${f}.o || exit 1
+    ${COMP} -I$BASEDIR/lib -I$BASEDIR/include ${COMPFLAGS} -g0 -O3 -std=c++14 -c $f.cpp -o ${f}.o || exit 1
 done
 
 #Release

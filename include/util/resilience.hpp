@@ -115,20 +115,20 @@ struct v2_resoid_t : public v2_anencoded_t {
 };
 
 // Fast-Forward declare Bat, ColumnBat, TempBat types
-typedef Bat<v2_oid_t, v2_restiny_t> restiny_bat_t;
-typedef Bat<v2_oid_t, v2_resshort_t> resshort_bat_t;
-typedef Bat<v2_oid_t, v2_resint_t> resint_bat_t;
-typedef Bat<v2_oid_t, v2_resoid_t> resoid_bat_t;
+typedef Bat<v2_void_t, v2_restiny_t> restiny_bat_t;
+typedef Bat<v2_void_t, v2_resshort_t> resshort_bat_t;
+typedef Bat<v2_void_t, v2_resint_t> resint_bat_t;
+typedef Bat<v2_void_t, v2_resoid_t> resoid_bat_t;
 
-typedef ColumnBat<v2_oid_t, v2_restiny_t> restiny_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_resshort_t> resshort_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_resint_t> resint_colbat_t;
-typedef ColumnBat<v2_oid_t, v2_resoid_t> resoid_colbat_t;
+typedef ColumnBat<v2_void_t, v2_restiny_t> restiny_colbat_t;
+typedef ColumnBat<v2_void_t, v2_resshort_t> resshort_colbat_t;
+typedef ColumnBat<v2_void_t, v2_resint_t> resint_colbat_t;
+typedef ColumnBat<v2_void_t, v2_resoid_t> resoid_colbat_t;
 
-typedef TempBat<v2_oid_t, v2_restiny_t> restiny_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_resshort_t> resshort_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_resint_t> resint_tmpbat_t;
-typedef TempBat<v2_oid_t, v2_resoid_t> resoid_tmpbat_t;
+typedef TempBat<v2_void_t, v2_restiny_t> restiny_tmpbat_t;
+typedef TempBat<v2_void_t, v2_resshort_t> resshort_tmpbat_t;
+typedef TempBat<v2_void_t, v2_resint_t> resint_tmpbat_t;
+typedef TempBat<v2_void_t, v2_resoid_t> resoid_tmpbat_t;
 
 template<typename Base>
 struct TypeMap;
@@ -168,6 +168,14 @@ struct TypeMap<v2_bigint_t> {
 template<>
 struct TypeMap<v2_oid_t> {
     typedef v2_oid_t v2_base_t;
+    typedef v2_resoid_t v2_encoded_t;
+    typedef v2_oid_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
+struct TypeMap<v2_void_t> {
+    typedef v2_void_t v2_base_t;
     typedef v2_resoid_t v2_encoded_t;
     typedef v2_oid_t v2_actual_t;
     static cstr_t TYPENAME;

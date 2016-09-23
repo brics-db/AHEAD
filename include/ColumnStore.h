@@ -80,7 +80,7 @@ using namespace std;
 #define MKT3(PREFIX, BASE, SUFFIX) CONCAT(PREFIX, CONCAT(BASE, SUFFIX))
 
 enum type_t {
-    type_tinyint = 0, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
+    type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
 };
 
 typedef uint8_t tinyint_t;

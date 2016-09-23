@@ -74,7 +74,7 @@ public:
          *
          * Die Funktion gibt einen Zeiger auf den Inhalt des n�chsten Records innerhalb der Spalte zur�ck. Falls keine weiteren Records vorhanden sein sollten, wird ein NULL-Zeiger zur�ckgegeben. Um die Datenintegrit�t zu erhalten, darf der Inhalt des Records nicht ver�ndert werden.
          */
-        Record&& next();
+        Record next();
         /**
          * @author Julian Hollender
          *
@@ -84,7 +84,7 @@ public:
          *
          * Die Funktion gibt einen Zeiger auf den Record an der �bergebenen Position zur�ck. Hierbei ist zu beachten, dass die Nummerierung der Positionen innerhalb einer Spalte bei 0 beginnt. Falls zur �bergebenen Position kein entsprechender Record gefunden wurde, wird rewind() aufgerufen und ein NULL-Zeiger zur�ckgegeben. Um die Datenintegrit�t zu erhalten, darf der Inhalt des Records nicht ver�ndert werden.
          */
-        Record&& seek(oid_t index);
+        Record seek(oid_t index);
         /**
          * @author Julian Hollender
          *
@@ -99,7 +99,7 @@ public:
          *
          * Die Funktion liefert einen Zeiger auf den Record an der aktuellen Position zur�ck, dessen Inhalt ge�ndert werden darf. Hierbei wird der Zeiger f�r die Version des Records auf die Version des Iterators gesetzt. Ein erneuter Aufruf der Funktion w�hrend der Lebenszeit des Iterator-Objektes an der gleichen Position in der Spalte liefert einen Zeiger auf die gleiche Speicherposition zur�ck.
          */
-        Record&& edit();
+        Record edit();
         /**
          * @author Julian Hollender
          *
@@ -107,7 +107,7 @@ public:
          *
          * Die Funktion liefert einen Zeiger auf einen Record, der an das Ende der Spalte angeh�ngt wurde. Hierbei wird der Zeiger f�r die Version des Records auf die Version des Iterators gesetzt. Nach dem Aufruf steht der Iterator auf dem neu angeh�ngten Record. Ein erneutes Aufrufen der Funktion edit() w�rde also einen Zeiger auf den gleiche Speicherbereich liefern.
          */
-        Record&& append();
+        Record append();
 
         /**
          * @author Julian Hollender

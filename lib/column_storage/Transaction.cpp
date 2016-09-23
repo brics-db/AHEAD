@@ -132,7 +132,9 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
             // Zeile mit Spaltennamen einlesen aus Header-Datei
             memset(line, 0, LEN_LINE);
-            fgets(line, LEN_LINE, headerFile);
+            if (fgets(line, LEN_LINE, headerFile) != line) {
+                throw runtime_error("Error reading line");
+            }
 
             char* pPos;
             if ((pPos = strchr(line, '\n')) != nullptr) {
@@ -183,7 +185,9 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
             // Zeile mit Spaltentypen einlesen aus Header-Datei
             memset(line, 0, LEN_LINE);
-            fgets(line, LEN_LINE, headerFile);
+            if (fgets(line, LEN_LINE, headerFile) != line) {
+                throw runtime_error("Error reading line");
+            }
 
             if ((pPos = strchr(line, '\n')) != nullptr) {
                 *pPos = 0;
@@ -307,7 +311,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                         type = *typesIterator;
                         ci = *iteratorsIterator;
 
-                        ColumnManager::Record record = ci->append();
+                        auto record = ci->append();
                         size_t bufLen;
 
                         switch (type) {
@@ -441,7 +445,7 @@ void TransactionManager::Transaction::close(id_t id) {
     }
 }
 
-TransactionManager::BinaryUnit&& TransactionManager::Transaction::next(id_t id) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::next(id_t id) {
     if (id < this->iterators.size() && this->iterators[id] != nullptr && this->iteratorPositions[id] != -1) {
         const ColumnManager::Record &record = this->iterators[id]->next();
 
@@ -449,18 +453,18 @@ TransactionManager::BinaryUnit&& TransactionManager::Transaction::next(id_t id) 
             TransactionManager::BinaryUnit bun;
             *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
             bun.tail = record.content;
-            return move(bun);
+            return bun;
         } else {
             // Problem : Ende der Spalte
-            return move(TransactionManager::BinaryUnit());
+            return TransactionManager::BinaryUnit();
         }
     } else {
         // Problem : Spalte nicht geoffnet
-        return move(TransactionManager::BinaryUnit());
+        return TransactionManager::BinaryUnit();
     }
 }
 
-TransactionManager::BinaryUnit&& TransactionManager::Transaction::get(id_t id, oid_t index) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::get(id_t id, oid_t index) {
     if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
         const ColumnManager::Record &record = this->iterators[id]->seek(index);
 
@@ -468,19 +472,19 @@ TransactionManager::BinaryUnit&& TransactionManager::Transaction::get(id_t id, o
             TransactionManager::BinaryUnit bun;
             *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
             bun.tail = record.content;
-            return move(bun);
+            return bun;
         } else {
             // Problem : Falscher Index
             this->iteratorPositions[id] = 0;
-            return move(TransactionManager::BinaryUnit());
+            return TransactionManager::BinaryUnit();
         }
     } else {
         // Problem : Spalte nicht geoeffnet
-        return move(TransactionManager::BinaryUnit());
+        return TransactionManager::BinaryUnit();
     }
 }
 
-TransactionManager::BinaryUnit&& TransactionManager::Transaction::edit(id_t id) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::edit(id_t id) {
     if (this->isUpdater) {
         if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->edit();
@@ -489,22 +493,22 @@ TransactionManager::BinaryUnit&& TransactionManager::Transaction::edit(id_t id) 
                 TransactionManager::BinaryUnit bun;
                 *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id] - 1;
                 bun.tail = record.content;
-                return move(bun);
+                return bun;
             } else {
                 // Problem : Ende der Spalte
-                return move(TransactionManager::BinaryUnit());
+                return TransactionManager::BinaryUnit();
             }
         } else {
             // Problem : Spalte nicht geoffnet
-            return move(TransactionManager::BinaryUnit());
+            return TransactionManager::BinaryUnit();
         }
     } else {
         // Problem : Transaktion darf keine ?nderungen vornehmen
-        return move(TransactionManager::BinaryUnit());
+        return TransactionManager::BinaryUnit();
     }
 }
 
-TransactionManager::BinaryUnit&& TransactionManager::Transaction::append(id_t id) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::append(id_t id) {
     if (this->isUpdater) {
         if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->append();
@@ -516,15 +520,15 @@ TransactionManager::BinaryUnit&& TransactionManager::Transaction::append(id_t id
                 return move(bun);
             } else {
                 // Problem : Record konnte nicht an Spalte angehängt werden
-                return move(TransactionManager::BinaryUnit());
+                return TransactionManager::BinaryUnit();
             }
         } else {
             // Problem : Spalte nicht geoffnet
-            return move(TransactionManager::BinaryUnit());
+            return TransactionManager::BinaryUnit();
         }
     } else {
         // Problem : Transaktion darf keine Änderungen vornehmen
-        return move(TransactionManager::BinaryUnit());
+        return TransactionManager::BinaryUnit();
     }
 }
 

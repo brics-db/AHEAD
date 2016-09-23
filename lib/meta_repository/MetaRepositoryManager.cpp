@@ -29,7 +29,7 @@ MetaRepositoryManager::MetaRepositoryManager() {
     this->createDefaultDataTypes();
 
     // test table
-    table_name->append(make_pair(0, "tables"));
+    //    table_name->append(make_pair(0, "tables"));
     pk_table_id->append(make_pair(0, 1));
 }
 
@@ -208,26 +208,15 @@ id_t MetaRepositoryManager::getBatIdOfAttribute(cstr_t nameOfTable, cstr_t attri
 }
 
 void MetaRepositoryManager::createAttribute(char *name, char *datatype, unsigned BATId, unsigned table_id) {
-    int batIdOfDataType = selectBatId(datatype_name, datatype);
-    int dataTypeId = selectPKId(pk_datatype_id, static_cast<unsigned> (batIdOfDataType));
+    id_t batIdOfDataType = selectBatId(datatype_name, datatype);
+    id_t dataTypeId = selectPKId(pk_datatype_id, batIdOfDataType);
+    id_t newAttributeId = getLastValue(pk_attribute_id).second + 1;
 
-    unsigned newAttributeId;
-    unsigned newBatId;
-
-    if (isBatEmpty(pk_attribute_id) == 0) {
-        pair<unsigned, unsigned> value = getLastValue(pk_attribute_id);
-        newAttributeId = value.second + 1;
-        newBatId = value.first + 1;
-    } else {
-        newAttributeId = 1;
-        newBatId = 0;
-    }
-
-    pk_attribute_id->append(make_pair(newBatId, newAttributeId));
-    attribute_name->append(make_pair(newBatId, name));
-    fk_table_id->append(make_pair(newBatId, table_id));
-    fk_type_id->append(make_pair(newBatId, dataTypeId));
-    BAT_number->append(make_pair(newBatId, BATId));
+    pk_attribute_id->append(newAttributeId);
+    attribute_name->append(name);
+    fk_table_id->append(table_id);
+    fk_type_id->append(dataTypeId);
+    BAT_number->append(BATId);
 }
 
 char* MetaRepositoryManager::getDataTypeForAttribute(char *name) {

@@ -50,17 +50,16 @@ namespace v2 {
                 auto result = new TempBat<Head, typename TypeMap<Tail>::v2_encoded_t > (arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
-                    auto next = iter->get(start);
-                    result->append(std::move(make_pair(move(next.first), move(static_cast<tail_t> (next.second) * A))));
+                    if (start)
+                        iter->position(start);
+                    result->append(make_pair(move(iter->head()), move(static_cast<tail_t> (iter->tail()) * A)));
                     if (size) {
-                        for (size_t step = 1; step < size && iter->hasNext(); ++step) {
-                            next = iter->next();
-                            result->append(move(make_pair(move(next.first), move(static_cast<tail_t> (next.second) * A))));
+                        for (size_t step = 1; step < size && iter->hasNext(); ++step, ++*iter) {
+                            result->append(make_pair(move(iter->head()), move(static_cast<tail_t> (iter->tail()) * A)));
                         }
                     } else {
-                        while (iter->hasNext()) {
-                            next = iter->next();
-                            result->append(move(make_pair(move(next.first), move(static_cast<tail_t> (next.second) * A))));
+                        for (; iter->hasNext(); ++*iter) {
+                            result->append(make_pair(move(iter->head()), move(static_cast<tail_t> (iter->tail()) * A)));
                         }
                     }
                 }
@@ -76,14 +75,16 @@ namespace v2 {
                 result->reserve(arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
-                    result->emplace_back(((iter->get(start).second) * aInv) <= unEncMaxU);
+                    if (start)
+                        iter->position(start);
+                    result->emplace_back(((iter->tail()) * aInv) <= unEncMaxU);
                     if (size) {
-                        for (size_t step = 1; step < size && iter->hasNext(); ++step) {
-                            result->emplace_back(move((iter->next().second * aInv) <= unEncMaxU));
+                        for (size_t step = 1; step < size && iter->hasNext(); ++step, ++*iter) {
+                            result->emplace_back((iter->tail() * aInv) <= unEncMaxU);
                         }
                     } else {
-                        while (iter->hasNext()) {
-                            result->emplace_back(move((iter->next().second * aInv) <= unEncMaxU));
+                        for (; iter->hasNext(); ++*iter) {
+                            result->emplace_back((iter->tail() * aInv) <= unEncMaxU);
                         }
                     }
                 }
@@ -100,17 +101,16 @@ namespace v2 {
                 auto result = new TempBat<Head, Tail>(arg->size());
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
-                    auto current = iter->get(start);
-                    result->append(make_pair(move(current.first), move(static_cast<tail_t> (current.second * aInv))));
+                    if (start)
+                        iter->position(start);
+                    result->append(make_pair(move(iter->head()), move(static_cast<tail_t> (iter->tail() * aInv))));
                     if (size) {
-                        for (size_t step = 1; step < size && iter->hasNext(); ++step) {
-                            current = iter->next();
-                            result->append(make_pair(move(current.first), move(static_cast<tail_t> (current.second * aInv))));
+                        for (size_t step = 1; step < size && iter->hasNext(); ++step, ++*iter) {
+                            result->append(make_pair(move(iter->head()), move(static_cast<tail_t> (iter->tail() * aInv))));
                         }
                     } else {
-                        while (iter->hasNext()) {
-                            current = iter->next();
-                            result->append(make_pair(move(current.first), move(static_cast<tail_t> (current.second * aInv))));
+                        for (; iter->hasNext(); ++*iter) {
+                            result->append(make_pair(move(iter->head()), move(static_cast<tail_t> (iter->tail() * aInv))));
                         }
                     }
                 }
@@ -127,22 +127,21 @@ namespace v2 {
                 result.second->reserve(sizeBAT);
                 auto iter = arg->begin();
                 if (iter->hasNext()) {
-                    auto current = iter->get(start);
-                    typename ResTail::type_t dec = current.second * aInv;
-                    result.first->append(move(make_pair(move(current.first), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec)))));
+                    if (start)
+                        iter->position(start);
+                    typename ResTail::type_t dec = iter->tail() * aInv;
+                    result.first->append(make_pair(move(iter->head()), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec))));
                     result.second->emplace_back(move(dec <= aUnencMaxU));
                     if (size) {
-                        for (size_t step = 1; step < size && iter->hasNext(); ++step) {
-                            current = iter->next();
-                            dec = current.second * aInv;
-                            result.first->append(move(make_pair(move(current.first), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec)))));
+                        for (size_t step = 1; step < size && iter->hasNext(); ++step, ++*iter) {
+                            dec = iter->tail() * aInv;
+                            result.first->append(make_pair(move(iter->head()), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec))));
                             result.second->emplace_back(move(dec <= aUnencMaxU));
                         }
                     } else {
-                        while (iter->hasNext()) {
-                            current = iter->next();
-                            dec = current.second * aInv;
-                            result.first->append(move(make_pair(move(current.first), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec)))));
+                        for (; iter->hasNext(); ++*iter) {
+                            dec = iter->tail() * aInv;
+                            result.first->append(make_pair(move(iter->head()), move(static_cast<typename ResTail::unenc_v2_t::type_t> (dec))));
                             result.second->emplace_back(move(dec <= aUnencMaxU));
                         }
                     }
@@ -152,63 +151,121 @@ namespace v2 {
             }
 
             template<typename Head, typename ResTail, typename Op>
-            pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
-                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
-                auto result = make_pair(new TempBat<Head, ResTail>(), new vector<bool>());
-                auto iter = arg->begin();
-                Op op;
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result.second->emplace_back((p.second * aInv) <= unEncMaxU);
-                    if (op(p.second, threshold)) {
-                        result.first->append(move(make_pair(move(p.first), move(p.second))));
+            struct selection_AN_priv {
+
+                pair<Bat<Head, ResTail>*, vector<bool>*> operator()(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                    static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                    static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                    auto result = make_pair(new TempBat<Head, ResTail>(), new vector<bool>());
+                    auto iter = arg->begin();
+                    Op op;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        result.second->emplace_back((t * aInv) <= unEncMaxU);
+                        if (op(t, threshold)) {
+                            result.first->append(move(make_pair(move(iter->head()), move(t))));
+                        }
                     }
+                    delete iter;
+                    return result;
                 }
-                delete iter;
-                return result;
-            }
+            };
+
+            template<typename ResTail, typename Op>
+            struct selection_AN_priv<v2_void_t, ResTail, Op> {
+                typedef v2_void_t HeadSrc;
+                typedef v2_oid_t HeadTrg;
+
+                pair<Bat<HeadTrg, ResTail>*, vector<bool>*> operator()(Bat<HeadSrc, ResTail>* arg, typename ResTail::type_t threshold, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                    static_assert(is_base_of<v2_base_t, HeadSrc>::value, "Head must be a base type");
+                    static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                    auto result = make_pair(new TempBat<HeadTrg, ResTail>(), new vector<bool>());
+                    auto iter = arg->begin();
+                    Op op;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        result.second->emplace_back((t * aInv) <= unEncMaxU);
+                        if (op(t, threshold)) {
+                            result.first->append(move(make_pair(move(iter->head()), move(t))));
+                        }
+                    }
+                    delete iter;
+                    return result;
+                }
+            };
 
             template<typename Head, typename ResTail, typename Op1, typename Op2>
-            pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
-                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
-                auto result = make_pair(new TempBat<Head, ResTail>(), new vector<bool>());
-                auto iter = arg->begin();
-                Op1 op1;
-                Op2 op2;
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result.second->emplace_back((p.second * aInv) <= unEncMaxU);
-                    if (op1(p.second, threshold1) && op2(p.second, threshold2)) {
-                        result.first->append(move(make_pair(move(p.first), move(p.second))));
+            struct selection_AN_priv2 {
+
+                pair<Bat<Head, ResTail>*, vector<bool>*> operator()(Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                    static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                    static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                    auto result = make_pair(new TempBat<Head, ResTail>(), new vector<bool>());
+                    auto iter = arg->begin();
+                    Op1 op1;
+                    Op2 op2;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        result.second->emplace_back((t * aInv) <= unEncMaxU);
+                        if (op1(t, threshold1) && op2(t, threshold2)) {
+                            result.first->append(make_pair(move(iter->head()), move(t)));
+                        }
                     }
+                    delete iter;
+                    return result;
                 }
-                delete iter;
-                return result;
-            }
+            };
+
+            template<typename ResTail, typename Op1, typename Op2>
+            struct selection_AN_priv2<v2_void_t, ResTail, Op1, Op2> {
+                typedef v2_void_t HeadSrc;
+                typedef v2_oid_t HeadTrg;
+
+                pair<Bat<HeadTrg, ResTail>*, vector<bool>*> operator()(Bat<HeadSrc, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                    static_assert(is_base_of<v2_base_t, HeadSrc>::value, "Head must be a base type");
+                    static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                    auto result = make_pair(new TempBat<HeadTrg, ResTail>(), new vector<bool>());
+                    auto iter = arg->begin();
+                    Op1 op1;
+                    Op2 op2;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        result.second->emplace_back((t * aInv) <= unEncMaxU);
+                        if (op1(t, threshold1) && op2(t, threshold2)) {
+                            result.first->append(make_pair(move(iter->head()), move(t)));
+                        }
+                    }
+                    delete iter;
+                    return result;
+                }
+            };
 
             template<typename Head, typename ResTail>
-            pair<Bat<Head, ResTail>*, vector<bool>*> selection_AN(selection_type_t selType, Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2 = typename ResTail::type_t(0), typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+            pair<Bat<v2_oid_t, ResTail>*, vector<bool>*> selection_AN(selection_type_t selType, Bat<Head, ResTail>* arg, typename ResTail::type_t threshold1, typename ResTail::type_t threshold2 = typename ResTail::type_t(0), typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
-                switch (selType) {
-                    case selection_type_t::LT:
-                        return selection_AN<Head, ResTail, std::less<typename ResTail::type_t >> (arg, threshold1);
-                    case selection_type_t::LE:
-                        return selection_AN<Head, ResTail, std::less_equal<typename ResTail::type_t >> (arg, threshold1);
-                    case selection_type_t::EQ:
-                        return selection_AN<Head, ResTail, std::equal_to<typename ResTail::type_t >> (arg, threshold1);
-                    case selection_type_t::GE:
-                        return selection_AN<Head, ResTail, std::equal_to<typename ResTail::type_t >> (arg, threshold1);
-                    case selection_type_t::GT:
-                        return selection_AN<Head, ResTail, std::equal_to<typename ResTail::type_t >> (arg, threshold1);
-                    case selection_type_t::BT:
-                        return selection_AN<Head, ResTail, std::greater_equal<typename ResTail::type_t >, std::less_equal<typename ResTail::type_t >> (arg, threshold1, threshold2);
-                    default:
-                        stringstream ss;
-                        ss << "Unknown selection type \"" << selType << '"';
-                        throw runtime_error(ss.str());
+                if (selType == selection_type_t::LT) {
+                    selection_AN_priv<Head, ResTail, std::less<typename ResTail::type_t >> impl;
+                    return impl(arg, threshold1);
+                } else if (selType == selection_type_t::LE) {
+                    selection_AN_priv<Head, ResTail, std::less_equal<typename ResTail::type_t >> impl;
+                    return impl(arg, threshold1);
+                } else if (selType == selection_type_t::EQ) {
+                    selection_AN_priv<Head, ResTail, std::equal_to<typename ResTail::type_t >> impl;
+                    return impl(arg, threshold1);
+                } else if (selType == selection_type_t::GE) {
+                    selection_AN_priv<Head, ResTail, std::equal_to<typename ResTail::type_t >> impl;
+                    return impl(arg, threshold1);
+                } else if (selType == selection_type_t::GT) {
+                    selection_AN_priv<Head, ResTail, std::equal_to<typename ResTail::type_t >> impl;
+                    return impl(arg, threshold1);
+                } else if (selType == selection_type_t::BT) {
+                    selection_AN_priv2 <Head, ResTail, std::greater_equal<typename ResTail::type_t >, std::less_equal<typename ResTail::type_t >> impl;
+                    return impl(arg, threshold1, threshold2);
+                } else {
+                    stringstream ss;
+                    ss << "Unknown selection type \"" << selType << '"';
+                    throw runtime_error(ss.str());
                 }
             }
 
@@ -224,10 +281,10 @@ namespace v2 {
                     auto result = make_pair(new TempBat<Head, Head>(sizeBAT), new vector<bool>());
                     result.second->reserve(sizeBAT);
                     auto iter = arg->begin();
-                    while (iter->hasNext()) {
-                        auto p = iter->next();
-                        result.second->emplace_back((p.first * aInv) < aUnencMaxU);
-                        result.first->append(make_pair(p.first, p.first));
+                    for (; iter->hasNext(); ++*iter) {
+                        auto h = iter->head();
+                        result.second->emplace_back((h * aInv) < aUnencMaxU);
+                        result.first->append(make_pair(h, h));
                     }
                     delete iter;
                     return result;
@@ -243,9 +300,9 @@ namespace v2 {
                     size_t sizeBAT = arg->size();
                     auto bat = new TempBat<Head, ResHead>(sizeBAT);
                     auto iter = arg->begin();
-                    while (iter->hasNext()) {
-                        auto p = iter->next();
-                        bat->append(make_pair(p.first, static_cast<typename ResHead::type_t> (p.first) * A));
+                    for (; iter->hasNext(); ++*iter) {
+                        auto h = iter->head();
+                        bat->append(make_pair(h, static_cast<typename ResHead::type_t> (h) * A));
                     }
                     delete iter;
                     return make_pair(bat, nullptr);
@@ -262,9 +319,8 @@ namespace v2 {
             Bat<ResHead, ResTail>* reverse_AN(Bat<typename ResHead::unenc_v2_t, typename ResHead::unenc_v2_t>* arg, typename ResHead::type_t Ahead, typename ResTail::type_t Atail) {
                 auto result = new TempBat<ResHead, ResTail>(arg->size());
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
-                    result->append(move(make_pair(move(static_cast<typename ResTail::type_t> (p.second) * Atail), move(static_cast<typename ResHead::type_t> (p.first) * Ahead))));
+                for (; iter->hasNext(); ++*iter) {
+                    result->append(make_pair(move(static_cast<typename ResTail::type_t> (iter->tail()) * Atail), move(static_cast<typename ResHead::type_t> (iter->head()) * Ahead)));
                 }
                 delete iter;
                 return result;
@@ -293,15 +349,16 @@ namespace v2 {
                 if (isHeadEncoded) vecH->reserve(sizeBAT);
                 if (isTailEncoded) vecT->reserve(sizeBAT);
                 auto iter = arg->begin();
-                while (iter->hasNext()) {
-                    auto p = iter->next();
+                for (; iter->hasNext(); ++*iter) {
+                    auto h = iter->head();
+                    auto t = iter->tail();
                     if (isHeadEncoded) {
-                        vecH->emplace_back((p.first * AHInv) <= AHUnencMaxU);
+                        vecH->emplace_back((h * AHInv) <= AHUnencMaxU);
                     }
                     if (isTailEncoded) {
-                        vecT->emplace_back((p.second * ATInv) <= ATUnencMaxU);
+                        vecT->emplace_back((t * ATInv) <= ATUnencMaxU);
                     }
-                    bat->append(make_pair((isTailEncoded ? p.second : (static_cast<typename Hout::type_t> (p.second) * AT)), (isHeadEncoded ? p.first : (static_cast<typename Tout::type_t> (p.first) * AH))));
+                    bat->append(make_pair((isTailEncoded ? t : (static_cast<typename Hout::type_t> (t) * AT)), (isHeadEncoded ? h : (static_cast<typename Tout::type_t> (h) * AH))));
                 }
                 delete iter;
                 return make_tuple(bat, vecH, vecT);
@@ -320,52 +377,58 @@ namespace v2 {
                 vector<bool> *vec4 = (isTail2Encoded ? new vector<bool>() : nullptr);
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
-                if (iter1->hasNext() & iter2->hasNext()) { // only really continue when both BATs are not empty
-                    if (arg1->size() < arg2->size()) { // let's ignore the joinSide for now and use that sizes as a measure, which is of course oversimplified
+                if (iter1->hasNext() & iter2->hasNext()) {
+                    // only really continue when both BATs are not empty
+                    if (arg1->size() < arg2->size()) {
+                        // let's ignore the joinSide for now and use that sizes as a measure, which is of course oversimplified
                         unordered_map<typename Tail1::type_t, vector<typename Head1::type_t> > hashMap;
-                        while (iter1->hasNext()) { // build
-                            auto pairLeft = iter1->next();
+                        for (; iter1->hasNext(); ++*iter1) { // build
+                            auto h = iter1->head();
+                            auto t = iter1->tail();
                             if (isHead1Encoded)
-                                vec1->emplace_back((pairLeft.first * AH1inv) <= AH1UnencMaxU);
+                                vec1->emplace_back((h * AH1inv) <= AH1UnencMaxU);
                             if (isTail1Encoded)
-                                vec2->emplace_back((pairLeft.second * AT1inv) <= AT1UnencMaxU);
-                            hashMap[pairLeft.second].emplace_back(pairLeft.first);
+                                vec2->emplace_back((t * AT1inv) <= AT1UnencMaxU);
+                            hashMap[t].emplace_back(h);
                         }
                         auto mapEnd = hashMap.end();
-                        while (iter2->hasNext()) { // probe
-                            auto pairRight = iter2->next();
+                        for (; iter2->hasNext(); ++*iter2) { // probe
+                            auto h = iter2->head();
+                            auto t = iter2->tail();
                             if (isHead2Encoded)
-                                vec3->emplace_back((pairRight.first * AH2inv) <= AH2UnencMaxU);
+                                vec3->emplace_back((h * AH2inv) <= AH2UnencMaxU);
                             if (isTail2Encoded)
-                                vec4->emplace_back((pairRight.second * AT2inv) <= AT2UnencMaxU);
-                            auto mapIter = hashMap.find(static_cast<typename Tail1::type_t> (isTail1Encoded ? (isHead2Encoded ? pairRight.first : (static_cast<typename Tail1::type_t> (pairRight.first) * AT1)) : (isHead2Encoded ? (pairRight.first * AH2inv) : pairRight.first)));
+                                vec4->emplace_back((t * AT2inv) <= AT2UnencMaxU);
+                            auto mapIter = hashMap.find(static_cast<typename Tail1::type_t> (isTail1Encoded ? (isHead2Encoded ? h : (static_cast<typename Tail1::type_t> (h) * AT1)) : (isHead2Encoded ? (h * AH2inv) : h)));
                             if (mapIter != mapEnd) {
                                 for (auto matched : mapIter->second) {
-                                    bat->append(make_pair(matched, pairRight.second));
+                                    bat->append(make_pair(matched, t));
                                 }
                             }
                         }
                     } else {
                         unordered_map<typename Head2::type_t, vector<typename Tail2::type_t> > hashMap;
-                        while (iter2->hasNext()) { // build
-                            auto pairRight = iter2->next();
+                        for (; iter2->hasNext(); ++*iter2) { // build
+                            auto h = iter2->head();
+                            auto t = iter2->tail();
                             if (isHead2Encoded)
-                                vec3->emplace_back((pairRight.first * AH2inv) <= AH2UnencMaxU);
+                                vec3->emplace_back((h * AH2inv) <= AH2UnencMaxU);
                             if (isTail2Encoded)
-                                vec4->emplace_back((pairRight.second * AT2inv) <= AT2UnencMaxU);
-                            hashMap[pairRight.first].emplace_back(pairRight.second);
+                                vec4->emplace_back((t * AT2inv) <= AT2UnencMaxU);
+                            hashMap[h].emplace_back(t);
                         }
                         auto mapEnd = hashMap.end();
-                        while (iter1->hasNext()) { // probe
-                            auto pairLeft = iter1->next();
+                        for (; iter1->hasNext(); ++*iter1) { // probe
+                            auto h = iter1->head();
+                            auto t = iter1->tail();
                             if (isHead1Encoded)
-                                vec1->emplace_back((pairLeft.first * AH1inv) <= AH1UnencMaxU);
+                                vec1->emplace_back((h * AH1inv) <= AH1UnencMaxU);
                             if (isTail1Encoded)
-                                vec2->emplace_back((pairLeft.second * AT1inv) <= AT1UnencMaxU);
-                            auto mapIter = hashMap.find(static_cast<typename Head2::type_t> (isHead2Encoded ? (isTail1Encoded ? pairLeft.second : (static_cast<typename Head2::type_t> (pairLeft.second) * AH2)) : (isTail1Encoded ? (pairLeft.second * AT1inv) : pairLeft.second)));
+                                vec2->emplace_back((t * AT1inv) <= AT1UnencMaxU);
+                            auto mapIter = hashMap.find(static_cast<typename Head2::type_t> (isHead2Encoded ? (isTail1Encoded ? t : (static_cast<typename Head2::type_t> (t) * AH2)) : (isTail1Encoded ? (t * AT1inv) : t)));
                             if (mapIter != mapEnd) {
                                 for (auto matched : mapIter->second) {
-                                    bat->append(make_pair(pairLeft.first, matched));
+                                    bat->append(make_pair(h, matched));
                                 }
                             }
                         }
@@ -393,11 +456,9 @@ namespace v2 {
                 vector<bool>* vec2 = (isTail2Encoded ? new vector<bool>() : nullptr);
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
-                while (iter1->hasNext() && iter2->hasNext()) {
-                    auto p1 = iter1->next();
-                    auto p2 = iter2->next();
-                    typename T1Enc::type_t x1 = p1.second * (isTail1Encoded ? AT1inv : 1);
-                    typename T2Enc::type_t x2 = p2.second * (isTail2Encoded ? AT2inv : 1);
+                for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
+                    typename T1Enc::type_t x1 = iter1->tail() * (isTail1Encoded ? AT1inv : 1);
+                    typename T2Enc::type_t x2 = iter2->tail() * (isTail2Encoded ? AT2inv : 1);
                     if (isTail1Encoded)
                         vec1->emplace_back(x1 <= AT1unencMaxU);
                     if (isTail2Encoded)

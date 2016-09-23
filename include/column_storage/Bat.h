@@ -119,5 +119,47 @@ public:
     }
 };
 
+template<typename Tail>
+class Bat<v2_void_t, Tail> {
+public:
+    typedef v2_void_t Head;
+    typedef Head v2_head_t;
+    typedef Tail v2_tail_t;
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
+
+    virtual ~Bat() {
+    }
+
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<Head, Tail>* begin() = 0;
+
+    /** append an item */
+    virtual void append(pair<head_t, tail_t>& p) = 0;
+    virtual void append(pair<head_t, tail_t>&& p) = 0;
+    virtual void append(tail_t& t) = 0;
+    virtual void append(tail_t&& t) = 0;
+
+    virtual Bat<Tail, Head>* reverse() = 0;
+
+    virtual Bat<Head, Head>* mirror_head() = 0;
+
+    virtual Bat<Tail, Tail>* mirror_tail() = 0;
+
+    /** size of column, obtained through the iterator */
+    virtual unsigned size() = 0;
+
+    /** Compute the actual memory consumption of the BAT */
+    virtual size_t consumption() = 0;
+
+    virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
+        return boost::typeindex::type_id<v2_head_t>();
+    }
+
+    virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
+        return boost::typeindex::type_id<v2_tail_t>();
+    }
+};
+
 #endif
 

@@ -70,6 +70,11 @@ public:
         return *this;
     }
 
+    virtual TempBatIterator& operator++(int) override {
+        next();
+        return *this;
+    }
+
     virtual void position(oid_t index) override {
         iterHead = cHead->begin();
         iterTail = cTail->begin();
@@ -81,12 +86,12 @@ public:
         return iterHead != cHead->end();
     }
 
-    virtual head_t&& head() override {
-        return move(*iterHead);
+    virtual head_t head() override {
+        return *iterHead;
     }
 
-    virtual tail_t&& tail() override {
-        return move(*iterTail);
+    virtual tail_t tail() override {
+        return *iterTail;
     }
 
     virtual size_t size() override {
@@ -109,10 +114,12 @@ private:
     oid_t position_head;
     oid_t seqbase_tail;
     oid_t position_tail;
+    oid_t count;
+    oid_t pos;
 
 public:
 
-    TempBatIterator(coldesc_t& head, coldesc_t& tail) : seqbase_head(head.seqbase), position_head(seqbase_head), seqbase_tail(tail.seqbase), position_tail(seqbase_tail) {
+    TempBatIterator(coldesc_t& head, coldesc_t& tail, oid_t count) : seqbase_head(head.seqbase), position_head(seqbase_head), seqbase_tail(tail.seqbase), position_tail(seqbase_tail), count(count), pos(0) {
     }
 
     virtual ~TempBatIterator() {
@@ -121,9 +128,15 @@ public:
     virtual void next() override {
         ++position_head;
         ++position_tail;
+        ++pos;
     }
 
     virtual TempBatIterator& operator++() override {
+        next();
+        return *this;
+    }
+
+    virtual TempBatIterator& operator++(int) override {
         next();
         return *this;
     }
@@ -134,15 +147,15 @@ public:
     }
 
     virtual bool hasNext() override {
-        return true;
+        return pos < count;
     }
 
-    virtual head_t&& head() override {
-        return move(position_head);
+    virtual head_t head() override {
+        return position_head;
     }
 
-    virtual tail_t&& tail() override {
-        return move(position_tail);
+    virtual tail_t tail() override {
+        return position_tail;
     }
 
     virtual size_t size() override {
@@ -187,6 +200,11 @@ public:
         return *this;
     }
 
+    virtual TempBatIterator& operator++(int) override {
+        next();
+        return *this;
+    }
+
     virtual void position(oid_t index) override {
         iterHead = cHead->begin();
         advance(iterHead, index);
@@ -197,12 +215,12 @@ public:
         return iterHead != cHead->end();
     }
 
-    virtual head_t&& head() override {
-        return move(*iterHead);
+    virtual head_t head() override {
+        return *iterHead;
     }
 
-    virtual tail_t&& tail() override {
-        return move(position_tail);
+    virtual tail_t tail() override {
+        return position_tail;
     }
 
     virtual size_t size() override {
@@ -247,6 +265,11 @@ public:
         return *this;
     }
 
+    virtual TempBatIterator& operator++(int) override {
+        next();
+        return *this;
+    }
+
     virtual void position(oid_t index) override {
         iterTail = cTail->begin();
         advance(iterTail, index);
@@ -257,12 +280,12 @@ public:
         return iterTail != cTail->end();
     }
 
-    virtual head_t&& head() override {
-        return move(position_head);
+    virtual head_t head() override {
+        return position_head;
     }
 
-    virtual tail_t&& tail() override {
-        return move(*iterTail);
+    virtual tail_t tail() override {
+        return *iterTail;
     }
 
     virtual size_t size() override {

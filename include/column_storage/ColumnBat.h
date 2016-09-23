@@ -96,4 +96,70 @@ public:
     }
 };
 
+template<typename Tail>
+class ColumnBat<v2_void_t, Tail> : public Bat<v2_void_t, Tail> {
+    typedef v2_void_t Head;
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
+
+    id_t mColumnId;
+
+public:
+
+    ColumnBat(id_t columnId) : mColumnId(columnId) {
+    }
+
+    ColumnBat(const char *table_name, const char *attribute) {
+        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
+        mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
+    }
+
+    virtual ~ColumnBat() {
+    }
+
+    /** returns an iterator pointing at the start of the column */
+    virtual BatIterator<Head, Tail> * begin() override {
+        return new ColumnBatIterator<Head, Tail>(mColumnId);
+    }
+
+    /** append an item */
+    virtual void append(pair<head_t, tail_t>& p) override {
+    }
+
+    virtual void append(pair<head_t, tail_t>&& p) override {
+    }
+
+    virtual void append(tail_t& t) override {
+    }
+
+    virtual void append(tail_t&& t) override {
+    }
+
+    virtual Bat<Tail, Head>* reverse() override {
+        return nullptr;
+    }
+
+    virtual Bat<Head, Head>* mirror_head() override {
+        return nullptr;
+    }
+
+    virtual Bat<Tail, Tail>* mirror_tail() override {
+        return nullptr;
+    }
+
+    virtual unsigned size() override {
+        auto iter = begin();
+        unsigned size = iter->size();
+        delete iter;
+        return size;
+    }
+
+    virtual size_t consumption() override {
+        auto iter = begin();
+        unsigned size = iter->consumption();
+        delete iter;
+        return size;
+    }
+};
+
 #endif

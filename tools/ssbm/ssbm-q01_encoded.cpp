@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
         delete get<1>(tupleF);
         delete get<2>(tupleF);
         auto iter = get<0>(tupleF)->begin();
-        auto result = get<1>(iter->next());
+        auto result = iter->tail();
         delete iter;
         delete get<0>(tupleF);
 

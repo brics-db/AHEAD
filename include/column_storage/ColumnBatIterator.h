@@ -84,17 +84,22 @@ public:
         return *this;
     }
 
+    virtual ColumnBatIteratorBase<Head, Tail>& operator++(int) override {
+        next();
+        return *this;
+    }
+
     /** @return true if a next item is available - otherwise false */
     virtual bool hasNext() override {
         return (buNext.tail != nullptr);
     }
 
-    virtual head_t&& head() override {
-        return move(*static_cast<head_t*> (bu.head));
+    virtual oid_t head() override {
+        return oid_t(this->mPosition);
     }
 
-    virtual tail_t&& tail() override {
-        return move(*static_cast<tail_t*> (bu.tail));
+    virtual tail_t tail() override {
+        return *static_cast<tail_t*> (bu.tail);
     }
 
     virtual size_t size() override {
@@ -115,32 +120,6 @@ public:
     }
 };
 
-template<typename Head>
-class ColumnBatIterator<Head, v2_void_t> : public ColumnBatIteratorBase<Head, v2_void_t> {
-public:
-    using ColumnBatIteratorBase<Head, v2_void_t>::ColumnBatIteratorBase;
-
-    virtual ~ColumnBatIterator() {
-    }
-
-    virtual oid_t&& tail() override {
-        return move(static_cast<oid_t> (this->mPosition));
-    }
-};
-
-template<typename Tail>
-class ColumnBatIterator<v2_void_t, Tail> : public ColumnBatIteratorBase<v2_void_t, Tail> {
-public:
-    using ColumnBatIteratorBase<v2_void_t, Tail>::ColumnBatIteratorBase;
-
-    virtual ~ColumnBatIterator() {
-    }
-
-    virtual oid_t&& head() override {
-        return move(static_cast<oid_t> (this->mPosition));
-    }
-};
-
 template<>
 class ColumnBatIterator<v2_void_t, v2_cstr_t> : public ColumnBatIteratorBase<v2_void_t, v2_cstr_t> {
 public:
@@ -149,29 +128,8 @@ public:
     virtual ~ColumnBatIterator() {
     }
 
-    virtual oid_t&& head() override {
-        return move(static_cast<oid_t> (this->mPosition));
-    }
-
-    virtual cstr_t&& tail() override {
-        return move(static_cast<cstr_t> (this->bu.tail));
-    }
-};
-
-template<>
-class ColumnBatIterator<v2_cstr_t, v2_void_t> : public ColumnBatIteratorBase<v2_cstr_t, v2_void_t> {
-public:
-    using ColumnBatIteratorBase<v2_cstr_t, v2_void_t>::ColumnBatIteratorBase;
-
-    virtual ~ColumnBatIterator() {
-    }
-
-    virtual cstr_t&& head() override {
-        return move(static_cast<cstr_t> (this->bu.tail));
-    }
-
-    virtual oid_t&& tail() override {
-        return move(static_cast<oid_t> (this->mPosition));
+    virtual cstr_t tail() override {
+        return cstr_t(this->bu.tail);
     }
 };
 
