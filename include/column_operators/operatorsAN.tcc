@@ -43,6 +43,33 @@ namespace v2 {
         namespace ops {
 
             template<typename Head, typename Tail>
+            class ANBaseOps {
+                typedef typename Head::type_t head_t;
+                typedef typename Tail::type_t tail_t;
+
+                virtual ~ANBaseOps() {
+                }
+            };
+
+            template<typename Head, typename Tail>
+            class ANOps : public ANBaseOps<Head, Tail> {
+                typedef typename Head::type_t head_t;
+                typedef typename Tail::type_t tail_t;
+
+                virtual ~ANOps() {
+                }
+
+                static pair<Bat<Head, Tail>*, vector<bool>> copy(Bat<Head, Tail>* arg) {
+                    return nullptr;
+                }
+            };
+
+            template<typename Head, typename Tail>
+            ANOps<Head, Tail> getANOps(Bat<Head, Tail>* arg) {
+                return ANOps<Head, Tail>();
+            }
+
+            template<typename Head, typename Tail>
             Bat<Head, typename TypeMap<Tail>::v2_encoded_t>* encode_AN(Bat<Head, Tail>* arg, typename TypeMap<Tail>::v2_encoded_t::type_t A = TypeMap<Tail>::v2_encoded_t::A, size_t start = 0, size_t size = 0) {
                 typedef typename TypeMap<Tail>::v2_encoded_t::type_t tail_t;
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");

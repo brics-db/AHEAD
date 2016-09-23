@@ -78,14 +78,14 @@ public:
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) override {
-        head.container->emplace_back(std::move(p.first));
-        tail.container->emplace_back(std::move(p.second));
+        head.container->emplace_back(move(p.first));
+        tail.container->emplace_back(move(p.second));
     }
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>&& p) override {
-        head.container->emplace_back(std::move(p.first));
-        tail.container->emplace_back(std::move(p.second));
+        head.container->emplace_back(move(p.first));
+        tail.container->emplace_back(move(p.second));
     }
 
     virtual Bat<Tail, Head>* reverse() override {
@@ -162,11 +162,11 @@ public:
         ++count;
     }
 
-    virtual void append(tail_t& t) {
+    virtual void append(tail_t& t) override {
         ++count;
     }
 
-    virtual void append(tail_t&& t) {
+    virtual void append(tail_t&& t) override {
         ++count;
     }
 
@@ -183,7 +183,7 @@ public:
     }
 
     virtual unsigned size() override {
-        return 0;
+        return count;
     }
 
     virtual size_t consumption() override {
@@ -244,6 +244,14 @@ public:
     virtual void append(pair<head_t, tail_t>&& p) override {
         if (head.container)
             head.container->emplace_back(std::move(p.first));
+    }
+
+    virtual void append(head_t& h) {
+        head.container->emplace_back(move(h));
+    }
+
+    virtual void append(head_t&& h) {
+        head.container->emplace_back(move(h));
     }
 
     virtual Bat<v2_void_t, Head>* reverse() override {

@@ -24,7 +24,7 @@ pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::getLas
         delete iter;
         return make_pair(h, t);
     } else {
-        return make_pair(0, 0);
+        return make_pair(-1, -1);
     }
 }
 

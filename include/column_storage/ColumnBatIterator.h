@@ -46,16 +46,17 @@ public:
     /** default constructor */
     ColumnBatIteratorBase(id_t columnId) : bu(), mColumnId(columnId), mPosition(-1) {
         TransactionManager* tm = TransactionManager::getInstance();
-        if (tm == NULL) {
+        if (tm == nullptr) {
             cerr << "TA manager is not available!" << endl;
             abort();
         }
         ta = tm->beginTransaction(false);
-        tie(Csize, Cconsumption) = ta->open(columnId);
-        if (ta == NULL) {
+        if (ta == nullptr) {
             cout << "Column is not available!" << endl;
         }
+        tie(Csize, Cconsumption) = ta->open(columnId);
         buNext = ta->next(mColumnId);
+        next(); // init to first 
     }
 
     virtual ~ColumnBatIteratorBase() {
@@ -91,7 +92,7 @@ public:
 
     /** @return true if a next item is available - otherwise false */
     virtual bool hasNext() override {
-        return (buNext.tail != nullptr);
+        return mPosition < Csize;
     }
 
     virtual oid_t head() override {

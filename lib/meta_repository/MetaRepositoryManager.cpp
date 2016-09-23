@@ -30,7 +30,7 @@ MetaRepositoryManager::MetaRepositoryManager() {
 
     // test table
     //    table_name->append(make_pair(0, "tables"));
-    pk_table_id->append(make_pair(0, 1));
+    // pk_table_id->append(make_pair(0, 1));
 }
 
 MetaRepositoryManager::~MetaRepositoryManager() {
@@ -189,17 +189,19 @@ id_t MetaRepositoryManager::getBatIdOfAttribute(cstr_t nameOfTable, cstr_t attri
     int tableId = this->selectPKId(pk_table_id, static_cast<unsigned> (batIdForTableName));
 
     if (tableId != -1) {
-        auto batForTableId = v2::bat::ops::selection_eq(fk_table_id, (unsigned) tableId);
+        // auto batForTableId = v2::bat::ops::select_eq(fk_table_id, (id_t) tableId);
+        auto batForTableId = v2::bat::ops::select<equal_to>(fk_table_id, (id_t) tableId);
 
         // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
         // reverse will not work here, because we need the bat id, not the table id
-        auto mirrorTableIdBat = v2::bat::ops::mirrorHead(batForTableId);
+        // auto mirrorTableIdBat = v2::bat::ops::mirrorHead(batForTableId);
+        auto mirrorTableIdBat = batForTableId->mirror_head();
         delete batForTableId;
-        auto attributesForTable = v2::bat::ops::col_selectjoin(mirrorTableIdBat, attribute_name);
+        auto attributesForTable = v2::bat::ops::hashjoin(mirrorTableIdBat, attribute_name);
         delete mirrorTableIdBat;
         int batId = this->selectBatId(attributesForTable, attribute);
         delete attributesForTable;
-        auto reverseBat = v2::bat::ops::reverse(BAT_number);
+        auto reverseBat = BAT_number->reverse();
         batNrPair = this->unique_selection(reverseBat, (unsigned) batId);
         delete reverseBat;
     }

@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     auto cbDateDatekey = new int_colbat_t("date", "datekey");
     auto cbLineorderOrderdate = new int_colbat_t("lineorder", "orderdate");
 
-    auto tbDateDatekey = v2::bat::ops::reverse(cbDateDatekey);
+    auto tbDateDatekey = cbDateDatekey->reverse();
     auto tbLineorderOrderdate = v2::bat::ops::copy(cbLineorderOrderdate);
 
     cout << tbDateDatekey->size() << '\t' << tbLineorderOrderdate->size() << endl;
@@ -48,13 +48,13 @@ int main(int argc, char** argv) {
     const size_t NUM_RUNS = 10;
     StopWatch::rep totalTime = 0;
 
-    cout << "Measuring " << NUM_RUNS << " runs. Times are in [ns]. Joining Lineorder.orderdate with Date.datekey:" << endl;
+    cout << "<DEPRECATED> !!! Measuring " << NUM_RUNS << " runs. Times are in [ns]. Joining Lineorder.orderdate with Date.datekey:" << endl;
 
     totalTime = 0;
-    cout << "col_hashjoin_old:" << endl;
+    cout << "col_hashjoin_old (only new implementation available any longer!):" << endl;
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::col_hashjoin_old(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
+        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
         totalTime += sw1.stop();
         cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
         delete result;
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     cout << "col_hashjoin_new:" << endl;
     for (size_t i = 0; i < NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::col_hashjoin(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
+        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
         totalTime += sw1.stop();
         cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
         delete result;

@@ -25,6 +25,7 @@
 #ifndef BAT_H
 #define BAT_H
 
+#include <atomic>
 #include <utility>
 
 #include <boost/type_index.hpp>
@@ -36,6 +37,8 @@ using namespace std;
 
 template<typename Type, typename Container>
 class ColumnDescriptor {
+    atomic<ssize_t> *refcount;
+
 public:
     typedef Type v2_type_t;
     typedef Container container_t;
@@ -43,20 +46,25 @@ public:
 
     Container *container;
 
-    ColumnDescriptor() : container(new Container) {
+    ColumnDescriptor() : refcount(new atomic<ssize_t>), container(new Container) {
+        *refcount = 1;
     }
 
-    ColumnDescriptor(Container* heap) : container(heap) {
+    ColumnDescriptor(Container* heap) : refcount(new atomic<ssize_t>), container(heap) {
+        *refcount = 1;
     }
 
-    ColumnDescriptor(ColumnDescriptor& cd) : container(cd.container) {
+    ColumnDescriptor(ColumnDescriptor& cd) : refcount(cd.refcount), container(cd.container) {
+        ++*refcount;
     }
 
-    ColumnDescriptor(ColumnDescriptor&& cd) : container(cd.container) {
+    ColumnDescriptor(ColumnDescriptor&& cd) : refcount(cd.refcount), container(cd.container) {
+        ++*refcount;
     }
 
     virtual ~ColumnDescriptor() {
-        if (container) {
+        --*refcount;
+        if ((*refcount <= 0) && container) {
             delete container;
         }
     }
@@ -137,8 +145,8 @@ public:
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) = 0;
     virtual void append(pair<head_t, tail_t>&& p) = 0;
-    virtual void append(tail_t& t) = 0;
-    virtual void append(tail_t&& t) = 0;
+    virtual void append(tail_t & t) = 0;
+    virtual void append(tail_t && t) = 0;
 
     virtual Bat<Tail, Head>* reverse() = 0;
 

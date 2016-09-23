@@ -80,7 +80,7 @@ int main(int argc, char ** argv) {
     // Test Query
     auto batCustKey = new int_colbat_t("customer", "custkey");
     sw.start();
-    auto bat0 = v2::bat::ops::selection_lt(batCustKey, static_cast<int_t> (12345));
+    auto bat0 = v2::bat::ops::select<less>(batCustKey, static_cast<int_t> (12345));
     sw.stop();
     cout << "[customer] Selection over " << numCust << " tuples took " << sw << " ns" << endl;
 
@@ -105,6 +105,7 @@ int main(int argc, char ** argv) {
     }
     cout << endl;
     delete iter;
+    delete bat0;
 
     cout << "Customer::custkey (resint_t) top " << max << ":\n";
     auto iter2 = batA->begin();

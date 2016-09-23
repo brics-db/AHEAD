@@ -52,6 +52,8 @@ struct v2_anencoded_t {
 struct v2_restiny_t : public v2_anencoded_t {
     typedef restiny_t type_t;
     typedef v2_tinyint_t unenc_v2_t;
+    typedef v2_restiny_t v2_copy_t;
+    typedef v2_restiny_t v2_select_t;
 
     static const restiny_t A;
     static const restiny_t A_INV;
@@ -65,6 +67,8 @@ struct v2_restiny_t : public v2_anencoded_t {
 struct v2_resshort_t : public v2_anencoded_t {
     typedef resshort_t type_t;
     typedef v2_shortint_t unenc_v2_t;
+    typedef v2_resshort_t v2_copy_t;
+    typedef v2_resshort_t v2_select_t;
 
     static const resshort_t A;
     static const resshort_t A_INV;
@@ -78,6 +82,8 @@ struct v2_resshort_t : public v2_anencoded_t {
 struct v2_resint_t : public v2_anencoded_t {
     typedef resint_t type_t;
     typedef v2_int_t unenc_v2_t;
+    typedef v2_resint_t v2_copy_t;
+    typedef v2_resint_t v2_select_t;
 
     static const resint_t A;
     static const resint_t A_INV;
@@ -91,6 +97,8 @@ struct v2_resint_t : public v2_anencoded_t {
 struct v2_resbigint_t : public v2_anencoded_t {
     typedef resbigint_t type_t;
     typedef v2_bigint_t unenc_v2_t;
+    typedef v2_resbigint_t v2_copy_t;
+    typedef v2_resbigint_t v2_select_t;
 
     static const resbigint_t A;
     static const resbigint_t A_INV;
@@ -104,6 +112,8 @@ struct v2_resbigint_t : public v2_anencoded_t {
 struct v2_resoid_t : public v2_anencoded_t {
     typedef resoid_t type_t;
     typedef v2_oid_t unenc_v2_t;
+    typedef v2_resoid_t v2_copy_t;
+    typedef v2_resoid_t v2_select_t;
 
     static const resoid_t A;
     static const resoid_t A_INV;
