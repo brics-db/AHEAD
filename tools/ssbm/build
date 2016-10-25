@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BASEDIR="../.."
-FILES=(ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded)
+FILES=(ssbm-q11 ssbm-q11_eager ssbm-q11_lazy ssbm-q11_encoded)
 COMP="g++"
 COMPFLAGS=-fexceptions
 LDFLAGS=
