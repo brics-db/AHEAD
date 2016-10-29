@@ -1,14 +1,14 @@
 /* 
- * File:   ssbm-q11_lazy.cpp
+ * File:   ssbm-q12_lazy.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 1. August 2016, 12:20
+ * Created on 30. October 2016, 00:03
  */
 
 #include "ssbm.hpp"
 
 int main(int argc, char** argv) {
-    cout << "ssbm-q11_lazy\n=============" << endl;
+    cout << "ssbm-q12_lazy\n=============" << endl;
 
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
     if (boost::filesystem::is_regular(p)) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
-    cout << "\nSSBM Q1.1:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
+    cout << "\nSSBM Q1.2:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_yearmonthnum = 199401\n    and lo_discount between 4 and 6\n    and lo_quantity  between 26 and 35;" << endl;
 
     const size_t NUM_RUNS = 10;
     StopWatch::rep totalTimes[NUM_RUNS] = {0};
@@ -40,13 +40,11 @@ int main(int argc, char** argv) {
     bool hasTwoTypes[NUM_OPS] = {false};
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
-
-    const size_t LEN_TYPES = 16;
     string emptyString;
     size_t x = 0;
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(sw1, x, batDYcb, new resint_colbat_t("dateAN", "yearmonthnum"));
     MEASURE_OP(sw1, x, batDDcb, new resint_colbat_t("dateAN", "datekey"));
     MEASURE_OP(sw1, x, batLQcb, new restiny_colbat_t("lineorderAN", "quantity"));
     MEASURE_OP(sw1, x, batLDcb, new restiny_colbat_t("lineorderAN", "discount"));
@@ -76,29 +74,29 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<less>(batLQenc, 25 * v2_restiny_t::A)); // lo_quantity < 25
-        PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity < 25"));
-        MEASURE_OP(sw2, x, bat2, (v2::bat::ops::select<greater_equal, less_equal>(batLDenc, 1 * v2_restiny_t::A, 3 * v2_restiny_t::A))); // lo_discount between 1 and 3
-        PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 1 and 3"));
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select(batLQenc, static_cast<restiny_t> (26 * v2_restiny_t::A), static_cast<restiny_t> (35 * v2_restiny_t::A))); // lo_quantity between 26 and 35
+        PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity between 26 and 35"));
+        MEASURE_OP(sw2, x, bat2, (v2::bat::ops::select(batLDenc, static_cast<restiny_t> (4 * v2_restiny_t::A), static_cast<restiny_t> (6 * v2_restiny_t::A)))); // lo_discount between 4 and 6
+        PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 4 and 6"));
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // join selection
         delete bat3;
         delete bat2;
         MEASURE_OP(sw2, x, bat5, bat4->mirror_head()); // prepare joined selection with lo_orderdate (contains positions in tail)
-        PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity < 25 and lo_discount between 1 and 3"));
+        PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity between 26 and 35 and lo_discount between 4 and 6"));
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::hashjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
-        PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity < 25 and lo_discount between 1 and 3"));
+        PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity between 26 and 35 and lo_discount between 4 and 6"));
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, 1993 * v2_resshort_t::A)); // d_year = 1993
-        PRINT_BAT(sw1, printBat(bat7->begin(), "d_year = 1993"));
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, static_cast<resint_t> (199401) * v2_resint_t::A)); // d_yearmonthnum = 199401
+        PRINT_BAT(sw1, printBat(bat7->begin(), "d_yearmonthnum = 199401"));
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
         delete bat7;
         MEASURE_OP(sw2, x, bat9, v2::bat::ops::hashjoin(bat8, batDDenc)); // only those d_datekey where d_year...
         delete bat8;
-        PRINT_BAT(sw1, printBat(bat9->begin(), "d_datekey where d_year = 1993"));
+        PRINT_BAT(sw1, printBat(bat9->begin(), "d_datekey where d_yearmonthnum = 199401"));
 
         // 3) join lineorder and date
         MEASURE_OP(sw2, x, batA, bat9->reverse());
@@ -111,11 +109,11 @@ int main(int argc, char** argv) {
         delete batB;
         // BatF only contains the 
         MEASURE_OP(sw2, x, batD, v2::bat::ops::hashjoin(batC, batLEenc));
-        PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
+        PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_yearmonthnum = 199401 and lo_discount between 4 and 6 and lo_quantity between 26 and 35"));
         MEASURE_OP(sw2, x, batE, v2::bat::ops::hashjoin(batC, bat4));
         delete batC;
         delete bat4;
-        PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
+        PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_yearmonthnum = 199401 and lo_discount between 4 and 6 and lo_quantity between 26 and 35"));
 
         // 4) lazy decode
         MEASURE_OP_PAIR(sw2, x, batFpair, (v2::bat::ops::checkAndDecode_AN(batD)));

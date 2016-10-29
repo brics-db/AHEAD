@@ -1,14 +1,14 @@
 /* 
- * File:   ssbm-q11.cpp
+ * File:   ssbm-q12.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 1. August 2016, 12:20
+ * Created on 30. October 2016, 00:00
  */
 
 #include "ssbm.hpp"
 
 int main(int argc, char** argv) {
-    cout << "ssbm-q11\n========" << endl;
+    cout << "ssbm-q12\n========" << endl;
 
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
     if (boost::filesystem::is_regular(p)) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
-    cout << "\nSSBM Q1.1:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
+    cout << "\nSSBM Q1.2:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_yearmonthnum = 199401\n    and lo_discount between 4 and 6\n    and lo_quantity  between 26 and 35;" << endl;
 
     const size_t NUM_RUNS = 10;
     StopWatch::rep totalTimes[NUM_RUNS] = {0};
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     size_t x = 0;
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new shortint_colbat_t("date", "year"));
+    MEASURE_OP(sw1, x, batDYcb, new int_colbat_t("date", "yearmonthnum"));
     MEASURE_OP(sw1, x, batDDcb, new int_colbat_t("date", "datekey"));
     MEASURE_OP(sw1, x, batLQcb, new tinyint_colbat_t("lineorder", "quantity"));
     MEASURE_OP(sw1, x, batLDcb, new tinyint_colbat_t("lineorder", "discount"));
@@ -74,8 +74,8 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<less>(batLQ, static_cast<tinyint_t> (25))); // lo_quantity < 25
-        MEASURE_OP(sw2, x, bat2, (v2::bat::ops::select<greater_equal, less_equal>(batLD, 1, 3))); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select(batLQ, 26, 35)); // lo_quantity between 26 and 35
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLD, 4, 6)); // lo_discount between 4 and 6
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // join selection
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
         delete bat5;
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDY, static_cast<shortint_t> (1993))); // d_year = 1993
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDY, 199401)); // d_yearmonthnum = 199401
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
         delete bat7;
         MEASURE_OP(sw2, x, bat9, v2::bat::ops::hashjoin(bat8, batDD)); // only those d_datekey where d_year...

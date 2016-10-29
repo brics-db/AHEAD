@@ -1,14 +1,14 @@
 /* 
- * File:   ssbm-q11_encoded.cpp
+ * File:   ssbm-q12_encoded.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 1. August 2016, 12:20
+ * Created on 30. October 2016, 00:02
  */
 
 #include "ssbm.hpp"
 
 int main(int argc, char** argv) {
-    cout << "ssbm-q11_encoded\n================" << endl;
+    cout << "ssbm-q12_encoded\n================" << endl;
 
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
     if (boost::filesystem::is_regular(p)) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
-    cout << "\nSSBM Q1.1:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_year = 1993\n    and lo_discount between 1 and 3\n    and lo_quantity  < 25;" << endl;
+    cout << "\nSSBM Q1.2:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_yearmonthnum = 199401\n    and lo_discount between 4 and 6\n    and lo_quantity  between 26 and 35;" << endl;
 
     const size_t NUM_RUNS = 10;
     StopWatch::rep totalTimes[NUM_RUNS] = {0};
@@ -40,13 +40,11 @@ int main(int argc, char** argv) {
     bool hasTwoTypes[NUM_OPS] = {false};
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
-
-    const size_t LEN_TYPES = 16;
     string emptyString;
     size_t x = 0;
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(sw1, x, batDYcb, new resint_colbat_t("dateAN", "yearmonthnum"));
     MEASURE_OP(sw1, x, batDDcb, new resint_colbat_t("dateAN", "datekey"));
     MEASURE_OP(sw1, x, batLQcb, new restiny_colbat_t("lineorderAN", "quantity"));
     MEASURE_OP(sw1, x, batLDcb, new restiny_colbat_t("lineorderAN", "discount"));
@@ -76,9 +74,9 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, (v2::bat::ops::selectAN<less>(batLQenc, static_cast<restiny_t> (25 * v2_restiny_t::A)))); // lo_quantity < 25
+        MEASURE_OP_PAIR(sw2, x, pair1, (v2::bat::ops::selectAN(batLQenc, static_cast<restiny_t> (26) * v2_restiny_t::A, static_cast<restiny_t> (35) * v2_restiny_t::A))); // lo_quantity between 26 and 35
         delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair2, (v2::bat::ops::selectAN(batLDenc, static_cast<restiny_t> (1 * v2_restiny_t::A), static_cast<restiny_t> (3 * v2_restiny_t::A)))); // lo_discount between 1 and 3
+        MEASURE_OP_PAIR(sw2, x, pair2, (v2::bat::ops::selectAN(batLDenc, static_cast<restiny_t> (4) * v2_restiny_t::A, static_cast<restiny_t> (6) * v2_restiny_t::A))); // lo_discount between 4 and 6
         delete pair2.second;
         MEASURE_OP(sw2, x, bat3, pair1.first->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
@@ -98,7 +96,7 @@ int main(int argc, char** argv) {
         if (get<4>(tuple6)) delete get<4>(tuple6);
 
         // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(sw2, x, pair7, (v2::bat::ops::selectAN<equal_to>(batDYenc, 1993 * v2_resshort_t::A))); // d_year = 1993
+        MEASURE_OP_PAIR(sw2, x, pair7, (v2::bat::ops::selectAN<equal_to>(batDYenc, static_cast<resint_t> (199401) * v2_resint_t::A))); // d_yearmonthnum = 199401
         if (pair7.second) delete pair7.second;
         MEASURE_OP(sw2, x, bat8, (pair7.first->mirror_head())); // prepare joined selection over d_year and d_datekey
         delete pair7.first;

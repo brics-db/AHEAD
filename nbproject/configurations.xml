@@ -25,12 +25,6 @@
         <in>main.cpp</in>
         <in>test_hashjoin.cpp</in>
       </df>
-      <df name="ssbm">
-        <in>ssbm-q01.cpp</in>
-        <in>ssbm-q01_eager.cpp</in>
-        <in>ssbm-q01_encoded.cpp</in>
-        <in>ssbm-q01_lazy.cpp</in>
-      </df>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -147,22 +141,6 @@
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="tools/ssbm/ssbm-q01.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tools/ssbm/ssbm-q01_eager.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tools/ssbm/ssbm-q01_encoded.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tools/ssbm/ssbm-q01_lazy.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
     </conf>
     <conf name="Debug" type="0">
       <toolsSet>
@@ -261,22 +239,6 @@
         </ccTool>
       </item>
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tools/ssbm/ssbm-q01.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tools/ssbm/ssbm-q01_eager.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tools/ssbm/ssbm-q01_encoded.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-        </ccTool>
-      </item>
-      <item path="tools/ssbm/ssbm-q01_lazy.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
         </ccTool>
       </item>

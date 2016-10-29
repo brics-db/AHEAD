@@ -3,7 +3,7 @@
 # define variable "DEBUG=1" to enable debug builds
 
 BASEDIR="../.."
-FILES=(ssbm-q11 ssbm-q11_eager ssbm-q11_lazy ssbm-q11_encoded)
+FILES=(ssbm-q11 ssbm-q11_eager ssbm-q11_lazy ssbm-q11_encoded ssbm-q12 ssbm-q12_eager ssbm-q12_lazy ssbm-q12_encoded)
 COMP="g++"
 COMPFLAGS=-fexceptions
 LDFLAGS=

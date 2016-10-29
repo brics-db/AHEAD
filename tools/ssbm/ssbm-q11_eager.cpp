@@ -1,5 +1,5 @@
 /* 
- * File:   ssbm-q01.cpp
+ * File:   ssbm-q11_eager.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 1. August 2016, 12:20
@@ -8,7 +8,7 @@
 #include "ssbm.hpp"
 
 int main(int argc, char** argv) {
-    cout << "ssbm-q01_eager\n==============" << endl;
+    cout << "ssbm-q11_eager\n==============" << endl;
 
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
     if (boost::filesystem::is_regular(p)) {
