@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# define variable "DEBUG=1" to enable debug builds
+
 BASEDIR="../.."
 LIB=meta_repository
 LIBFILE_R=lib${LIB}.a
@@ -12,10 +14,12 @@ COMPFLAGS=-fexceptions
 CD=`pwd | sed 's#.*/##'`
 
 for f in "${FILES[@]}"; do
-    echo "${f}_dbg: "
-    ${COMP} -I$BASEDIR/lib -I$BASEDIR/include ${COMPFLAGS} -g3 -O0 -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
     echo "${f}: "
     ${COMP} -I$BASEDIR/lib -I$BASEDIR/include ${COMPFLAGS} -g0 -O3 -std=c++14 -c $f.cpp -o ${f}.o || exit 1
+    if [[ $DEBUG -ne 0 ]]; then
+        echo "${f}_dbg: "
+        ${COMP} -I$BASEDIR/lib -I$BASEDIR/include ${COMPFLAGS} -g3 -O0 -std=c++14 -c $f.cpp -o ${f}_dbg.o || exit 1
+    fi
 done
 
 #Release
@@ -24,8 +28,10 @@ ranlib ${LIBFILE_R}
 ln -sf ${CD}/${LIBFILE_R} ../${LIBFILE_R}
 
 #Debug
-ar cr ${LIBFILE_D} "${FILES[@]/%/_dbg.o}"
-ranlib ${LIBFILE_D}
-ln -sf ${CD}/${LIBFILE_D} ../${LIBFILE_D}
+if [[ $DEBUG -ne 0 ]]; then
+    ar cr ${LIBFILE_D} "${FILES[@]/%/_dbg.o}"
+    ranlib ${LIBFILE_D}
+    ln -sf ${CD}/${LIBFILE_D} ../${LIBFILE_D}
+fi
 
 exit 0
