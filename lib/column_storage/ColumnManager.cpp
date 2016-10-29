@@ -1,5 +1,3 @@
-#include <llvm/ADT/FoldingSet.h>
-#include <llvm/ADT/DenseMap.h>
 
 #include "column_storage/ColumnManager.h"
 

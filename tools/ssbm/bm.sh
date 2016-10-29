@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #for sf in 1; do
-for type in ssbm-q01 ssbm-q01_eager ssbm-q01_lazy; do
+for type in ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded; do
 	FILEOUT="${type}.out"
 	FILEERR="${type}.err"
 	echo "" >${FILEOUT}

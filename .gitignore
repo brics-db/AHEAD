@@ -4,6 +4,8 @@
 *.out
 *.err
 *_dbg
+*.result
+*.summary
 /database
 /nbproject/private
 /tools/sample/lineorder_size
