@@ -76,13 +76,13 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, (v2::bat::ops::selectAN<less>(batLQenc, static_cast<restiny_t> (25 * v2_restiny_t::A)))); // lo_quantity < 25
+        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN<less>(batLQenc, 25 * v2_restiny_t::A)); // lo_quantity < 25
         delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair2, (v2::bat::ops::selectAN(batLDenc, static_cast<restiny_t> (1 * v2_restiny_t::A), static_cast<restiny_t> (3 * v2_restiny_t::A)))); // lo_discount between 1 and 3
+        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 1 * v2_restiny_t::A, 3 * v2_restiny_t::A)); // lo_discount between 1 and 3
         delete pair2.second;
         MEASURE_OP(sw2, x, bat3, pair1.first->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
-        MEASURE_OP_TUPLE(sw2, x, tuple4, (v2::bat::ops::hashjoinAN(bat3, pair2.first))); // join selection
+        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::hashjoinAN(bat3, pair2.first)); // join selection
         delete bat3;
         delete pair2.first;
         if (get<1>(tuple4)) delete get<1>(tuple4);
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
         if (get<3>(tuple4)) delete get<3>(tuple4);
         if (get<4>(tuple4)) delete get<4>(tuple4);
         MEASURE_OP(sw2, x, bat5, (get<0>(tuple4)->mirror_head())); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP_TUPLE(sw2, x, tuple6, (v2::bat::ops::hashjoinAN(bat5, batLOenc))); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::hashjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
         if (get<1>(tuple6)) delete get<1>(tuple6);
         if (get<2>(tuple6)) delete get<2>(tuple6);
