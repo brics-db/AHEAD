@@ -1,9 +1,0 @@
-#!/bin/bash
-
-FILES=(test_hashjoin main lineorder_size)
-
-for file in "${FILES[@]}"; do
-    rm ${file} ${file}_dbg 2>/dev/null
-done
-
-exit 0

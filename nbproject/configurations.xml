@@ -32,6 +32,7 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>nbproject/private/launcher.properties</itemPath>
     </logicalFolder>
+    <itemPath>CMakeLists.txt</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
@@ -75,6 +76,8 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="CMakeLists.txt" ex="false" tool="3" flavor2="0">
+      </item>
       <folder path="2">
         <ccTool>
           <preprocessorList>
@@ -176,6 +179,8 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="CMakeLists.txt" ex="false" tool="3" flavor2="0">
+      </item>
       <folder path="2">
         <ccTool>
           <preprocessorList>

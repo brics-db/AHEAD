@@ -1,9 +1,0 @@
-#!/bin/bash
-
-FILES=(ssbm-q11 ssbm-q11_eager ssbm-q11_lazy ssbm-q11_encoded ssbm-q12 ssbm-q12_eager ssbm-q12_lazy ssbm-q12_encoded)
-
-for file in "${FILES[@]}"; do
-    rm ${file} ${file}_dbg 2>/dev/null
-done
-
-exit 0
