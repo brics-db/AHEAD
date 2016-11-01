@@ -136,6 +136,26 @@ do { \
     cout << flush; \
 } while (0)
 
+#define CLEAR_HASHJOIN_AN(tuple) \
+do {                             \
+    if (get<1>(tuple))           \
+        delete get<1>(tuple);    \
+    if (get<2>(tuple))           \
+        delete get<2>(tuple);    \
+    if (get<3>(tuple))           \
+        delete get<3>(tuple);    \
+    if (get<4>(tuple))           \
+        delete get<4>(tuple);    \
+} while (0)
+
+#define CLEAR_CHECKANDDECODE_AN(tuple) \
+do {                                   \
+    if (get<1>(tuple))                 \
+        delete get<1>(tuple);          \
+    if (get<2>(tuple))                 \
+        delete get<2>(tuple);          \
+} while (0)
+
 StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
     StopWatch sw;
     TransactionManager* tm = TransactionManager::getInstance();

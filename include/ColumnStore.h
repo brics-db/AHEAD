@@ -102,93 +102,93 @@ struct v2_base_t {
 
 struct v2_tinyint_t : public v2_base_t {
     typedef tinyint_t type_t;
-    typedef tinyint_t select_t;
-    typedef v2_tinyint_t v2_copy_t;
-    typedef v2_tinyint_t v2_select_t;
+    typedef v2_tinyint_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_shortint_t : public v2_base_t {
     typedef shortint_t type_t;
-    typedef shortint_t select_t;
-    typedef v2_shortint_t v2_copy_t;
-    typedef v2_shortint_t v2_select_t;
+    typedef v2_shortint_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_int_t : public v2_base_t {
     typedef int_t type_t;
-    typedef int_t select_t;
-    typedef v2_int_t v2_copy_t;
-    typedef v2_int_t v2_select_t;
+    typedef v2_int_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_bigint_t : public v2_base_t {
     typedef bigint_t type_t;
-    typedef bigint_t select_t;
-    typedef v2_bigint_t v2_copy_t;
-    typedef v2_bigint_t v2_select_t;
+    typedef v2_bigint_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_char_t : public v2_base_t {
     typedef char_t type_t;
-    typedef char_t select_t;
-    typedef v2_char_t v2_copy_t;
-    typedef v2_char_t v2_select_t;
+    typedef v2_char_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_str_t : public v2_base_t {
     typedef str_t type_t;
-    typedef str_t selection_t;
-    typedef v2_str_t v2_copy_t;
-    typedef v2_str_t v2_select_t;
+    typedef v2_str_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_cstr_t : public v2_base_t {
     typedef cstr_t type_t;
-    typedef cstr_t selection_t;
-    typedef v2_cstr_t v2_copy_t;
-    typedef v2_cstr_t v2_select_t;
+    typedef v2_cstr_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_fixed_t : public v2_base_t {
     typedef fixed_t type_t;
-    typedef fixed_t selection_t;
-    typedef v2_fixed_t v2_copy_t;
-    typedef v2_fixed_t v2_select_t;
+    typedef v2_fixed_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_id_t : public v2_base_t {
     typedef id_t type_t;
-    typedef id_t selection_t;
-    typedef v2_id_t v2_copy_t;
-    typedef v2_id_t v2_select_t;
+    typedef v2_id_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_oid_t : public v2_base_t {
     typedef oid_t type_t;
-    typedef oid_t selection_t;
-    typedef v2_oid_t v2_copy_t;
-    typedef v2_oid_t v2_select_t;
+    typedef v2_oid_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_void_t : public v2_base_t {
     typedef oid_t type_t;
-    typedef oid_t selection_t;
-    typedef v2_void_t v2_copy_t;
+    typedef v2_void_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
     typedef v2_oid_t v2_select_t;
 };
 
 struct v2_version_t : public v2_base_t {
     typedef version_t type_t;
-    typedef version_t selection_t;
-    typedef v2_version_t v2_copy_t;
-    typedef v2_version_t v2_select_t;
+    typedef v2_version_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 struct v2_size_t : public v2_base_t {
     typedef size_t type_t;
-    typedef size_t selection_t;
-    typedef v2_size_t v2_copy_t;
-    typedef v2_size_t v2_select_t;
+    typedef v2_size_t unenc_v2_t;
+    typedef unenc_v2_t v2_copy_t;
+    typedef unenc_v2_t v2_select_t;
 };
 
 #define ID_INVALID (static_cast<id_t>(-1))

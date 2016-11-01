@@ -123,16 +123,16 @@ public:
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>& p) override {
+    virtual void append(__attribute__((unused)) pair<head_t, tail_t>& p) override {
     }
 
-    virtual void append(pair<head_t, tail_t>&& p) override {
+    virtual void append(__attribute__((unused)) pair<head_t, tail_t>&& p) override {
     }
 
-    virtual void append(tail_t& t) override {
+    virtual void append(__attribute__((unused)) tail_t& t) override {
     }
 
-    virtual void append(tail_t&& t) override {
+    virtual void append(__attribute__((unused)) tail_t&& t) override {
     }
 
     virtual Bat<Tail, Head>* reverse() override {

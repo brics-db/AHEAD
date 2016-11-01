@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 for f in ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded; do
 	grep -o 'result.*$' ${f}.out >${f}.result

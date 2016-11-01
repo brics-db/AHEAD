@@ -25,6 +25,10 @@
         <in>main.cpp</in>
         <in>test_hashjoin.cpp</in>
       </df>
+      <df name="ssbm">
+        <in>ssbm-q13.cpp</in>
+        <in>ssbm-q13_eager.cpp</in>
+      </df>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -36,9 +40,9 @@
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
+    <Elem>include</Elem>
     <Elem>lib</Elem>
     <Elem>tools</Elem>
-    <Elem>include</Elem>
   </sourceRootList>
   <projectmakefile></projectmakefile>
   <confs>
@@ -51,24 +55,21 @@
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O3 -std=c++14"/>
         <element flagsID="1" commonFlags="-std=c++14"/>
+        <element flagsID="2" commonFlags="-std=c++14 -march=native -O3"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>./build</buildCommand>
-          <cleanCommand>./clean</cleanCommand>
+          <buildCommand>make all</buildCommand>
+          <cleanCommand>make clean</cleanCommand>
           <executablePath></executablePath>
           <cTool>
             <standard>10</standard>
           </cTool>
           <ccTool flags="-std=c++0x -fPIC -pedantic -std=c++11 -O2 -fno-exceptions -O3 -std=c++14">
             <standard>11</standard>
-            <incDir>
-              <pElem>lib</pElem>
-              <pElem>include</pElem>
-            </incDir>
           </ccTool>
         </makeTool>
         <preBuild>
@@ -76,8 +77,14 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="CMakeLists.txt" ex="false" tool="3" flavor2="0">
-      </item>
+      <folder path="1">
+        <ccTool>
+          <incDir>
+            <pElem>lib</pElem>
+            <pElem>include</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
       <folder path="2">
         <ccTool>
           <preprocessorList>
@@ -142,6 +149,14 @@
       </item>
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q13.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q13_eager.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
         </ccTool>
       </item>
     </conf>

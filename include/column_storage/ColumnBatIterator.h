@@ -92,7 +92,7 @@ public:
 
     /** @return true if a next item is available - otherwise false */
     virtual bool hasNext() override {
-        return mPosition < Csize;
+        return mPosition < static_cast<ssize_t> (Csize);
     }
 
     virtual oid_t head() override {

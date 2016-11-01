@@ -74,42 +74,42 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 0) Eager Check
-        MEASURE_OP_PAIR(sw2, x, batDYpair, (v2::bat::ops::checkAndDecode_AN(batDYenc)));
-        delete batDYpair.second;
-        MEASURE_OP_PAIR(sw2, x, batDDpair, (v2::bat::ops::checkAndDecode_AN(batDDenc)));
-        delete batDDpair.second;
-        MEASURE_OP_PAIR(sw2, x, batLQpair, (v2::bat::ops::checkAndDecode_AN(batLQenc)));
-        delete batLQpair.second;
-        MEASURE_OP_PAIR(sw2, x, batLDpair, (v2::bat::ops::checkAndDecode_AN(batLDenc)));
-        delete batLDpair.second;
-        MEASURE_OP_PAIR(sw2, x, batLOpair, (v2::bat::ops::checkAndDecode_AN(batLOenc)));
-        delete batLOpair.second;
-        MEASURE_OP_PAIR(sw2, x, batLEpair, (v2::bat::ops::checkAndDecode_AN(batLEenc)));
-        delete batLEpair.second;
+        MEASURE_OP_TUPLE(sw2, x, tupleDY, v2::bat::ops::checkAndDecodeAN(batDYenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDY);
+        MEASURE_OP_TUPLE(sw2, x, tupleDD, v2::bat::ops::checkAndDecodeAN(batDDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDD);
+        MEASURE_OP_TUPLE(sw2, x, tupleLQ, v2::bat::ops::checkAndDecodeAN(batLQenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLQ);
+        MEASURE_OP_TUPLE(sw2, x, tupleLD, v2::bat::ops::checkAndDecodeAN(batLDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLD);
+        MEASURE_OP_TUPLE(sw2, x, tupleLO, v2::bat::ops::checkAndDecodeAN(batLOenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLO);
+        MEASURE_OP_TUPLE(sw2, x, tupleLE, v2::bat::ops::checkAndDecodeAN(batLEenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLE);
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select(batLQpair.first, 26, 35)); // lo_quantity between 26 and 35
-        delete batLQpair.first;
-        MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLDpair.first, 4, 6)); // lo_discount between 4 and 6
-        delete batLDpair.first;
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select(get<0>(tupleLQ), 26, 35)); // lo_quantity between 26 and 35
+        delete get<0>(tupleLQ);
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(get<0>(tupleLD), 4, 6)); // lo_discount between 4 and 6
+        delete get<0>(tupleLD);
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // join selection
         delete bat3;
         delete bat2;
         MEASURE_OP(sw2, x, bat5, bat4->mirror_head()); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP(sw2, x, bat6, v2::bat::ops::hashjoin(bat5, batLOpair.first)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(sw2, x, bat6, v2::bat::ops::hashjoin(bat5, get<0>(tupleLO))); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
-        delete batLOpair.first;
+        delete get<0>(tupleLO);
 
-        // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYpair.first, 199401)); // d_yearmonthnum = 199401
-        delete batDYpair.first;
+        // 2) select from date (join inbetween to reduce the number of lines we touch in total)
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(get<0>(tupleDY), 199401)); // d_yearmonthnum = 199401
+        delete get<0>(tupleDY);
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
         delete bat7;
-        MEASURE_OP(sw2, x, bat9, v2::bat::ops::hashjoin(bat8, batDDpair.first)); // only those d_datekey where d_year...
+        MEASURE_OP(sw2, x, bat9, v2::bat::ops::hashjoin(bat8, get<0>(tupleDD))); // only those d_datekey where d_year...
         delete bat8;
-        delete batDDpair.first;
+        delete get<0>(tupleDD);
 
         // 3) join lineorder and date
         MEASURE_OP(sw2, x, batA, bat9->reverse());
@@ -120,12 +120,14 @@ int main(int argc, char** argv) {
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
         MEASURE_OP(sw2, x, batC, batB->mirror_head()); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batB;
-        MEASURE_OP(sw2, x, batD, v2::bat::ops::hashjoin(batC, batLEpair.first));
-        delete batLEpair.first;
+        MEASURE_OP(sw2, x, batD, v2::bat::ops::hashjoin(batC, get<0>(tupleLE)));
+        delete get<0>(tupleLE);
         PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
         MEASURE_OP(sw2, x, batE, v2::bat::ops::hashjoin(batC, bat4));
         delete batC;
         delete bat4;
+
+        // 4) result
         MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batD, batE, 0));
         delete batD;
         delete batE;

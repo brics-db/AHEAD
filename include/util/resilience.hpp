@@ -40,13 +40,6 @@ typedef uint64_t resoid_t;
 #define RESOID_INVALID (static_cast<resoid_t>(-1))
 
 struct v2_anencoded_t {
-    uint16_t unused_member;
-
-    v2_anencoded_t(uint16_t um) : unused_member(um) {
-    }
-
-    v2_anencoded_t(uint16_t&& um) : unused_member(um) {
-    }
 };
 
 struct v2_restiny_t : public v2_anencoded_t {
@@ -60,8 +53,6 @@ struct v2_restiny_t : public v2_anencoded_t {
     static const restiny_t A_UNENC_MIN;
     static const restiny_t A_UNENC_MAX;
     static const restiny_t A_UNENC_MAX_U;
-
-    using v2_anencoded_t::v2_anencoded_t;
 };
 
 struct v2_resshort_t : public v2_anencoded_t {
@@ -75,8 +66,6 @@ struct v2_resshort_t : public v2_anencoded_t {
     static const resshort_t A_UNENC_MIN;
     static const resshort_t A_UNENC_MAX;
     static const resshort_t A_UNENC_MAX_U;
-
-    using v2_anencoded_t::v2_anencoded_t;
 };
 
 struct v2_resint_t : public v2_anencoded_t {
@@ -90,8 +79,6 @@ struct v2_resint_t : public v2_anencoded_t {
     static const resint_t A_UNENC_MIN;
     static const resint_t A_UNENC_MAX;
     static const resint_t A_UNENC_MAX_U;
-
-    using v2_anencoded_t::v2_anencoded_t;
 };
 
 struct v2_resbigint_t : public v2_anencoded_t {
@@ -105,8 +92,6 @@ struct v2_resbigint_t : public v2_anencoded_t {
     static const resbigint_t A_UNENC_MIN;
     static const resbigint_t A_UNENC_MAX;
     static const resbigint_t A_UNENC_MAX_U;
-
-    using v2_anencoded_t::v2_anencoded_t;
 };
 
 struct v2_resoid_t : public v2_anencoded_t {
@@ -120,8 +105,6 @@ struct v2_resoid_t : public v2_anencoded_t {
     static const resoid_t A_UNENC_MIN;
     static const resoid_t A_UNENC_MAX;
     static const resoid_t A_UNENC_MAX_U;
-
-    using v2_anencoded_t::v2_anencoded_t;
 };
 
 // Fast-Forward declare Bat, ColumnBat, TempBat types

@@ -5,14 +5,14 @@
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
             <name>columnstore</name>
             <c-extensions/>
-            <cpp-extensions>cpp,cxx</cpp-extensions>
+            <cpp-extensions>cpp</cpp-extensions>
             <header-extensions>h,hpp,tcc</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
+                <sourceRootElem>include</sourceRootElem>
                 <sourceRootElem>lib</sourceRootElem>
                 <sourceRootElem>tools</sourceRootElem>
-                <sourceRootElem>include</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

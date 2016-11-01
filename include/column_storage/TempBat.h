@@ -62,10 +62,10 @@ public:
         tail.container->reserve(n);
     }
 
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
+    TempBat(coldesc_head_t& head, __attribute__((unused)) coldesc_tail_t& tail) : head(head), tail(tail) {
     }
 
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
+    TempBat(coldesc_head_t&& head, __attribute__((unused)) coldesc_tail_t&& tail) : head(head), tail(tail) {
     }
 
     virtual ~TempBat() {
@@ -153,20 +153,20 @@ public:
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>& p) override {
+    virtual void append(__attribute__((unused)) pair<head_t, tail_t>& p) override {
         ++count;
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>&& p) override {
+    virtual void append(__attribute__((unused)) pair<head_t, tail_t>&& p) override {
         ++count;
     }
 
-    virtual void append(tail_t& t) override {
+    virtual void append(__attribute__((unused)) tail_t& t) override {
         ++count;
     }
 
-    virtual void append(tail_t&& t) override {
+    virtual void append(__attribute__((unused)) tail_t&& t) override {
         ++count;
     }
 

@@ -49,29 +49,32 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
         delete result0;
 
         sw1.start();
-        auto result1 = v2::bat::ops::check_AN(batTcAN);
+        auto result1 = v2::bat::ops::checkAN(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
         delete result1;
 
         sw1.start();
-        auto result2 = v2::bat::ops::decode_AN(batTcAN);
+        auto result2 = v2::bat::ops::decodeAN(batTcAN);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
         delete result2;
 
         sw1.start();
-        auto result3 = v2::bat::ops::checkAndDecode_AN(batTcAN);
+        auto tuple3 = v2::bat::ops::checkAndDecodeAN(batTcAN);
+        if (get<1>(tuple3))
+            delete get<1>(tuple3);
+        if (get<2>(tuple3))
+            delete get<2>(tuple3);
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
 
         sw1.start();
-        auto result4 = v2::bat::ops::copy(result3.first);
+        auto result4 = v2::bat::ops::copy(get<0>(tuple3));
         sw1.stop();
         cout << '\t' << setw(LEN_TIMES) << sw1.duration() << endl;
         delete result4;
-        delete result3.first;
-        delete result3.second;
+        delete get<0>(tuple3);
     }
     delete batTcAN;
     delete batBcAN;
@@ -107,7 +110,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::check_AN(bats[scale2]);
+                auto result = v2::bat::ops::checkAN(bats[scale2]);
                 delete result;
             }
             sw1.stop();
@@ -119,7 +122,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::decode_AN(bats[scale2]);
+                auto result = v2::bat::ops::decodeAN(bats[scale2]);
                 delete result;
             }
             sw1.stop();
@@ -131,9 +134,12 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
         for (size_t i = 0; i < NUM_RUNS; ++i) {
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
-                auto result = v2::bat::ops::checkAndDecode_AN(bats[scale2]);
-                delete result.first;
-                delete result.second;
+                auto tuple = v2::bat::ops::checkAndDecodeAN(bats[scale2]);
+                delete get<0>(tuple);
+                if (get<1>(tuple))
+                    delete get<1>(tuple);
+                if (get<2>(tuple))
+                    delete get<2>(tuple);
             }
             sw1.stop();
             totalTime += sw1.duration();

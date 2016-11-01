@@ -73,10 +73,12 @@ int main(int argc, char** argv) {
         sw1.start();
         x = 0;
 
+        // LAZY MODE !!! NO AN-OPERATORS UNTIL DECODING !!!
+
         // 1) select from lineorder
         MEASURE_OP(sw2, x, bat1, v2::bat::ops::select(batLQenc, static_cast<restiny_t> (26 * v2_restiny_t::A), static_cast<restiny_t> (35 * v2_restiny_t::A))); // lo_quantity between 26 and 35
         PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity between 26 and 35"));
-        MEASURE_OP(sw2, x, bat2, (v2::bat::ops::select(batLDenc, static_cast<restiny_t> (4 * v2_restiny_t::A), static_cast<restiny_t> (6 * v2_restiny_t::A)))); // lo_discount between 4 and 6
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLDenc, static_cast<restiny_t> (4 * v2_restiny_t::A), static_cast<restiny_t> (6 * v2_restiny_t::A))); // lo_discount between 4 and 6
         PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 4 and 6"));
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
@@ -89,7 +91,7 @@ int main(int argc, char** argv) {
         delete bat5;
         PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity between 26 and 35 and lo_discount between 4 and 6"));
 
-        // 1) select from date (join inbetween to reduce the number of lines we touch in total)
+        // 2) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, static_cast<resint_t> (199401) * v2_resint_t::A)); // d_yearmonthnum = 199401
         PRINT_BAT(sw1, printBat(bat7->begin(), "d_yearmonthnum = 199401"));
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
@@ -115,16 +117,16 @@ int main(int argc, char** argv) {
         delete bat4;
         PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_yearmonthnum = 199401 and lo_discount between 4 and 6 and lo_quantity between 26 and 35"));
 
-        // 4) lazy decode
-        MEASURE_OP_PAIR(sw2, x, batFpair, (v2::bat::ops::checkAndDecode_AN(batD)));
-        delete batFpair.second;
+        // 4) lazy decode and result
+        MEASURE_OP_TUPLE(sw2, x, tupleF, v2::bat::ops::checkAndDecodeAN(batD));
+        CLEAR_CHECKANDDECODE_AN(tupleF);
         delete batD;
-        MEASURE_OP_PAIR(sw2, x, batGpair, (v2::bat::ops::checkAndDecode_AN(batE)));
-        delete batGpair.second;
+        MEASURE_OP_TUPLE(sw2, x, tupleG, v2::bat::ops::checkAndDecodeAN(batE));
+        CLEAR_CHECKANDDECODE_AN(tupleG);
         delete batE;
-        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batFpair.first, batGpair.first, 0));
-        delete batFpair.first;
-        delete batGpair.first;
+        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(get<0>(tupleF), get<0>(tupleG)));
+        delete get<0>(tupleF);
+        delete get<0>(tupleG);
 
         totalTimes[i] = sw1.stop();
 

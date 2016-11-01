@@ -139,6 +139,7 @@ int main(int argc, char** argv) {
     delete batLD;
     delete batLO;
     delete batLE;
+    delete batDW;
 
     TransactionManager::destroyInstance();
 

@@ -93,7 +93,7 @@ int main(int argc, char ** argv) {
      */
 
     sw.start();
-    auto batA = v2::bat::ops::encode_AN(batCustKey);
+    auto batA = v2::bat::ops::encodeAN(batCustKey);
     sw.stop();
     cout << "[customer] Converted " << numCust << " tuples from int_t to resint_t took " << sw << " ns" << endl;
 

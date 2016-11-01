@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::hashjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
 
-        // 1) select from date (join inbetween to reduce the number of lines we touch in total)
+        // 2) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDY, 199401)); // d_yearmonthnum = 199401
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
         delete bat7;
@@ -106,6 +106,8 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, batE, v2::bat::ops::hashjoin(batC, bat4));
         delete batC;
         delete bat4;
+
+        // 4) result
         MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(batD, batE, 0));
         delete batD;
         delete batE;
