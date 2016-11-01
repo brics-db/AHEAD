@@ -48,7 +48,7 @@ if [[ ${DO_BENCH} -eq 1 ]]; then
     echo "Benchmarking:"
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
-        for type in ${BASE2} ${BASE2}_eager ${BASE2}_lazy ${BASE2}_encoded; do
+        for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous; do
             if [[ -e ${type} ]]; then
                 FILEOUT="${type}.out"
                 FILEERR="${type}.err"
@@ -83,7 +83,7 @@ if [[ ${DO_EVAL} -eq 1 ]]; then
         echo -n "SF " >${EVALDIR}/${BASE2}.tmp
         echo $(seq ${SFMIN} ${SFMAX}) >>${EVALDIR}/${BASE2}.tmp
 
-        for f in ${BASE2} ${BASE2}_eager ${BASE2}_lazy ${BASE2}_encoded; do
+        for f in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous; do
             grep -o 'result.*$' ${f}.out >${EVALDIR}/${f}.results
             grep -A 10 "TotalTimes" ${f}.out | sed '/^--$/d' | grep -v "TotalTimes:" >${EVALDIR}/${f}.summary
             count=0
@@ -154,12 +154,12 @@ EXITSTAT=0
 if [[ ${DO_VERIFY} -eq 1 ]]; then
     echo "Verifying:"
     for NUM in "${IMPLEMENTED[@]}"; do
-        DIFF1=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_eager.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF2=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_lazy.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF3=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_encoded.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF4=$(if [[ $(diff ssbm-q${NUM}_lazy.result ssbm-q${NUM}_eager.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF5=$(if [[ $(diff ssbm-q${NUM}_lazy.result ssbm-q${NUM}_encoded.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF6=$(if [[ $(diff ssbm-q${NUM}_eager.result ssbm-q${NUM}_encoded.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF1=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_early.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF2=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_late.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF3=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_continuous.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF4=$(if [[ $(diff ssbm-q${NUM}_late.result ssbm-q${NUM}_early.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF5=$(if [[ $(diff ssbm-q${NUM}_late.result ssbm-q${NUM}_continuous.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF6=$(if [[ $(diff ssbm-q${NUM}_early.result ssbm-q${NUM}_continuous.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
 
         if [[ DIFF1 -eq "OK" ]] && [[ DIFF2 -eq "OK" ]] && [[ DIFF3 -eq "OK" ]] && [[ DIFF4 -eq "OK" ]] && [[ DIFF5 -eq "OK" ]] && [[ DIFF6 -eq "OK" ]]; then
             echo "Q${NUM}: all OK"
@@ -167,15 +167,15 @@ if [[ ${DO_VERIFY} -eq 1 ]]; then
             if [[ DIFF2 -eq "OK" ]]; then
                 echo "Q${NUM}: All produce the same result"
             else
-                echo "Only ssbm-q${NUM} and ssbm-q${NUM}_eager produce the same result"
+                echo "Only ssbm-q${NUM} and ssbm-q${NUM}_early produce the same result"
                 ++${EXITSTAT}
             fi
         else
             if [[ DIFF2 -eq "OK" ]]; then
-                echo "Only ssbm-q${NUM} and ssbm-q${NUM}_lazy produce the same result"
+                echo "Only ssbm-q${NUM} and ssbm-q${NUM}_late produce the same result"
                 ++${EXITSTAT}
             elif [[ DIFF3 -eq "OK" ]]; then
-                echo "Only ssbm-q${NUM}_lazy and ssbm-q${NUM}_eager produce the same result"
+                echo "Only ssbm-q${NUM}_late and ssbm-q${NUM}_early produce the same result"
                 ++${EXITSTAT}
             fi
         fi

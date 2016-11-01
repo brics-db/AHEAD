@@ -33,4 +33,4 @@ MACRO(add_ssbm arg_queries)
     ENDFOREACH(Q QUERIES)
 ENDMACRO(add_ssbm)
 
-add_ssbm("ssbm-q11 ssbm-q11_eager ssbm-q11_lazy ssbm-q11_encoded ssbm-q12 ssbm-q12_eager ssbm-q12_lazy ssbm-q12_encoded ssbm-q13 ssbm-q13_eager ssbm-q13_lazy ssbm-q13_encoded")
+add_ssbm("ssbm-q11 ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q12 ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q13 ssbm-q13_early ssbm-q13_late ssbm-q13_continuous")
