@@ -28,6 +28,8 @@
       <df name="ssbm">
         <in>ssbm-q13.cpp</in>
         <in>ssbm-q13_eager.cpp</in>
+        <in>ssbm-q13_encoded.cpp</in>
+        <in>ssbm-q13_lazy.cpp</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -37,6 +39,7 @@
       <itemPath>nbproject/private/launcher.properties</itemPath>
     </logicalFolder>
     <itemPath>CMakeLists.txt</itemPath>
+    <itemPath>build/eval.gnuplot</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
@@ -77,6 +80,8 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
+      <item path="build/eval.gnuplot" ex="false" tool="3" flavor2="0">
+      </item>
       <folder path="1">
         <ccTool>
           <incDir>
@@ -159,6 +164,14 @@
         <ccTool flags="2">
         </ccTool>
       </item>
+      <item path="tools/ssbm/ssbm-q13_encoded.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q13_lazy.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
     </conf>
     <conf name="Debug" type="0">
       <toolsSet>
@@ -195,6 +208,8 @@
         </preBuild>
       </makefileType>
       <item path="CMakeLists.txt" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="build/eval.gnuplot" ex="false" tool="3" flavor2="0">
       </item>
       <folder path="2">
         <ccTool>

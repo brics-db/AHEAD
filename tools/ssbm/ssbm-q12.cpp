@@ -8,9 +8,22 @@
 #include "ssbm.hpp"
 
 int main(int argc, char** argv) {
+    ssbmconf_t CONFIG = initSSBM(argc, argv);
+    StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
+    const size_t NUM_OPS = 24;
+    cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
+    StopWatch::rep opTimes[NUM_OPS] = {0};
+    size_t batSizes[NUM_OPS] = {0};
+    size_t batConsumptions[NUM_OPS] = {0};
+    bool hasTwoTypes[NUM_OPS] = {false};
+    boost::typeindex::type_index headTypes[NUM_OPS];
+    boost::typeindex::type_index tailTypes[NUM_OPS];
+    string emptyString;
+    size_t x = 0;
+
     cout << "ssbm-q12\n========" << endl;
 
-    boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
+    boost::filesystem::path p(CONFIG.DB_PATH);
     if (boost::filesystem::is_regular(p)) {
         p.remove_filename();
     }
@@ -30,18 +43,6 @@ int main(int argc, char** argv) {
 
     cout << "\nSSBM Q1.2:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_yearmonthnum = 199401\n    and lo_discount between 4 and 6\n    and lo_quantity  between 26 and 35;" << endl;
 
-    const size_t NUM_RUNS = 10;
-    StopWatch::rep totalTimes[NUM_RUNS] = {0};
-    const size_t NUM_OPS = 24;
-    cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
-    StopWatch::rep opTimes[NUM_OPS] = {0};
-    size_t batSizes[NUM_OPS] = {0};
-    size_t batConsumptions[NUM_OPS] = {0};
-    bool hasTwoTypes[NUM_OPS] = {false};
-    boost::typeindex::type_index headTypes[NUM_OPS];
-    boost::typeindex::type_index tailTypes[NUM_OPS];
-    string emptyString;
-    size_t x = 0;
 
     /* Measure loading ColumnBats */
     MEASURE_OP(sw1, x, batDYcb, new int_colbat_t("date", "yearmonthnum"));
@@ -69,7 +70,7 @@ int main(int argc, char** argv) {
     COUT_RESULT(0, x);
     cout << endl;
 
-    for (size_t i = 0; i < NUM_RUNS; ++i) {
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         x = 0;
 
@@ -121,7 +122,7 @@ int main(int argc, char** argv) {
 
     cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
     cout << "TotalTimes:";
-    for (size_t i = 0; i < NUM_RUNS; ++i) {
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
     }
     cout << endl;

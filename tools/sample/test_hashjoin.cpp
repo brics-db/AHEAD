@@ -17,6 +17,10 @@
  * 
  */
 int main(int argc, char** argv) {
+    ssbmconf_t CONFIG = initSSBM(argc, argv);
+    StopWatch sw1;
+    StopWatch::rep totalTime = 0;
+
     cout << "test_hashjoin\n=============" << endl;
 
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
@@ -25,8 +29,6 @@ int main(int argc, char** argv) {
     }
     string baseDir = p.remove_trailing_separator().generic_string();
     MetaRepositoryManager::init(baseDir.c_str());
-
-    StopWatch sw1;
 
     sw1.start();
     loadTable(baseDir, "date");
@@ -45,32 +47,29 @@ int main(int argc, char** argv) {
     delete cbDateDatekey;
     delete cbLineorderOrderdate;
 
-    const size_t NUM_RUNS = 10;
-    StopWatch::rep totalTime = 0;
-
-    cout << "<DEPRECATED> !!! Measuring " << NUM_RUNS << " runs. Times are in [ns]. Joining Lineorder.orderdate with Date.datekey:" << endl;
+    cout << "<DEPRECATED> !!! Measuring " << CONFIG.NUM_RUNS << " runs. Times are in [ns]. Joining Lineorder.orderdate with Date.datekey:" << endl;
 
     totalTime = 0;
     cout << "col_hashjoin_old (only new implementation available any longer!):" << endl;
-    for (size_t i = 0; i < NUM_RUNS; ++i) {
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
         totalTime += sw1.stop();
         cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
         delete result;
     }
-    cout << "average\t" << (totalTime / NUM_RUNS) << endl;
+    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
 
     totalTime = 0;
     cout << "col_hashjoin_new:" << endl;
-    for (size_t i = 0; i < NUM_RUNS; ++i) {
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
         totalTime += sw1.stop();
         cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
         delete result;
     }
-    cout << "average\t" << (totalTime / NUM_RUNS) << endl;
+    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
 
     delete tbDateDatekey;
     delete tbLineorderOrderdate;

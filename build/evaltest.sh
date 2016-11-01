@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-for f in ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded; do
+for f in ssbm-q11 ssbm-q11_eager ssbm-q11_lazy ssbm-q11_encoded; do
 	grep -o 'result.*$' ${f}.out >${f}.result
 	grep -A 10 "TotalTimes" ${f}.out >${f}.out.summary
 done

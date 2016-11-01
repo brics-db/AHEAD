@@ -35,6 +35,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+#include <map>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 
@@ -117,21 +119,21 @@ SAVE_TYPE(I-1, (get<0>(TUPLE)))
 
 #define COUT_HEADLINE \
 do { \
-    cout << "\n\tname\t" << setw(LEN_TIMES) << "time [ns]" << "\t" << setw(LEN_SIZES) << "size [#]" << "\t" << setw(LEN_SIZES) << "consum [B]" << "\t" << setw(LEN_TYPES) << "type head" << "\t" << setw(LEN_TYPES) << "type tail"; \
+    cout << "\n\tname\t" << setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << setw(CONFIG.LEN_TYPES) << "type head" << "\t" << setw(CONFIG.LEN_TYPES) << "type tail"; \
 } while (0)
 
 #define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
 #define COUT_RESULT3(START, MAX, OPNAMES) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        cout << "\n\top" << setw(2) << OPNAMES[k] << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
+        cout << "\n\top" << setw(2) << OPNAMES[k] << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
     } \
     cout << flush; \
 } while (0)
 #define COUT_RESULT2(START, MAX) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        cout << "\n\top" << setw(2) << k << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(LEN_SIZES) << batSizes[k] << "\t" << setw(LEN_SIZES) << batConsumptions[k] << "\t" << setw(LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
+        cout << "\n\top" << setw(2) << k << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
     } \
     cout << flush; \
 } while (0)
@@ -170,8 +172,106 @@ StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
     return sw.duration();
 }
 
-const size_t LEN_TIMES = 13;
-const size_t LEN_TYPES = 16;
-const size_t LEN_SIZES = 12;
+///////////////////////////////
+// CMDLINE ARGUMENT PARSING //
+///////////////////////////////
+map<string, size_t> cmdIntArgs = {
+    {"--numruns", 15},
+    {"--lentimes", 13},
+    {"--lentypes", 16},
+    {"--lensizes", 12}
+};
+
+map<string, string> cmdStrArgs = {
+    {"--dbpath", "."}
+};
+
+enum cmdargtype_t {
+    argint, argstr
+};
+
+map<string, cmdargtype_t> cmdArgTypes = {
+    {"--numruns", argint},
+    {"--lentimes", argint},
+    {"--lentypes", argint},
+    {"--lensizes", argint},
+    {"--dbpath", argstr}
+};
+
+struct ssbmconf_t {
+    size_t NUM_RUNS;
+    size_t LEN_TIMES;
+    size_t LEN_TYPES;
+    size_t LEN_SIZES;
+    string DB_PATH;
+
+    ssbmconf_t(size_t numRuns, size_t lenTimes, size_t lenTypes, size_t lenSizes, string& dbPath) : NUM_RUNS(numRuns), LEN_TIMES(lenTimes), LEN_TYPES(lenTypes), LEN_SIZES(lenSizes), DB_PATH(dbPath) {
+    }
+
+    ssbmconf_t() : ssbmconf_t(cmdIntArgs["--numruns"], cmdIntArgs["--lentimes"], cmdIntArgs["--lentypes"], cmdIntArgs["--lensizes"], cmdStrArgs["--dbpath"]) {
+    }
+};
+
+void parseint(const string& name, char* arg) {
+    string str(arg);
+    size_t idx = string::npos;
+    size_t value;
+    try {
+        value = stoul(str, &idx);
+    } catch (invalid_argument& exc) {
+        stringstream ss;
+        ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")!";
+        throw runtime_error(ss.str());
+    }
+    if (idx < str.length()) {
+        stringstream ss;
+        ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")!";
+        throw runtime_error(ss.str());
+    }
+    cmdIntArgs[name] = value;
+}
+
+void parsestr(const string& name, char* arg) {
+    cmdStrArgs[name] = arg;
+}
+
+void parsearg(const string& name, cmdargtype_t argtype, char* arg) {
+    switch (argtype) {
+        case argint:
+            parseint(name, arg);
+            break;
+
+        case argstr:
+            parsestr(name, arg);
+            break;
+    }
+}
+
+ssbmconf_t initSSBM(int argc, char** argv) {
+    if (argc > 1) {
+        // for now only long parameters with 2 components ("--name value")
+        for (int nArg = 1; nArg < argc; nArg += 2) {
+            bool recognized = false;
+            for (auto p : cmdArgTypes) {
+                if (p.first.compare(argv[nArg]) == 0) {
+                    recognized = true;
+                    if ((nArg + 1) >= argc) {
+                        stringstream ss;
+                        ss << "Required value for parameter \"" << argv[nArg] << "\" missing!";
+                        throw runtime_error(ss.str());
+                    }
+                    parsearg(p.first, p.second, argv[nArg + 1]);
+                    break;
+                }
+            }
+            if (!recognized) {
+                stringstream ss;
+                ss << "Parameter \"" << argv[nArg] << "\" is unknown!";
+                throw runtime_error(ss.str());
+            }
+        }
+    }
+    return ssbmconf_t();
+}
 
 #endif /* SSBM_HPP */

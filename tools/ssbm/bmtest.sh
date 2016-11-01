@@ -7,8 +7,8 @@ for type in ssbm-q01 ssbm-q01_eager ssbm-q01_lazy ssbm-q01_encoded; do
 	echo "" >${FILEOUT}
 	echo "" >${FILEERR}
 	for sf in `seq 1 10`; do
-		./${type} ../../database/sf-${sf} 1>>${FILEOUT} 2>>${FILEERR}
-#		./${type} ../../database/sf-${sf}
+		./${type} --dbpath ../../database/sf-${sf} 1>>${FILEOUT} 2>>${FILEERR}
+#		./${type} --dbpath ../../database/sf-${sf}
 	done
 done
 

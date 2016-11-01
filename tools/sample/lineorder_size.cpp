@@ -9,6 +9,7 @@
 
 #include "../ssbm/ssbm.hpp"
 
+ssbmconf_t CONFIG;
 StopWatch sw1;
 const size_t NUM_OPS = 32;
 nanoseconds::rep opTimes[NUM_OPS];
@@ -33,9 +34,9 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
 
     cout << "\n#runTable(" << strTable << '.' << strColumn << ")";
 
-    cout << "\nname\t" << setw(LEN_TIMES) << "time [ns]" << '\t' << setw(LEN_SIZES) << "size [#]" << '\t' << setw(LEN_SIZES) << "consum [B]" << '\t' << setw(LEN_TYPES) << "type head" << '\t' << setw(LEN_TYPES) << "type tail";
+    cout << "\nname\t" << setw(CONFIG.LEN_TIMES) << "time [ns]" << '\t' << setw(CONFIG.LEN_SIZES) << "size [#]" << '\t' << setw(CONFIG.LEN_SIZES) << "consum [B]" << '\t' << setw(CONFIG.LEN_TYPES) << "type head" << '\t' << setw(CONFIG.LEN_TYPES) << "type tail";
     for (size_t i = 0; i < x; ++i) {
-        cout << "\nop" << setw(2) << i << "\t" << setw(LEN_TIMES) << hrc_duration(opTimes[i]) << "\t" << setw(LEN_SIZES) << batSizes[i] << "\t" << setw(LEN_SIZES) << batConsumptions[i] << "\t" << setw(LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
+        cout << "\nop" << setw(2) << i << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[i]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[i] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[i] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
     }
     cout << "\nnum\tcopy-" << TypeMap<v2_encoded_t>::TYPENAME << "\tcheck\tdecode\tcheck+decode\tcopy-" << TypeMap<v2_base_t>::TYPENAME << endl;
 
@@ -45,19 +46,19 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
         sw1.start();
         auto result0 = v2::bat::ops::copy(batTcAN);
         sw1.stop();
-        cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << flush;
         delete result0;
 
         sw1.start();
         auto result1 = v2::bat::ops::checkAN(batTcAN);
         sw1.stop();
-        cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << flush;
         delete result1;
 
         sw1.start();
         auto result2 = v2::bat::ops::decodeAN(batTcAN);
         sw1.stop();
-        cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << flush;
         delete result2;
 
         sw1.start();
@@ -67,12 +68,12 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
         if (get<2>(tuple3))
             delete get<2>(tuple3);
         sw1.stop();
-        cout << '\t' << setw(LEN_TIMES) << sw1.duration() << flush;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << flush;
 
         sw1.start();
         auto result4 = v2::bat::ops::copy(get<0>(tuple3));
         sw1.stop();
-        cout << '\t' << setw(LEN_TIMES) << sw1.duration() << endl;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << endl;
         delete result4;
         delete get<0>(tuple3);
     }
@@ -116,7 +117,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
             sw1.stop();
             totalTime += sw1.duration();
         }
-        cout << '\t' << setw(LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
 
         totalTime = 0;
         for (size_t i = 0; i < NUM_RUNS; ++i) {
@@ -128,7 +129,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
             sw1.stop();
             totalTime += sw1.duration();
         }
-        cout << '\t' << setw(LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
 
         totalTime = 0;
         for (size_t i = 0; i < NUM_RUNS; ++i) {
@@ -144,7 +145,7 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
             sw1.stop();
             totalTime += sw1.duration();
         }
-        cout << '\t' << setw(LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
+        cout << '\t' << setw(CONFIG.LEN_TIMES) << (totalTime / NUM_RUNS) << flush;
     }
     for (size_t i = 0; i < MAX_SCALE; ++i) {
         delete bats[i];
@@ -154,6 +155,8 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
 }
 
 int main(int argc, char** argv) {
+    CONFIG = initSSBM(argc, argv);
+
     cout << "lineorder_size\n==============" << endl;
 
     boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
