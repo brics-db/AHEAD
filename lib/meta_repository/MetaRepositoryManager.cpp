@@ -23,7 +23,7 @@ const char* NAME_RESINT = "RESINT";
 
 const size_t MAXLEN_STRING = 64;
 
-MetaRepositoryManager::MetaRepositoryManager() {
+MetaRepositoryManager::MetaRepositoryManager() : pk_table_id(nullptr), table_name(nullptr), pk_attribute_id(nullptr), attribute_name(nullptr), fk_table_id(nullptr), fk_type_id(nullptr), BAT_number(nullptr), pk_layout_id(nullptr), layout_name(nullptr), size(nullptr), pk_operator_id(nullptr), operator_name(nullptr), pk_datatype_id(nullptr), datatype_name(nullptr), datatype_length(nullptr), datatype_category(nullptr), META_PATH(nullptr) {
     // creates the whole repository
     this->createRepository();
     this->createDefaultDataTypes();
@@ -31,6 +31,9 @@ MetaRepositoryManager::MetaRepositoryManager() {
     // test table
     //    table_name->append(make_pair(0, "tables"));
     // pk_table_id->append(make_pair(0, 1));
+}
+
+MetaRepositoryManager::MetaRepositoryManager(const MetaRepositoryManager &copy) : pk_table_id(copy.pk_table_id), table_name(copy.table_name), pk_attribute_id(copy.pk_attribute_id), attribute_name(copy.attribute_name), fk_table_id(copy.fk_table_id), fk_type_id(copy.fk_type_id), BAT_number(copy.BAT_number), pk_layout_id(copy.pk_layout_id), layout_name(copy.layout_name), size(copy.size), pk_operator_id(copy.pk_operator_id), operator_name(copy.operator_name), pk_datatype_id(copy.pk_datatype_id), datatype_name(copy.datatype_name), datatype_length(copy.datatype_length), datatype_category(copy.datatype_category), META_PATH(copy.META_PATH) {
 }
 
 MetaRepositoryManager::~MetaRepositoryManager() {
@@ -75,10 +78,10 @@ void MetaRepositoryManager::init(const char* strBaseDir) {
 
         getInstance(); // make sure that an instance exists
 
-        size_t len2 = strlen(PATH_DATABASE);
-        instance->TEST_DATABASE_PATH = new char[len + len2 + 1];
-        memcpy(instance->TEST_DATABASE_PATH, strBaseDir, len); // excludes NULL character
-        memcpy(instance->TEST_DATABASE_PATH + len, PATH_DATABASE, len2 + 1); // includes NULL character
+        // size_t len2 = strlen(PATH_DATABASE);
+        // instance->TEST_DATABASE_PATH = new char[len + len2 + 1];
+        // memcpy(instance->TEST_DATABASE_PATH, strBaseDir, len); // excludes NULL character
+        // memcpy(instance->TEST_DATABASE_PATH + len, PATH_DATABASE, len2 + 1); // includes NULL character
 
         size_t len3 = strlen(PATH_INFORMATION_SCHEMA);
         instance->META_PATH = new char[len + len3 + 1];
@@ -221,7 +224,58 @@ void MetaRepositoryManager::createAttribute(char *name, char *datatype, unsigned
     BAT_number->append(BATId);
 }
 
-char* MetaRepositoryManager::getDataTypeForAttribute(char *name) {
+char* MetaRepositoryManager::getDataTypeForAttribute(__attribute__((unused)) char *name) {
     return nullptr;
+}
+
+MetaRepositoryManager::TablesIterator::TablesIterator() : pKeyIter(MetaRepositoryManager::instance->pk_table_id->begin()), pNameIter(MetaRepositoryManager::instance->table_name->begin()) {
+}
+
+MetaRepositoryManager::TablesIterator::TablesIterator(const TablesIterator &iter) : pKeyIter(new typename table_key_iter_t::self_t(*iter.pKeyIter)), pNameIter(new typename table_name_iter_t::self_t(*iter.pNameIter)) {
+}
+
+MetaRepositoryManager::TablesIterator::~TablesIterator() {
+    delete pKeyIter;
+    delete pNameIter;
+}
+
+MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::operator=(const TablesIterator &copy) {
+    new (this) TablesIterator(copy);
+    return *this;
+}
+
+void MetaRepositoryManager::TablesIterator::next() {
+    pKeyIter->next();
+    pNameIter->next();
+}
+
+MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::operator++() {
+    next();
+    return *this;
+}
+
+void MetaRepositoryManager::TablesIterator::position(oid_t index) {
+    pKeyIter->position(index);
+    pNameIter->position(index);
+}
+
+bool MetaRepositoryManager::TablesIterator::hasNext() {
+    return pKeyIter->hasNext();
+}
+
+id_t MetaRepositoryManager::TablesIterator::head() {
+    return pKeyIter->tail();
+}
+
+cstr_t MetaRepositoryManager::TablesIterator::tail() {
+    return pNameIter->tail();
+}
+
+size_t MetaRepositoryManager::TablesIterator::size() {
+    return pKeyIter->size();
+}
+
+size_t MetaRepositoryManager::TablesIterator::consumption() {
+    return pKeyIter->consumption() + pNameIter->consumption();
 }
 

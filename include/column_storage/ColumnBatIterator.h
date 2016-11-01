@@ -44,7 +44,7 @@ protected:
 public:
 
     /** default constructor */
-    ColumnBatIteratorBase(id_t columnId) : bu(), mColumnId(columnId), mPosition(-1) {
+    ColumnBatIteratorBase(id_t columnId) : ta(nullptr), bu(), buNext(), mColumnId(columnId), Csize(0), Cconsumption(0), mPosition(-1) {
         TransactionManager* tm = TransactionManager::getInstance();
         if (tm == nullptr) {
             cerr << "TA manager is not available!" << endl;
@@ -59,12 +59,20 @@ public:
         next(); // init to first 
     }
 
+    ColumnBatIteratorBase(const ColumnBatIteratorBase<Head, Tail> &iter) : ta(iter.ta), bu(iter.bu), buNext(iter.buNext), mColumnId(iter.mColumnId), Csize(iter.Csize), Cconsumption(iter.Cconsumption), mPosition(iter.mPosition) {
+    }
+
     virtual ~ColumnBatIteratorBase() {
         if (ta) {
             TransactionManager* tm = TransactionManager::getInstance();
             tm->endTransaction(ta);
             ta = nullptr;
         }
+    }
+
+    ColumnBatIteratorBase& operator=(const ColumnBatIteratorBase &copy) {
+        new (this) ColumnBatIteratorBase(copy);
+        return *this;
     }
 
     virtual void position(oid_t index) override {
@@ -81,11 +89,6 @@ public:
     }
 
     virtual ColumnBatIteratorBase<Head, Tail>& operator++() override {
-        next();
-        return *this;
-    }
-
-    virtual ColumnBatIteratorBase<Head, Tail>& operator++(int) override {
         next();
         return *this;
     }
@@ -115,6 +118,8 @@ public:
 template<typename Head, typename Tail>
 class ColumnBatIterator : public ColumnBatIteratorBase<Head, Tail> {
 public:
+    typedef ColumnBatIterator<Head, Tail> self_t;
+
     using ColumnBatIteratorBase<Head, Tail>::ColumnBatIteratorBase;
 
     virtual ~ColumnBatIterator() {
@@ -124,6 +129,8 @@ public:
 template<>
 class ColumnBatIterator<v2_void_t, v2_cstr_t> : public ColumnBatIteratorBase<v2_void_t, v2_cstr_t> {
 public:
+    typedef ColumnBatIterator<v2_void_t, v2_cstr_t> self_t;
+
     using ColumnBatIteratorBase<v2_void_t, v2_cstr_t>::ColumnBatIteratorBase;
 
     virtual ~ColumnBatIterator() {

@@ -53,26 +53,26 @@ private:
 public:
 
     /** default constructor */
-    TempBat() {
+    TempBat() : head(), tail() {
     }
 
     /** constructor for n elements */
-    TempBat(size_t n) {
+    TempBat(size_t n) : head(), tail() {
         head.container->reserve(n);
         tail.container->reserve(n);
     }
 
-    TempBat(coldesc_head_t& head, __attribute__((unused)) coldesc_tail_t& tail) : head(head), tail(tail) {
+    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
     }
 
-    TempBat(coldesc_head_t&& head, __attribute__((unused)) coldesc_tail_t&& tail) : head(head), tail(tail) {
+    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
     }
 
     virtual ~TempBat() {
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail> * begin() override {
+    virtual TempBatIterator<Head, Tail> * begin() override {
         return new TempBatIterator<Head, Tail>(head, tail);
     }
 
@@ -130,7 +130,7 @@ private:
 public:
 
     /** default constructor */
-    TempBat() : count(0) {
+    TempBat() : head(), tail(), count(0) {
     }
 
     virtual ~TempBat() {
@@ -143,12 +143,11 @@ public:
     }
 
     /** constructor for n elements */
-    TempBat(size_t n) {
-        count = n;
+    TempBat(size_t n) : head(), tail(), count(n) {
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<v2_void_t, v2_void_t> * begin() override {
+    virtual TempBatIterator<v2_void_t, v2_void_t> * begin() override {
         return new TempBatIterator<v2_void_t, v2_void_t>(head, tail, count);
     }
 
@@ -230,7 +229,7 @@ public:
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, v2_void_t> * begin() override {
+    virtual TempBatIterator<Head, v2_void_t> * begin() override {
         return new TempBatIterator<Head, v2_void_t>(head, tail);
     }
 
@@ -295,7 +294,7 @@ private:
 public:
 
     /** default constructor */
-    TempBat() {
+    TempBat() : head(), tail() {
     }
 
     virtual ~TempBat() {
@@ -308,12 +307,12 @@ public:
     }
 
     /** constructor for n elements */
-    TempBat(size_t n) {
+    TempBat(size_t n) : head(), tail() {
         tail.container->reserve(n);
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<v2_void_t, Tail> * begin() override {
+    virtual TempBatIterator<v2_void_t, Tail> * begin() override {
         return new TempBatIterator<v2_void_t, Tail>(head, tail);
     }
 

@@ -43,6 +43,12 @@ public:
      */
     struct Chunk {
         void *content;
+
+        Chunk();
+        Chunk(void* content);
+        Chunk(const Chunk &);
+
+        Chunk& operator=(const Chunk &);
     };
 
     /**
@@ -53,6 +59,12 @@ public:
         version_t *version;
         Bucket *next, *older, *newer;
         Chunk *chunk;
+
+        Bucket();
+        Bucket(id_t number, version_t *version, Bucket *next, Bucket *older, Bucket* newer, Chunk *chunk);
+        Bucket(const Bucket &);
+
+        Bucket& operator=(const Bucket &);
     };
 
     /**
@@ -60,8 +72,14 @@ public:
      */
     struct BucketStream {
         Bucket *head, *tail;
-        std::vector<Bucket*> index;
+        vector<Bucket*> index;
         size_t size;
+
+        BucketStream();
+        BucketStream(Bucket *head, Bucket *tail, vector<Bucket*> index, size_t size);
+        BucketStream(const BucketStream &);
+
+        BucketStream& operator=(const BucketStream &);
     };
 
     /**
@@ -146,8 +164,8 @@ public:
 #endif
 
     private:
-        version_t *version;
         BucketStream *stream;
+        version_t *version;
 
         Bucket *currentBucket;
         Bucket *previousBucket;
@@ -160,6 +178,8 @@ public:
         BucketIterator(BucketStream *stream, version_t *version);
         BucketIterator(const BucketIterator &copy);
         virtual ~BucketIterator();
+
+        BucketIterator& operator=(const BucketIterator& copy);
 
         friend class ColumnManager;
     };

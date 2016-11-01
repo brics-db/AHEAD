@@ -40,7 +40,6 @@ public:
 
     virtual void next() = 0;
     virtual BatIterator& operator++() = 0;
-    virtual BatIterator& operator++(int) = 0;
     virtual void position(oid_t index) = 0;
     virtual bool hasNext() = 0;
 

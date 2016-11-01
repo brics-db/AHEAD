@@ -18,7 +18,7 @@ void ColumnManager::destroyInstance() {
     }
 }
 
-ColumnManager::ColumnManager() {
+ColumnManager::ColumnManager() : columns() {
 }
 
 ColumnManager::~ColumnManager() {
@@ -191,22 +191,18 @@ void ColumnManager::ColumnIterator::undo() {
     this->currentPosition = 0;
 }
 
-ColumnManager::ColumnIterator::ColumnIterator(Column *column, BucketManager::BucketIterator *iterator) : recordsPerBucket(static_cast<unsigned> ((CHUNK_CONTENT_SIZE - sizeof (unsigned)) / column->width)) {
-    this->iterator = iterator;
+ColumnManager::ColumnIterator::ColumnIterator(Column *column, BucketManager::BucketIterator *iterator) : iterator(iterator), column(column), currentChunk(nullptr), currentPosition(0), recordsPerBucket(static_cast<unsigned> ((CHUNK_CONTENT_SIZE - sizeof (unsigned)) / column->width)) {
     this->iterator->rewind();
-    this->column = column;
-    this->currentChunk = 0;
-    this->currentPosition = 0;
 }
 
-ColumnManager::ColumnIterator::ColumnIterator(const ColumnIterator& copy) : recordsPerBucket(copy.recordsPerBucket) {
-    this->iterator = new BucketManager::BucketIterator(*copy.iterator);
-    this->column = new Column;
-    this->column->width = copy.column->width;
-    this->currentChunk = copy.currentChunk;
-    this->currentPosition = copy.currentPosition;
+ColumnManager::ColumnIterator::ColumnIterator(const ColumnIterator& copy) : iterator(new BucketManager::BucketIterator(*copy.iterator)), column(new Column(copy.column->width)), currentChunk(copy.currentChunk), currentPosition(copy.currentPosition), recordsPerBucket(copy.recordsPerBucket) {
 }
 
 ColumnManager::ColumnIterator::~ColumnIterator() {
     delete iterator;
+}
+
+ColumnManager::ColumnIterator& ColumnManager::ColumnIterator::operator=(const ColumnManager::ColumnIterator &copy) {
+    new (this) ColumnIterator(copy);
+    return *this;
 }

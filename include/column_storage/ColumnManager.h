@@ -30,6 +30,12 @@ public:
      */
     struct Column {
         unsigned int width;
+
+        Column() : width(0) {
+        }
+
+        Column(unsigned int width) : width(width) {
+        }
     };
 
     /**
@@ -128,6 +134,7 @@ public:
 
     public:
         virtual ~ColumnIterator();
+        ColumnIterator& operator=(const ColumnIterator &copy);
     };
 
     /**

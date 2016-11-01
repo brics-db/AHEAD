@@ -1,6 +1,7 @@
 # author: Till Kolditz (C) 2016 Till.Kolditz@TU-Dresden.de
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1 FATAL_ERROR)
+
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
     PROJECT(V2TOOLS VERSION 0.5 LANGUAGES CXX)
@@ -12,6 +13,8 @@ MACRO( add_algorithm arg_name arg_path )
     FILE(GLOB SOURCE_FILES
         "${arg_path}/${arg_name}.cpp")
     ADD_EXECUTABLE(${arg_name} ${SOURCE_FILES})
+    SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_LINK_LIBRARIES(${arg_name} v2util v2column_storage v2meta_repository)
     MESSAGE(STATUS "Add executable ${arg_name}")
 ENDMACRO( add_algorithm )

@@ -25,8 +25,7 @@ using namespace std::chrono;
 
 const bool OUTPUT_INSERT_DOT = true;
 
-StopWatch::StopWatch() : startNS(), stopNS() {
-    totalNS = duration_cast<nanoseconds>(stopNS - startNS).count();
+StopWatch::StopWatch() : startNS(), stopNS(), totalNS(duration_cast<nanoseconds>(stopNS - startNS).count()) {
 }
 
 void StopWatch::start() {

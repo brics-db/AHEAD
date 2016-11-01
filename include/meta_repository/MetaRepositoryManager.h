@@ -5,6 +5,7 @@
 
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
+#include <column_storage/TempBat.h>
 
 using namespace std;
 
@@ -79,34 +80,34 @@ private:
     static void destroyInstance();
 
     // all attributes for the table table :)
-    id_bat_t *pk_table_id;
-    cstr_bat_t *table_name;
+    id_tmpbat_t*pk_table_id;
+    cstr_tmpbat_t *table_name;
 
     // all attributes for the attribute table
-    id_bat_t *pk_attribute_id;
-    cstr_bat_t *attribute_name;
-    id_bat_t *fk_table_id;
-    id_bat_t *fk_type_id;
-    id_bat_t *BAT_number;
+    id_tmpbat_t *pk_attribute_id;
+    cstr_tmpbat_t *attribute_name;
+    id_tmpbat_t *fk_table_id;
+    id_tmpbat_t *fk_type_id;
+    id_tmpbat_t *BAT_number;
 
     // all attributes for the layout table
-    id_bat_t *pk_layout_id;
-    cstr_bat_t *layout_name;
-    size_bat_t *size;
+    id_tmpbat_t *pk_layout_id;
+    cstr_tmpbat_t *layout_name;
+    size_tmpbat_t *size;
 
     // all attributes for the operator table
-    id_bat_t *pk_operator_id;
-    cstr_bat_t *operator_name;
+    id_tmpbat_t *pk_operator_id;
+    cstr_tmpbat_t *operator_name;
 
     // all attributes for the datatypes table
-    id_bat_t *pk_datatype_id;
-    cstr_bat_t *datatype_name;
-    size_bat_t *datatype_length;
-    char_bat_t *datatype_category;
+    id_tmpbat_t *pk_datatype_id;
+    cstr_tmpbat_t *datatype_name;
+    size_tmpbat_t *datatype_length;
+    char_tmpbat_t *datatype_category;
 
     // path where all table files are located
     char* META_PATH;
-    char* TEST_DATABASE_PATH;
+    // char* TEST_DATABASE_PATH;
 
     void createRepository();
 
@@ -137,68 +138,44 @@ private:
     bool dataAlreadyExists(Bat<Head, Tail> *bat, cstr_t name_value);
 
     MetaRepositoryManager();
+    MetaRepositoryManager(const MetaRepositoryManager &copy);
     virtual ~MetaRepositoryManager();
+    MetaRepositoryManager& operator=(const MetaRepositoryManager &copy);
 
 public:
 
     class TablesIterator : public BatIterator<v2_id_t, v2_cstr_t> {
-        typedef BatIterator<v2_void_t, v2_id_t> table_key_iter_t;
-        typedef BatIterator<v2_void_t, v2_cstr_t> table_name_iter_t;
+        typedef TempBatIterator<v2_void_t, v2_id_t> table_key_iter_t;
+        typedef TempBatIterator<v2_void_t, v2_cstr_t> table_name_iter_t;
 
         table_key_iter_t *pKeyIter;
         table_name_iter_t *pNameIter;
 
     public:
 
-        TablesIterator() {
-            pKeyIter = MetaRepositoryManager::instance->pk_table_id->begin();
-            pNameIter = MetaRepositoryManager::instance->table_name->begin();
-        }
+        TablesIterator();
 
-        ~TablesIterator() {
-            delete pKeyIter;
-            delete pNameIter;
-        }
+        TablesIterator(const TablesIterator &iter);
 
-        virtual void next() override {
-            pKeyIter->next();
-            pNameIter->next();
-        }
+        virtual ~TablesIterator();
 
-        virtual TablesIterator& operator++() override {
-            next();
-            return *this;
-        }
+        TablesIterator& operator=(const TablesIterator &copy);
 
-        virtual TablesIterator& operator++(int) override {
-            next();
-            return *this;
-        }
+        virtual void next() override;
 
-        virtual void position(oid_t index) override {
-            pKeyIter->position(index);
-            pNameIter->position(index);
-        }
+        virtual TablesIterator& operator++() override;
 
-        virtual bool hasNext() override {
-            return pKeyIter->hasNext();
-        }
+        virtual void position(oid_t index) override;
 
-        virtual id_t head() override {
-            return pKeyIter->tail();
-        }
+        virtual bool hasNext() override;
 
-        virtual cstr_t tail() override {
-            return pNameIter->tail();
-        }
+        virtual id_t head() override;
 
-        virtual size_t size() override {
-            return pKeyIter->size();
-        }
+        virtual cstr_t tail() override;
 
-        virtual size_t consumption() override {
-            return pKeyIter->consumption() + pNameIter->consumption();
-        }
+        virtual size_t size() override;
+
+        virtual size_t consumption() override;
 
         friend class MetaRepositoryManager;
     };

@@ -68,6 +68,12 @@ public:
             delete container;
         }
     }
+
+    ColumnDescriptor& operator=(const ColumnDescriptor &copy) {
+        this->~ColumnDescriptor();
+        new (this) ColumnDescriptor(copy);
+        return *this;
+    }
 };
 
 template<>

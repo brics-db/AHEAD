@@ -35,16 +35,10 @@
 
 using namespace std;
 
-TransactionManager::Transaction::Transaction(bool isUpdater, unsigned int currentVersion) {
-    this->botVersion = currentVersion;
-    this->isUpdater = isUpdater;
+TransactionManager::Transaction::Transaction(bool isUpdater, unsigned int currentVersion) : botVersion(currentVersion), eotVersion(isUpdater ? (new unsigned int(UINT_MAX)) : (&this->botVersion)), isUpdater(isUpdater), iterators(), iteratorPositions() {
+}
 
-    if (this->isUpdater) {
-        this->eotVersion = new unsigned int;
-        *this->eotVersion = UINT_MAX;
-    } else {
-        this->eotVersion = &this->botVersion;
-    }
+TransactionManager::Transaction::Transaction(const Transaction &copy) : Transaction(copy.isUpdater, copy.botVersion) {
 }
 
 TransactionManager::Transaction::~Transaction() {
@@ -53,6 +47,11 @@ TransactionManager::Transaction::~Transaction() {
             delete pIter;
         }
     }
+}
+
+TransactionManager::Transaction& TransactionManager::Transaction::operator=(const Transaction &copy) {
+    new (this) Transaction(copy);
+    return *this;
 }
 
 size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, size_t size, const char* delim, bool ignoreMoreData) {
@@ -89,17 +88,17 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     memset(line, 0, LEN_LINE);
     char value[LEN_VALUE];
     memset(value, 0, LEN_VALUE);
-    char *buffer;
+    char *buffer(nullptr);
     TransactionManager::BinaryUnit bun;
-    oid_t offset;
-    id_t column;
-    type_t type;
+    oid_t offset(0);
+    id_t column(0);
+    type_t type(type_void);
     bool firstAppend = true;
-    size_t n = 0; // line counter
+    size_t n(0); // line counter
     size_t lenPrefix = prefix ? strlen(prefix) : 0;
 
-    id_t newTableId; // unique id of the created table
-    id_t BATId;
+    id_t newTableId(0); // unique id of the created table
+    id_t BATId(0);
     char datatype[LEN_VALUE];
     vector<char*> attribute_names;
 
@@ -176,7 +175,7 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
                 // Berechnung der Anzahl bisher vorhandener Spalten
                 if (firstAppend) {
-                    offset = *reinterpret_cast<oid_t*> (&bun.head);
+                    offset = bun.head.oid;
                     firstAppend = false;
                 }
 
@@ -451,7 +450,7 @@ TransactionManager::BinaryUnit TransactionManager::Transaction::next(id_t id) {
 
         if (record.content != nullptr) {
             TransactionManager::BinaryUnit bun;
-            *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
+            bun.head.oid = this->iteratorPositions[id]++;
             bun.tail = record.content;
             return bun;
         } else {
@@ -470,7 +469,7 @@ TransactionManager::BinaryUnit TransactionManager::Transaction::get(id_t id, oid
 
         if (record.content != nullptr) {
             TransactionManager::BinaryUnit bun;
-            *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
+            bun.head.oid = this->iteratorPositions[id]++;
             bun.tail = record.content;
             return bun;
         } else {
@@ -491,7 +490,7 @@ TransactionManager::BinaryUnit TransactionManager::Transaction::edit(id_t id) {
 
             if (record.content != nullptr) {
                 TransactionManager::BinaryUnit bun;
-                *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id] - 1;
+                bun.head.oid = this->iteratorPositions[id] - 1;
                 bun.tail = record.content;
                 return bun;
             } else {
@@ -515,7 +514,7 @@ TransactionManager::BinaryUnit TransactionManager::Transaction::append(id_t id) 
 
             if (record.content != nullptr) {
                 TransactionManager::BinaryUnit bun;
-                *reinterpret_cast<oid_t*> (&bun.head) = this->iteratorPositions[id]++;
+                bun.head.oid = this->iteratorPositions[id]++;
                 bun.tail = record.content;
                 return move(bun);
             } else {

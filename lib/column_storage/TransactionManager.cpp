@@ -24,8 +24,10 @@ void TransactionManager::destroyInstance() {
     }
 }
 
-TransactionManager::TransactionManager() {
-    this->currentVersion = 0;
+TransactionManager::TransactionManager() : currentVersion(0), transactions() {
+}
+
+TransactionManager::TransactionManager(const TransactionManager& copy) : currentVersion(copy.currentVersion), transactions(copy.transactions) {
 }
 
 TransactionManager::~TransactionManager() {

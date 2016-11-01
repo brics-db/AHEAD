@@ -224,14 +224,14 @@ public:
 
     virtual pair<resoid_t, Tail>&& get(unsigned index) override {
         this->bu = this->ta->get(this->mColumnId, index);
-        pair<resoid_t, Tail> p = make_pair(std::move(*reinterpret_cast<resoid_t*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
+        pair<resoid_t, Tail> p = make_pair(static_cast<resoid_t> (this->bu->head.oid), static_cast<const char*> (this->bu->tail));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
         return p;
     }
 
     virtual pair<resoid_t, Tail>&& next() override {
-        pair<resoid_t, Tail> p = make_pair(std::move(*reinterpret_cast<resoid_t*> (&this->bu->head)), std::move(static_cast<const char*> (this->bu->tail)));
+        pair<resoid_t, Tail> p = make_pair(static_cast<resoid_t> (this->bu->head.oid), static_cast<const char*> (this->bu->tail));
         delete this->bu;
         this->bu = this->ta->next(this->mColumnId);
         return p;

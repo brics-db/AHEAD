@@ -35,13 +35,17 @@ public:
      * Die Datenstruktur stellt ein Tupel dar.
      */
     struct BinaryUnit {
-        void *head;
+
+        union {
+            void * pvoid;
+            oid_t oid;
+        } head;
         void *tail;
 
-        BinaryUnit() : head(nullptr), tail(nullptr) {
+        BinaryUnit() : head({nullptr}), tail(nullptr) {
         }
 
-        BinaryUnit(void *head, void *tail) : head(head), tail(tail) {
+        BinaryUnit(void *head, void *tail) : head({head}), tail(tail) {
         }
     };
 
@@ -149,12 +153,14 @@ public:
          * Die Zuordnungsvorschrift weißt jeder Identifikationsnummer einer Spalte den ggf. geöffneten ColumnIterator zu und die aktuelle Position des ColumnIterators innerhalb der Spalte zu. Falls die Spalte geschlossen wurde, wird die Position des ColumnIterators auf (-1) gesetzt, um ggf. ein Undo durchführen zu können.
          */
         //		std::map<unsigned int, std::pair<ColumnManager::ColumnIterator*, unsigned int> > iterators;
-        std::vector<ColumnManager::ColumnIterator*> iterators;
-        std::vector<ssize_t> iteratorPositions;
+        vector<ColumnManager::ColumnIterator*> iterators;
+        vector<ssize_t> iteratorPositions;
 
         Transaction(bool isUpdater, unsigned int currentVersion);
         Transaction(const Transaction &copy);
         virtual ~Transaction();
+
+        Transaction& operator=(const Transaction &copy);
 
         void rollback();
     };
@@ -204,7 +210,7 @@ private:
     /**
      * Die Menge enthält alle aktuell aktiven Transaktionen.
      */
-    std::set<Transaction*> transactions;
+    set<Transaction*> transactions;
 
     TransactionManager();
     TransactionManager(const TransactionManager &copy);
