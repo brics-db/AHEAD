@@ -10,9 +10,8 @@ Makefile
 cmake_install.cmake
 CMakeCache.txt
 CMakeFiles
-/build/lineorder_size
-/build/main
-/build/test_hashjoin
-/build/ssbm*
+/build
 /database
 /nbproject/private
+/eval/data
+/eval/out
