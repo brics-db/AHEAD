@@ -201,27 +201,29 @@ namespace v2 {
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 if (iter1->hasNext() && iter2->hasNext()) {
+                    size_t pos = 0;
                     // only really continue when both BATs are not empty
                     if (arg1->size() < arg2->size()) {
                         // let's ignore the joinSide for now and use that sizes as a measure, which is of course oversimplified
                         unordered_map<typename Tail1::type_t, vector<typename Head1::type_t> > hashMap;
-                        for (; iter1->hasNext(); ++*iter1) { // build
+                        for (; iter1->hasNext(); ++*iter1, ++pos) { // build
                             auto h = iter1->head();
                             auto t = iter1->tail();
-                            if (isHead1Encoded)
-                                vec1->emplace_back((h * AH1inv) <= AH1UnencMaxU);
-                            if (isTail1Encoded)
-                                vec2->emplace_back((t * AT1inv) <= AT1UnencMaxU);
+                            if (isHead1Encoded && (h * AH1inv) > AH1UnencMaxU)
+                                (*vec1)[pos] = true;
+                            if (isTail1Encoded && (t * AT1inv) > AT1UnencMaxU)
+                                (*vec2)[pos] = true;
                             hashMap[t].emplace_back(h);
                         }
                         auto mapEnd = hashMap.end();
-                        for (; iter2->hasNext(); ++*iter2) { // probe
+                        pos = 0;
+                        for (; iter2->hasNext(); ++*iter2, ++pos) { // probe
                             auto h = iter2->head();
                             auto t = iter2->tail();
-                            if (isHead2Encoded)
-                                vec3->emplace_back((h * AH2inv) <= AH2UnencMaxU);
-                            if (isTail2Encoded)
-                                vec4->emplace_back((t * AT2inv) <= AT2UnencMaxU);
+                            if (isHead2Encoded && (h * AH2inv) > AH2UnencMaxU)
+                                (*vec3)[pos] = true;
+                            if (isTail2Encoded && (t * AT2inv) > AT2UnencMaxU)
+                                (*vec4)[pos] = true;
                             auto mapIter = hashMap.find(static_cast<typename Tail1::type_t> (isTail1Encoded ? (isHead2Encoded ? h : (static_cast<typename Tail1::type_t> (h) * AT1)) : (isHead2Encoded ? (h * AH2inv) : h)));
                             if (mapIter != mapEnd) {
                                 for (auto matched : mapIter->second) {
@@ -231,23 +233,24 @@ namespace v2 {
                         }
                     } else {
                         unordered_map<typename Head2::type_t, vector<typename Tail2::type_t> > hashMap;
-                        for (; iter2->hasNext(); ++*iter2) { // build
+                        for (; iter2->hasNext(); ++*iter2, ++pos) { // build
                             auto h = iter2->head();
                             auto t = iter2->tail();
-                            if (isHead2Encoded)
-                                vec3->emplace_back((h * AH2inv) <= AH2UnencMaxU);
-                            if (isTail2Encoded)
-                                vec4->emplace_back((t * AT2inv) <= AT2UnencMaxU);
+                            if (isHead2Encoded && (h * AH2inv) > AH2UnencMaxU)
+                                (*vec3)[pos] = true;
+                            if (isTail2Encoded && (t * AT2inv) > AT2UnencMaxU)
+                                (*vec4)[pos] = true;
                             hashMap[h].emplace_back(t);
                         }
                         auto mapEnd = hashMap.end();
-                        for (; iter1->hasNext(); ++*iter1) { // probe
+                        pos = 0;
+                        for (; iter1->hasNext(); ++*iter1, ++pos) { // probe
                             auto h = iter1->head();
                             auto t = iter1->tail();
-                            if (isHead1Encoded)
-                                vec1->emplace_back((h * AH1inv) <= AH1UnencMaxU);
-                            if (isTail1Encoded)
-                                vec2->emplace_back((t * AT1inv) <= AT1UnencMaxU);
+                            if (isHead1Encoded && (h * AH1inv) > AH1UnencMaxU)
+                                (*vec1)[pos] = true;
+                            if (isTail1Encoded && (t * AT1inv) > AT1UnencMaxU)
+                                (*vec2)[pos] = true;
                             auto mapIter = hashMap.find(static_cast<typename Head2::type_t> (isHead2Encoded ? (isTail1Encoded ? t : (static_cast<typename Head2::type_t> (t) * AH2)) : (isTail1Encoded ? (t * AT1inv) : t)));
                             if (mapIter != mapEnd) {
                                 for (auto matched : mapIter->second) {
