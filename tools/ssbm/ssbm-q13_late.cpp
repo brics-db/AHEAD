@@ -91,10 +91,10 @@ int main(int argc, char** argv) {
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, 1994)); // d_year = 1994
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, 1994 * v2_resshort_t::A)); // d_year = 1994
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_weeknuminyear
         delete bat7;
-        MEASURE_OP(sw2, x, bat9, v2::bat::ops::select<equal_to>(batDWenc, 6)); // d_weeknuminyear = 6
+        MEASURE_OP(sw2, x, bat9, v2::bat::ops::select<equal_to>(batDWenc, 6 * v2_restiny_t::A)); // d_weeknuminyear = 6
         MEASURE_OP(sw2, x, batA, v2::bat::ops::hashjoin(bat8, bat9));
         delete bat8;
         delete bat9;

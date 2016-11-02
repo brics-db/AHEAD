@@ -16,9 +16,9 @@ IMPLEMENTED=(11 12 13)
 DO_COMPILE=0
 DO_COMPILE_CMAKE=0
 DO_BENCHMARK=0
-DO_EVAL=1
-DO_EVAL_PREPARE=1
-DO_VERIFY=0
+DO_EVAL=0
+DO_EVAL_PREPARE=0
+DO_VERIFY=1
 
 # Process specific constants
 CMAKE_BUILD_TYPE=release
@@ -37,6 +37,12 @@ popd () {
     command popd "$@" > /dev/null
 }
 
+#########################################################
+# awktranspose                                          #
+#                                                       #
+# arg1) input file                                      #
+# arg2) output file                                     #
+#########################################################
 awktranspose () {
     # awk code taken verbatim from:
     # http://stackoverflow.com/questions/1729824/transpose-a-file-in-bash
@@ -56,6 +62,45 @@ awktranspose () {
             print str
         }
     }' $1 >$2
+}
+
+#########################################################
+# gnuplotcode                                           #
+#                                                       #
+# arg1) <code output file>                              #
+#       where the generated code should written be to   #
+# arg2) <gnuplot output file>                           #
+#       where gnuplot should store its result           #
+# arg3) <gnuplot input file>                            #
+#       location of gnuplot data file                   #
+# arg4+) <gnuplot custom code>                          #
+#       custom code to be added                         #
+#########################################################
+gnuplotcode () {
+        # Write GNUplot code to file
+        cat >$1 << EOM
+#!/usr/bin/env gnuplot
+reset
+#set terminal pdf enhanced monochrome
+set term pdf enhanced
+#set term png medium enhanced background "white"
+          # x000000 x202020 x404040 x606060 \\
+          # x808080 xA0A0A0 xC0C0C0 xE0E0E0
+# white for the transparent background, black for borders, dark gray for axes, and a gray-scale for the six plotting colors.
+set output '$2'
+set style data histogram
+set style histogram cluster gap 1
+#set style fill solid border rgb "black"
+set style fill transparent pattern 0.5 border
+set auto x
+set yrange [0:*]
+
+$(for var in "${@:4}"; do echo $var; done)
+plot '$3' using 2:xtic(1) title col, \\
+        '' using 3:xtic(1) title col, \\
+        '' using 4:xtic(1) title col, \\
+        '' using 5:xtic(1) title col
+EOM
 }
 
 #############################
@@ -126,6 +171,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         BASE2=${BASE}${NUM}
         EVAL_TEMPFILE=${PATH_EVALDATA}/${BASE2}.tmp
         EVAL_DATAFILE=${PATH_EVALOUT}/${BASE2}.data
+        EVAL_NORMALIZEDTEMPFILE=${PATH_EVALDATA}/${BASE2}.norm.tmp
+        EVAL_NORMALIZEDDATAFILE=${PATH_EVALOUT}/${BASE2}.norm.data
         if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
             echo " * Preparing data for ${BASE2}"
 
@@ -175,43 +222,42 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 echo "" >>${EVAL_TEMPFILE}
             done
 
-            # transpose, write gnuplot file and generate diagram
+            # transpose original data
             awktranspose ${EVAL_TEMPFILE} ${EVAL_DATAFILE}
             if [[ ${BASEREPLACE1} ]]; then
                 sed -i -e ${BASEREPLACE1} ${EVAL_DATAFILE}
                 sed -i -e ${BASEREPLACE2} ${EVAL_DATAFILE}
             fi
+
+            # prepare awk statement to normalize all columns
+            arg="FNR==NR {"
+            for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do # number of scale factors
+                column=$(echo "${sf}+1" | bc)
+                arg+="max${column}=(\$${column}+0>max${column})?\$${column}:max${column};"
+            done
+            arg+="next} FNR==1 {print \$1,\$2,\$3,\$4,\$5;next} {print \$1"
+            for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do # number of scale factors
+                column=$(echo "${sf}+1" | bc)
+                arg+=",\$${column}/max${column}"
+            done
+            arg+="}"
+            awk "${arg}" ${EVAL_TEMPFILE} ${EVAL_TEMPFILE} >${EVAL_NORMALIZEDTEMPFILE}
+
+            # transpose normalized data
+            awktranspose ${EVAL_NORMALIZEDTEMPFILE} ${EVAL_NORMALIZEDDATAFILE}
+            if [[ ${BASEREPLACE1} ]]; then
+                sed -i -e ${BASEREPLACE1} ${EVAL_NORMALIZEDDATAFILE}
+                sed -i -e ${BASEREPLACE2} ${EVAL_NORMALIZEDDATAFILE}
+            fi
         fi
 
         echo " * Plotting ${BASE2}"
-        EVAL_PLOTFILE=${BASE2}.gnuplot
-        EVAL_PLOTOUTFILE=${BASE2}.pdf
+        #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
+        gnuplotcode ${PATH_EVALOUT}/${BASE2}.gnuplot ${BASE2}.pdf ${BASE2}.data "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
+        pushd ${PATH_EVALOUT}; gnuplot ${BASE2}.gnuplot; popd
 
-        # Write GNUplot code to file
-        cat >${PATH_EVALOUT}/${EVAL_PLOTFILE} << EOM
-#!/usr/bin/env gnuplot
-
-set terminal pdf enhanced monochrome
-#set term png medium enhanced background "white"
-          # x000000 x202020 x404040 x606060 \\
-          # x808080 xA0A0A0 xC0C0C0 xE0E0E0
-# white for the transparent background, black for borders, dark gray for axes, and a gray-scale for the six plotting colors.
-set output '${EVAL_PLOTOUTFILE}'
-
-set style data histogram
-set style histogram cluster gap 1
-
-#set style fill solid border rgb "black"
-set style fill pattern border
-set auto x
-set yrange [0:*]
-plot '${BASE2}.data' using 2:xtic(1) title col, \\
-        '' using 3:xtic(1) title col, \\
-        '' using 4:xtic(1) title col, \\
-        '' using 5:xtic(1) title col
-EOM
-
-        pushd ${PATH_EVALOUT}; gnuplot ${EVAL_PLOTFILE}; popd
+        gnuplotcode ${PATH_EVALOUT}/${BASE2}.norm.gnuplot ${BASE2}.norm.pdf ${BASE2}.norm.data "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'" "set yrange [0.5:1]"
+        pushd ${PATH_EVALOUT}; gnuplot ${BASE2}.norm.gnuplot; popd
     done
 else
     echo "Skipping evaluation."
@@ -222,30 +268,45 @@ EXITSTAT=0
 if [[ ${DO_VERIFY} -ne 0 ]]; then
     echo "Verifying:"
     for NUM in "${IMPLEMENTED[@]}"; do
-        DIFF1=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_early.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF2=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_late.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF3=$(if [[ $(diff ssbm-q${NUM}.result ssbm-q${NUM}_continuous.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF4=$(if [[ $(diff ssbm-q${NUM}_late.result ssbm-q${NUM}_early.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF5=$(if [[ $(diff ssbm-q${NUM}_late.result ssbm-q${NUM}_continuous.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF6=$(if [[ $(diff ssbm-q${NUM}_early.result ssbm-q${NUM}_continuous.result | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        BASE2=${BASE}${NUM}
+        normal=${PATH_EVALDATA}/${BASE2}.results
+        early=${PATH_EVALDATA}/${BASE2}_early.results
+        late=${PATH_EVALDATA}/${BASE2}_late.results
+        contin=${PATH_EVALDATA}/${BASE2}_continuous.results
+        DIFF1=$(if [[ $(diff ${normal} ${early}  | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF2=$(if [[ $(diff ${normal} ${late}   | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF3=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${normal} - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF4=$(if [[ $(diff ${early}  ${late}   | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF5=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${early}  - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
+        DIFF6=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${late}   - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
 
-        if [[ DIFF1 -eq "OK" ]] && [[ DIFF2 -eq "OK" ]] && [[ DIFF3 -eq "OK" ]] && [[ DIFF4 -eq "OK" ]] && [[ DIFF5 -eq "OK" ]] && [[ DIFF6 -eq "OK" ]]; then
+        if [[ ${DIFF1} == "OK" ]] && [[ ${DIFF2} == "OK" ]] && [[ ${DIFF3} == "OK" ]] && [[ ${DIFF4} == "OK" ]] && [[ ${DIFF5} == "OK" ]] && [[ ${DIFF6} == "OK" ]]; then
             echo " * Q${NUM}: all OK"
-        elif [[ DIFF1 -eq "OK" ]]; then
-            if [[ DIFF2 -eq "OK" ]]; then
-                echo " * Q${NUM}: All produce the same result"
+        elif [[ ${DIFF1} == "OK" ]]; then
+            if [[ ${DIFF2} == "OK" ]]; then
+                echo " * Q${NUM}: normal, early and late produce the same result"
+                ++${EXITSTAT}
+            elif [[ ${DIFF3} == "OK" ]]; then
+                echo " * Q${NUM}: normal, early and continuous produce the same result"
+                ++${EXITSTAT}
             else
-                echo " * Q${NUM}: Only ssbm-q${NUM} and ssbm-q${NUM}_early produce the same result"
+                echo " * Q${NUM}: normal and early produce the same result"
                 ++${EXITSTAT}
             fi
+        elif [[ ${DIFF2} == "OK" ]]; then
+            if [[ ${DIFF3} == "OK" ]]; then
+                echo " * Q${NUM}: normal, late and continuous produce the same result"
+                ++${EXITSTAT}
+            else
+                echo " * Q${NUM}: normal and late produce the same result"
+                ++${EXITSTAT}
+            fi
+        elif [[ ${DIFF3} == "OK" ]]; then
+            echo " * Q${NUM}: normal and continuous produce the same result"
+            ++${EXITSTAT}
         else
-            if [[ DIFF2 -eq "OK" ]]; then
-                echo " * Q${NUM}: Only ssbm-q${NUM} and ssbm-q${NUM}_late produce the same result"
-                ++${EXITSTAT}
-            elif [[ DIFF3 -eq "OK" ]]; then
-                echo " * Q${NUM}: Only ssbm-q${NUM}_late and ssbm-q${NUM}_early produce the same result"
-                ++${EXITSTAT}
-            fi
+            echo " * Q${NUM}: no results match"
+            ++${EXITSTAT}
         fi
     done
 else

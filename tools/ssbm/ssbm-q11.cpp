@@ -79,8 +79,8 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // join selection
-        delete bat2;
         delete bat3;
+        delete bat2;
         MEASURE_OP(sw2, x, bat5, bat4->mirror_head()); // prepare joined selection with lo_orderdate (contains positions in tail)
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::hashjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;

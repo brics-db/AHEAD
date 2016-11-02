@@ -93,11 +93,11 @@ int main(int argc, char** argv) {
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(sw2, x, pair7, v2::bat::ops::selectAN<equal_to>(batDYenc, 1994)); // d_year = 1994
+        MEASURE_OP_PAIR(sw2, x, pair7, v2::bat::ops::selectAN<equal_to>(batDYenc, 1994 * v2_resshort_t::A)); // d_year = 1994
         delete pair7.second;
         MEASURE_OP(sw2, x, bat8, pair7.first->mirror_head()); // prepare joined selection over d_year and d_weeknuminyear
         delete pair7.first;
-        MEASURE_OP_PAIR(sw2, x, pair9, v2::bat::ops::selectAN<equal_to>(batDWenc, 6)); // d_weeknuminyear = 6
+        MEASURE_OP_PAIR(sw2, x, pair9, v2::bat::ops::selectAN<equal_to>(batDWenc, 6 * v2_restiny_t::A)); // d_weeknuminyear = 6
         delete pair9.second;
         MEASURE_OP_TUPLE(sw2, x, tupleA, v2::bat::ops::hashjoinAN(bat8, pair9.first));
         delete bat8;
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
+        cout << "\n(" << setw(2) << i << ")\n\tresult: " << (result * v2_resbigint_t::A_INV) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
