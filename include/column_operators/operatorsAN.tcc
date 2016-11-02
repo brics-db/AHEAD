@@ -187,12 +187,20 @@ namespace v2 {
                 const bool isTail2Encoded = is_base_of<v2_anencoded_t, Tail2>::value;
                 auto bat = new TempBat<Head1, Tail2>();
                 vector<bool> *vec1 = (isHead1Encoded ? new vector<bool>() : nullptr);
+                if (vec1)
+                    vec1->reserve(arg1->size());
                 vector<bool> *vec2 = (isTail1Encoded ? new vector<bool>() : nullptr);
+                if (vec2)
+                    vec2->reserve(arg1->size());
                 vector<bool> *vec3 = (isHead2Encoded ? new vector<bool>() : nullptr);
+                if (vec3)
+                    vec3->reserve(arg2->size());
                 vector<bool> *vec4 = (isTail2Encoded ? new vector<bool>() : nullptr);
+                if (vec4)
+                    vec4->reserve(arg2->size());
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
-                if (iter1->hasNext() & iter2->hasNext()) {
+                if (iter1->hasNext() && iter2->hasNext()) {
                     // only really continue when both BATs are not empty
                     if (arg1->size() < arg2->size()) {
                         // let's ignore the joinSide for now and use that sizes as a measure, which is of course oversimplified
