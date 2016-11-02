@@ -120,9 +120,21 @@ EOM
 if [[ ${DO_COMPILE} -ne 0 ]]; then
     echo "Compiling."
     if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
-        pushd ${PATH_BASE}; cmake . -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}; popd
+        pushd ${PATH_BASE}
+        cmake . -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        exitcode=$?
+        if [[ ${exitcode} -ne 0 ]]; then
+            exit ${exitcode};
+        fi
+        popd
     fi
-    pushd ${PATH_BASE}; make; popd
+    pushd ${PATH_BASE};
+    make
+    exitcode=$?
+    if [[ ${exitcode} -ne 0 ]]; then
+        exit ${exitcode};
+    fi
+    popd
 else
     echo "Skipping compilation."
 fi
