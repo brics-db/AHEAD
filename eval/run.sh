@@ -13,11 +13,11 @@ IMPLEMENTED=(11 12 13)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
-DO_COMPILE=0
+DO_COMPILE=1
 DO_COMPILE_CMAKE=0
-DO_BENCHMARK=0
-DO_EVAL=0
-DO_EVAL_PREPARE=0
+DO_BENCHMARK=1
+DO_EVAL=1
+DO_EVAL_PREPARE=1
 DO_VERIFY=1
 
 # Process specific constants
@@ -130,6 +130,11 @@ fi
 # Benchmarking
 if [[ ${DO_BENCHMARK} -ne 0 ]]; then
     echo "Benchmarking:"
+
+    if [[ ! -d ${PATH_EVALDATA} ]]; then
+        mkdir -p ${PATH_EVALDATA}
+    fi
+
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
         for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous; do
@@ -161,10 +166,10 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
     array=()
 
     if [[ ! -d ${PATH_EVALDATA} ]]; then
-        mkdir ${PATH_EVALDATA}
+        mkdir -p ${PATH_EVALDATA}
     fi
     if [[ ! -d ${PATH_EVALOUT} ]]; then
-        mkdir ${PATH_EVALOUT}
+        mkdir -p ${PATH_EVALOUT}
     fi
 
     for NUM in "${IMPLEMENTED[@]}"; do
