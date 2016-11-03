@@ -173,7 +173,7 @@ StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
 }
 
 ///////////////////////////////
-// CMDLINE ARGUMENT PARSING //
+// CMDLINE ARGUMENT PARSING  //
 ///////////////////////////////
 map<string, size_t> cmdIntArgs = {
     {"--numruns", 15},

@@ -41,16 +41,8 @@ public:
     typedef ColumnDescriptor<v2_head_t, vector<head_t>> coldesc_head_t;
     typedef ColumnDescriptor<v2_tail_t, vector<tail_t>> coldesc_tail_t;
 
-    //    friend class TempBat<Head, v2_void_t>;
-    //    friend class TempBat<v2_void_t, Tail>;
-    //    friend class TempBat<v2_void_t, v2_void_t>;
-    //    template<typename H, typename T> friend class ColumnBat;
-
-private:
     coldesc_head_t head;
     coldesc_tail_t tail;
-
-public:
 
     /** default constructor */
     TempBat() : head(), tail() {
@@ -119,15 +111,9 @@ public:
     typedef ColumnDescriptor<v2_void_t, void> coldesc_head_t;
     typedef ColumnDescriptor<v2_void_t, void> coldesc_tail_t;
 
-    //    template<typename H, typename T> friend class TempBat;
-    //    template<typename H, typename T> friend class ColumnBat;
-
-private:
     coldesc_head_t head;
     coldesc_tail_t tail;
     oid_t count;
-
-public:
 
     /** default constructor */
     TempBat() : head(), tail(), count(0) {
@@ -201,14 +187,8 @@ public:
     typedef ColumnDescriptor<Head, containerhead_t> coldesc_head_t;
     typedef ColumnDescriptor<v2_void_t, void> coldesc_tail_t;
 
-    template<typename H, typename T> friend class TempBat;
-    template<typename H, typename T> friend class ColumnBat;
-
-private:
     coldesc_head_t head;
     coldesc_tail_t tail;
-
-public:
 
     /** default constructor */
     TempBat() {
@@ -284,14 +264,8 @@ public:
     typedef ColumnDescriptor<v2_void_t, void> coldesc_head_t;
     typedef ColumnDescriptor<Tail, vector<tail_t>> coldesc_tail_t;
 
-    template<typename H, typename T> friend class TempBat;
-    template<typename H, typename T> friend class ColumnBat;
-
-private:
     coldesc_head_t head;
     coldesc_tail_t tail;
-
-public:
 
     /** default constructor */
     TempBat() : head(), tail() {

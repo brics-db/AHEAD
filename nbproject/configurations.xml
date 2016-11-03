@@ -23,6 +23,7 @@
       <df name="sample">
         <in>lineorder_size.cpp</in>
         <in>main.cpp</in>
+        <in>test_group.cpp</in>
         <in>test_hashjoin.cpp</in>
       </df>
       <df name="ssbm">
@@ -152,6 +153,8 @@
         <ccTool flags="0">
         </ccTool>
       </item>
+      <item path="tools/sample/test_group.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
         </ccTool>
@@ -272,6 +275,8 @@
       <item path="tools/sample/main.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
         </ccTool>
+      </item>
+      <item path="tools/sample/test_group.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
