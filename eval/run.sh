@@ -13,12 +13,12 @@ IMPLEMENTED=(11 12 13)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
-DO_COMPILE=1
-DO_COMPILE_CMAKE=0
-DO_BENCHMARK=1
-DO_EVAL=1
-DO_EVAL_PREPARE=1
-DO_VERIFY=1
+if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
+if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
+if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
+if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
+if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
+if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 
 # Process specific constants
 CMAKE_BUILD_TYPE=release
@@ -35,6 +35,10 @@ pushd () {
 
 popd () {
     command popd "$@" > /dev/null
+}
+
+date () {
+    /bin/bash -c 'date "+%Y-%m-%d %H-%M-%S"'
 }
 
 #########################################################
@@ -57,7 +61,7 @@ awktranspose () {
         for(j=1; j<=p; j++) {
             str=a[1,j]
             for(i=2; i<=NR; i++){
-                str=str" "a[i,j];
+                str=str"\t"a[i,j];
             }
             print str
         }
@@ -87,7 +91,7 @@ set term pdf enhanced
           # x000000 x202020 x404040 x606060 \\
           # x808080 xA0A0A0 xC0C0C0 xE0E0E0
 # white for the transparent background, black for borders, dark gray for axes, and a gray-scale for the six plotting colors.
-set output '$2'
+set output '${2}'
 set style data histogram
 set style histogram cluster gap 1
 #set style fill solid border rgb "black"
@@ -96,7 +100,7 @@ set auto x
 set yrange [0:*]
 
 $(for var in "${@:4}"; do echo $var; done)
-plot '$3' using 2:xtic(1) title col, \\
+plot '${3}' using 2:xtic(1) title col, \\
         '' using 3:xtic(1) title col, \\
         '' using 4:xtic(1) title col, \\
         '' using 5:xtic(1) title col
@@ -118,6 +122,7 @@ EOM
 
 # Compile
 if [[ ${DO_COMPILE} -ne 0 ]]; then
+    date    
     echo "Compiling."
     if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
         pushd ${PATH_BASE}
@@ -141,6 +146,7 @@ fi
 
 # Benchmarking
 if [[ ${DO_BENCHMARK} -ne 0 ]]; then
+    date
     echo "Benchmarking:"
 
     if [[ ! -d ${PATH_EVALDATA} ]]; then
@@ -159,7 +165,7 @@ DO_EVAL=1
                 rm -f ${EVAL_FILEERR}
                 echo -n " * ${type}:"
                 for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
-                    echo -n " sf${sf}"
+                    echo -n "sf${sf}"
                     env ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                 done
                 echo " done."
@@ -174,6 +180,7 @@ fi
 
 # Evaluation
 if [[ ${DO_EVAL} -ne 0 ]]; then
+    date
     echo "Evaluating"
     array=()
 
@@ -211,7 +218,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 sf=${BENCHMARK_SFMIN}
 
                 rm -f ${EVAL_FILEBESTRUNS}
-                echo -n ${type} >>${EVAL_TEMPFILE}
+                echo -n "${type}" >>${EVAL_TEMPFILE}
 
                 for i in $(awk '{print $2;}' ${EVAL_FILESUMMARY}); do
                     array+=($i)
@@ -246,16 +253,21 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 sed -i -e ${BASEREPLACE2} ${EVAL_DATAFILE}
             fi
 
-            # prepare awk statement to normalize all columns
+            # prepare awk statement to normalize all columns and output them to the normalized temp file
             arg="FNR==NR {"
             for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
-                arg+="max${column}=(\$${column}+0>max${column})?\$${column}:max${column};"
+                arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
             done
-            arg+="next} FNR==1 {print \$1,\$2,\$3,\$4,\$5;next} {print \$1"
+            arg+="next} FNR==1 {print \$1"
+            for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
+                column=$(echo "${sf}+1" | bc)
+                arg+=",\$${column}"
+            done
+            arg+=";next} {print \$1"
             for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
-                arg+=",\$${column}/max${column}"
+                arg+=",\$${column}/max${sf}"
             done
             arg+="}"
             awk "${arg}" ${EVAL_TEMPFILE} ${EVAL_TEMPFILE} >${EVAL_NORMALIZEDTEMPFILE}
@@ -283,6 +295,7 @@ fi
 # Verification
 EXITSTAT=0
 if [[ ${DO_VERIFY} -ne 0 ]]; then
+    date
     echo "Verifying:"
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
