@@ -84,20 +84,15 @@ gnuplotcode () {
         # Write GNUplot code to file
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
-reset
+#reset
 #set terminal pdf enhanced monochrome
 set term pdf enhanced
-#set term png medium enhanced background "white"
-          # x000000 x202020 x404040 x606060 \\
-          # x808080 xA0A0A0 xC0C0C0 xE0E0E0
-# white for the transparent background, black for borders, dark gray for axes, and a gray-scale for the six plotting colors.
 set output '${2}'
 set style data histogram
 set style histogram cluster gap 1
 #set style fill solid border rgb "black"
 set style fill transparent pattern 0.5 border
 set auto x
-set yrange [0:*]
 
 $(for var in "${@:4}"; do echo $var; done)
 plot '${3}' using 2:xtic(1) title col, \\
@@ -254,12 +249,14 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             fi
 
             # prepare awk statement to normalize all columns and output them to the normalized temp file
-            arg="FNR==NR {"
+            # 2016-11-04: normalize to "normal" (unencoded) base variant
+            arg="FNR==NR {if (FNR==2) { "
             for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
-                arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
+                #arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
+                arg+="max${sf}=\$${column};"
             done
-            arg+="next} FNR==1 {print \$1"
+            arg+="};next} FNR==1 {print \$1"
             for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
                 column=$(echo "${sf}+1" | bc)
                 arg+=",\$${column}"
@@ -270,6 +267,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 arg+=",\$${column}/max${sf}"
             done
             arg+="}"
+            # EVAL_TEMPFILE already contains the average (arithmetic mean) of the best X of Y runs
+            # (see BENCHMARK_NUMRUNS and BENCHMARK_NUMBEST)
             awk "${arg}" ${EVAL_TEMPFILE} ${EVAL_TEMPFILE} >${EVAL_NORMALIZEDTEMPFILE}
 
             # transpose normalized data
@@ -282,12 +281,20 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 
         echo " * Plotting ${BASE2}"
         #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
-        gnuplotcode ${PATH_EVALOUT}/${BASE2}.gnuplot ${BASE2}.pdf ${BASE2}.data "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
+        gnuplotcode ${PATH_EVALOUT}/${BASE2}.gnuplot ${BASE2}.pdf ${BASE2}.data "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
         pushd ${PATH_EVALOUT}; gnuplot ${BASE2}.gnuplot; popd
 
-        gnuplotcode ${PATH_EVALOUT}/${BASE2}.norm.gnuplot ${BASE2}.norm.pdf ${BASE2}.norm.data "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'" "set yrange [0.5:1]"
+        gnuplotcode ${PATH_EVALOUT}/${BASE2}.norm.gnuplot ${BASE2}.norm.pdf ${BASE2}.norm.data "set yrange [0:1.5]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'"
         pushd ${PATH_EVALOUT}; gnuplot ${BASE2}.norm.gnuplot; popd
     done
+    ALLPDFINFILES=
+    for NUM in "${IMPLEMENTED[@]}"; do
+        BASE2=${BASE}${NUM}
+        ALLPDFINFILES+=" ${PATH_EVALOUT}/${BASE2}.pdf ${PATH_EVALOUT}/${BASE2}.norm.pdf"
+    done
+    ALLPDFOUTFILE=${PATH_EVALOUT}/${BASE}.pdf
+    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
+    # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
 else
     echo "Skipping evaluation."
 fi
@@ -315,28 +322,28 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
         elif [[ ${DIFF1} == "OK" ]]; then
             if [[ ${DIFF2} == "OK" ]]; then
                 echo " * Q${NUM}: normal, early and late produce the same result"
-                ++${EXITSTAT}
+                ((++EXITSTAT))
             elif [[ ${DIFF3} == "OK" ]]; then
                 echo " * Q${NUM}: normal, early and continuous produce the same result"
-                ++${EXITSTAT}
+                ((++EXITSTAT))
             else
                 echo " * Q${NUM}: normal and early produce the same result"
-                ++${EXITSTAT}
+                ((++EXITSTAT))
             fi
         elif [[ ${DIFF2} == "OK" ]]; then
             if [[ ${DIFF3} == "OK" ]]; then
                 echo " * Q${NUM}: normal, late and continuous produce the same result"
-                ++${EXITSTAT}
+                ((++EXITSTAT))
             else
                 echo " * Q${NUM}: normal and late produce the same result"
-                ++${EXITSTAT}
+                ((++EXITSTAT))
             fi
         elif [[ ${DIFF3} == "OK" ]]; then
             echo " * Q${NUM}: normal and continuous produce the same result"
-            ++${EXITSTAT}
+            ((++EXITSTAT))
         else
             echo " * Q${NUM}: no results match"
-            ++${EXITSTAT}
+            ((++EXITSTAT))
         fi
     done
 else
