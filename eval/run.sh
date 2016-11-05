@@ -222,7 +222,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         # a batch of ${BENCHMARK_NUMRUNS} runs, i.e. all runs of a scale factor
                         # 1) compute the best runs (i.e. remove outliers)
                         bestruns=$(printf "%s\n" "${array[@]}" | sort -n | head -n ${BENCHMARK_NUMBEST} | tr '\n' ' ')
-                        echo "SF {sf}: ${bestruns[@]}" >>${EVAL_FILEBESTRUNS}
+                        echo "SF ${sf}: ${bestruns[@]}" >>${EVAL_FILEBESTRUNS}
                         # 2) compute the arithmetic mean
                         total=0
                         IFS=', ' read -r -a array <<< "$bestruns"
