@@ -93,7 +93,7 @@ set style histogram cluster gap 1
 #set style fill solid border rgb "black"
 set style fill transparent pattern 0.5 border
 set auto x
-
+set key right outside
 $(for var in "${@:4}"; do echo $var; done)
 plot '${3}' using 2:xtic(1) title col, \\
         '' using 3:xtic(1) title col, \\
@@ -160,7 +160,7 @@ DO_EVAL=1
                 rm -f ${EVAL_FILEERR}
                 echo -n " * ${type}:"
                 for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
-                    echo -n "sf${sf}"
+                    echo -n " sf${sf}"
                     env ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                 done
                 echo " done."
@@ -208,7 +208,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 EVAL_FILESUMMARY="${PATH_EVALDATA}/${type}.summary"
                 EVAL_FILEBESTRUNS="${PATH_EVALDATA}/${type}.bestruns"
                 grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS}
-                grep -A 10 "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" >${EVAL_FILESUMMARY}
+                grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" >${EVAL_FILESUMMARY}
                 count=0
                 sf=${BENCHMARK_SFMIN}
 
@@ -287,6 +287,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         gnuplotcode ${PATH_EVALOUT}/${BASE2}.norm.gnuplot ${BASE2}.norm.pdf ${BASE2}.norm.data "set yrange [0:1.5]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'"
         pushd ${PATH_EVALOUT}; gnuplot ${BASE2}.norm.gnuplot; popd
     done
+
     ALLPDFINFILES=
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
@@ -295,6 +296,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
     ALLPDFOUTFILE=${PATH_EVALOUT}/${BASE}.pdf
     gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
     # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
+    echo " * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
 else
     echo "Skipping evaluation."
 fi
