@@ -27,54 +27,6 @@
 
 #include "../ssbm/ssbm.hpp"
 
-/**
- * Group-By the tail
- * Returns 2 BAT's:
- * 1) Mapping (V)OID -> GroupID
- * 2) GroupID -> Value
- */
-template<typename Head, typename Tail>
-pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, Tail>*> group(Bat<Head, Tail>* bat) {
-    auto mapHeadtoGID = new TempBat<Head, v2_oid_t>();
-    auto mapGIDtoTail = new TempBat<v2_void_t, Tail>();
-    oid_t nextGID = 0;
-    auto iter = bat->begin();
-    for (; iter->hasNext(); ++*iter) {
-        typename Tail::type_t curTail = iter->tail();
-        // search this tail in our mapping
-        // idx is the void value of mapGIDtoTail, which starts at zero
-        size_t curGID = 0;
-        bool found = false;
-        for (auto itertail = mapGIDtoTail->tail.container->begin(); itertail != mapGIDtoTail->tail.container->end(); ++itertail) {
-            if (curTail == *itertail) {
-                found = true;
-                break;
-            }
-            ++curGID;
-        }
-        if (found) {
-        } else {
-            // new group!
-            mapGIDtoTail->append(curTail);
-            mapHeadtoGID->append(make_pair(iter->head(), curTail));
-            ++nextGID;
-        }
-    }
-    delete iter;
-    return make_pair(mapHeadtoGID, mapGIDtoTail);
-}
-
-/**
- * 
- * @param bat1 The bat over which to sum up
- * @param bat2 The first grouping BAT
- * @param bat3 The second grouping BAT
- * @return Three BATs: 1) sum over double groups. 2) Mapping sumID -> group1. 3) Mapping sumID -> group2.
- */
-template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
-tuple<Bat<v2_void_t, V2Result>*, Bat<v2_void_t, v2_oid_t>*, Bat<v2_void_t, v2_oid_t>*> groupedSum(Bat<Head1, Tail1>* bat1, Bat<Head2, Tail2>* bat2, Bat<Head3, Tail3>* bat3) {
-}
-
 /*
  * Testing with scale factor 1, the following is the expected result (from MonetDB):
  * +------+--------+
@@ -114,16 +66,19 @@ int main(int argc, char** argv) {
 
     sw1.start();
     loadTable(baseDir, "date");
+    loadTable(baseDir, "lineorder");
+    loadTable(baseDir, "part");
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
-    auto cbYear = new shortint_colbat_t("date", "year");
+    auto cbD_Y = new shortint_colbat_t("date", "year");
+    auto tbD_Y = v2::bat::ops::copy(cbD_Y);
 
     totalTime = 0;
     cout << "group date.d_year:" << endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = group(cbYear);
+        auto result = v2::bat::ops::group(tbD_Y);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << endl;
@@ -143,8 +98,68 @@ int main(int argc, char** argv) {
     }
     cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
 
+    cout << "select sum(lo_revenue), d_year, p_brand from lineorder, date, part where lo_orderdate = d_datekey and lo_partkey = p_partkey group by d_year, p_brand" << endl;
+    sw1.start();
+    auto cbLO_OD = new int_colbat_t("lineorder", "orderdate");
+    auto cbLO_R = new int_colbat_t("lineorder", "revenue");
+    auto cbLO_PK = new int_colbat_t("lineorder", "partkey");
+    auto cbD_DK = new int_colbat_t("date", "datekey");
+    auto cbP_PK = new int_colbat_t("part", "partkey");
+    auto cbP_B = new str_colbat_t("part", "brand");
+    auto tbLO_OD = v2::bat::ops::copy(cbLO_OD);
+    auto tbLO_R = v2::bat::ops::copy(cbLO_R);
+    auto tbLO_PK = v2::bat::ops::copy(cbLO_PK);
+    auto tbD_DK = v2::bat::ops::copy(cbD_DK);
+    auto tbP_PK = v2::bat::ops::copy(cbP_PK);
+    auto tbP_B = v2::bat::ops::copy(cbP_B);
+    sw1.stop();
+    cout << "Copying the 6 columns took " << sw1 << " ns." << endl;
+    CONFIG.NUM_RUNS = 1;
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
+        sw1.start();
+        auto bat1 = tbD_DK->reverse();
+        auto bat2 = v2::bat::ops::hashjoin(tbLO_OD, bat1);
+        auto bat3 = tbP_PK->reverse();
+        auto bat4 = v2::bat::ops::hashjoin(tbLO_PK, bat3);
+        auto bat5 = v2::bat::ops::hashjoin(bat2, tbD_Y);
+        auto bat6 = v2::bat::ops::hashjoin(bat4, tbP_B);
+        auto tuple = v2::bat::ops::groupedSum<v2_bigint_t>(tbLO_R, bat5, bat6);
+        allTimes[i] = sw1.stop();
+        size_t numSums = get<0>(tuple)->size();
+        cout << numSums << endl;
+        delete bat1;
+        delete bat2;
+        delete bat3;
+        delete bat4;
+        delete bat5;
+        delete bat6;
+        delete get<0>(tuple);
+        delete get<1>(tuple);
+        delete get<2>(tuple);
+        delete get<3>(tuple);
+        delete get<4>(tuple);
+    }
+    cout << "Times:\n";
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
+        cout << (i + 1) << ":\t" << allTimes[i] << '\n';
+    }
+    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
+
     delete allTimes;
-    delete cbYear;
+    delete cbD_Y;
+    delete tbD_Y;
+    delete cbLO_OD;
+    delete tbLO_OD;
+    delete cbLO_R;
+    delete tbLO_R;
+    delete cbLO_PK;
+    delete tbLO_PK;
+    delete cbD_DK;
+    delete tbD_DK;
+    delete cbP_PK;
+    delete tbP_PK;
+    delete cbP_B;
+    delete tbP_B;
 
     return 0;
 

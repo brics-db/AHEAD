@@ -25,6 +25,7 @@ MESSAGE(STATUS "link directory: ${LIBRARY_OUTPUT_PATH}")
 add_algorithm(main               "sample")
 add_algorithm(lineorder_size     "sample")
 add_algorithm(test_hashjoin      "sample")
+add_algorithm(test_group         "sample")
 
 MACRO(add_ssbm arg_queries)
     STRING(REPLACE " " ";" QUERIES "${arg_queries}")
