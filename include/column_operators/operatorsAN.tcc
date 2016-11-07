@@ -71,18 +71,25 @@ namespace v2 {
             }
 
             template<typename Head, typename ResTail>
-            Bat<Head, typename ResTail::unenc_v2_t>* decodeAN(Bat<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+            pair<Bat<Head, typename ResTail::unenc_v2_t>*, vector<bool>*> decodeAN(Bat<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
                 typedef typename ResTail::unenc_v2_t Tail;
                 typedef typename Tail::type_t tail_t;
                 auto result = new TempBat<Head, Tail>(arg->size());
+                auto vec = new vector<bool>;
+                vec->resize(arg->size());
                 auto iter = arg->begin();
-                for (; iter->hasNext(); ++*iter) {
-                    result->append(make_pair(iter->head(), static_cast<tail_t> (iter->tail() * aInv)));
+                size_t pos = 0;
+                for (; iter->hasNext(); ++*iter, ++pos) {
+                    auto t = iter->tail() * aInv;
+                    result->append(make_pair(iter->head(), static_cast<tail_t> (t)));
+                    if (t > unEncMaxU) {
+                        (*vec)[pos] = true;
+                    }
                 }
                 delete iter;
-                return result;
+                return make_pair(result, vec);
             }
 
             template<typename Head, typename Tail, typename HEnc = typename TypeMap<Head>::v2_encoded_t, typename TEnc = typename TypeMap<Tail>::v2_encoded_t>

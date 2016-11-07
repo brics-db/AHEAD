@@ -15,3 +15,9 @@ CMakeFiles
 /nbproject/private
 /eval/data
 /eval/out
+/eval/outNewHashjoin1/
+/eval/outNewHashjoin2/
+/eval/dataOldHashjoin/
+/eval/outOldHashjoin/
+/eval/dataNewHashjoin1/
+/eval/dataNewHashjoin2/

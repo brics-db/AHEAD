@@ -98,7 +98,12 @@ int main(int argc, char** argv) {
     }
     cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
 
-    cout << "select sum(lo_revenue), d_year, p_brand from lineorder, date, part where lo_orderdate = d_datekey and lo_partkey = p_partkey group by d_year, p_brand" << endl;
+    cout << "select sum(lo_revenue), d_year, p_brand\n";
+    cout << "  from lineorder, date, part\n";
+    cout << "  where lo_orderdate = d_datekey\n";
+    cout << "    and lo_partkey = p_partkey\n";
+    cout << "  group by d_year, p_brand" << endl;
+
     sw1.start();
     auto cbLO_OD = new int_colbat_t("lineorder", "orderdate");
     auto cbLO_R = new int_colbat_t("lineorder", "revenue");
@@ -114,7 +119,7 @@ int main(int argc, char** argv) {
     auto tbP_B = v2::bat::ops::copy(cbP_B);
     sw1.stop();
     cout << "Copying the 6 columns took " << sw1 << " ns." << endl;
-    CONFIG.NUM_RUNS = 1;
+    totalTime = 0;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto bat1 = tbD_DK->reverse();
@@ -125,8 +130,31 @@ int main(int argc, char** argv) {
         auto bat6 = v2::bat::ops::hashjoin(bat4, tbP_B);
         auto tuple = v2::bat::ops::groupedSum<v2_bigint_t>(tbLO_R, bat5, bat6);
         allTimes[i] = sw1.stop();
+        totalTime += allTimes[i];
         size_t numSums = get<0>(tuple)->size();
         cout << numSums << endl;
+        if (i == 0) {
+            auto iter1 = get<0>(tuple)->begin();
+            auto iter2 = get<1>(tuple)->begin();
+            auto iter3 = get<2>(tuple)->begin();
+            auto iter4 = get<3>(tuple)->begin();
+            auto iter5 = get<4>(tuple)->begin();
+            cout << '\n';
+            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
+                iter3->position(0);
+                iter5->position(0);
+                cout << setw(15) << iter1->tail() << " | ";
+                iter3->position(iter2->tail());
+                cout << iter3->tail() << " | ";
+                iter5->position(iter4->tail());
+                cout << iter5->tail() << '\n';
+            }
+            delete iter1;
+            delete iter2;
+            delete iter3;
+            delete iter4;
+            delete iter5;
+        }
         delete bat1;
         delete bat2;
         delete bat3;

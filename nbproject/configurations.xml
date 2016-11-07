@@ -31,6 +31,7 @@
         <in>ssbm-q13_eager.cpp</in>
         <in>ssbm-q13_encoded.cpp</in>
         <in>ssbm-q13_lazy.cpp</in>
+        <in>ssbm-q21.cpp</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -175,6 +176,8 @@
         <ccTool flags="2">
         </ccTool>
       </item>
+      <item path="tools/ssbm/ssbm-q21.cpp" ex="false" tool="1" flavor2="0">
+      </item>
     </conf>
     <conf name="Debug" type="0">
       <toolsSet>
@@ -281,6 +284,8 @@
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
         </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q21.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
   </confs>

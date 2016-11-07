@@ -59,7 +59,8 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
         auto result2 = v2::bat::ops::decodeAN(batTcAN);
         sw1.stop();
         cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << flush;
-        delete result2;
+        delete result2.first;
+        delete result2.second;
 
         sw1.start();
         auto tuple3 = v2::bat::ops::checkAndDecodeAN(batTcAN);
@@ -124,7 +125,8 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
             sw1.start();
             for (size_t scale2 = 0; scale2 < scale; ++scale2) {
                 auto result = v2::bat::ops::decodeAN(bats[scale2]);
-                delete result;
+                delete result.first;
+                delete result.second;
             }
             sw1.stop();
             totalTime += sw1.duration();

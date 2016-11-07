@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     cout << "col_hashjoin_old (only new implementation available any longer!):" << endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
+        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
         totalTime += sw1.stop();
         cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
         delete result;
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
     cout << "col_hashjoin_new:" << endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, join_side_t::right);
+        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
         totalTime += sw1.stop();
         cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
         delete result;

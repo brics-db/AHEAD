@@ -49,7 +49,7 @@ public:
     ColumnBat(id_t columnId) : mColumnId(columnId) {
     }
 
-    ColumnBat(const char *table_name, const char *attribute) {
+    ColumnBat(const char *table_name, const char *attribute) : mColumnId(0) {
         MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
         mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
     }

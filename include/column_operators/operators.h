@@ -42,7 +42,7 @@ typedef enum {
 
 typedef enum {
     left, right
-} join_side_t;
+} hash_side_t;
 
 namespace v2 {
     namespace bat {
@@ -77,6 +77,40 @@ namespace v2 {
                 }
             };
 
+            template<typename Op, typename Head, typename TH>
+            struct Selection1<Op, Head, v2_str_t, TH> {
+
+                Bat<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator()(Bat<Head, v2_str_t>* arg, TH&& threshold) {
+                    auto result = new TempBat<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                    auto iter = arg->begin();
+                    Op op;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        if (op(strcmp(t, threshold), 0)) {
+                            result->append(make_pair(iter->head(), t));
+                        }
+                    }
+                    return result;
+                }
+            };
+
+            template<typename Op, typename Head, typename TH>
+            struct Selection1<Op, Head, v2_cstr_t, TH> {
+
+                Bat<typename Head::v2_select_t, typename v2_cstr_t::v2_select_t>* operator()(Bat<Head, v2_cstr_t>* arg, TH&& threshold) {
+                    auto result = new TempBat<typename Head::v2_select_t, typename v2_cstr_t::v2_select_t > ();
+                    auto iter = arg->begin();
+                    Op op;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        if (op(strcmp(t, threshold), 0)) {
+                            result->append(make_pair(iter->head(), t));
+                        }
+                    }
+                    return result;
+                }
+            };
+
             template<typename Op1, typename Op2, typename Head, typename Tail, typename TH>
             struct Selection2 {
 
@@ -96,9 +130,47 @@ namespace v2 {
                 }
             };
 
+            template<typename Op1, typename Op2, typename Head, typename TH>
+            struct Selection2<Op1, Op2, Head, v2_str_t, TH> {
+
+                Bat<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator()(Bat<Head, v2_str_t>* arg, TH&& th1, TH&& th2) {
+                    auto result = new TempBat<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                    auto iter = arg->begin();
+                    Op1 op1;
+                    Op2 op2;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        if (op1(strcmp(t, th1), 0) && op2(strcmp(t, th2), 0)) {
+                            result->append(make_pair(iter->head(), t));
+                        }
+                    }
+                    delete iter;
+                    return result;
+                }
+            };
+
+            template<typename Op1, typename Op2, typename Head, typename TH>
+            struct Selection2<Op1, Op2, Head, v2_cstr_t, TH> {
+
+                Bat<typename Head::v2_select_t, typename v2_cstr_t::v2_select_t>* operator()(Bat<Head, v2_cstr_t>* arg, TH&& th1, TH&& th2) {
+                    auto result = new TempBat<typename Head::v2_select_t, typename v2_cstr_t::v2_select_t > ();
+                    auto iter = arg->begin();
+                    Op1 op1;
+                    Op2 op2;
+                    for (; iter->hasNext(); ++*iter) {
+                        auto t = iter->tail();
+                        if (op1(strcmp(t, th1), 0) && op2(strcmp(t, th2), 0)) {
+                            result->append(make_pair(iter->head(), t));
+                        }
+                    }
+                    delete iter;
+                    return result;
+                }
+            };
+
             template<template <typename> class Op, typename Head, typename Tail, typename TH>
             Bat<typename Head::v2_select_t, typename Tail::v2_select_t>* select(Bat<Head, Tail>* arg, TH&& th1) {
-                Selection1 < Op<typename Tail::type_t>, Head, Tail, TH> impl;
+                Selection1 < Op<typename Tail::v2_compare_t::type_t>, Head, Tail, TH> impl;
                 return impl(arg, move(th1));
             }
 
@@ -109,12 +181,12 @@ namespace v2 {
             }
 
             template<typename T1, typename T2, typename T3, typename T4>
-            Bat<typename T1::v2_select_t, typename T4::v2_select_t>* hashjoin(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2, join_side_t side = join_side_t::left) {
+            Bat<typename T1::v2_select_t, typename T4::v2_select_t>* hashjoin(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2, hash_side_t side = hash_side_t::left) {
                 auto result = new TempBat<typename T1::v2_select_t, typename T4::v2_select_t > ();
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 if (iter1->hasNext() && iter2->hasNext()) {
-                    if (side == join_side_t::left) {
+                    if (side == hash_side_t::left) {
                         unordered_map<typename T2::type_t, vector<typename T1::type_t> > hashMap;
                         for (; iter1->hasNext(); ++*iter1) {
                             hashMap[iter1->tail()].emplace_back(move(iter1->head()));
@@ -270,11 +342,11 @@ namespace v2 {
              * @param bat1 The bat over which to sum up
              * @param bat2 The first grouping BAT
              * @param bat3 The second grouping BAT
-             * @return Five BATs: 1) sum over double groups.
-             *  2) Mapping sum ID -> group1 ID.
-             *  3) Mapping group1 ID -> group1 value.
-             *  4) Mapping sum ID -> group2 ID.
-             *  5) Mapping group2 ID -> group2 value
+             * @return Five BATs: 1) sum over double group-by.
+             *  2) Mapping sum (V)OID -> group1 OID.
+             *  3) Mapping group1 (V)OID -> group1 value.
+             *  4) Mapping sum (V)OID -> group2 OID.
+             *  5) Mapping group2 (V)OID -> group2 value
              */
             template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
             tuple<Bat<v2_void_t, V2Result>*, Bat<v2_void_t, v2_oid_t>*, Bat<v2_void_t, Tail2>*, Bat<v2_void_t, v2_oid_t>*, Bat<v2_void_t, Tail3>*> groupedSum(Bat<Head1, Tail1>* bat1, Bat<Head2, Tail2>* bat2, Bat<Head3, Tail3>* bat3) {
