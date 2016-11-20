@@ -50,12 +50,14 @@
  * @return 
  */
 int main(int argc, char** argv) {
-    ssbmconf_t CONFIG = initSSBM(argc, argv);
+    ssbmconf_t CONFIG(argc, argv);
     StopWatch sw1;
     StopWatch::rep totalTime = 0;
     StopWatch::rep *allTimes = new StopWatch::rep[CONFIG.NUM_RUNS];
 
-    cout << "test_hashjoin\n=============" << endl;
+    if (CONFIG.VERBOSE) {
+        std::cout << "test_hashjoin\n=============" << std::endl;
+    }
 
     boost::filesystem::path p(CONFIG.DB_PATH);
     if (boost::filesystem::is_regular(p)) {
@@ -65,78 +67,85 @@ int main(int argc, char** argv) {
     MetaRepositoryManager::init(baseDir.c_str());
 
     sw1.start();
-    loadTable(baseDir, "date");
-    loadTable(baseDir, "lineorder");
-    loadTable(baseDir, "part");
+    loadTable(baseDir, "date", CONFIG);
+    loadTable(baseDir, "lineorder", CONFIG);
+    loadTable(baseDir, "part", CONFIG);
     sw1.stop();
-    cout << "Total loading time: " << sw1 << " ns." << endl;
+
+    if (CONFIG.VERBOSE) {
+        std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
+    }
 
     auto cbD_Y = new shortint_colbat_t("date", "year");
     auto tbD_Y = v2::bat::ops::copy(cbD_Y);
 
     totalTime = 0;
-    cout << "group date.d_year:" << endl;
+    std::cout << "group date.d_year:" << std::endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto result = v2::bat::ops::group(tbD_Y);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         if (i == 0) {
-            cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << endl;
-            cout << "Result:\n";
+            if (CONFIG.VERBOSE) {
+                std::cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << std::endl;
+            }
+            std::cout << "Result:\n";
             auto iter = result.second->begin();
             for (; iter->hasNext(); ++*iter) {
-                cout << setw(15) << iter->head() << " | " << setw(15) << iter->tail() << '\n';
+                std::cout << setw(15) << iter->head() << " | " << setw(15) << iter->tail() << '\n';
             }
-            cout << endl;
+            std::cout << std::endl;
             delete iter;
         }
         delete result.first;
         delete result.second;
     }
-    cout << "Times:\n";
+    std::cout << "Times:\n";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        cout << (i + 1) << ":\t" << allTimes[i] << '\n';
+        std::cout << (i + 1) << ":\t" << allTimes[i] << '\n';
     }
-    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
+    std::cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << std::endl;
 
     auto cbP_B = new str_colbat_t("part", "brand");
     auto tbP_B = v2::bat::ops::copy(cbP_B);
 
     totalTime = 0;
-    cout << "group part.p_brand:" << endl;
+    std::cout << "group part.p_brand:" << std::endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto result = v2::bat::ops::group(tbP_B);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         if (i == 0) {
-            cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << endl;
+            if (CONFIG.VERBOSE) {
+                std::cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << std::endl;
+            }
             if (CONFIG.NUM_RUNS == 10000) {
-                cout << "Result:\n";
+                std::cout << "Result:\n";
                 auto iter = result.second->begin();
                 for (; iter->hasNext(); ++*iter) {
-                    cout << setw(15) << iter->head() << " | " << setw(15) << iter->tail() << '\n';
+                    std::cout << setw(15) << iter->head() << " | " << setw(15) << iter->tail() << '\n';
                 }
-                cout << endl;
+                std::cout << std::endl;
                 delete iter;
             }
         }
         delete result.first;
         delete result.second;
     }
-    cout << "Times:\n";
+    std::cout << "Times:\n";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        cout << (i + 1) << ":\t" << allTimes[i] << '\n';
+        std::cout << (i + 1) << ":\t" << allTimes[i] << '\n';
     }
-    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
+    std::cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << std::endl;
 
     // select sum(lo_revenue), d_year, p_brand from lineorder, date, part where lo_orderdate = d_datekey and lo_partkey = p_partkey group by d_year, p_brand
-    cout << "select sum(lo_revenue), d_year, p_brand\n";
-    cout << "  from lineorder, date, part\n";
-    cout << "  where lo_orderdate = d_datekey\n";
-    cout << "    and lo_partkey = p_partkey\n";
-    cout << "  group by d_year, p_brand" << endl;
+    std::cout << "select sum(lo_revenue), d_year, p_brand\n";
+    std::cout << "  from lineorder, date, part\n";
+    std::cout << "  where lo_orderdate = d_datekey\n";
+    std::cout << "    and lo_partkey = p_partkey\n";
+    std::cout << "  group by d_year, p_brand" << std::endl;
 
     auto cbLO_OD = new int_colbat_t("lineorder", "orderdate");
     auto cbLO_R = new int_colbat_t("lineorder", "revenue");
@@ -161,14 +170,14 @@ int main(int argc, char** argv) {
         auto tuple = v2::bat::ops::groupedSum<v2_bigint_t>(tbLO_R, bat5, bat6);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
-        cout << get<0>(tuple)->size() << " " << get<1>(tuple)->size() << " " << get<2>(tuple)->size() << " " << get<3>(tuple)->size() << " " << get<4>(tuple)->size() << endl;
+        std::cout << get<0>(tuple)->size() << " " << get<1>(tuple)->size() << " " << get<2>(tuple)->size() << " " << get<3>(tuple)->size() << " " << get<4>(tuple)->size() << std::endl;
         if (i == 0) {
             auto iter1 = get<0>(tuple)->begin();
             auto iter2 = get<1>(tuple)->begin();
             auto iter3 = get<2>(tuple)->begin();
             auto iter4 = get<3>(tuple)->begin();
             auto iter5 = get<4>(tuple)->begin();
-            cout << '\n';
+            std::cout << '\n';
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
                 std::cout << std::setw(7) << iter1->head() << ':' << std::setw(10) << iter1->tail() << " | ";
                 std::cout << std::setw(7) << iter2->head() << ':' << std::setw(10) << iter2->tail() << " | ";
@@ -196,11 +205,11 @@ int main(int argc, char** argv) {
         delete get<3>(tuple);
         delete get<4>(tuple);
     }
-    cout << "Times:\n";
+    std::cout << "Times:\n";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        cout << (i + 1) << ":\t" << allTimes[i] << '\n';
+        std::cout << (i + 1) << ":\t" << allTimes[i] << '\n';
     }
-    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
+    std::cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << std::endl;
 
     delete allTimes;
     delete cbD_Y;

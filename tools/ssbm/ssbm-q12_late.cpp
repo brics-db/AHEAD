@@ -28,7 +28,7 @@
 #include "ssbm.hpp"
 
 int main(int argc, char** argv) {
-    ssbmconf_t CONFIG = initSSBM(argc, argv);
+    ssbmconf_t CONFIG(argc, argv);
     StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
     const size_t NUM_OPS = 24;
     cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
@@ -53,11 +53,11 @@ int main(int argc, char** argv) {
     StopWatch sw1, sw2;
 
     sw1.start();
-    // loadTable(baseDir, "customerAN");
-    loadTable(baseDir, "dateAN");
-    loadTable(baseDir, "lineorderAN");
-    // loadTable(baseDir, "partAN");
-    // loadTable(baseDir, "supplierAN");
+    // loadTable(baseDir, "customerAN", CONFIG);
+    loadTable(baseDir, "dateAN", CONFIG);
+    loadTable(baseDir, "lineorderAN", CONFIG);
+    // loadTable(baseDir, "partAN", CONFIG);
+    // loadTable(baseDir, "supplierAN", CONFIG);
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 

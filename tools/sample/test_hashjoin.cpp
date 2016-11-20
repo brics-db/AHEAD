@@ -31,11 +31,13 @@
  * 
  */
 int main(int argc, char** argv) {
-    ssbmconf_t CONFIG = initSSBM(argc, argv);
+    ssbmconf_t CONFIG(argc, argv);
     StopWatch sw1;
     StopWatch::rep totalTime = 0;
 
-    cout << "test_hashjoin\n=============" << endl;
+    if (CONFIG.VERBOSE) {
+        std::cout << "test_hashjoin\n=============" << std::endl;
+    }
 
     boost::filesystem::path p(CONFIG.DB_PATH);
     if (boost::filesystem::is_regular(p)) {
@@ -45,10 +47,13 @@ int main(int argc, char** argv) {
     MetaRepositoryManager::init(baseDir.c_str());
 
     sw1.start();
-    loadTable(baseDir, "date");
-    loadTable(baseDir, "lineorder");
+    loadTable(baseDir, "date", CONFIG);
+    loadTable(baseDir, "lineorder", CONFIG);
     sw1.stop();
-    cout << "Total loading time: " << sw1 << " ns." << endl;
+
+    if (CONFIG.VERBOSE) {
+        std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
+    }
 
     auto cbDateDatekey = new int_colbat_t("date", "datekey");
     auto cbLineorderOrderdate = new int_colbat_t("lineorder", "orderdate");
@@ -56,34 +61,45 @@ int main(int argc, char** argv) {
     auto tbDateDatekey = cbDateDatekey->reverse();
     auto tbLineorderOrderdate = v2::bat::ops::copy(cbLineorderOrderdate);
 
-    cout << tbDateDatekey->size() << '\t' << tbLineorderOrderdate->size() << endl;
+    std::cout << tbDateDatekey->size() << '\t' << tbLineorderOrderdate->size() << std::endl;
 
     delete cbDateDatekey;
     delete cbLineorderOrderdate;
 
-    cout << "<DEPRECATED> !!! Measuring " << CONFIG.NUM_RUNS << " runs. Times are in [ns]. Joining Lineorder.orderdate with Date.datekey:" << endl;
+    if (CONFIG.VERBOSE) {
+        std::cout << "<DEPRECATED> !!! Measuring " << CONFIG.NUM_RUNS << " runs. Times are in [ns]. Joining Lineorder.orderdate with Date.datekey:" << std::endl;
+    }
 
     totalTime = 0;
-    cout << "col_hashjoin_old (only new implementation available any longer!):" << endl;
+    if (CONFIG.VERBOSE) {
+        std::cout << "col_hashjoin_old (only new implementation available any longer!):" << std::endl;
+    }
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
         totalTime += sw1.stop();
-        cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
+        if (CONFIG.VERBOSE) {
+            std::cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << std::endl;
+        }
         delete result;
     }
-    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
+
+    std::cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << std::endl;
 
     totalTime = 0;
-    cout << "col_hashjoin_new:" << endl;
+    if (CONFIG.VERBOSE) {
+        std::cout << "col_hashjoin_new:" << std::endl;
+    }
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
         totalTime += sw1.stop();
-        cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << endl;
+        if (CONFIG.VERBOSE) {
+            std::cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << std::endl;
+        }
         delete result;
     }
-    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
+    std::cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << std::endl;
 
     delete tbDateDatekey;
     delete tbLineorderOrderdate;

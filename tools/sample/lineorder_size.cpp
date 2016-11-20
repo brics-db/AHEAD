@@ -157,20 +157,19 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
 }
 
 int main(int argc, char** argv) {
-    CONFIG = initSSBM(argc, argv);
+    CONFIG.init(argc, argv);
 
     cout << "lineorder_size\n==============" << endl;
 
-    boost::filesystem::path p(argc == 1 ? argv[0] : argv[1]);
+    boost::filesystem::path p(CONFIG.DB_PATH);
     if (boost::filesystem::is_regular(p)) {
         p.remove_filename();
     }
     string baseDir = p.remove_trailing_separator().generic_string();
     MetaRepositoryManager::init(baseDir.c_str());
 
-
-    loadTable(baseDir, "lineorder");
-    loadTable(baseDir, "lineorderAN");
+    loadTable(baseDir, "lineorder", CONFIG);
+    loadTable(baseDir, "lineorderAN", CONFIG);
 
     // Lineorder:
     // orderkey|linenumber|custkey|partkey|suppkey|orderdate|orderpriority|shippriority|quantity|extendedprice|ordertotalprice|discount|revenue|supplycost|tax|commitdate|shipmode

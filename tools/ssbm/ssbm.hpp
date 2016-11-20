@@ -35,10 +35,12 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
-#include <map>
+#include <unordered_map>
 #include <sstream>
 
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <column_storage/ColumnBat.h>
 #include <column_storage/TransactionManager.h>
@@ -158,7 +160,305 @@ do {                                   \
         delete get<2>(tuple);          \
 } while (0)
 
-StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
+///////////////////////////////
+// CMDLINE ARGUMENT PARSING  //
+///////////////////////////////
+
+class ArgumentParser {
+public:
+    typedef std::vector<string> alias_list_t;
+    typedef std::vector<std::tuple<string, alias_list_t, size_t>> uint_args_t;
+    typedef std::vector<std::tuple<string, alias_list_t, string>> str_args_t;
+    typedef std::vector<std::tuple<string, alias_list_t, bool>> bool_args_t;
+
+private:
+
+    enum argtype_t {
+        argint, argstr, argbool
+    };
+
+    uint_args_t uintArgs;
+    str_args_t strArgs;
+    bool_args_t boolArgs;
+    unordered_map<string, argtype_t> argTypes; // we know what we do
+
+public:
+
+    ArgumentParser() : uintArgs(), strArgs(), boolArgs(), argTypes() {
+#ifdef DEBUG
+        std::cout << "ArgumentParser()" << std::endl;
+#endif
+    }
+
+    ArgumentParser(const uint_args_t & uintArgs, const str_args_t & strArgs, const bool_args_t & boolArgs) : uintArgs(uintArgs), strArgs(strArgs), boolArgs(boolArgs), argTypes(uintArgs.size() + strArgs.size() + boolArgs.size()) {
+#ifdef DEBUG
+        std::cout << "ArgumentParser(const &, const &, const &)" << std::endl;
+#endif
+        for (auto a : this->uintArgs) {
+            for (auto s : get<1>(a)) {
+                argTypes[s] = argint;
+            }
+        }
+        for (auto a : this->strArgs) {
+            for (auto s : get<1>(a)) {
+                argTypes[s] = argstr;
+            }
+        }
+        for (auto a : this->boolArgs) {
+            for (auto s : get<1>(a)) {
+                argTypes[s] = argbool;
+                if (boost::starts_with(s, "--")) {
+                    argTypes["--no-" + s.substr(2)] = argbool;
+                } else if (boost::starts_with(s, "-")) {
+                    argTypes["-no-" + s.substr(1)] = argbool;
+                }
+            }
+        }
+    }
+
+    ArgumentParser(const uint_args_t && uintArgs, const str_args_t && strArgs, const bool_args_t && boolArgs) : uintArgs(uintArgs), strArgs(strArgs), boolArgs(boolArgs), argTypes(uintArgs.size() + strArgs.size() + boolArgs.size()) {
+#ifdef DEBUG
+        std::cout << "ArgumentParser(const &&, const &&, const &&)" << std::endl;
+#endif
+        for (auto a : this->uintArgs) {
+            for (auto s : get<1>(a)) {
+                argTypes[s] = argint;
+            }
+        }
+        for (auto a : this->strArgs) {
+            for (auto s : get<1>(a)) {
+                argTypes[s] = argstr;
+            }
+        }
+        for (auto a : this->boolArgs) {
+            for (auto s : get<1>(a)) {
+                argTypes[s] = argbool;
+                if (boost::starts_with(s, "--")) {
+                    argTypes["--no-" + s.substr(2)] = argbool;
+                } else if (boost::starts_with(s, "-")) {
+                    argTypes["-no-" + s.substr(1)] = argbool;
+                }
+            }
+        }
+    }
+
+    virtual ~ArgumentParser() {
+    }
+
+    ArgumentParser& operator=(const ArgumentParser & other) {
+#ifdef DEBUG
+        std::cout << "ArgumentParser& operator=(const ArgumentParser & other)" << std::endl;
+#endif
+        uintArgs.clear();
+        strArgs.clear();
+        boolArgs.clear();
+        argTypes.clear();
+        uintArgs.insert(uintArgs.begin(), other.uintArgs.begin(), other.uintArgs.end());
+        strArgs.insert(strArgs.begin(), other.strArgs.begin(), other.strArgs.end());
+        boolArgs.insert(boolArgs.begin(), other.boolArgs.begin(), other.boolArgs.end());
+        argTypes.insert(other.argTypes.begin(), other.argTypes.end());
+        return *this;
+    }
+
+private:
+
+    size_t parseint(const string& name, char* arg) {
+        if (arg == nullptr) {
+            stringstream ss;
+            ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
+            throw runtime_error(ss.str());
+        }
+        string str(arg);
+        size_t idx = string::npos;
+        size_t value;
+        try {
+            value = stoul(str, &idx);
+        } catch (invalid_argument& exc) {
+            stringstream ss;
+            ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")! (on line " << __LINE__ << ')';
+            throw runtime_error(ss.str());
+        }
+        if (idx < str.length()) {
+            stringstream ss;
+            ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")! (on line " << __LINE__ << ')';
+            throw runtime_error(ss.str());
+        }
+        for (auto & tup : uintArgs) {
+            for (auto & alias : get<1>(tup)) {
+                if (name.compare(alias) == 0) {
+                    get<2>(tup) = value;
+                    return 1;
+                }
+            }
+        }
+        return 1;
+    }
+
+    size_t parsestr(const string& name, char* arg) {
+        if (arg == nullptr) {
+            stringstream ss;
+            ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
+            throw runtime_error(ss.str());
+        }
+        for (auto & tup : strArgs) {
+            for (auto & alias : get<1>(tup)) {
+                if (name.compare(alias) == 0) {
+                    get<2>(tup) = arg;
+                    return 1;
+                }
+            }
+        }
+        return 1;
+    }
+
+    size_t parsebool(const string& name, __attribute__((unused)) char* arg) {
+        size_t start = 0;
+        if (boost::starts_with(name, "no-")) {
+            start = 3;
+        }
+        for (auto & tup : boolArgs) {
+            for (auto & alias : get<1>(tup)) {
+                if (name.compare(start, string::npos, alias) == 0) {
+                    get<2>(tup) = (start == 0); // "no-..." -> false
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
+
+public:
+
+    void parse(int argc, char** argv, size_t offset) { // no C++17 (array_view), yet :-(
+#ifdef DEBUG
+        std::cout << "parse(int argc, char** argv, size_t offset)" << std::endl;
+#endif
+        if (argc > 1) {
+            for (int nArg = offset; nArg < argc; ++nArg) { // always advance at least one step
+                bool recognized = false;
+                for (auto & p : argTypes) {
+                    if (p.first.compare(argv[nArg]) == 0) {
+                        recognized = true;
+                        char* arg = (nArg + 1) < argc ? argv[nArg + 1] : nullptr;
+                        switch (p.second) {
+                            case argint:
+                                nArg += parseint(p.first, arg);
+                                break;
+
+                            case argstr:
+                                nArg += parsestr(p.first, arg);
+                                break;
+
+                            case argbool:
+                                nArg += parsebool(p.first, arg);
+                                break;
+                        }
+                        break;
+                    }
+                }
+                if (!recognized) {
+                    stringstream ss;
+                    ss << "Parameter \"" << argv[nArg] << "\" is unknown! (on line " << __LINE__ << ')';
+                    throw runtime_error(ss.str());
+                }
+            }
+        }
+    }
+
+    size_t get_uint(const string & name) {
+        for (auto & tup : uintArgs) {
+            if (get<0>(tup).compare(name) == 0) {
+                return get<2>(tup);
+            }
+        }
+        stringstream ss;
+        ss << "UINT parameter \"" << name << "\" is unknown! (on line " << __LINE__ << ')';
+        throw runtime_error(ss.str());
+    }
+
+    const string & get_str(const string & name) {
+        for (auto & tup : strArgs) {
+            if (get<0>(tup).compare(name) == 0) {
+                return std::get<2>(tup);
+            }
+        }
+        stringstream ss;
+        ss << "String parameter \"" << name << "\" is unknown! (on line " << __LINE__ << ')';
+        throw runtime_error(ss.str());
+    }
+
+    bool get_bool(const string & name) {
+        for (auto & tup : boolArgs) {
+            if (get<0>(tup).compare(name) == 0) {
+                return std::get<2>(tup);
+            }
+        }
+        stringstream ss;
+        ss << "Boolean parameter \"" << name << "\" is unknown! (on line " << __LINE__ << ')';
+        throw runtime_error(ss.str());
+    }
+};
+
+struct ssbmconf_t {
+    typedef typename ArgumentParser::alias_list_t alias_list_t;
+
+    size_t NUM_RUNS;
+    size_t LEN_TIMES;
+    size_t LEN_TYPES;
+    size_t LEN_SIZES;
+    string DB_PATH;
+    bool VERBOSE;
+
+private:
+    ArgumentParser parser;
+
+public:
+
+    ssbmconf_t() : NUM_RUNS(0), LEN_TIMES(0), LEN_TYPES(0), LEN_SIZES(0), DB_PATH(), VERBOSE(false), parser({
+        std::forward_as_tuple("numruns", alias_list_t
+        {"--numruns", "-n"}, 15),
+        std::forward_as_tuple("lentimes", alias_list_t
+        {"--lentimes"}, 13),
+        std::forward_as_tuple("lentypes", alias_list_t
+        {"--lentypes"}, 16),
+        std::forward_as_tuple("lensizes", alias_list_t
+        {"--lensizes"}, 12)
+    },
+    {
+        std::forward_as_tuple("dbpath", alias_list_t{"--dbpath", "-d"}, ".")
+    },
+    {
+
+        std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, true)
+    }
+    ) {
+#ifdef DEBUG
+        std::cout << "ssbmconf_t()" << std::endl;
+#endif
+    }
+
+    ssbmconf_t(int argc, char** argv) : ssbmconf_t() {
+#ifdef DEBUG
+        std::cout << "ssbmconf_t(int argc, char** argv)" << std::endl;
+#endif
+        init(argc, argv);
+    }
+
+    void init(int argc, char** argv) {
+#ifdef DEBUG
+        std::cout << "ssbmconf_t::init(int argc, char** argv)" << std::endl;
+#endif
+        parser.parse(argc, argv, 1);
+        NUM_RUNS = parser.get_uint("numruns");
+        LEN_TIMES = parser.get_uint("lentimes");
+        LEN_TYPES = parser.get_uint("lentypes");
+        LEN_SIZES = parser.get_uint("lensizes");
+        DB_PATH = parser.get_str("dbpath");
+        VERBOSE = parser.get_bool("verbose");
+    }
+};
+
+StopWatch::rep loadTable(string& baseDir, const char* const columnName, const ssbmconf_t & CONFIG) {
     StopWatch sw;
     TransactionManager* tm = TransactionManager::getInstance();
     TransactionManager::Transaction* t = tm->beginTransaction(true);
@@ -167,111 +467,11 @@ StopWatch::rep loadTable(string& baseDir, const char* const columnName) {
     sw.start();
     size_t num = t->load(path.c_str(), columnName);
     sw.stop();
-    cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw << " ns." << endl;
+    if (CONFIG.VERBOSE) {
+        std::cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw << " ns." << std::endl;
+    }
     tm->endTransaction(t);
     return sw.duration();
-}
-
-///////////////////////////////
-// CMDLINE ARGUMENT PARSING  //
-///////////////////////////////
-map<string, size_t> cmdIntArgs = {
-    {"--numruns", 15},
-    {"--lentimes", 13},
-    {"--lentypes", 16},
-    {"--lensizes", 12}
-};
-
-map<string, string> cmdStrArgs = {
-    {"--dbpath", "."}
-};
-
-enum cmdargtype_t {
-    argint, argstr
-};
-
-map<string, cmdargtype_t> cmdArgTypes = {
-    {"--numruns", argint},
-    {"--lentimes", argint},
-    {"--lentypes", argint},
-    {"--lensizes", argint},
-    {"--dbpath", argstr}
-};
-
-struct ssbmconf_t {
-    size_t NUM_RUNS;
-    size_t LEN_TIMES;
-    size_t LEN_TYPES;
-    size_t LEN_SIZES;
-    string DB_PATH;
-
-    ssbmconf_t(size_t numRuns, size_t lenTimes, size_t lenTypes, size_t lenSizes, string& dbPath) : NUM_RUNS(numRuns), LEN_TIMES(lenTimes), LEN_TYPES(lenTypes), LEN_SIZES(lenSizes), DB_PATH(dbPath) {
-    }
-
-    ssbmconf_t() : ssbmconf_t(cmdIntArgs["--numruns"], cmdIntArgs["--lentimes"], cmdIntArgs["--lentypes"], cmdIntArgs["--lensizes"], cmdStrArgs["--dbpath"]) {
-    }
-};
-
-void parseint(const string& name, char* arg) {
-    string str(arg);
-    size_t idx = string::npos;
-    size_t value;
-    try {
-        value = stoul(str, &idx);
-    } catch (invalid_argument& exc) {
-        stringstream ss;
-        ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")!";
-        throw runtime_error(ss.str());
-    }
-    if (idx < str.length()) {
-        stringstream ss;
-        ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")!";
-        throw runtime_error(ss.str());
-    }
-    cmdIntArgs[name] = value;
-}
-
-void parsestr(const string& name, char* arg) {
-    cmdStrArgs[name] = arg;
-}
-
-void parsearg(const string& name, cmdargtype_t argtype, char* arg) {
-    switch (argtype) {
-        case argint:
-            parseint(name, arg);
-            break;
-
-        case argstr:
-            parsestr(name, arg);
-            break;
-    }
-}
-
-ssbmconf_t initSSBM(int argc, char** argv) {
-    if (argc > 1) {
-        // for now only long parameters with 2 components ("--name value")
-        for (int nArg = 1; nArg < argc; nArg += 2) {
-            bool recognized = false;
-            for (auto p : cmdArgTypes) {
-                if (p.first.compare(argv[nArg]) == 0) {
-                    recognized = true;
-                    if ((nArg + 1) >= argc) {
-                        stringstream ss;
-                        ss << "Required value for parameter \"" << argv[nArg] << "\" missing!";
-                        throw runtime_error(ss.str());
-                    }
-                    parsearg(p.first, p.second, argv[nArg + 1]);
-                    break;
-                }
-            }
-            if (!recognized) {
-                stringstream ss;
-                ss << "Parameter \"" << argv[nArg] << "\" is unknown!";
-                throw runtime_error(ss.str());
-            }
-        }
-    }
-    return ssbmconf_t();
 }
 
 #endif /* SSBM_HPP */
