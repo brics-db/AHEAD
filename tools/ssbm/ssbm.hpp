@@ -429,7 +429,7 @@ public:
     },
     {
 
-        std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, true)
+        std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, false)
     }
     ) {
 #ifdef DEBUG

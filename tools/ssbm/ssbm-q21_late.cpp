@@ -19,10 +19,10 @@
 // THE SOFTWARE.
 
 /* 
- * File:   ssbm-q21.cpp
+ * File:   ssbm-q21_late.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 6. November 2016, 22:25
+ * Created on 20. November 2016, 19:13
  */
 
 #include "ssbm.hpp"
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     string emptyString;
     size_t x = 0;
 
-    std::cout << "SSBM Query 2.1 Normal\n=====================" << std::endl;
+    std::cout << "SSBM Query 2.1 Late Detection\n=====================" << std::endl;
 
     boost::filesystem::path p(CONFIG.DB_PATH);
     if (boost::filesystem::is_regular(p)) {

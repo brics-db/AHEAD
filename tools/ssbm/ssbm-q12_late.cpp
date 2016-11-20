@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     string emptyString;
     size_t x = 0;
 
-    cout << "SSBM Query 1.2 Late Detection\n=============================" << endl;
+    std::cout << "SSBM Query 1.2 Late Detection\n=============================" << std::endl;
 
     boost::filesystem::path p(CONFIG.DB_PATH);
     if (boost::filesystem::is_regular(p)) {
@@ -59,9 +59,17 @@ int main(int argc, char** argv) {
     // loadTable(baseDir, "partAN", CONFIG);
     // loadTable(baseDir, "supplierAN", CONFIG);
     sw1.stop();
-    cout << "Total loading time: " << sw1 << " ns." << endl;
+    std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
 
-    cout << "\nSSBM Q1.2:\nselect sum(lo_extendedprice * lo_discount) as revenue\n  from lineorder, date\n  where lo_orderdate = d_datekey\n    and d_yearmonthnum = 199401\n    and lo_discount between 4 and 6\n    and lo_quantity  between 26 and 35;" << endl;
+    if (CONFIG.VERBOSE) {
+        std::cout << "\nSSBM Q1.2:\n";
+        std::cout << "select sum(lo_extendedprice * lo_discount) as revenue\n";
+        std::cout << "  from lineorder, date\n";
+        std::cout << "  where lo_orderdate = d_datekey\n";
+        std::cout << "    and d_yearmonthnum = 199401\n";
+        std::cout << "    and lo_discount between 4 and 6\n";
+        std::cout << "    and lo_quantity  between 26 and 35;" << std::endl;
+    }
 
     /* Measure loading ColumnBats */
     MEASURE_OP(sw1, x, batDYcb, new resint_colbat_t("dateAN", "yearmonthnum"));
@@ -85,9 +93,11 @@ int main(int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
 
-    COUT_HEADLINE;
-    COUT_RESULT(0, x);
-    cout << endl;
+    if (CONFIG.VERBOSE) {
+        COUT_HEADLINE;
+        COUT_RESULT(0, x);
+        std::cout << std::endl;
+    }
 
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
@@ -150,17 +160,20 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
+        std::cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
 
-    cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
-    cout << "TotalTimes:";
-    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
+    if (CONFIG.VERBOSE) {
+        std::cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.";
     }
-    cout << endl;
+
+    std::cout << "\nTotalTimes:";
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
+        std::cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
+    }
+    std::cout << std::endl;
 
     delete batDYenc;
     delete batDDenc;
