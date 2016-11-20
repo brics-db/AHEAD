@@ -101,10 +101,12 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
     id_t BATId(0);
     char datatype[LEN_VALUE];
     vector<char*> attribute_names;
+    vector<size_t> column_widths(32); // initialize with 32 zeros
+    size_t column_width(0);
 
     if (this->isUpdater) {
-        valuesFile = fopen(valuesPath.c_str(), "r");
-        headerFile = fopen(headerPath.c_str(), "r");
+        valuesFile = std::fopen(valuesPath.c_str(), "r");
+        headerFile = std::fopen(headerPath.c_str(), "r");
 
         if (valuesFile && headerFile) {
             columns = cm->listColumns();
@@ -130,13 +132,13 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             }
 
             // Zeile mit Spaltennamen einlesen aus Header-Datei
-            memset(line, 0, LEN_LINE);
-            if (fgets(line, LEN_LINE, headerFile) != line) {
-                throw runtime_error("Error reading line");
+            std::memset(line, 0, LEN_LINE);
+            if (std::fgets(line, LEN_LINE, headerFile) != line) {
+                throw std::runtime_error("Error reading line");
             }
 
             char* pPos;
-            if ((pPos = strchr(line, '\n')) != nullptr) {
+            if ((pPos = std::strchr(line, '\n')) != nullptr) {
                 *pPos = 0;
             }
             if (*(pPos - 1) == '\r') {
@@ -159,19 +161,19 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
 
                 // Spaltenname = Prefix + Spaltenname aus Header-Datei
                 if (prefix) {
-                    strncpy(value, prefix, LEN_VALUE);
-                    strncat(value, buffer, LEN_VALUE - lenPrefix);
+                    std::strncpy(value, prefix, LEN_VALUE);
+                    std::strncat(value, buffer, LEN_VALUE - lenPrefix);
                 } else {
-                    strncpy(value, buffer, LEN_VALUE);
+                    std::strncpy(value, buffer, LEN_VALUE);
                 }
 
                 // prevents the referencing of value
                 const size_t attr_name_len = lenPrefix + lenBuf + 1;
                 char* attribute_name = new char[attr_name_len];
-                strncpy(attribute_name, value, attr_name_len);
+                std::strncpy(attribute_name, value, attr_name_len);
                 attribute_names.push_back(attribute_name);
 
-                strncpy(static_cast<str_t> (bun.tail), value, attr_name_len);
+                std::strncpy(static_cast<str_t> (bun.tail), value, attr_name_len);
 
                 // Berechnung der Anzahl bisher vorhandener Spalten
                 if (firstAppend) {
@@ -179,16 +181,16 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                     firstAppend = false;
                 }
 
-                buffer = strtok(nullptr, actDelim);
+                buffer = std::strtok(nullptr, actDelim);
             }
 
             // Zeile mit Spaltentypen einlesen aus Header-Datei
-            memset(line, 0, LEN_LINE);
-            if (fgets(line, LEN_LINE, headerFile) != line) {
-                throw runtime_error("Error reading line");
+            std::memset(line, 0, LEN_LINE);
+            if (std::fgets(line, LEN_LINE, headerFile) != line) {
+                throw std::runtime_error("Error reading line");
             }
 
-            if ((pPos = strchr(line, '\n')) != nullptr) {
+            if ((pPos = std::strchr(line, '\n')) != nullptr) {
                 *pPos = 0;
             }
             if (*(pPos - 1) == '\r') {
@@ -196,11 +198,13 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
             }
 
             // Zeile durch Zeichen actDelim in Einzelwerte trennen
-            buffer = strtok(line, actDelim);
+            buffer = std::strtok(line, actDelim);
 
             int attributeNamesIndex = 0;
 
+            size_t colIdx = 0;
             while (buffer != nullptr) {
+                size_t bufSlen = strlen(buffer);
                 // freie Spalte suchen
                 columns = cm->listColumns();
                 column = ID_BAT_FIRST_USER;
@@ -212,52 +216,58 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 // Spaltentyp einpflegen
                 bun = append(ID_BAT_COLTYPES);
 
-                if (strncmp(buffer, "INTEGER", 7) == 0 || strncmp(buffer, "INT", 3) == 0) {
+                if (std::strncmp(buffer, "INTEGER", 7) == 0 || std::strncmp(buffer, "INT", 3) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_int;
-                    cm->createColumn(column, sizeof (int_t));
-                    strncpy(datatype, NAME_INTEGER, LEN_VALUE);
-                } else if (strncmp(buffer, "TINYINT", 7) == 0) {
+                    column_width = sizeof (int_t);
+                    std::strncpy(datatype, NAME_INTEGER, LEN_VALUE);
+                } else if (std::strncmp(buffer, "TINYINT", 7) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_tinyint;
-                    cm->createColumn(column, sizeof (tinyint_t));
-                    strncpy(datatype, NAME_TINYINT, LEN_VALUE);
-                } else if (strncmp(buffer, "SHORTINT", 8) == 0) {
+                    column_width = sizeof (tinyint_t);
+                    std::strncpy(datatype, NAME_TINYINT, LEN_VALUE);
+                } else if (std::strncmp(buffer, "SHORTINT", 8) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_shortint;
-                    cm->createColumn(column, sizeof (shortint_t));
-                    strncpy(datatype, NAME_SHORTINT, LEN_VALUE);
-                } else if (strncmp(buffer, "LARGEINT", 8) == 0) {
+                    column_width = sizeof (shortint_t);
+                    std::strncpy(datatype, NAME_SHORTINT, LEN_VALUE);
+                } else if (std::strncmp(buffer, "LARGEINT", 8) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_largeint;
-                    cm->createColumn(column, sizeof (bigint_t));
-                    strncpy(datatype, NAME_LARGEINT, LEN_VALUE);
-                } else if (strncmp(buffer, "STRING", 6) == 0) {
+                    column_width = sizeof (bigint_t);
+                    std::strncpy(datatype, NAME_LARGEINT, LEN_VALUE);
+                } else if (std::strncmp(buffer, "STRING", 6) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_string;
-                    cm->createColumn(column, sizeof (char_t) * MAXLEN_STRING); // TODO warum genau 45 zeichen?!
-                    strncpy(datatype, NAME_STRING, LEN_VALUE);
-                } else if (strncmp(buffer, "FIXED", 5) == 0) {
+                    size_t maxlen = MAXLEN_STRING;
+                    if (bufSlen > 6 && buffer[6] == ':') {
+                        maxlen = atoi(&buffer[7]);
+                    }
+                    column_width = sizeof (char_t) * maxlen + 1;
+                    std::strncpy(datatype, NAME_STRING, LEN_VALUE);
+                } else if (std::strncmp(buffer, "FIXED", 5) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_fixed;
-                    cm->createColumn(column, sizeof (fixed_t));
-                    strncpy(datatype, NAME_FIXED, LEN_VALUE);
-                } else if (strncmp(buffer, "CHAR", 4) == 0) {
+                    column_width = sizeof (fixed_t);
+                    std::strncpy(datatype, NAME_FIXED, LEN_VALUE);
+                } else if (std::strncmp(buffer, "CHAR", 4) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_char;
-                    cm->createColumn(column, sizeof (char_t));
-                    strncpy(datatype, NAME_CHAR, LEN_VALUE);
-                } else if (strncmp(buffer, "RESTINY", 7) == 0) {
+                    column_width = sizeof (char_t);
+                    std::strncpy(datatype, NAME_CHAR, LEN_VALUE);
+                } else if (std::strncmp(buffer, "RESTINY", 7) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_restiny;
-                    cm->createColumn(column, sizeof (restiny_t));
-                    strncpy(datatype, NAME_RESTINY, LEN_VALUE);
-                } else if (strncmp(buffer, "RESSHORT", 8) == 0) {
+                    column_width = sizeof (restiny_t);
+                    std::strncpy(datatype, NAME_RESTINY, LEN_VALUE);
+                } else if (std::strncmp(buffer, "RESSHORT", 8) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_resshort;
-                    cm->createColumn(column, sizeof (resshort_t));
-                    strncpy(datatype, NAME_RESSHORT, LEN_VALUE);
-                } else if (strncmp(buffer, "RESINT", 6) == 0) {
+                    column_width = sizeof (resshort_t);
+                    std::strncpy(datatype, NAME_RESSHORT, LEN_VALUE);
+                } else if (std::strncmp(buffer, "RESINT", 6) == 0) {
                     *static_cast<type_t*> (bun.tail) = type_resint;
-                    cm->createColumn(column, sizeof (resint_t));
-                    strncpy(datatype, NAME_RESINT, LEN_VALUE);
+                    column_width = sizeof (resint_t);
+                    std::strncpy(datatype, NAME_RESINT, LEN_VALUE);
                 } else {
                     cerr << "TransactionManager::Transaction::load() data type " << buffer << " in header unknown" << endl;
                     abort();
                 }
 
-
+                column_widths[colIdx] = column_width;
+                ++colIdx;
+                cm->createColumn(column, column_width);
                 types.push_back(*static_cast<type_t*> (bun.tail));
 
                 // Spaltenidentifikation einpflegen
@@ -273,14 +283,14 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                     mrm->createAttribute(attribute_names.at(attributeNamesIndex), datatype, BATId, newTableId);
                 }
 
-                buffer = strtok(nullptr, actDelim);
+                buffer = std::strtok(nullptr, actDelim);
                 attributeNamesIndex++;
             }
 
             // Spaltenwerte zeilenweise aus Datei einlesen
-            memset(line, 0, LEN_LINE);
-            while (fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
-                if ((pPos = strchr(line, '\n')) != nullptr) {
+            std::memset(line, 0, LEN_LINE);
+            while (std::fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
+                if ((pPos = std::strchr(line, '\n')) != nullptr) {
                     *pPos = 0;
                 }
                 if (*(pPos - 1) == '\r') {
@@ -293,9 +303,9 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                 typesIterator = types.begin();
 
                 // Zeile durch Zeichen actDelim in Einzelwerte trennen
-                buffer = strtok(line, actDelim);
+                buffer = std::strtok(line, actDelim);
                 size_t numVal = 1;
-
+                colIdx = 0;
                 while (buffer != nullptr) {
                     if (typesIterator == types.end()) {
                         if (ignoreMoreData) {
@@ -311,33 +321,30 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                         ci = *iteratorsIterator;
 
                         auto record = ci->append();
-                        size_t bufLen;
 
                         switch (type) {
                             case type_tinyint:
-                                *(static_cast<tinyint_t*> (record.content)) = static_cast<tinyint_t> (atoi(buffer));
+                                *(static_cast<tinyint_t*> (record.content)) = static_cast<tinyint_t> (std::atoi(buffer));
                                 break;
 
                             case type_shortint:
-                                *(static_cast<shortint_t*> (record.content)) = static_cast<shortint_t> (atoi(buffer));
+                                *(static_cast<shortint_t*> (record.content)) = static_cast<shortint_t> (std::atoi(buffer));
                                 break;
 
                             case type_int:
-                                *(static_cast<int_t*> (record.content)) = atol(buffer);
+                                *(static_cast<int_t*> (record.content)) = std::atol(buffer);
                                 break;
 
                             case type_largeint:
-                                *(static_cast<bigint_t*> (record.content)) = static_cast<bigint_t> (atoll(buffer));
+                                *(static_cast<bigint_t*> (record.content)) = static_cast<bigint_t> (std::atoll(buffer));
                                 break;
 
                             case type_string:
-                                bufLen = strlen(buffer); // strtok already replaced the token separator with a null char
-                                // TODO make sure the string is at most MAXLEN_STRING bytes long (incl. null byte)
-                                strncpy(static_cast<str_t> (record.content), buffer, bufLen + 1);
+                                std::strncpy(static_cast<str_t> (record.content), buffer, column_widths[colIdx]);
                                 break;
 
                             case type_fixed:
-                                *(static_cast<fixed_t*> (record.content)) = atof(buffer);
+                                *(static_cast<fixed_t*> (record.content)) = std::atof(buffer);
                                 break;
 
                             case type_char:
@@ -345,15 +352,15 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                                 break;
 
                             case type_restiny:
-                                *(static_cast<restiny_t*> (record.content)) = atol(buffer) * v2_restiny_t::A;
+                                *(static_cast<restiny_t*> (record.content)) = std::atol(buffer) * v2_restiny_t::A;
                                 break;
 
                             case type_resshort:
-                                *(static_cast<resshort_t*> (record.content)) = atol(buffer) * v2_resshort_t::A;
+                                *(static_cast<resshort_t*> (record.content)) = std::atol(buffer) * v2_resshort_t::A;
                                 break;
 
                             case type_resint:
-                                *(static_cast<resint_t*> (record.content)) = atoll(buffer) * v2_resint_t::A;
+                                *(static_cast<resint_t*> (record.content)) = std::atoll(buffer) * v2_resint_t::A;
                                 break;
 
                             default:
@@ -361,14 +368,15 @@ size_t TransactionManager::Transaction::load(const char *path, const char* table
                                 abort();
                         }
 
+                        ++colIdx;
+                        ++numVal;
                         typesIterator++;
                         iteratorsIterator++;
 
-                        buffer = strtok(nullptr, actDelim);
-                        ++numVal;
+                        buffer = std::strtok(nullptr, actDelim);
                     }
                 }
-                memset(line, 0, LEN_LINE);
+                std::memset(line, 0, LEN_LINE);
             }
 
             // Spalten schließen

@@ -38,8 +38,8 @@ public:
     typedef Tail v2_tail_t;
     typedef typename v2_head_t::type_t head_t;
     typedef typename v2_tail_t::type_t tail_t;
-    typedef ColumnDescriptor<v2_head_t, vector<head_t>> coldesc_head_t;
-    typedef ColumnDescriptor<v2_tail_t, vector<tail_t>> coldesc_tail_t;
+    typedef ColumnDescriptor<v2_head_t, std::vector<head_t>> coldesc_head_t;
+    typedef ColumnDescriptor<v2_tail_t, std::vector<tail_t>> coldesc_tail_t;
 
     coldesc_head_t head;
     coldesc_tail_t tail;
@@ -70,14 +70,14 @@ public:
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) override {
-        head.container->emplace_back(move(p.first));
-        tail.container->emplace_back(move(p.second));
+        head.container->push_back(p.first);
+        tail.container->push_back(p.second);
     }
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>&& p) override {
-        head.container->emplace_back(move(p.first));
-        tail.container->emplace_back(move(p.second));
+        head.container->push_back(std::move(p.first));
+        tail.container->push_back(std::move(p.second));
     }
 
     virtual Bat<Tail, Head>* reverse() override {
@@ -183,7 +183,7 @@ public:
     typedef v2_void_t v2_tail_t;
     typedef typename Head::type_t head_t;
     typedef typename v2_void_t::type_t tail_t;
-    typedef vector<head_t> containerhead_t;
+    typedef std::vector<head_t> containerhead_t;
     typedef ColumnDescriptor<Head, containerhead_t> coldesc_head_t;
     typedef ColumnDescriptor<v2_void_t, void> coldesc_tail_t;
 
@@ -216,21 +216,21 @@ public:
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) override {
         if (head.container)
-            head.container->emplace_back(std::move(p.first));
+            head.container->push_back(p.first);
     }
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>&& p) override {
         if (head.container)
-            head.container->emplace_back(std::move(p.first));
+            head.container->push_back(std::move(p.first));
     }
 
     virtual void append(head_t& h) {
-        head.container->emplace_back(move(h));
+        head.container->push_back(h);
     }
 
     virtual void append(head_t&& h) {
-        head.container->emplace_back(move(h));
+        head.container->push_back(std::move(h));
     }
 
     virtual Bat<v2_void_t, Head>* reverse() override {
@@ -292,20 +292,20 @@ public:
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>& p) override {
-        tail.container->emplace_back(move(p.second));
+        tail.container->push_back(p.second);
     }
 
     /** append an item */
     virtual void append(pair<head_t, tail_t>&& p) override {
-        tail.container->emplace_back(move(p.second));
+        tail.container->emplace_back(std::move(p.second));
     }
 
     virtual void append(tail_t& t) {
-        tail.container->emplace_back(move(t));
+        tail.container->push_back(t);
     }
 
     virtual void append(tail_t&& t) {
-        tail.container->emplace_back(move(t));
+        tail.container->emplace_back(std::move(t));
     }
 
     virtual Bat<Tail, v2_void_t>* reverse() override {

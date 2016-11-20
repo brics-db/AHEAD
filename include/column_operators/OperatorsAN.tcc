@@ -31,12 +31,8 @@
 #include <sstream>
 #include <type_traits>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_operators/Operators.h>
 #include <util/resilience.hpp>
-
-#include "operators.h"
 
 namespace v2 {
     namespace bat {
@@ -64,7 +60,7 @@ namespace v2 {
                 result->reserve(arg->size());
                 auto iter = arg->begin();
                 for (; iter->hasNext(); ++*iter) {
-                    result->emplace_back((iter->tail() * aInv) <= unEncMaxU);
+                    result->push_back((iter->tail() * aInv) <= unEncMaxU);
                 }
                 delete iter;
                 return result; // possibly empty
@@ -110,16 +106,16 @@ namespace v2 {
                     if (isHeadEncoded & isTailEncoded) {
                         auto decH = iter->head() * aInvH;
                         auto decT = iter->tail() * aInvT;
-                        vec1->emplace_back(move(decH <= aUnencMaxUH));
-                        vec2->emplace_back(move(decT <= aUnencMaxUT));
+                        vec1->push_back(move(decH <= aUnencMaxUH));
+                        vec2->push_back(move(decT <= aUnencMaxUT));
                         result->append(make_pair(static_cast<typename Tail::unenc_v2_t::type_t> (decH), static_cast<typename Tail::unenc_v2_t::type_t> (decT)));
                     } else if (isHeadEncoded) {
                         auto decH = iter->head() * aInvH;
-                        vec1->emplace_back(move(decH <= aUnencMaxUH));
+                        vec1->push_back(move(decH <= aUnencMaxUH));
                         result->append(make_pair(static_cast<typename Tail::unenc_v2_t::type_t> (decH), iter->tail()));
                     } else {
                         auto decT = iter->tail() * aInvT;
-                        vec2->emplace_back(move(decT <= aUnencMaxUT));
+                        vec2->push_back(move(decT <= aUnencMaxUT));
                         result->append(make_pair(iter->head(), static_cast<typename Tail::unenc_v2_t::type_t> (decT)));
                     }
                 }
@@ -138,7 +134,7 @@ namespace v2 {
                     Op op;
                     for (; iter->hasNext(); ++*iter) {
                         auto t = iter->tail();
-                        result.second->emplace_back((t * aInv) <= unEncMaxU);
+                        result.second->push_back((t * aInv) <= unEncMaxU);
                         if (op(t, th)) {
                             result.first->append(make_pair(iter->head() * AHead, t));
                         }
@@ -160,7 +156,7 @@ namespace v2 {
                     Op2 op2;
                     for (; iter->hasNext(); ++*iter) {
                         auto t = iter->tail();
-                        result.second->emplace_back((t * aInv) <= unEncMaxU);
+                        result.second->push_back((t * aInv) <= unEncMaxU);
                         if (op1(t, th1) && op2(t, th2)) {
                             result.first->append(make_pair(iter->head() * AHead, t));
                         }
@@ -212,7 +208,8 @@ namespace v2 {
                     // only really continue when both BATs are not empty
                     if (arg1->size() < arg2->size()) {
                         // let's ignore the joinSide for now and use that sizes as a measure, which is of course oversimplified
-                        unordered_map<typename Tail1::type_t, vector<typename Head1::type_t> > hashMap;
+                        google::dense_hash_map<typename Tail1::type_t, vector<typename Head1::type_t> > hashMap;
+                        hashMap.set_empty_key(Tail1::dhm_emptykey);
                         for (; iter1->hasNext(); ++*iter1, ++pos) { // build
                             auto h = iter1->head();
                             auto t = iter1->tail();
@@ -220,7 +217,7 @@ namespace v2 {
                                 (*vec1)[pos] = true;
                             if (isTail1Encoded && (t * AT1inv) > AT1UnencMaxU)
                                 (*vec2)[pos] = true;
-                            hashMap[t].emplace_back(h);
+                            hashMap[t].push_back(h);
                         }
                         auto mapEnd = hashMap.end();
                         pos = 0;
@@ -239,7 +236,8 @@ namespace v2 {
                             }
                         }
                     } else {
-                        unordered_map<typename Head2::type_t, vector<typename Tail2::type_t> > hashMap;
+                        google::dense_hash_map<typename Head2::type_t, vector<typename Tail2::type_t> > hashMap;
+                        hashMap.set_empty_key(Head2::dhm_emptykey);
                         for (; iter2->hasNext(); ++*iter2, ++pos) { // build
                             auto h = iter2->head();
                             auto t = iter2->tail();
@@ -247,7 +245,7 @@ namespace v2 {
                                 (*vec3)[pos] = true;
                             if (isTail2Encoded && (t * AT2inv) > AT2UnencMaxU)
                                 (*vec4)[pos] = true;
-                            hashMap[h].emplace_back(t);
+                            hashMap[h].push_back(t);
                         }
                         auto mapEnd = hashMap.end();
                         pos = 0;
@@ -293,9 +291,9 @@ namespace v2 {
                     typename T1Enc::type_t x1 = iter1->tail() * (isTail1Encoded ? AT1inv : 1);
                     typename T2Enc::type_t x2 = iter2->tail() * (isTail2Encoded ? AT2inv : 1);
                     if (isTail1Encoded)
-                        vec1->emplace_back(x1 <= AT1unencMaxU);
+                        vec1->push_back(x1 <= AT1unencMaxU);
                     if (isTail2Encoded)
-                        vec2->emplace_back(x2 <= AT2unencMaxU);
+                        vec2->push_back(x2 <= AT2unencMaxU);
                     total += static_cast<result_t> (x1) * static_cast<result_t> (x2);
                 }
                 if (isResultEncoded)

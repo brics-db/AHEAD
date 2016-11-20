@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="97">
+<configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="include" name="0">
+      <df name="util">
+        <in>v2types.hpp</in>
+      </df>
     </df>
     <df root="lib" name="1">
       <df name="column_storage">
@@ -17,6 +20,7 @@
         <in>resilience.cpp</in>
         <in>rss.cpp</in>
         <in>stopwatch.cpp</in>
+        <in>v2types.cpp</in>
       </df>
     </df>
     <df root="tools" name="2">
@@ -27,10 +31,18 @@
         <in>test_hashjoin.cpp</in>
       </df>
       <df name="ssbm">
+        <in>ssbm-q11.cpp</in>
+        <in>ssbm-q11_continuous.cpp</in>
+        <in>ssbm-q11_early.cpp</in>
+        <in>ssbm-q11_late.cpp</in>
+        <in>ssbm-q12.cpp</in>
+        <in>ssbm-q12_continuous.cpp</in>
+        <in>ssbm-q12_early.cpp</in>
+        <in>ssbm-q12_late.cpp</in>
         <in>ssbm-q13.cpp</in>
-        <in>ssbm-q13_eager.cpp</in>
-        <in>ssbm-q13_encoded.cpp</in>
-        <in>ssbm-q13_lazy.cpp</in>
+        <in>ssbm-q13_continuous.cpp</in>
+        <in>ssbm-q13_early.cpp</in>
+        <in>ssbm-q13_late.cpp</in>
         <in>ssbm-q21.cpp</in>
       </df>
     </df>
@@ -41,7 +53,6 @@
       <itemPath>nbproject/private/launcher.properties</itemPath>
     </logicalFolder>
     <itemPath>CMakeLists.txt</itemPath>
-    <itemPath>build/eval.gnuplot</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
@@ -58,9 +69,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-O3 -std=c++14"/>
+        <element flagsID="0" commonFlags="-march=native -march=native -O3 -std=gnu++14"/>
         <element flagsID="1" commonFlags="-std=c++14"/>
-        <element flagsID="2" commonFlags="-std=c++14 -march=native -O3"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -75,6 +85,9 @@
           </cTool>
           <ccTool flags="-std=c++0x -fPIC -pedantic -std=c++11 -O2 -fno-exceptions -O3 -std=c++14">
             <standard>11</standard>
+            <incDir>
+              <pElem>include</pElem>
+            </incDir>
           </ccTool>
         </makeTool>
         <preBuild>
@@ -82,14 +95,24 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="build/eval.gnuplot" ex="false" tool="3" flavor2="0">
-      </item>
-      <folder path="1">
+      <folder path="1/column_storage">
         <ccTool>
           <incDir>
             <pElem>lib</pElem>
-            <pElem>include</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="1/meta_repository">
+        <ccTool>
+          <incDir>
+            <pElem>lib</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="2">
@@ -99,51 +122,82 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <folder path="2/sample">
+        <ccTool>
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
       <item path="lib/column_storage/ColumnManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
       <item path="lib/column_storage/Transaction.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
       <item path="lib/column_storage/TransactionManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
       <item path="lib/meta_repository/MetaRepositoryManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="1">
+        <ccTool flags="0">
         </ccTool>
       </item>
       <item path="lib/util/resilience.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="1">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>lib</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="lib/util/rss.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>lib</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="lib/util/stopwatch.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
+          <incDir>
+            <pElem>/usr/include</pElem>
+            <pElem>lib</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="lib/util/v2types.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>lib</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NDEBUG</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="tools/sample/lineorder_size.cpp" ex="false" tool="1" flavor2="11">
@@ -154,29 +208,113 @@
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="tools/sample/test_group.cpp" ex="false" tool="1" flavor2="0">
+      <item path="tools/sample/test_group.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="tools/sample/test_hashjoin.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
         </ccTool>
       </item>
+      <item path="tools/ssbm/ssbm-q11.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q11_continuous.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q11_early.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q11_late.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q12.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q12_continuous.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q12_early.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q12_late.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
+      </item>
       <item path="tools/ssbm/ssbm-q13.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
         </ccTool>
       </item>
-      <item path="tools/ssbm/ssbm-q13_eager.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+      <item path="tools/ssbm/ssbm-q13_continuous.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
         </ccTool>
       </item>
-      <item path="tools/ssbm/ssbm-q13_encoded.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+      <item path="tools/ssbm/ssbm-q13_early.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
         </ccTool>
       </item>
-      <item path="tools/ssbm/ssbm-q13_lazy.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+      <item path="tools/ssbm/ssbm-q13_late.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
         </ccTool>
       </item>
-      <item path="tools/ssbm/ssbm-q21.cpp" ex="false" tool="1" flavor2="0">
+      <item path="tools/ssbm/ssbm-q21.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>tools</pElem>
+          </incDir>
+        </ccTool>
       </item>
     </conf>
     <conf name="Debug" type="0">
@@ -215,8 +353,6 @@
       </makefileType>
       <item path="CMakeLists.txt" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="build/eval.gnuplot" ex="false" tool="3" flavor2="0">
-      </item>
       <folder path="2">
         <ccTool>
           <preprocessorList>
@@ -224,6 +360,8 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="include/util/v2types.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"
             tool="1"
@@ -270,6 +408,8 @@
       <item path="lib/util/stopwatch.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="lib/util/v2types.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="tools/sample/lineorder_size.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">

@@ -42,8 +42,8 @@
 
 #include <column_storage/ColumnBat.h>
 #include <column_storage/TransactionManager.h>
-#include <column_operators/operators.h>
-#include <column_operators/operatorsAN.tcc>
+#include <column_operators/Operators.h>
+#include <column_operators/OperatorsAN.tcc>
 #include <util/resilience.hpp>
 #include <util/rss.hpp>
 #include <util/stopwatch.hpp>

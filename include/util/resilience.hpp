@@ -28,8 +28,12 @@
 #ifndef RESILIENCE_HPP
 #define RESILIENCE_HPP
 
-#include <ColumnStore.h>
+#include <cstdint>
+
+#include <util/v2types.hpp>
+#include <column_storage/Bat.h>
 #include <column_storage/ColumnBat.h>
+#include <column_storage/TempBat.h>
 
 typedef uint16_t restiny_t;
 typedef uint32_t resshort_t;
@@ -49,6 +53,9 @@ struct v2_restiny_t : public v2_anencoded_t {
     typedef v2_restiny_t v2_select_t;
     typedef v2_restiny_t v2_compare_t;
 
+    static const type_t dhm_emptykey;
+    static const type_t dhm_deletedkey;
+
     static const restiny_t A;
     static const restiny_t A_INV;
     static const restiny_t A_UNENC_MIN;
@@ -62,6 +69,9 @@ struct v2_resshort_t : public v2_anencoded_t {
     typedef v2_resshort_t v2_copy_t;
     typedef v2_resshort_t v2_select_t;
     typedef v2_resshort_t v2_compare_t;
+
+    static const type_t dhm_emptykey;
+    static const type_t dhm_deletedkey;
 
     static const resshort_t A;
     static const resshort_t A_INV;
@@ -77,6 +87,9 @@ struct v2_resint_t : public v2_anencoded_t {
     typedef v2_resint_t v2_select_t;
     typedef v2_resint_t v2_compare_t;
 
+    static const type_t dhm_emptykey;
+    static const type_t dhm_deletedkey;
+
     static const resint_t A;
     static const resint_t A_INV;
     static const resint_t A_UNENC_MIN;
@@ -91,6 +104,9 @@ struct v2_resbigint_t : public v2_anencoded_t {
     typedef v2_resbigint_t v2_select_t;
     typedef v2_resbigint_t v2_compare_t;
 
+    static const type_t dhm_emptykey;
+    static const type_t dhm_deletedkey;
+
     static const resbigint_t A;
     static const resbigint_t A_INV;
     static const resbigint_t A_UNENC_MIN;
@@ -104,6 +120,9 @@ struct v2_resoid_t : public v2_anencoded_t {
     typedef v2_resoid_t v2_copy_t;
     typedef v2_resoid_t v2_select_t;
     typedef v2_resoid_t v2_compare_t;
+
+    static const type_t dhm_emptykey;
+    static const type_t dhm_deletedkey;
 
     static const resoid_t A;
     static const resoid_t A_INV;
@@ -217,74 +236,6 @@ struct TypeMap<v2_resoid_t> {
     typedef v2_resoid_t v2_encoded_t;
     typedef v2_resoid_t v2_actual_t;
     static cstr_t TYPENAME;
-};
-
-template<typename Tail>
-class ColumnBatIterator<v2_resoid_t, Tail> : public ColumnBatIteratorBase<v2_resoid_t, Tail> {
-public:
-    using ColumnBatIteratorBase<v2_resoid_t, Tail>::ColumnBatIteratorBase;
-
-    virtual ~ColumnBatIterator() {
-    }
-
-    virtual pair<resoid_t, Tail>&& get(unsigned index) override {
-        this->bu = this->ta->get(this->mColumnId, index);
-        pair<resoid_t, Tail> p = make_pair(static_cast<resoid_t> (this->bu->head.oid), static_cast<const char*> (this->bu->tail));
-        delete this->bu;
-        this->bu = this->ta->next(this->mColumnId);
-        return p;
-    }
-
-    virtual pair<resoid_t, Tail>&& next() override {
-        pair<resoid_t, Tail> p = make_pair(static_cast<resoid_t> (this->bu->head.oid), static_cast<const char*> (this->bu->tail));
-        delete this->bu;
-        this->bu = this->ta->next(this->mColumnId);
-        return p;
-    }
-};
-
-template<typename Tail>
-class ColumnBat<v2_resoid_t, Tail> : public Bat<v2_resoid_t, Tail> {
-    id_t mColumnId;
-
-public:
-
-    ColumnBat(id_t columnId) : mColumnId(columnId) {
-    }
-
-    ColumnBat(const char *table_name, const char *attribute) {
-        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
-        mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
-    }
-
-    virtual ~ColumnBat() {
-    }
-
-    /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<v2_resoid_t, Tail> * begin() override {
-        return new ColumnBatIterator<v2_resoid_t, Tail>(mColumnId);
-    }
-
-    /** append an item */
-    virtual void append(pair<resoid_t, Tail>& p) override {
-    }
-
-    virtual void append(pair<resoid_t, Tail>&& p) override {
-    }
-
-    virtual unsigned size() override {
-        auto iter = begin();
-        unsigned size = iter->size();
-        delete iter;
-        return size;
-    }
-
-    virtual size_t consumption() override {
-        auto iter = begin();
-        unsigned size = iter->consumption();
-        delete iter;
-        return size;
-    }
 };
 
 #endif /* RESILIENCE_HPP */

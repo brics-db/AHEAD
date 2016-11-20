@@ -304,7 +304,7 @@ BucketManager::Chunk* BucketManager::BucketIterator::append() {
 
     // this->stream->index.resize(this->stream->size + 1, 0);
     // this->stream->index[this->stream->size] = newBucket;
-    this->stream->index.emplace_back(std::move(newBucket));
+    this->stream->index.push_back(newBucket);
     this->stream->size++;
 
     return newBucket->chunk;

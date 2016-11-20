@@ -39,12 +39,12 @@ using namespace std;
 
 template<typename Head, typename Tail>
 class ColumnBat : public Bat<Head, Tail> {
-    typedef typename Head::type_t head_t;
-    typedef typename Tail::type_t tail_t;
-
     id_t mColumnId;
 
 public:
+
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
 
     ColumnBat(id_t columnId) : mColumnId(columnId) {
     }

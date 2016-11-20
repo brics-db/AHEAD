@@ -30,8 +30,8 @@
 int main(int argc, char** argv) {
     ssbmconf_t CONFIG = initSSBM(argc, argv);
     StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
-    const size_t NUM_OPS = 24;
-    cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
+    const size_t NUM_OPS = 34;
+    cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
     size_t batSizes[NUM_OPS] = {0};
     size_t batConsumptions[NUM_OPS] = {0};
@@ -61,6 +61,7 @@ int main(int argc, char** argv) {
     sw1.stop();
     cout << "Total loading time: " << sw1 << " ns." << endl;
 
+    // select lo_revenue, d_year, p_brand from lineorder, part, supplier, date where lo_orderdate = d_datekey and lo_partkey = p_partkey and lo_suppkey = s_suppkey and p_category = 'MFGR#12' and s_region = 'AMERICA'
     cout << "\nSSBM Q2.1:\n";
     cout << "select sum(lo_revenue), d_year, p_brand\n";
     cout << "  from lineorder, part, supplier, date\n";
@@ -135,6 +136,8 @@ int main(int argc, char** argv) {
 
         // p_category = 'MFGR#12'
         MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPC, "MFGR#12")); // OID part | p_category
+        // p_brand = 'MFGR#121'
+        // MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         MEASURE_OP(sw2, x, bat9, bat8->mirror_head()); // OID part | OID part
         delete bat8;
         MEASURE_OP(sw2, x, batA, batPP->reverse()); // p_partkey | OID part
@@ -144,51 +147,70 @@ int main(int argc, char** argv) {
         MEASURE_OP(sw2, x, batC, v2::bat::ops::hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
         delete bat7;
         delete batB;
-        // prepare for group-by p_brand
-        MEASURE_OP(sw2, x, batD, v2::bat::ops::hashjoin(batC, batPB)); // OID lineorder | p_brand (where ...)
 
-        // lo_orderdate where s_region = 'AMERICA' and p_category = 'MFGR#12')
+        // join with date now!
         MEASURE_OP(sw2, x, batE, batC->mirror_head()); // OID lineorder | OID lineorder  (where ...)
         delete batC;
         MEASURE_OP(sw2, x, batF, v2::bat::ops::hashjoin(batE, batLO)); // OID lineorder | lo_orderdate (where ...)
-        MEASURE_OP(sw2, x, batG, v2::bat::ops::hashjoin(batE, batLR)); // OID lineorder | lo_revenue (where ...)
         delete batE;
-        // lo_orderdate = d_datekey
         MEASURE_OP(sw2, x, batH, batDD->reverse()); // d_datekey | OID date
-        MEASURE_OP(sw2, x, batI, v2::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ...)
+        MEASURE_OP(sw2, x, batI, v2::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
         delete batF;
         delete batH;
-        // prepare for group-by d_year
-        MEASURE_OP(sw2, x, batJ, v2::bat::ops::hashjoin(batI, batDY)); // OID lineorder | d_year (where ...)
+
+        // now prepare grouped sum
+        MEASURE_OP(sw2, x, batW, batI->mirror_head()); // OID lineorder | OID lineorder
+        MEASURE_OP(sw2, x, batX, v2::bat::ops::hashjoin(batW, batLP)); // OID lineorder | lo_partkey
+        MEASURE_OP(sw2, x, batY, batPP->reverse()); // p_partkey | OID part
+        MEASURE_OP(sw2, x, batZ, v2::bat::ops::hashjoin(batX, batY)); // OID lineorder | OID part
+        delete batX;
+        delete batY;
+        MEASURE_OP(sw2, x, batA1, v2::bat::ops::hashjoin(batZ, batPB)); // OID lineorder | p_brand
+        delete batZ;
+
+        MEASURE_OP(sw2, x, batA2, v2::bat::ops::hashjoin(batI, batDY)); // OID lineorder | d_year
         delete batI;
-        MEASURE_OP_TUPLE(sw2, x, tupleK, v2::bat::ops::groupedSum<v2_bigint_t>(batG, batJ, batD));
+
+        MEASURE_OP(sw2, x, batA3, v2::bat::ops::hashjoin(batW, batLR)); // OID lineorder | lo_revenue (where ...)
+        delete batW;
+
+        MEASURE_OP_TUPLE(sw2, x, tupleK, v2::bat::ops::groupedSum<v2_bigint_t>(batA3, batA2, batA1));
+        delete batA1;
+        delete batA2;
+        delete batA3;
 
         totalTimes[i] = sw1.stop();
 
         cout << "\n(" << setw(2) << i << ")\n\tresult: " << get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.";
 
+#ifdef DEBUG
         if (i == 0) {
+            size_t sum = 0;
             auto iter1 = get<0>(tupleK)->begin();
             auto iter2 = get<1>(tupleK)->begin();
             auto iter3 = get<2>(tupleK)->begin();
             auto iter4 = get<3>(tupleK)->begin();
             auto iter5 = get<4>(tupleK)->begin();
-            cout << '\n';
+            std::cerr << "+------------+--------+-----------+\n";
+            std::cerr << "| lo_revenue | d_year | p_brand   |\n";
+            std::cerr << "+============+========+===========+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
-                iter3->position(0);
-                iter5->position(0);
-                cout << setw(15) << iter1->tail() << " | ";
+                sum += iter1->tail();
+                std::cerr << "| " << setw(10) << iter1->tail();
                 iter3->position(iter2->tail());
-                cout << iter3->tail() << " | ";
+                std::cerr << " | " << setw(6) << iter3->tail();
                 iter5->position(iter4->tail());
-                cout << iter5->tail() << '\n';
+                std::cerr << " | " << setw(9) << iter5->tail() << " |\n";
             }
+            cout << "\t   sum: " << sum << endl;
             delete iter1;
             delete iter2;
             delete iter3;
             delete iter4;
             delete iter5;
         }
+#endif
+
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }

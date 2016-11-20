@@ -81,14 +81,16 @@ int main(int argc, char** argv) {
         auto result = v2::bat::ops::group(tbD_Y);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
-        cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << endl;
-        cout << "Result:\n";
-        auto iter = result.second->begin();
-        for (; iter->hasNext(); ++*iter) {
-            cout << setw(15) << iter->head() << " | " << setw(15) << iter->tail() << '\n';
+        if (i == 0) {
+            cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << endl;
+            cout << "Result:\n";
+            auto iter = result.second->begin();
+            for (; iter->hasNext(); ++*iter) {
+                cout << setw(15) << iter->head() << " | " << setw(15) << iter->tail() << '\n';
+            }
+            cout << endl;
+            delete iter;
         }
-        cout << endl;
-        delete iter;
         delete result.first;
         delete result.second;
     }
@@ -98,27 +100,55 @@ int main(int argc, char** argv) {
     }
     cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
 
+    auto cbP_B = new str_colbat_t("part", "brand");
+    auto tbP_B = v2::bat::ops::copy(cbP_B);
+
+    totalTime = 0;
+    cout << "group part.p_brand:" << endl;
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
+        sw1.start();
+        auto result = v2::bat::ops::group(tbP_B);
+        allTimes[i] = sw1.stop();
+        totalTime += allTimes[i];
+        if (i == 0) {
+            cout << (i + 1) << '\t' << sw1.duration() << '\t' << result.first->size() << '\t' << result.second->size() << endl;
+            if (CONFIG.NUM_RUNS == 10000) {
+                cout << "Result:\n";
+                auto iter = result.second->begin();
+                for (; iter->hasNext(); ++*iter) {
+                    cout << setw(15) << iter->head() << " | " << setw(15) << iter->tail() << '\n';
+                }
+                cout << endl;
+                delete iter;
+            }
+        }
+        delete result.first;
+        delete result.second;
+    }
+    cout << "Times:\n";
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
+        cout << (i + 1) << ":\t" << allTimes[i] << '\n';
+    }
+    cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << endl;
+
+    // select sum(lo_revenue), d_year, p_brand from lineorder, date, part where lo_orderdate = d_datekey and lo_partkey = p_partkey group by d_year, p_brand
     cout << "select sum(lo_revenue), d_year, p_brand\n";
     cout << "  from lineorder, date, part\n";
     cout << "  where lo_orderdate = d_datekey\n";
     cout << "    and lo_partkey = p_partkey\n";
     cout << "  group by d_year, p_brand" << endl;
 
-    sw1.start();
     auto cbLO_OD = new int_colbat_t("lineorder", "orderdate");
     auto cbLO_R = new int_colbat_t("lineorder", "revenue");
     auto cbLO_PK = new int_colbat_t("lineorder", "partkey");
     auto cbD_DK = new int_colbat_t("date", "datekey");
     auto cbP_PK = new int_colbat_t("part", "partkey");
-    auto cbP_B = new str_colbat_t("part", "brand");
     auto tbLO_OD = v2::bat::ops::copy(cbLO_OD);
     auto tbLO_R = v2::bat::ops::copy(cbLO_R);
     auto tbLO_PK = v2::bat::ops::copy(cbLO_PK);
     auto tbD_DK = v2::bat::ops::copy(cbD_DK);
     auto tbP_PK = v2::bat::ops::copy(cbP_PK);
-    auto tbP_B = v2::bat::ops::copy(cbP_B);
-    sw1.stop();
-    cout << "Copying the 6 columns took " << sw1 << " ns." << endl;
+
     totalTime = 0;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
@@ -131,8 +161,7 @@ int main(int argc, char** argv) {
         auto tuple = v2::bat::ops::groupedSum<v2_bigint_t>(tbLO_R, bat5, bat6);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
-        size_t numSums = get<0>(tuple)->size();
-        cout << numSums << endl;
+        cout << get<0>(tuple)->size() << " " << get<1>(tuple)->size() << " " << get<2>(tuple)->size() << " " << get<3>(tuple)->size() << " " << get<4>(tuple)->size() << endl;
         if (i == 0) {
             auto iter1 = get<0>(tuple)->begin();
             auto iter2 = get<1>(tuple)->begin();
@@ -141,13 +170,13 @@ int main(int argc, char** argv) {
             auto iter5 = get<4>(tuple)->begin();
             cout << '\n';
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
-                iter3->position(0);
-                iter5->position(0);
-                cout << setw(15) << iter1->tail() << " | ";
+                std::cout << std::setw(7) << iter1->head() << ':' << std::setw(10) << iter1->tail() << " | ";
+                std::cout << std::setw(7) << iter2->head() << ':' << std::setw(10) << iter2->tail() << " | ";
                 iter3->position(iter2->tail());
-                cout << iter3->tail() << " | ";
+                std::cout << std::setw(7) << iter3->head() << ':' << std::setw(10) << iter3->tail() << " | ";
+                std::cout << std::setw(7) << iter4->head() << ':' << std::setw(10) << iter4->tail() << " | ";
                 iter5->position(iter4->tail());
-                cout << iter5->tail() << '\n';
+                std::cout << std::setw(7) << iter5->head() << ':' << std::setw(10) << iter5->tail() << '\n';
             }
             delete iter1;
             delete iter2;

@@ -28,9 +28,10 @@
 
 #include <vector>
 #include <iostream>
-#include <map>
-#include <unordered_map>
+#include <iomanip>
 #include <cmath>
+#include <unordered_map>
+#include <sparsehash/dense_hash_map>
 
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
@@ -47,6 +48,60 @@ typedef enum {
 namespace v2 {
     namespace bat {
         namespace ops {
+
+            struct eqstr {
+
+                bool operator()(str_t s1, str_t s2) const {
+                    if (s1 == nullptr) {
+                        return s2 == nullptr;
+                    }
+                    if (s2 == nullptr) {
+                        return false;
+                    }
+                    return strcmp(s1, s2) == 0;
+                }
+            };
+
+            struct hashstr {
+
+                size_t operator()(str_t const &s) const {
+                    size_t len = std::strlen(s);
+                    size_t hash(0), multiplier(1);
+                    for (int i = len - 1; i >= 0; --i) {
+                        hash += s[i] * multiplier;
+                        int shifted = multiplier << 5;
+                        multiplier = shifted - multiplier;
+                    }
+                    return hash;
+                }
+            };
+
+            struct eqcstr {
+
+                bool operator()(cstr_t s1, cstr_t s2) const {
+                    if (s1 == nullptr) {
+                        return s2 == nullptr;
+                    }
+                    if (s2 == nullptr) {
+                        return false;
+                    }
+                    return strcmp(s1, s2) == 0;
+                }
+            };
+
+            struct hashcstr {
+
+                size_t operator()(cstr_t const &s) const {
+                    size_t len = std::strlen(s);
+                    size_t hash(0), multiplier(1);
+                    for (int i = len - 1; i >= 0; --i) {
+                        hash += s[i] * multiplier;
+                        int shifted = multiplier << 5;
+                        multiplier = shifted - multiplier;
+                    }
+                    return hash;
+                }
+            };
 
             template<typename Head, typename Tail>
             Bat<typename Head::v2_copy_t, typename Tail::v2_copy_t>* copy(Bat<Head, Tail>* arg) {
@@ -180,16 +235,18 @@ namespace v2 {
                 return impl(arg, move(th1), move(th2));
             }
 
-            template<typename T1, typename T2, typename T3, typename T4>
-            Bat<typename T1::v2_select_t, typename T4::v2_select_t>* hashjoin(Bat<T1, T2> *arg1, Bat<T3, T4> *arg2, hash_side_t side = hash_side_t::left) {
-                auto result = new TempBat<typename T1::v2_select_t, typename T4::v2_select_t > ();
+            template<typename H1, typename T1, typename H2, typename T2>
+            Bat<typename H1::v2_select_t, typename T2::v2_select_t>* hashjoin(Bat<H1, T1> *arg1, Bat<H2, T2> *arg2, hash_side_t side = hash_side_t::right) {
+                auto result = new TempBat<typename H1::v2_select_t, typename T2::v2_select_t > ();
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 if (iter1->hasNext() && iter2->hasNext()) {
                     if (side == hash_side_t::left) {
-                        unordered_map<typename T2::type_t, vector<typename T1::type_t> > hashMap;
+                        // google::dense_hash_map<typename T1::type_t, vector<typename H1::type_t >> hashMap;
+                        // hashMap.set_empty_key(T1::dhm_emptykey);
+                        std::unordered_map<typename T1::type_t, vector<typename H1::type_t >> hashMap;
                         for (; iter1->hasNext(); ++*iter1) {
-                            hashMap[iter1->tail()].emplace_back(move(iter1->head()));
+                            hashMap[iter1->tail()].push_back(iter1->head());
                         }
                         auto mapEnd = hashMap.end();
                         for (; iter2->hasNext(); ++*iter2) {
@@ -197,14 +254,16 @@ namespace v2 {
                             if (iterMap != mapEnd) {
                                 auto t2 = iter2->tail();
                                 for (auto matched : iterMap->second) {
-                                    result->append(make_pair(move(matched), move(t2)));
+                                    result->append(make_pair(matched, t2));
                                 }
                             }
                         }
                     } else {
-                        unordered_map<typename T3::type_t, vector<typename T4::type_t> > hashMap;
+                        // google::dense_hash_map<typename H2::type_t, vector<typename T2::type_t> > hashMap;
+                        // hashMap.set_empty_key(H2::dhm_emptykey);
+                        std::unordered_map<typename H2::type_t, vector<typename T2::type_t >> hashMap;
                         for (; iter2->hasNext(); ++*iter2) {
-                            hashMap[iter2->head()].emplace_back(iter2->tail());
+                            hashMap[iter2->head()].push_back(iter2->tail());
                         }
                         auto mapEnd = hashMap.end();
                         for (; iter1->hasNext(); ++*iter1) {
@@ -228,12 +287,13 @@ namespace v2 {
              * @param arg a Bat
              * @return a single sum value
              */
-            template<typename Head, typename Tail>
-            Tail aggregate_sum(Bat<Head, Tail>* arg) {
-                Tail sum = 0;
+            template<typename v2_result_t, typename Head, typename Tail>
+            typename v2_result_t::type_t aggregate_sum(Bat<Head, Tail>* arg) {
+                typedef typename v2_result_t::type_t result_t;
+                result_t sum = 0;
                 auto iter = arg->begin();
                 for (; iter->hasNext(); ++*iter) {
-                    sum += iter->tail();
+                    sum += static_cast<result_t> (iter->tail());
                 }
                 delete iter;
                 return sum;
@@ -265,33 +325,40 @@ namespace v2 {
              * 2) GroupID -> Value
              */
             template<typename Head, typename Tail>
-            struct groupby {
+            struct groupby_base {
 
-                pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, Tail>*> group(Bat<Head, Tail>* bat) {
-                    auto mapHeadtoGID = new TempBat<Head, v2_oid_t>();
-                    auto mapGIDtoTail = new TempBat<v2_void_t, Tail>();
+                template<typename HashMap>
+                pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, Tail>*> group_base(Bat<Head, Tail>* bat, HashMap& dictionary) const {
+                    auto batHeadtoGID = new TempBat<Head, v2_oid_t>();
+                    auto batGIDtoTail = new TempBat<v2_void_t, Tail>();
                     auto iter = bat->begin();
+                    size_t nextGID = 0;
                     for (; iter->hasNext(); ++*iter) {
                         typename Tail::type_t curTail = iter->tail();
                         // search this tail in our mapping
                         // idx is the void value of mapGIDtoTail, which starts at zero
-                        size_t curGID = 0;
-                        bool isNewGroup = true;
-                        for (auto itertail = mapGIDtoTail->tail.container->begin(); itertail != mapGIDtoTail->tail.container->end(); ++itertail) {
-                            if (curTail == *itertail) {
-                                isNewGroup = false;
-                                break;
-                            }
-                            ++curGID;
+                        auto iterDict = dictionary.find(curTail);
+                        if (iterDict == dictionary.end()) {
+                            batGIDtoTail->append(curTail);
+                            batHeadtoGID->append(make_pair(iter->head(), nextGID));
+                            dictionary[curTail] = nextGID;
+                            ++nextGID;
+                        } else {
+                            batHeadtoGID->append(make_pair(iter->head(), iterDict->second));
                         }
-                        if (isNewGroup) {
-                            // new group!
-                            mapGIDtoTail->append(curTail);
-                        }
-                        mapHeadtoGID->append(make_pair(iter->head(), curGID));
                     }
                     delete iter;
-                    return make_pair(mapHeadtoGID, mapGIDtoTail);
+                    return make_pair(batHeadtoGID, batGIDtoTail);
+                }
+            };
+
+            template<typename Head, typename Tail>
+            struct groupby : public groupby_base<Head, Tail> {
+
+                pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, Tail>*> group(Bat<Head, Tail>* bat) const {
+                    google::dense_hash_map<typename Head::type_t, oid_t> dictionary;
+                    dictionary.set_empty_key(Head::dhm_emptykey);
+                    return this->group_base(bat, dictionary);
                 }
             };
 
@@ -302,33 +369,12 @@ namespace v2 {
              * 2) GroupID -> Value
              */
             template<typename Head>
-            struct groupby<Head, v2_str_t> {
+            struct groupby<Head, v2_str_t> : public groupby_base<Head, v2_str_t> {
 
-                pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, v2_str_t>*> group(Bat<Head, v2_str_t>* bat) {
-                    auto mapHeadtoGID = new TempBat<Head, v2_oid_t>();
-                    auto mapGIDtoTail = new TempBat<v2_void_t, v2_str_t>();
-                    auto iter = bat->begin();
-                    for (; iter->hasNext(); ++*iter) {
-                        str_t curTail = iter->tail();
-                        // search this tail in our mapping
-                        // idx is the void value of mapGIDtoTail, which starts at zero
-                        size_t curGID = 0;
-                        bool isNewGroup = true;
-                        for (auto itertail = mapGIDtoTail->tail.container->begin(); itertail != mapGIDtoTail->tail.container->end(); ++itertail) {
-                            if (strcmp(curTail, *itertail) == 0) {
-                                isNewGroup = false;
-                                break;
-                            }
-                            ++curGID;
-                        }
-                        if (isNewGroup) {
-                            // new group!
-                            mapGIDtoTail->append(curTail);
-                        }
-                        mapHeadtoGID->append(make_pair(iter->head(), curGID));
-                    }
-                    delete iter;
-                    return make_pair(mapHeadtoGID, mapGIDtoTail);
+                pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, v2_str_t>*> group(Bat<Head, v2_str_t>* bat) const {
+                    google::dense_hash_map<str_t, oid_t, hashstr, eqstr> dictionary;
+                    dictionary.set_empty_key(v2_str_t::dhm_emptykey);
+                    return this->group_base(bat, dictionary);
                 }
             };
 
@@ -338,7 +384,7 @@ namespace v2 {
             }
 
             /**
-             * Group by 2 BAT's and sum up one column according to the double-grouping. The OID's in all BAT's must match!
+             * Group by 2 BAT's and sum up one column according to the double-grouping. The OID's (Heads) in all BAT's must match!
              * @param bat1 The bat over which to sum up
              * @param bat2 The first grouping BAT
              * @param bat3 The second grouping BAT
@@ -383,20 +429,43 @@ namespace v2 {
                         outBat4->append(g2SecondIter->head());
                     }
                 }
-                delete g1SecondIter;
-                delete g2SecondIter;
 
                 auto sums = sumBat->tail.container->data();
                 auto iter1 = bat1->begin();
                 auto g1FirstIter = group1.first->begin();
                 auto g2FirstIter = group2.first->begin();
+#ifdef DEBUG
+                auto iter2 = bat2->begin();
+                auto iter3 = bat3->begin();
+                std::cerr << "+------------+--------+-----------+\n";
+                std::cerr << "| lo_revenue | d_year | p_brand   |\n";
+                std::cerr << "+============+========+===========+\n";
+                for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*g1FirstIter, ++*g2FirstIter) {
+#else
                 for (; iter1->hasNext(); ++*iter1, ++*g1FirstIter, ++*g2FirstIter) {
-                    size_t pos = g1FirstIter->tail() + g2FirstIter->tail() * size1;
+#endif
+#ifdef DEBUG
+                    std::cerr << "| " << std::setw(10) << iter1->tail();
+                    std::cerr << " | " << std::setw(6) << iter2->tail();
+                    std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
+                    // g1SecondIter->position(g1FirstIter->tail());
+                    // std::cerr << std::setw(6) << g1SecondIter->tail() << " | ";
+                    // g2SecondIter->position(g2FirstIter->tail());
+                    // std::cerr << std::setw(9) << g2SecondIter->tail() << " |\n";
+#endif
+                    size_t pos = g1FirstIter->tail() * size2 + g2FirstIter->tail();
                     sums[pos] += static_cast<typename V2Result::type_t> (iter1->tail());
                 }
+#ifdef DEBUG
+                delete iter3;
+                delete iter2;
+                std::cerr << "+------------+--------+-----------+";
+#endif
                 delete iter1;
                 delete g1FirstIter;
                 delete g2FirstIter;
+                delete g1SecondIter;
+                delete g2SecondIter;
                 delete group1.first;
                 delete group2.first;
 #ifdef DEBUG
