@@ -1,18 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <stdlib.h>
-#include <time.h>
-
-#include <boost/filesystem.hpp>
-
-#include <column_storage/ColumnBat.h>
-#include <column_storage/TransactionManager.h>
-#include <column_operators/Operators.h>
-#include <column_operators/OperatorsAN.tcc>
-#include <util/rss.hpp>
-#include <util/stopwatch.hpp>
-
 #include "../ssbm/ssbm.hpp"
 
 using namespace std;

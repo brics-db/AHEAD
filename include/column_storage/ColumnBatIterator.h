@@ -127,21 +127,6 @@ public:
 };
 
 template<typename Head>
-class ColumnBatIterator<Head, v2_cstr_t> : public ColumnBatIteratorBase<Head, v2_cstr_t> {
-public:
-    typedef ColumnBatIterator<Head, v2_cstr_t> self_t;
-
-    using ColumnBatIteratorBase<Head, v2_cstr_t>::ColumnBatIteratorBase;
-
-    virtual ~ColumnBatIterator() {
-    }
-
-    virtual cstr_t tail() override {
-        return static_cast<cstr_t> (this->bu.tail);
-    }
-};
-
-template<typename Head>
 class ColumnBatIterator<Head, v2_str_t> : public ColumnBatIteratorBase<Head, v2_str_t> {
 public:
     typedef ColumnBatIterator<Head, v2_str_t> self_t;

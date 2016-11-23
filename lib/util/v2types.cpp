@@ -47,9 +47,6 @@ const typename v2_char_t::type_t v2_char_t::dhm_deletedkey = static_cast<typenam
 const typename v2_str_t::type_t v2_str_t::dhm_emptykey = nullptr;
 const typename v2_str_t::type_t v2_str_t::dhm_deletedkey = reinterpret_cast<typename v2_str_t::type_t> (-1);
 
-const typename v2_cstr_t::type_t v2_cstr_t::dhm_emptykey = nullptr;
-const typename v2_cstr_t::type_t v2_cstr_t::dhm_deletedkey = reinterpret_cast<typename v2_cstr_t::type_t> (-1);
-
 const typename v2_fixed_t::type_t v2_fixed_t::dhm_emptykey = std::numeric_limits<double>::quiet_NaN();
 const typename v2_fixed_t::type_t v2_fixed_t::dhm_deletedkey = std::numeric_limits<double>::infinity();
 

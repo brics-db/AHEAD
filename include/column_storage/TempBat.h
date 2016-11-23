@@ -25,6 +25,7 @@
 #ifndef TEMPBAT_H
 #define TEMPBAT_H
 
+#include <vector>
 #include <utility>
 
 #include <ColumnStore.h>

@@ -43,6 +43,8 @@ class ColumnBat : public Bat<Head, Tail> {
 
 public:
 
+    typedef Head v2_head_t;
+    typedef Tail v2_tail_t;
     typedef typename Head::type_t head_t;
     typedef typename Tail::type_t tail_t;
 
@@ -99,6 +101,8 @@ public:
 template<typename Tail>
 class ColumnBat<v2_void_t, Tail> : public Bat<v2_void_t, Tail> {
     typedef v2_void_t Head;
+    typedef Head v2_head_t;
+    typedef Tail v2_tail_t;
     typedef typename Head::type_t head_t;
     typedef typename Tail::type_t tail_t;
 

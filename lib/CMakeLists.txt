@@ -26,6 +26,6 @@ ENDMACRO( add_static_lib )
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
-add_static_lib(util "resilience.cpp rss.cpp stopwatch.cpp v2types.cpp" "")
+add_static_lib(util "resilience.cpp rss.cpp stopwatch.cpp v2types.cpp argumentparser.cpp" "")
 add_static_lib(column_storage "BucketManager.cpp ColumnManager.cpp Transaction.cpp TransactionManager.cpp" "v2util")
 add_static_lib(meta_repository "MetaRepositoryManager.cpp" "v2util v2column_storage")

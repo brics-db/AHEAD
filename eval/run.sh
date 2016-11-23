@@ -9,7 +9,7 @@ PATH_EVALOUT=out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-IMPLEMENTED=(11 12 13)
+IMPLEMENTED=(11 12 13 21)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0

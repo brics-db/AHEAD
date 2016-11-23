@@ -81,27 +81,27 @@ private:
 
     // all attributes for the table table :)
     id_tmpbat_t*pk_table_id;
-    cstr_tmpbat_t *table_name;
+    str_tmpbat_t *table_name;
 
     // all attributes for the attribute table
     id_tmpbat_t *pk_attribute_id;
-    cstr_tmpbat_t *attribute_name;
+    str_tmpbat_t *attribute_name;
     id_tmpbat_t *fk_table_id;
     id_tmpbat_t *fk_type_id;
     id_tmpbat_t *BAT_number;
 
     // all attributes for the layout table
     id_tmpbat_t *pk_layout_id;
-    cstr_tmpbat_t *layout_name;
+    str_tmpbat_t *layout_name;
     size_tmpbat_t *size;
 
     // all attributes for the operator table
     id_tmpbat_t *pk_operator_id;
-    cstr_tmpbat_t *operator_name;
+    str_tmpbat_t *operator_name;
 
     // all attributes for the datatypes table
     id_tmpbat_t *pk_datatype_id;
-    cstr_tmpbat_t *datatype_name;
+    str_tmpbat_t *datatype_name;
     size_tmpbat_t *datatype_length;
     char_tmpbat_t *datatype_category;
 
@@ -144,9 +144,9 @@ private:
 
 public:
 
-    class TablesIterator : public BatIterator<v2_id_t, v2_cstr_t> {
+    class TablesIterator : public BatIterator<v2_id_t, v2_str_t> {
         typedef TempBatIterator<v2_void_t, v2_id_t> table_key_iter_t;
-        typedef TempBatIterator<v2_void_t, v2_cstr_t> table_name_iter_t;
+        typedef TempBatIterator<v2_void_t, v2_str_t> table_name_iter_t;
 
         table_key_iter_t *pKeyIter;
         table_name_iter_t *pNameIter;
@@ -171,7 +171,7 @@ public:
 
         virtual id_t head() override;
 
-        virtual cstr_t tail() override;
+        virtual str_t tail() override;
 
         virtual size_t size() override;
 

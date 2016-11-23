@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
 
     if (CONFIG.VERBOSE) {
-        std::cout << "\nSSBM Q1.2:\n";
+        std::cout << "SSBM Q1.2:\n";
         std::cout << "select sum(lo_extendedprice * lo_discount) as revenue\n";
         std::cout << "  from lineorder, date\n";
         std::cout << "  where lo_orderdate = d_datekey\n";
@@ -144,16 +144,16 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        std::cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
+        std::cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.\n";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
 
     if (CONFIG.VERBOSE) {
-        std::cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.";
+        std::cout << "peak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
     }
 
-    std::cout << "\nTotalTimes:";
+    std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         std::cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
     }

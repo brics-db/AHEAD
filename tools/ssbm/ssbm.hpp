@@ -34,23 +34,20 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
-#include <cassert>
-#include <unordered_map>
-#include <sstream>
+// #include <cassert>
 
 #include <boost/filesystem.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/lexical_cast.hpp>
+// #include <boost/algorithm/string/predicate.hpp>
+// #include <boost/lexical_cast.hpp>
 
-#include <column_storage/ColumnBat.h>
-#include <column_storage/TransactionManager.h>
-#include <column_operators/Operators.h>
-#include <column_operators/OperatorsAN.tcc>
-#include <util/resilience.hpp>
+#include <util/argumentparser.hpp>
 #include <util/rss.hpp>
 #include <util/stopwatch.hpp>
 
-using namespace std;
+#include <column_storage/ColumnBat.h>
+#include <column_storage/TransactionManager.h>
+#include <column_operators/Operators.hpp>
+#include <column_operators/OperatorsAN.hpp>
 
 // define
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
@@ -64,13 +61,13 @@ namespace boost {
 template<typename Head, typename Tail>
 void printBat(BatIterator<Head, Tail > *iter, const char* message = nullptr, bool doDelete = true) {
     if (message) {
-        cout << message << '\n';
+        std::cout << message << '\n';
     }
     size_t i = 0;
     for (; iter->hasNext(); ++iter) {
-        cout << i++ << ": " << iter->head() << " = " << iter->tail() << '\n';
+        std::cout << i++ << ": " << iter->head() << " = " << iter->tail() << '\n';
     }
-    cout << flush;
+    std::cout << std::flush;
     if (doDelete) {
         delete iter;
     }
@@ -116,288 +113,84 @@ MEASURE_OP7(SW, I, auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption()
 SAVE_TYPE(I-1, PAIR.first)
 
 #define MEASURE_OP_TUPLE(SW, I, TUPLE, OP)                                                \
-MEASURE_OP7(SW, I, auto, TUPLE, OP, get<0>(TUPLE)->size(), get<0>(TUPLE)->consumption()); \
-SAVE_TYPE(I-1, (get<0>(TUPLE)))
+MEASURE_OP7(SW, I, auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption()); \
+SAVE_TYPE(I-1, (std::get<0>(TUPLE)))
 
 #define COUT_HEADLINE \
 do { \
-    cout << "\n\tname\t" << setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << setw(CONFIG.LEN_TYPES) << "type head" << "\t" << setw(CONFIG.LEN_TYPES) << "type tail"; \
+    std::cout << "\tname\t" << setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << setw(CONFIG.LEN_TYPES) << "type head" << "\t" << setw(CONFIG.LEN_TYPES) << "type tail\n"; \
 } while (0)
 
 #define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
 #define COUT_RESULT3(START, MAX, OPNAMES) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        cout << "\n\top" << setw(2) << OPNAMES[k] << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
+        std::cout << "\top" << setw(2) << OPNAMES[k] << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
     } \
-    cout << flush; \
+    std::cout << flush; \
 } while (0)
 #define COUT_RESULT2(START, MAX) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        cout << "\n\top" << setw(2) << k << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString); \
+        std::cout << "\top" << setw(2) << k << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
     } \
-    cout << flush; \
+    std::cout << std::flush; \
 } while (0)
+
+#define CLEAR_SELECT_AN(pair)    \
+do {                             \
+    if (std::get<1>(pair)) {          \
+        delete std::get<1>(pair);     \
+    }                            \
+} while(0)
 
 #define CLEAR_HASHJOIN_AN(tuple) \
 do {                             \
-    if (get<1>(tuple))           \
-        delete get<1>(tuple);    \
-    if (get<2>(tuple))           \
-        delete get<2>(tuple);    \
-    if (get<3>(tuple))           \
-        delete get<3>(tuple);    \
-    if (get<4>(tuple))           \
-        delete get<4>(tuple);    \
+    if (std::get<1>(tuple))           \
+        delete std::get<1>(tuple);    \
+    if (std::get<2>(tuple))           \
+        delete std::get<2>(tuple);    \
+    if (std::get<3>(tuple))           \
+        delete std::get<3>(tuple);    \
+    if (std::get<4>(tuple))           \
+        delete std::get<4>(tuple);    \
 } while (0)
 
 #define CLEAR_CHECKANDDECODE_AN(tuple) \
 do {                                   \
-    if (get<1>(tuple))                 \
-        delete get<1>(tuple);          \
-    if (get<2>(tuple))                 \
-        delete get<2>(tuple);          \
+    if (std::get<1>(tuple))                 \
+        delete std::get<1>(tuple);          \
+    if (std::get<2>(tuple))                 \
+        delete std::get<2>(tuple);          \
+} while (0)
+
+#define CLEAR_GROUPBY_AN(tuple)        \
+do {                                   \
+    if (std::get<2>(tuple))                 \
+        delete std::get<2>(tuple);          \
+    if (std::get<3>(tuple))                 \
+        delete std::get<3>(tuple);          \
+} while (0)
+
+#define CLEAR_GROUPEDSUM_AN(tuple)     \
+do {                                   \
+    if (std::get<5>(tuple))                 \
+        delete std::get<5>(tuple);          \
+    if (std::get<6>(tuple))                 \
+        delete std::get<6>(tuple);          \
+    if (std::get<7>(tuple))                 \
+        delete std::get<7>(tuple);          \
+    if (std::get<8>(tuple))                 \
+        delete std::get<8>(tuple);          \
+    if (std::get<9>(tuple))                 \
+        delete std::get<9>(tuple);          \
+    if (std::get<10>(tuple))                \
+        delete std::get<10>(tuple);         \
 } while (0)
 
 ///////////////////////////////
 // CMDLINE ARGUMENT PARSING  //
 ///////////////////////////////
-
-class ArgumentParser {
-public:
-    typedef std::vector<string> alias_list_t;
-    typedef std::vector<std::tuple<string, alias_list_t, size_t>> uint_args_t;
-    typedef std::vector<std::tuple<string, alias_list_t, string>> str_args_t;
-    typedef std::vector<std::tuple<string, alias_list_t, bool>> bool_args_t;
-
-private:
-
-    enum argtype_t {
-        argint, argstr, argbool
-    };
-
-    uint_args_t uintArgs;
-    str_args_t strArgs;
-    bool_args_t boolArgs;
-    unordered_map<string, argtype_t> argTypes; // we know what we do
-
-public:
-
-    ArgumentParser() : uintArgs(), strArgs(), boolArgs(), argTypes() {
-#ifdef DEBUG
-        std::cout << "ArgumentParser()" << std::endl;
-#endif
-    }
-
-    ArgumentParser(const uint_args_t & uintArgs, const str_args_t & strArgs, const bool_args_t & boolArgs) : uintArgs(uintArgs), strArgs(strArgs), boolArgs(boolArgs), argTypes(uintArgs.size() + strArgs.size() + boolArgs.size()) {
-#ifdef DEBUG
-        std::cout << "ArgumentParser(const &, const &, const &)" << std::endl;
-#endif
-        for (auto a : this->uintArgs) {
-            for (auto s : get<1>(a)) {
-                argTypes[s] = argint;
-            }
-        }
-        for (auto a : this->strArgs) {
-            for (auto s : get<1>(a)) {
-                argTypes[s] = argstr;
-            }
-        }
-        for (auto a : this->boolArgs) {
-            for (auto s : get<1>(a)) {
-                argTypes[s] = argbool;
-                if (boost::starts_with(s, "--")) {
-                    argTypes["--no-" + s.substr(2)] = argbool;
-                } else if (boost::starts_with(s, "-")) {
-                    argTypes["-no-" + s.substr(1)] = argbool;
-                }
-            }
-        }
-    }
-
-    ArgumentParser(const uint_args_t && uintArgs, const str_args_t && strArgs, const bool_args_t && boolArgs) : uintArgs(uintArgs), strArgs(strArgs), boolArgs(boolArgs), argTypes(uintArgs.size() + strArgs.size() + boolArgs.size()) {
-#ifdef DEBUG
-        std::cout << "ArgumentParser(const &&, const &&, const &&)" << std::endl;
-#endif
-        for (auto a : this->uintArgs) {
-            for (auto s : get<1>(a)) {
-                argTypes[s] = argint;
-            }
-        }
-        for (auto a : this->strArgs) {
-            for (auto s : get<1>(a)) {
-                argTypes[s] = argstr;
-            }
-        }
-        for (auto a : this->boolArgs) {
-            for (auto s : get<1>(a)) {
-                argTypes[s] = argbool;
-                if (boost::starts_with(s, "--")) {
-                    argTypes["--no-" + s.substr(2)] = argbool;
-                } else if (boost::starts_with(s, "-")) {
-                    argTypes["-no-" + s.substr(1)] = argbool;
-                }
-            }
-        }
-    }
-
-    virtual ~ArgumentParser() {
-    }
-
-    ArgumentParser& operator=(const ArgumentParser & other) {
-#ifdef DEBUG
-        std::cout << "ArgumentParser& operator=(const ArgumentParser & other)" << std::endl;
-#endif
-        uintArgs.clear();
-        strArgs.clear();
-        boolArgs.clear();
-        argTypes.clear();
-        uintArgs.insert(uintArgs.begin(), other.uintArgs.begin(), other.uintArgs.end());
-        strArgs.insert(strArgs.begin(), other.strArgs.begin(), other.strArgs.end());
-        boolArgs.insert(boolArgs.begin(), other.boolArgs.begin(), other.boolArgs.end());
-        argTypes.insert(other.argTypes.begin(), other.argTypes.end());
-        return *this;
-    }
-
-private:
-
-    size_t parseint(const string& name, char* arg) {
-        if (arg == nullptr) {
-            stringstream ss;
-            ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
-            throw runtime_error(ss.str());
-        }
-        string str(arg);
-        size_t idx = string::npos;
-        size_t value;
-        try {
-            value = stoul(str, &idx);
-        } catch (invalid_argument& exc) {
-            stringstream ss;
-            ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")! (on line " << __LINE__ << ')';
-            throw runtime_error(ss.str());
-        }
-        if (idx < str.length()) {
-            stringstream ss;
-            ss << "Value for parameter \"" << name << "\" is not an integer (is \"" << str << "\")! (on line " << __LINE__ << ')';
-            throw runtime_error(ss.str());
-        }
-        for (auto & tup : uintArgs) {
-            for (auto & alias : get<1>(tup)) {
-                if (name.compare(alias) == 0) {
-                    get<2>(tup) = value;
-                    return 1;
-                }
-            }
-        }
-        return 1;
-    }
-
-    size_t parsestr(const string& name, char* arg) {
-        if (arg == nullptr) {
-            stringstream ss;
-            ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
-            throw runtime_error(ss.str());
-        }
-        for (auto & tup : strArgs) {
-            for (auto & alias : get<1>(tup)) {
-                if (name.compare(alias) == 0) {
-                    get<2>(tup) = arg;
-                    return 1;
-                }
-            }
-        }
-        return 1;
-    }
-
-    size_t parsebool(const string& name, __attribute__((unused)) char* arg) {
-        size_t start = 0;
-        if (boost::starts_with(name, "no-")) {
-            start = 3;
-        }
-        for (auto & tup : boolArgs) {
-            for (auto & alias : get<1>(tup)) {
-                if (name.compare(start, string::npos, alias) == 0) {
-                    get<2>(tup) = (start == 0); // "no-..." -> false
-                    return 0;
-                }
-            }
-        }
-        return 0;
-    }
-
-public:
-
-    void parse(int argc, char** argv, size_t offset) { // no C++17 (array_view), yet :-(
-#ifdef DEBUG
-        std::cout << "parse(int argc, char** argv, size_t offset)" << std::endl;
-#endif
-        if (argc > 1) {
-            for (int nArg = offset; nArg < argc; ++nArg) { // always advance at least one step
-                bool recognized = false;
-                for (auto & p : argTypes) {
-                    if (p.first.compare(argv[nArg]) == 0) {
-                        recognized = true;
-                        char* arg = (nArg + 1) < argc ? argv[nArg + 1] : nullptr;
-                        switch (p.second) {
-                            case argint:
-                                nArg += parseint(p.first, arg);
-                                break;
-
-                            case argstr:
-                                nArg += parsestr(p.first, arg);
-                                break;
-
-                            case argbool:
-                                nArg += parsebool(p.first, arg);
-                                break;
-                        }
-                        break;
-                    }
-                }
-                if (!recognized) {
-                    stringstream ss;
-                    ss << "Parameter \"" << argv[nArg] << "\" is unknown! (on line " << __LINE__ << ')';
-                    throw runtime_error(ss.str());
-                }
-            }
-        }
-    }
-
-    size_t get_uint(const string & name) {
-        for (auto & tup : uintArgs) {
-            if (get<0>(tup).compare(name) == 0) {
-                return get<2>(tup);
-            }
-        }
-        stringstream ss;
-        ss << "UINT parameter \"" << name << "\" is unknown! (on line " << __LINE__ << ')';
-        throw runtime_error(ss.str());
-    }
-
-    const string & get_str(const string & name) {
-        for (auto & tup : strArgs) {
-            if (get<0>(tup).compare(name) == 0) {
-                return std::get<2>(tup);
-            }
-        }
-        stringstream ss;
-        ss << "String parameter \"" << name << "\" is unknown! (on line " << __LINE__ << ')';
-        throw runtime_error(ss.str());
-    }
-
-    bool get_bool(const string & name) {
-        for (auto & tup : boolArgs) {
-            if (get<0>(tup).compare(name) == 0) {
-                return std::get<2>(tup);
-            }
-        }
-        stringstream ss;
-        ss << "Boolean parameter \"" << name << "\" is unknown! (on line " << __LINE__ << ')';
-        throw runtime_error(ss.str());
-    }
-};
 
 struct ssbmconf_t {
     typedef typename ArgumentParser::alias_list_t alias_list_t;

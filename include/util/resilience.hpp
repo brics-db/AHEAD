@@ -131,21 +131,41 @@ struct v2_resoid_t : public v2_anencoded_t {
     static const resoid_t A_UNENC_MAX_U;
 };
 
+struct v2_resstr_t : public v2_anencoded_t {
+    typedef str_t type_t;
+    typedef v2_str_t unenc_v2_t;
+    typedef v2_str_t v2_copy_t;
+    typedef v2_str_t v2_select_t;
+    typedef v2_str_t v2_compare_t;
+
+    static cstr_t dhm_emptykey;
+    static cstr_t dhm_deletedkey;
+
+    static str_t A;
+    static str_t A_INV;
+    static str_t A_UNENC_MIN;
+    static str_t A_UNENC_MAX;
+    static str_t A_UNENC_MAX_U;
+};
+
 // Fast-Forward declare Bat, ColumnBat, TempBat types
 typedef Bat<v2_void_t, v2_restiny_t> restiny_bat_t;
 typedef Bat<v2_void_t, v2_resshort_t> resshort_bat_t;
 typedef Bat<v2_void_t, v2_resint_t> resint_bat_t;
 typedef Bat<v2_void_t, v2_resoid_t> resoid_bat_t;
+typedef Bat<v2_void_t, v2_resstr_t> resstr_bat_t;
 
 typedef ColumnBat<v2_void_t, v2_restiny_t> restiny_colbat_t;
 typedef ColumnBat<v2_void_t, v2_resshort_t> resshort_colbat_t;
 typedef ColumnBat<v2_void_t, v2_resint_t> resint_colbat_t;
 typedef ColumnBat<v2_void_t, v2_resoid_t> resoid_colbat_t;
+typedef ColumnBat<v2_void_t, v2_resstr_t> resstr_colbat_t;
 
 typedef TempBat<v2_void_t, v2_restiny_t> restiny_tmpbat_t;
 typedef TempBat<v2_void_t, v2_resshort_t> resshort_tmpbat_t;
 typedef TempBat<v2_void_t, v2_resint_t> resint_tmpbat_t;
 typedef TempBat<v2_void_t, v2_resoid_t> resoid_tmpbat_t;
+typedef TempBat<v2_void_t, v2_resstr_t> resstr_tmpbat_t;
 
 template<typename Base>
 struct TypeMap;
@@ -199,6 +219,14 @@ struct TypeMap<v2_void_t> {
 };
 
 template<>
+struct TypeMap<v2_str_t> {
+    typedef v2_str_t v2_base_t;
+    typedef v2_resstr_t v2_encoded_t;
+    typedef v2_str_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
 struct TypeMap<v2_restiny_t> {
     typedef v2_tinyint_t v2_base_t;
     typedef v2_restiny_t v2_encoded_t;
@@ -235,6 +263,14 @@ struct TypeMap<v2_resoid_t> {
     typedef v2_oid_t v2_base_t;
     typedef v2_resoid_t v2_encoded_t;
     typedef v2_resoid_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
+struct TypeMap<v2_resstr_t> {
+    typedef v2_str_t v2_base_t;
+    typedef v2_resstr_t v2_encoded_t;
+    typedef v2_str_t v2_actual_t;
     static cstr_t TYPENAME;
 };
 

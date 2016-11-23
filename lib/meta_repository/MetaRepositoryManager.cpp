@@ -1,7 +1,7 @@
 #include <cstring>
 
 #include <meta_repository/MetaRepositoryManager.h>
-#include <column_operators/Operators.h>
+#include <column_operators/Operators.hpp>
 #include <util/resilience.hpp>
 
 MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
@@ -10,16 +10,16 @@ char* MetaRepositoryManager::strBaseDir = nullptr;
 auto PATH_DATABASE = "/database";
 auto PATH_INFORMATION_SCHEMA = "/database/INFORMATION_SCHEMA";
 
-const char* NAME_TINYINT = "TINYINT";
-const char* NAME_SHORTINT = "SHORTINT";
-const char* NAME_INTEGER = "INTEGER";
-const char* NAME_LARGEINT = "LARGEINT";
-const char* NAME_STRING = "STRING";
-const char* NAME_FIXED = "FIXED";
-const char* NAME_CHAR = "CHAR";
-const char* NAME_RESTINY = "RESTINY";
-const char* NAME_RESSHORT = "RESSHORT";
-const char* NAME_RESINT = "RESINT";
+cstr_t NAME_TINYINT = "TINYINT";
+cstr_t NAME_SHORTINT = "SHORTINT";
+cstr_t NAME_INTEGER = "INTEGER";
+cstr_t NAME_LARGEINT = "LARGEINT";
+cstr_t NAME_STRING = "STRING";
+cstr_t NAME_FIXED = "FIXED";
+cstr_t NAME_CHAR = "CHAR";
+cstr_t NAME_RESTINY = "RESTINY";
+cstr_t NAME_RESSHORT = "RESSHORT";
+cstr_t NAME_RESINT = "RESINT";
 
 const size_t MAXLEN_STRING = 64;
 
@@ -70,7 +70,7 @@ void MetaRepositoryManager::destroyInstance() {
     }
 }
 
-void MetaRepositoryManager::init(const char* strBaseDir) {
+void MetaRepositoryManager::init(cstr_t strBaseDir) {
     if (MetaRepositoryManager::strBaseDir == nullptr) {
         size_t len = strlen(strBaseDir);
         MetaRepositoryManager::strBaseDir = new char[len + 1];
@@ -102,16 +102,16 @@ void MetaRepositoryManager::createDefaultDataTypes() {
     pk_datatype_id->append(make_pair(8, 9));
     pk_datatype_id->append(make_pair(9, 10));
 
-    datatype_name->append(make_pair(0, NAME_TINYINT));
-    datatype_name->append(make_pair(1, NAME_SHORTINT));
-    datatype_name->append(make_pair(2, NAME_INTEGER));
-    datatype_name->append(make_pair(3, NAME_LARGEINT));
-    datatype_name->append(make_pair(4, NAME_STRING));
-    datatype_name->append(make_pair(5, NAME_FIXED));
-    datatype_name->append(make_pair(6, NAME_CHAR));
-    datatype_name->append(make_pair(7, NAME_RESTINY));
-    datatype_name->append(make_pair(8, NAME_RESSHORT));
-    datatype_name->append(make_pair(9, NAME_RESINT));
+    datatype_name->append(make_pair(0, const_cast<str_t> (NAME_TINYINT)));
+    datatype_name->append(make_pair(1, const_cast<str_t> (NAME_SHORTINT)));
+    datatype_name->append(make_pair(2, const_cast<str_t> (NAME_INTEGER)));
+    datatype_name->append(make_pair(3, const_cast<str_t> (NAME_LARGEINT)));
+    datatype_name->append(make_pair(4, const_cast<str_t> (NAME_STRING)));
+    datatype_name->append(make_pair(5, const_cast<str_t> (NAME_FIXED)));
+    datatype_name->append(make_pair(6, const_cast<str_t> (NAME_CHAR)));
+    datatype_name->append(make_pair(7, const_cast<str_t> (NAME_RESTINY)));
+    datatype_name->append(make_pair(8, const_cast<str_t> (NAME_RESSHORT)));
+    datatype_name->append(make_pair(9, const_cast<str_t> (NAME_RESINT)));
 
     datatype_length->append(make_pair(0, sizeof (tinyint_t)));
     datatype_length->append(make_pair(1, sizeof (shortint_t)));
@@ -139,32 +139,32 @@ void MetaRepositoryManager::createDefaultDataTypes() {
 void MetaRepositoryManager::createRepository() {
     // create bats for table meta
     pk_table_id = new id_tmpbat_t;
-    table_name = new cstr_tmpbat_t;
+    table_name = new str_tmpbat_t;
 
     // create bats for attribute meta
     pk_attribute_id = new id_tmpbat_t;
-    attribute_name = new cstr_tmpbat_t;
+    attribute_name = new str_tmpbat_t;
     fk_table_id = new id_tmpbat_t;
     fk_type_id = new id_tmpbat_t;
     BAT_number = new id_tmpbat_t;
 
     // create bats for layout meta
     pk_layout_id = new id_tmpbat_t;
-    layout_name = new cstr_tmpbat_t;
+    layout_name = new str_tmpbat_t;
     size = new size_tmpbat_t;
 
     // create bats for operator meta
     pk_operator_id = new id_tmpbat_t;
-    operator_name = new cstr_tmpbat_t;
+    operator_name = new str_tmpbat_t;
 
     // create bats for datatype meta
     pk_datatype_id = new id_tmpbat_t;
-    datatype_name = new cstr_tmpbat_t;
+    datatype_name = new str_tmpbat_t;
     datatype_length = new size_tmpbat_t;
     datatype_category = new char_tmpbat_t;
 }
 
-id_t MetaRepositoryManager::createTable(const char *name) {
+id_t MetaRepositoryManager::createTable(cstr_t name) {
     id_t newTableId = ID_INVALID;
 
     if (!dataAlreadyExists(table_name, name)) {
@@ -176,7 +176,7 @@ id_t MetaRepositoryManager::createTable(const char *name) {
         newTableId = value.second + 1;
 
         pk_table_id->append(make_pair(newId, newTableId));
-        table_name->append(make_pair(newId, name));
+        table_name->append(make_pair(newId, const_cast<str_t> (name)));
     } else {
         // table already exists
         cerr << "Table already exist!" << endl;
@@ -267,7 +267,7 @@ id_t MetaRepositoryManager::TablesIterator::head() {
     return pKeyIter->tail();
 }
 
-cstr_t MetaRepositoryManager::TablesIterator::tail() {
+str_t MetaRepositoryManager::TablesIterator::tail() {
     return pNameIter->tail();
 }
 

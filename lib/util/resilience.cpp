@@ -79,14 +79,25 @@ const resoid_t v2_resoid_t::A_INV = 0x0FEDCBA987654321ull;
 // const resoid_t v2_resoid_t::2 = 64311;
 // const resoid_t v2_resoid_t::2_INV = 0xAA86FFFEFB1FAA87ull;
 
+cstr_t v2_resstr_t::dhm_emptykey = v2_str_t::dhm_emptykey;
+cstr_t v2_resstr_t::dhm_deletedkey = v2_str_t::dhm_deletedkey;
+str_t v2_resstr_t::A_UNENC_MIN = 0x0000000000000000ull;
+str_t v2_resstr_t::A_UNENC_MAX = reinterpret_cast<str_t> (0xFFFFFFFFFFFFFFFFull);
+str_t v2_resstr_t::A_UNENC_MAX_U = reinterpret_cast<str_t> (0xFFFFFFFFFFFFFFFFull);
+str_t v2_resstr_t::A = reinterpret_cast<str_t> (1); // no encoding for now
+str_t v2_resstr_t::A_INV = reinterpret_cast<str_t> (1); // no encoding for now
+
 cstr_t TypeMap<v2_tinyint_t>::TYPENAME = "v2_tinyint_t";
 cstr_t TypeMap<v2_shortint_t>::TYPENAME = "v2_shortint_t";
 cstr_t TypeMap<v2_int_t>::TYPENAME = "v2_int_t";
 cstr_t TypeMap<v2_bigint_t>::TYPENAME = "v2_bigint_t";
 cstr_t TypeMap<v2_oid_t>::TYPENAME = "v2_oid_t";
 cstr_t TypeMap<v2_void_t>::TYPENAME = "v2_void_t";
+cstr_t TypeMap<v2_str_t>::TYPENAME = "v2_str_t";
+
 cstr_t TypeMap<v2_restiny_t>::TYPENAME = "v2_restiny_t";
 cstr_t TypeMap<v2_resshort_t>::TYPENAME = "v2_resshort_t";
 cstr_t TypeMap<v2_resint_t>::TYPENAME = "v2_resint_t";
 cstr_t TypeMap<v2_resbigint_t>::TYPENAME = "v2_resbigint_t";
 cstr_t TypeMap<v2_resoid_t>::TYPENAME = "v2_resoid_t";
+cstr_t TypeMap<v2_resstr_t>::TYPENAME = "v2_resstr_t";

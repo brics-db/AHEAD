@@ -2,7 +2,23 @@
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="include" name="0">
+      <df name="column_operators">
+        <df name="AN">
+          <in>aggregate.tcc</in>
+          <in>encdec.tcc</in>
+          <in>groupby.tcc</in>
+          <in>hashjoin.tcc</in>
+          <in>select.tcc</in>
+        </df>
+        <df name="Normal">
+          <in>aggregate.tcc</in>
+          <in>hashjoin.tcc</in>
+          <in>miscellaneous.tcc</in>
+          <in>select.tcc</in>
+        </df>
+      </df>
       <df name="util">
+        <in>argumentparser.hpp</in>
         <in>v2types.hpp</in>
       </df>
     </df>
@@ -17,6 +33,7 @@
         <in>MetaRepositoryManager.cpp</in>
       </df>
       <df name="util">
+        <in>argumentparser.cpp</in>
         <in>resilience.cpp</in>
         <in>rss.cpp</in>
         <in>stopwatch.cpp</in>
@@ -44,7 +61,9 @@
         <in>ssbm-q13_early.cpp</in>
         <in>ssbm-q13_late.cpp</in>
         <in>ssbm-q21.cpp</in>
+        <in>ssbm-q21_continuous.cpp</in>
         <in>ssbm-q21_early.cpp</in>
+        <in>ssbm-q21_late.cpp</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -126,6 +145,53 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="include/column_operators/AN/aggregate.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/encdec.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/groupby.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/hashjoin.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/select.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/aggregate.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/hashjoin.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/miscellaneous.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/select.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/util/argumentparser.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"
             tool="1"
@@ -160,6 +226,8 @@
             flavor2="11">
         <ccTool flags="0">
         </ccTool>
+      </item>
+      <item path="lib/util/argumentparser.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="lib/util/resilience.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
@@ -274,7 +342,18 @@
         <ccTool flags="0">
         </ccTool>
       </item>
+      <item path="tools/ssbm/ssbm-q21_continuous.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
       <item path="tools/ssbm/ssbm-q21_early.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q21_late.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="0">
         </ccTool>
       </item>
@@ -322,6 +401,53 @@
           </preprocessorList>
         </ccTool>
       </folder>
+      <item path="include/column_operators/AN/aggregate.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/encdec.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/groupby.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/hashjoin.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/AN/select.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/aggregate.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/hashjoin.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/miscellaneous.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_operators/Normal/select.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/util/argumentparser.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="include/util/v2types.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lib/column_storage/BucketManager.cpp"
@@ -358,6 +484,8 @@
             flavor2="11">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="lib/util/argumentparser.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="lib/util/resilience.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">

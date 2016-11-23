@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Benjamin Schlegel
+// Copyright (c) 2016 Till Kolditz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,38 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-/***
- * @author Benjamin Schlegel
+/* 
+ * File:   operatorsAN.tcc
+ * Author: Till Kolditz <till.kolditz@gmail.com>
+ *
+ * Created on 9. August 2016, 13:12
  */
-#ifndef BATITERATOR_H
-#define BATITERATOR_H
 
-#include <utility>
+#ifndef OPERATORSAN_TCC
+#define OPERATORSAN_TCC
 
-template<typename Head, typename Tail>
-class BatIterator {
-public:
-    typedef typename Head::type_t head_t;
-    typedef typename Tail::type_t tail_t;
+#include "AN/encdec.tcc"
+#include "AN/select.tcc"
+#include "AN/hashjoin.tcc"
+#include "AN/aggregate.tcc"
+#include "AN/groupby.tcc"
 
-    virtual ~BatIterator() {
-    }
-
-    virtual void next() = 0;
-    virtual BatIterator& operator++() = 0;
-    virtual void position(oid_t index) = 0;
-    virtual bool hasNext() = 0;
-
-    virtual head_t head() = 0;
-    virtual tail_t tail() = 0;
-
-    virtual size_t size() = 0;
-    virtual size_t consumption() = 0;
-};
-
-#endif
-
-// Operators *, ->, and [] are first forwarded to the contained
-// iterator, then extract the data member.
-
+#endif /* OPERATORSAN_TCC */

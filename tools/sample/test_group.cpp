@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
     std::cout << "group date.d_year:" << std::endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::group(tbD_Y);
+        auto result = v2::bat::ops::groupby(tbD_Y);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         if (i == 0) {
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     std::cout << "group part.p_brand:" << std::endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::group(tbP_B);
+        auto result = v2::bat::ops::groupby(tbP_B);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         if (i == 0) {

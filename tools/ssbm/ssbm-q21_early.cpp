@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 
     // select lo_revenue, d_year, p_brand from lineorder, part, supplier, date where lo_orderdate = d_datekey and lo_partkey = p_partkey and lo_suppkey = s_suppkey and p_category = 'MFGR#12' and s_region = 'AMERICA'
     if (CONFIG.VERBOSE) {
-        std::cout << "\nSSBM Q2.1:\n";
+        std::cout << "SSBM Q2.1:\n";
         std::cout << "select sum(lo_revenue), d_year, p_brand\n";
         std::cout << "  from lineorder, part, supplier, date\n";
         std::cout << "  where lo_orderdate = d_datekey\n";
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
         CLEAR_CHECKANDDECODE_AN(tupleSS);
 
         // s_region = 'AMERICA'
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<equal_to>(batSR, "AMERICA")); // OID supplier | s_region
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<equal_to>(batSR, const_cast<str_t> ("AMERICA"))); // OID supplier | s_region
         MEASURE_OP(sw2, x, bat2, bat1->mirror_head()); // OID supplier | OID supplier
         delete bat1;
         MEASURE_OP(sw2, x, bat3, get<0>(tupleSS)->reverse()); // s_suppkey | OID supplier
@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
         delete bat6;
 
         // p_category = 'MFGR#12'
-        MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPC, "MFGR#12")); // OID part | p_category
+        MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPC, const_cast<str_t> ("MFGR#12"))); // OID part | p_category
         // p_brand = 'MFGR#121'
         // MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         MEASURE_OP(sw2, x, bat9, bat8->mirror_head()); // OID part | OID part
@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        std::cout << "\n(" << setw(2) << i << ")\n\tresult: " << get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.";
+        std::cout << "(" << setw(2) << i << ")\n\tresult-size: " << get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.\n";
 
         if (CONFIG.VERBOSE && i == 0) {
             size_t sum = 0;
@@ -231,6 +231,7 @@ int main(int argc, char** argv) {
                 iter5->position(iter4->tail());
                 std::cerr << " | " << setw(9) << iter5->tail() << " |\n";
             }
+            std::cerr << "+============+========+===========+\n";
             std::cout << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
@@ -238,16 +239,21 @@ int main(int argc, char** argv) {
             delete iter4;
             delete iter5;
         }
+        delete get<0>(tupleK);
+        delete get<1>(tupleK);
+        delete get<2>(tupleK);
+        delete get<3>(tupleK);
+        delete get<4>(tupleK);
 
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
 
     if (CONFIG.VERBOSE) {
-        std::cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.";
+        std::cout << "peak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
     }
 
-    std::cout << "\nTotalTimes:";
+    std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         std::cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
     }

@@ -47,7 +47,7 @@ typedef uint16_t shortint_t;
 typedef uint32_t int_t;
 typedef uint64_t bigint_t;
 typedef char char_t, *str_t;
-typedef const char_t *cstr_t;
+typedef const char cchar_t, *cstr_t;
 typedef double fixed_t;
 
 typedef unsigned id_t;
@@ -117,17 +117,6 @@ struct v2_char_t : public v2_base_t {
 struct v2_str_t : public v2_base_t {
     typedef str_t type_t;
     typedef v2_str_t unenc_v2_t;
-    typedef unenc_v2_t v2_copy_t;
-    typedef unenc_v2_t v2_select_t;
-    typedef v2_int_t v2_compare_t;
-
-    static const type_t dhm_emptykey;
-    static const type_t dhm_deletedkey;
-};
-
-struct v2_cstr_t : public v2_base_t {
-    typedef cstr_t type_t;
-    typedef v2_cstr_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
     typedef unenc_v2_t v2_select_t;
     typedef v2_int_t v2_compare_t;

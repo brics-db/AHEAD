@@ -173,16 +173,16 @@ int main(int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        std::cout << "\n(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.";
+        std::cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.\n";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
 
     if (CONFIG.VERBOSE) {
-        std::cout << "\npeak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.";
+        std::cout << "peak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
     }
 
-    std::cout << "\nTotalTimes:";
+    std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         std::cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
     }
