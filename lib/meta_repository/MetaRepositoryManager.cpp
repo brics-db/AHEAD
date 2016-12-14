@@ -7,8 +7,7 @@
 MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
 char* MetaRepositoryManager::strBaseDir = nullptr;
 
-auto PATH_DATABASE = "/database";
-auto PATH_INFORMATION_SCHEMA = "/database/INFORMATION_SCHEMA";
+auto PATH_INFORMATION_SCHEMA = "INFORMATION_SCHEMA";
 
 cstr_t NAME_TINYINT = "TINYINT";
 cstr_t NAME_SHORTINT = "SHORTINT";
@@ -23,7 +22,7 @@ cstr_t NAME_RESINT = "RESINT";
 
 const size_t MAXLEN_STRING = 64;
 
-MetaRepositoryManager::MetaRepositoryManager() : pk_table_id(nullptr), table_name(nullptr), pk_attribute_id(nullptr), attribute_name(nullptr), fk_table_id(nullptr), fk_type_id(nullptr), BAT_number(nullptr), pk_layout_id(nullptr), layout_name(nullptr), size(nullptr), pk_operator_id(nullptr), operator_name(nullptr), pk_datatype_id(nullptr), datatype_name(nullptr), datatype_length(nullptr), datatype_category(nullptr), META_PATH(nullptr) {
+MetaRepositoryManager::MetaRepositoryManager () : tables_id_pk (nullptr), tables_name (nullptr), attributes_id_pk (nullptr), attributes_name (nullptr), attributes_table_id_fk (nullptr), attributes_type_id_fk (nullptr), attributes_column_id (nullptr), layout_id_pk (nullptr), layout_name (nullptr), layout_size (nullptr), operator_id_pk (nullptr), operator_name (nullptr), datatype_id_pk (nullptr), datatype_name (nullptr), datatype_length (nullptr), datatype_category (nullptr), META_PATH (nullptr) {
     // creates the whole repository
     this->createRepository();
     this->createDefaultDataTypes();
@@ -33,29 +32,30 @@ MetaRepositoryManager::MetaRepositoryManager() : pk_table_id(nullptr), table_nam
     // pk_table_id->append(make_pair(0, 1));
 }
 
-MetaRepositoryManager::MetaRepositoryManager(const MetaRepositoryManager &copy) : pk_table_id(copy.pk_table_id), table_name(copy.table_name), pk_attribute_id(copy.pk_attribute_id), attribute_name(copy.attribute_name), fk_table_id(copy.fk_table_id), fk_type_id(copy.fk_type_id), BAT_number(copy.BAT_number), pk_layout_id(copy.pk_layout_id), layout_name(copy.layout_name), size(copy.size), pk_operator_id(copy.pk_operator_id), operator_name(copy.operator_name), pk_datatype_id(copy.pk_datatype_id), datatype_name(copy.datatype_name), datatype_length(copy.datatype_length), datatype_category(copy.datatype_category), META_PATH(copy.META_PATH) {
+MetaRepositoryManager::MetaRepositoryManager (const MetaRepositoryManager &copy) : tables_id_pk (copy.tables_id_pk), tables_name (copy.tables_name), attributes_id_pk (copy.attributes_id_pk), attributes_name (copy.attributes_name), attributes_table_id_fk (copy.attributes_table_id_fk), attributes_type_id_fk (copy.attributes_type_id_fk), attributes_column_id (copy.attributes_column_id), layout_id_pk (copy.layout_id_pk), layout_name (copy.layout_name), layout_size (copy.layout_size), operator_id_pk (copy.operator_id_pk), operator_name (copy.operator_name), datatype_id_pk (copy.datatype_id_pk), datatype_name (copy.datatype_name), datatype_length (copy.datatype_length), datatype_category (copy.datatype_category), META_PATH (copy.META_PATH) {
 }
 
-MetaRepositoryManager::~MetaRepositoryManager() {
-    delete pk_table_id;
-    delete table_name;
-    delete pk_attribute_id;
-    delete attribute_name;
-    delete fk_table_id;
-    delete fk_type_id;
-    delete BAT_number;
-    delete pk_layout_id;
+MetaRepositoryManager::~MetaRepositoryManager () {
+    delete tables_id_pk;
+    delete tables_name;
+    delete attributes_id_pk;
+    delete attributes_name;
+    delete attributes_table_id_fk;
+    delete attributes_type_id_fk;
+    delete attributes_column_id;
+    delete layout_id_pk;
     delete layout_name;
-    delete size;
-    delete pk_operator_id;
+    delete layout_size;
+    delete operator_id_pk;
     delete operator_name;
-    delete pk_datatype_id;
+    delete datatype_id_pk;
     delete datatype_name;
     delete datatype_length;
     delete datatype_category;
 }
 
-MetaRepositoryManager* MetaRepositoryManager::getInstance() {
+MetaRepositoryManager*
+MetaRepositoryManager::getInstance () {
     if (MetaRepositoryManager::instance == 0) {
         MetaRepositoryManager::instance = new MetaRepositoryManager();
     }
@@ -63,14 +63,16 @@ MetaRepositoryManager* MetaRepositoryManager::getInstance() {
     return MetaRepositoryManager::instance;
 }
 
-void MetaRepositoryManager::destroyInstance() {
+void
+MetaRepositoryManager::destroyInstance () {
     if (MetaRepositoryManager::instance) {
         delete MetaRepositoryManager::instance;
         MetaRepositoryManager::instance = nullptr;
     }
 }
 
-void MetaRepositoryManager::init(cstr_t strBaseDir) {
+void
+MetaRepositoryManager::init (cstr_t strBaseDir) {
     if (MetaRepositoryManager::strBaseDir == nullptr) {
         size_t len = strlen(strBaseDir);
         MetaRepositoryManager::strBaseDir = new char[len + 1];
@@ -90,28 +92,34 @@ void MetaRepositoryManager::init(cstr_t strBaseDir) {
     }
 }
 
-void MetaRepositoryManager::createDefaultDataTypes() {
-    pk_datatype_id->append(make_pair(0, 1));
-    pk_datatype_id->append(make_pair(1, 2));
-    pk_datatype_id->append(make_pair(2, 3));
-    pk_datatype_id->append(make_pair(3, 4));
-    pk_datatype_id->append(make_pair(4, 5));
-    pk_datatype_id->append(make_pair(5, 6));
-    pk_datatype_id->append(make_pair(6, 7));
-    pk_datatype_id->append(make_pair(7, 8));
-    pk_datatype_id->append(make_pair(8, 9));
-    pk_datatype_id->append(make_pair(9, 10));
+void
+MetaRepositoryManager::init (const std::string & strBaseDir) {
+    init(strBaseDir.c_str());
+}
 
-    datatype_name->append(make_pair(0, const_cast<str_t> (NAME_TINYINT)));
-    datatype_name->append(make_pair(1, const_cast<str_t> (NAME_SHORTINT)));
-    datatype_name->append(make_pair(2, const_cast<str_t> (NAME_INTEGER)));
-    datatype_name->append(make_pair(3, const_cast<str_t> (NAME_LARGEINT)));
-    datatype_name->append(make_pair(4, const_cast<str_t> (NAME_STRING)));
-    datatype_name->append(make_pair(5, const_cast<str_t> (NAME_FIXED)));
-    datatype_name->append(make_pair(6, const_cast<str_t> (NAME_CHAR)));
-    datatype_name->append(make_pair(7, const_cast<str_t> (NAME_RESTINY)));
-    datatype_name->append(make_pair(8, const_cast<str_t> (NAME_RESSHORT)));
-    datatype_name->append(make_pair(9, const_cast<str_t> (NAME_RESINT)));
+void
+MetaRepositoryManager::createDefaultDataTypes () {
+    datatype_id_pk->append(make_pair(0, 1));
+    datatype_id_pk->append(make_pair(1, 2));
+    datatype_id_pk->append(make_pair(2, 3));
+    datatype_id_pk->append(make_pair(3, 4));
+    datatype_id_pk->append(make_pair(4, 5));
+    datatype_id_pk->append(make_pair(5, 6));
+    datatype_id_pk->append(make_pair(6, 7));
+    datatype_id_pk->append(make_pair(7, 8));
+    datatype_id_pk->append(make_pair(8, 9));
+    datatype_id_pk->append(make_pair(9, 10));
+
+    datatype_name->append(make_pair(0, const_cast<str_t>(NAME_TINYINT)));
+    datatype_name->append(make_pair(1, const_cast<str_t>(NAME_SHORTINT)));
+    datatype_name->append(make_pair(2, const_cast<str_t>(NAME_INTEGER)));
+    datatype_name->append(make_pair(3, const_cast<str_t>(NAME_LARGEINT)));
+    datatype_name->append(make_pair(4, const_cast<str_t>(NAME_STRING)));
+    datatype_name->append(make_pair(5, const_cast<str_t>(NAME_FIXED)));
+    datatype_name->append(make_pair(6, const_cast<str_t>(NAME_CHAR)));
+    datatype_name->append(make_pair(7, const_cast<str_t>(NAME_RESTINY)));
+    datatype_name->append(make_pair(8, const_cast<str_t>(NAME_RESSHORT)));
+    datatype_name->append(make_pair(9, const_cast<str_t>(NAME_RESINT)));
 
     datatype_length->append(make_pair(0, sizeof (tinyint_t)));
     datatype_length->append(make_pair(1, sizeof (shortint_t)));
@@ -136,146 +144,155 @@ void MetaRepositoryManager::createDefaultDataTypes() {
     datatype_category->append(make_pair(9, 'N'));
 }
 
-void MetaRepositoryManager::createRepository() {
+void
+MetaRepositoryManager::createRepository () {
     // create bats for table meta
-    pk_table_id = new id_tmpbat_t;
-    table_name = new str_tmpbat_t;
+    tables_id_pk = new id_tmpbat_t;
+    tables_name = new str_tmpbat_t;
 
     // create bats for attribute meta
-    pk_attribute_id = new id_tmpbat_t;
-    attribute_name = new str_tmpbat_t;
-    fk_table_id = new id_tmpbat_t;
-    fk_type_id = new id_tmpbat_t;
-    BAT_number = new id_tmpbat_t;
+    attributes_id_pk = new id_tmpbat_t;
+    attributes_name = new str_tmpbat_t;
+    attributes_table_id_fk = new id_tmpbat_t;
+    attributes_type_id_fk = new id_tmpbat_t;
+    attributes_column_id = new id_tmpbat_t;
 
     // create bats for layout meta
-    pk_layout_id = new id_tmpbat_t;
+    layout_id_pk = new id_tmpbat_t;
     layout_name = new str_tmpbat_t;
-    size = new size_tmpbat_t;
+    layout_size = new size_tmpbat_t;
 
     // create bats for operator meta
-    pk_operator_id = new id_tmpbat_t;
+    operator_id_pk = new id_tmpbat_t;
     operator_name = new str_tmpbat_t;
 
     // create bats for datatype meta
-    pk_datatype_id = new id_tmpbat_t;
+    datatype_id_pk = new id_tmpbat_t;
     datatype_name = new str_tmpbat_t;
     datatype_length = new size_tmpbat_t;
     datatype_category = new char_tmpbat_t;
 }
 
-id_t MetaRepositoryManager::createTable(cstr_t name) {
+id_t
+MetaRepositoryManager::createTable (cstr_t name) {
     id_t newTableId = ID_INVALID;
 
-    if (!dataAlreadyExists(table_name, name)) {
-        pair<oid_t, id_t> value = getLastValue(pk_table_id);
+    if (!dataAlreadyExists(tables_name, name)) {
+        pair<oid_t, id_t> value = getLastValue(tables_id_pk);
         // value.first is the last given head id
         id_t newId = value.first + 1;
 
         // value.second is the last given id for a table
         newTableId = value.second + 1;
 
-        pk_table_id->append(make_pair(newId, newTableId));
-        table_name->append(make_pair(newId, const_cast<str_t> (name)));
+        tables_id_pk->append(make_pair(newId, newTableId));
+        tables_name->append(make_pair(newId, const_cast<str_t>(name)));
     } else {
         // table already exists
-        cerr << "Table already exist!" << endl;
+        throw runtime_error("Table already exist!");
     }
 
     return newTableId;
 }
 
-id_t MetaRepositoryManager::getBatIdOfAttribute(cstr_t nameOfTable, cstr_t attribute) {
-    pair<unsigned, unsigned> batNrPair;
+id_t
+MetaRepositoryManager::getBatIdOfAttribute (cstr_t nameOfTable, cstr_t attribute) {
+    pair<id_t, id_t> batNrPair;
 
-    int batIdForTableName = this->selectBatId(table_name, nameOfTable);
-    int tableId = this->selectPKId(pk_table_id, static_cast<unsigned> (batIdForTableName));
+    id_t batIdForTableName = this->selectBatId(tables_name, nameOfTable);
+    id_t tableId = this->selectPKId(tables_id_pk, batIdForTableName);
 
-    if (tableId != -1) {
-        // auto batForTableId = v2::bat::ops::select_eq(fk_table_id, (id_t) tableId);
-        auto batForTableId = v2::bat::ops::select<equal_to>(fk_table_id, (id_t) tableId);
+    if (tableId != ID_INVALID) {
+        auto batForTableId = v2::bat::ops::select<equal_to>(attributes_table_id_fk, std::move(tableId));
 
         // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
         // reverse will not work here, because we need the bat id, not the table id
-        // auto mirrorTableIdBat = v2::bat::ops::mirrorHead(batForTableId);
         auto mirrorTableIdBat = batForTableId->mirror_head();
         delete batForTableId;
-        auto attributesForTable = v2::bat::ops::hashjoin(mirrorTableIdBat, attribute_name);
+        auto attributesForTable = v2::bat::ops::hashjoin(mirrorTableIdBat, attributes_name);
         delete mirrorTableIdBat;
-        int batId = this->selectBatId(attributesForTable, attribute);
+        id_t batId = this->selectBatId(attributesForTable, attribute);
         delete attributesForTable;
-        auto reverseBat = BAT_number->reverse();
-        batNrPair = this->unique_selection(reverseBat, (unsigned) batId);
+        auto reverseBat = attributes_column_id->reverse();
+        batNrPair = this->unique_selection(reverseBat, batId);
         delete reverseBat;
     }
 
     return batNrPair.first;
 }
 
-void MetaRepositoryManager::createAttribute(char *name, char *datatype, unsigned BATId, unsigned table_id) {
+void
+MetaRepositoryManager::createAttribute (char *name, char *datatype, id_t columnID, id_t tableID) {
     id_t batIdOfDataType = selectBatId(datatype_name, datatype);
-    id_t dataTypeId = selectPKId(pk_datatype_id, batIdOfDataType);
-    id_t newAttributeId = getLastValue(pk_attribute_id).second + 1;
+    id_t dataTypeID = selectPKId(datatype_id_pk, batIdOfDataType);
+    id_t newAttributeID = getLastValue(attributes_id_pk).second + 1;
 
-    pk_attribute_id->append(newAttributeId);
-    attribute_name->append(name);
-    fk_table_id->append(table_id);
-    fk_type_id->append(dataTypeId);
-    BAT_number->append(BATId);
+    attributes_id_pk->append(newAttributeID);
+    attributes_name->append(name);
+    attributes_table_id_fk->append(tableID);
+    attributes_type_id_fk->append(dataTypeID);
+    attributes_column_id->append(columnID);
 }
 
-char* MetaRepositoryManager::getDataTypeForAttribute(__attribute__((unused)) char *name) {
+char*
+MetaRepositoryManager::getDataTypeForAttribute (__attribute__ ((unused)) char *name) {
     return nullptr;
 }
 
-MetaRepositoryManager::TablesIterator::TablesIterator() : pKeyIter(MetaRepositoryManager::instance->pk_table_id->begin()), pNameIter(MetaRepositoryManager::instance->table_name->begin()) {
+MetaRepositoryManager::TablesIterator::TablesIterator () : pKeyIter (MetaRepositoryManager::instance->tables_id_pk->begin ()), pNameIter (MetaRepositoryManager::instance->tables_name->begin ()) {
 }
 
-MetaRepositoryManager::TablesIterator::TablesIterator(const TablesIterator &iter) : pKeyIter(new typename table_key_iter_t::self_t(*iter.pKeyIter)), pNameIter(new typename table_name_iter_t::self_t(*iter.pNameIter)) {
+MetaRepositoryManager::TablesIterator::TablesIterator (const TablesIterator &iter) : pKeyIter (new typename table_key_iter_t::self_t (*iter.pKeyIter)), pNameIter (new typename table_name_iter_t::self_t (*iter.pNameIter)) {
 }
 
-MetaRepositoryManager::TablesIterator::~TablesIterator() {
+MetaRepositoryManager::TablesIterator::~TablesIterator () {
     delete pKeyIter;
     delete pNameIter;
 }
 
-MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::operator=(const TablesIterator &copy) {
+MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::operator= (const TablesIterator &copy) {
     new (this) TablesIterator(copy);
     return *this;
 }
 
-void MetaRepositoryManager::TablesIterator::next() {
+void
+MetaRepositoryManager::TablesIterator::next () {
     pKeyIter->next();
     pNameIter->next();
 }
 
-MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::operator++() {
+MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::operator++ () {
     next();
     return *this;
 }
 
-void MetaRepositoryManager::TablesIterator::position(oid_t index) {
+void
+MetaRepositoryManager::TablesIterator::position (oid_t index) {
     pKeyIter->position(index);
     pNameIter->position(index);
 }
 
-bool MetaRepositoryManager::TablesIterator::hasNext() {
+bool
+MetaRepositoryManager::TablesIterator::hasNext () {
     return pKeyIter->hasNext();
 }
 
-id_t MetaRepositoryManager::TablesIterator::head() {
+id_t
+MetaRepositoryManager::TablesIterator::head () {
     return pKeyIter->tail();
 }
 
-str_t MetaRepositoryManager::TablesIterator::tail() {
+str_t
+MetaRepositoryManager::TablesIterator::tail () {
     return pNameIter->tail();
 }
 
-size_t MetaRepositoryManager::TablesIterator::size() {
+size_t
+MetaRepositoryManager::TablesIterator::size () {
     return pKeyIter->size();
 }
 
-size_t MetaRepositoryManager::TablesIterator::consumption() {
+size_t
+MetaRepositoryManager::TablesIterator::consumption () {
     return pKeyIter->consumption() + pNameIter->consumption();
 }
-

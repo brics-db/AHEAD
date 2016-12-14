@@ -43,21 +43,20 @@ namespace v2 {
              * @return A single sum of the pair-wise products of the two Bats
              */
             template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-            tuple<Bat<v2_resoid_t, Result>*, vector<bool>*, vector<bool>*>
-            aggregate_mul_sumAN(
-                    Bat<Head1, Tail1>* arg1,
-                    Bat<Head2, Tail2>* arg2,
-                    typename Result::type_t init = typename Result::type_t(0),
-                    // typename T1Enc::type_t AT1 = T1Enc::A,
-                    typename T1Enc::type_t AT1inv = T1Enc::A_INV,
-                    typename T1Enc::type_t AT1unencMaxU = T1Enc::A_UNENC_MAX_U,
-                    // typename T2Enc::type_t AT2 = T2Enc::A,
-                    typename T2Enc::type_t AT2inv = T2Enc::A_INV,
-                    typename T2Enc::type_t AT2unencMaxU = T2Enc::A_UNENC_MAX_U,
-                    typename ResEnc::type_t RA = ResEnc::A,
-                    typename v2_resoid_t::type_t AOID = v2_resoid_t::A
-                    ) {
+            tuple<BAT<v2_void_t, Result>*, vector<bool>*, vector<bool>*>
+            aggregate_mul_sumAN (
+                                 BAT<Head1, Tail1>* arg1,
+                                 BAT<Head2, Tail2>* arg2,
+                                 typename Result::type_t init = typename Result::type_t (0),
+                                 typename ResEnc::type_t RA = std::get < ANParametersSelector<ResEnc>::As->size () - 1 > (*ANParametersSelector<ResEnc>::As) // use largest A for encoding by default
+                                 ) {
                 typedef typename Result::type_t result_t;
+
+                typename T1Enc::type_t AT1inv = arg1->tail.metaData.getAinv();
+                typename T1Enc::type_t AT1unencMaxU = arg1->tail.metaData.getMaxUnencoded();
+                typename T2Enc::type_t AT2inv = arg2->tail.metaData.getAinv();
+                typename T2Enc::type_t AT2unencMaxU = arg2->tail.metaData.getMaxUnencoded();
+
                 const bool isTail1Encoded = is_base_of<v2_anencoded_t, Tail1>::value;
                 const bool isTail2Encoded = is_base_of<v2_anencoded_t, Tail2>::value;
                 const bool isResultEncoded = is_base_of<v2_anencoded_t, Result>::value;
@@ -75,14 +74,14 @@ namespace v2 {
                     if (isTail2Encoded && x2 <= AT2unencMaxU) {
                         (*vec2)[i] = true;
                     }
-                    total += static_cast<result_t> (x1) * static_cast<result_t> (x2);
+                    total += static_cast<result_t>(x1) * static_cast<result_t>(x2);
                 }
                 if (isResultEncoded)
                     total *= RA;
                 delete iter2;
                 delete iter1;
-                auto bat = new TempBat<v2_resoid_t, Result>();
-                bat->append(make_pair(0 * AOID, total));
+                auto bat = new TempBAT<v2_void_t, Result>();
+                bat->append(total);
                 return make_tuple(bat, vec1, vec2);
             }
         }

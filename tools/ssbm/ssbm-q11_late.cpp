@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 /* 
- * File:   ssbm-q11_lazy.cpp
+ * File:   ssbm-q11_late.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 1. August 2016, 12:20
@@ -27,9 +27,10 @@
 
 #include "ssbm.hpp"
 
-int main(int argc, char** argv) {
+int
+main (int argc, char** argv) {
     ssbmconf_t CONFIG(argc, argv);
-    StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
+    std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 24;
     cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
@@ -40,24 +41,18 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index tailTypes[NUM_OPS];
     string emptyString;
     size_t x = 0;
+    StopWatch sw1, sw2;
 
     std::cout << "SSBM Query 1.1 Late Detection\n=============================" << std::endl;
 
-    boost::filesystem::path p(CONFIG.DB_PATH);
-    if (boost::filesystem::is_regular(p)) {
-        p.remove_filename();
-    }
-    string baseDir = p.remove_trailing_separator().generic_string();
-    MetaRepositoryManager::init(baseDir.c_str());
-
-    StopWatch sw1, sw2;
+    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
     sw1.start();
-    // loadTable(baseDir, "customerAN", CONFIG);
-    loadTable(baseDir, "dateAN", CONFIG);
-    loadTable(baseDir, "lineorderAN", CONFIG);
-    // loadTable(baseDir, "partAN", CONFIG);
-    // loadTable(baseDir, "supplierAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "dateAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "lineorderAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "partAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "supplierAN", CONFIG);
     sw1.stop();
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
 
@@ -106,8 +101,8 @@ int main(int argc, char** argv) {
         // LAZY MODE !!! NO AN-OPERATORS UNTIL DECODING !!!
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<less>(batLQenc, 25 * v2_restiny_t::A)); // lo_quantity < 25
-        MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLDenc, 1 * v2_restiny_t::A, 3 * v2_restiny_t::A)); // lo_discount between 1 and 3
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
+        MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // join selection
@@ -118,7 +113,7 @@ int main(int argc, char** argv) {
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, 1993 * v2_resshort_t::A)); // d_year = 1993
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A)); // d_year = 1993
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
         delete bat7;
         MEASURE_OP(sw2, x, bat9, v2::bat::ops::hashjoin(bat8, batDDenc)); // only those d_datekey where d_year...

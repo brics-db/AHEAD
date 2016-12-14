@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 /* 
- * File:   ssbm-q11_eager.cpp
+ * File:   ssbm-q11_early.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 1. August 2016, 12:20
@@ -27,9 +27,10 @@
 
 #include "ssbm.hpp"
 
-int main(int argc, char** argv) {
+int
+main (int argc, char** argv) {
     ssbmconf_t CONFIG(argc, argv);
-    StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
+    std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 30;
     cstr_t OP_NAMES[NUM_OPS] = {"-6", "-5", "-4", "-3", "-2", "-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
@@ -40,24 +41,19 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index tailTypes[NUM_OPS];
     string emptyString;
     size_t x = 0;
+    StopWatch sw1, sw2;
 
     std::cout << "SSBM Query 1.1 Early Detection\n==============================" << std::endl;
 
-    boost::filesystem::path p(CONFIG.DB_PATH);
-    if (boost::filesystem::is_regular(p)) {
-        p.remove_filename();
-    }
-    string baseDir = p.remove_trailing_separator().generic_string();
-    MetaRepositoryManager::init(baseDir.c_str());
+    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
-    StopWatch sw1, sw2;
 
     sw1.start();
-    // loadTable(baseDir, "customerAN", CONFIG);
-    loadTable(baseDir, "dateAN", CONFIG);
-    loadTable(baseDir, "lineorderAN", CONFIG);
-    // loadTable(baseDir, "partAN", CONFIG);
-    // loadTable(baseDir, "supplierAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "dateAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "lineorderAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "partAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "supplierAN", CONFIG);
     sw1.stop();
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
 

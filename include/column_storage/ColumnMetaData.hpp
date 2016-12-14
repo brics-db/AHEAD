@@ -19,20 +19,35 @@
 // THE SOFTWARE.
 
 /* 
- * File:   operatorsAN.tcc
+ * File:   ColumnMetaData.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 9. August 2016, 13:12
+ * Created on 9. Dezember 2016, 12:26
  */
 
-#ifndef OPERATORSAN_TCC
-#define OPERATORSAN_TCC
+#ifndef COLUMNMETADATA_HPP
+#define COLUMNMETADATA_HPP
 
-#include "AN/miscellaneous.tcc"
-#include "AN/encdec.tcc"
-#include "AN/select.tcc"
-#include "AN/hashjoin.tcc"
-#include "AN/aggregate.tcc"
-#include "AN/groupby.tcc"
+#include <cinttypes>
 
-#endif /* OPERATORSAN_TCC */
+struct ColumnMetaData {
+
+    uint32_t width;
+    uint64_t seqbase;
+    uint16_t isEncoded; // encode as 9-out-of-16
+    uint16_t AN_A; // at most 16 bit A's for now
+    uint64_t AN_Ainv;
+    uint64_t AN_unencMaxU;
+    int64_t AN_unencMinS;
+
+    ColumnMetaData () : width (0), seqbase (0), isEncoded (0), AN_A (0), AN_Ainv (0), AN_unencMaxU (0), AN_unencMinS (0) {
+    }
+
+    ColumnMetaData (unsigned int width) : width (width), seqbase (0), isEncoded (0), AN_A (0), AN_Ainv (0), AN_unencMaxU (0), AN_unencMinS (0) {
+    }
+
+    ColumnMetaData (uint32_t width, uint16_t AN_A, uint64_t AN_Ainv, uint64_t AN_unencMaxU, int64_t AN_unencMinS) : width (width), seqbase (0), isEncoded (0xFFFF), AN_A (AN_A), AN_Ainv (AN_Ainv), AN_unencMaxU (AN_unencMaxU), AN_unencMinS (AN_unencMinS) {
+    }
+};
+
+#endif /* COLUMNMETADATA_HPP */

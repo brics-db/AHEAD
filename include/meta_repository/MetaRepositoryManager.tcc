@@ -15,7 +15,8 @@
 #define METAREPOSITORYMANAGER_TCC
 
 template<class Head, class Tail>
-pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::getLastValue(Bat<Head, Tail> *bat) {
+pair<typename Head::type_t, typename Tail::type_t>
+MetaRepositoryManager::getLastValue (BAT<Head, Tail> *bat) {
     auto *iter = bat->begin();
     if (iter->hasNext() && bat->size()) {
         iter->position(bat->size() - 1);
@@ -29,7 +30,8 @@ pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::getLas
 }
 
 template<class Head, class Tail>
-pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::unique_selection(Bat<Head, Tail> *bat, typename Tail::type_t value) {
+pair<typename Head::type_t, typename Tail::type_t>
+MetaRepositoryManager::unique_selection (BAT<Head, Tail> *bat, typename Tail::type_t value) {
     auto iter = bat->begin();
     for (; iter->hasNext(); ++*iter) {
         if (iter->tail() == value) {
@@ -44,12 +46,14 @@ pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::unique
 }
 
 template<class Head, class Tail>
-bool MetaRepositoryManager::isBatEmpty(Bat<Head, Tail> *bat) {
+bool
+MetaRepositoryManager::isBatEmpty (BAT<Head, Tail> *bat) {
     return bat->size() == 0;
 }
 
 template<class Head, class Tail>
-id_t MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, cstr_t value) {
+id_t
+MetaRepositoryManager::selectBatId (BAT<Head, Tail> *bat, cstr_t value) {
     auto iter = bat->begin();
     size_t len = strnlen(value, 256);
     for (; iter->hasNext(); ++*iter) {
@@ -64,7 +68,8 @@ id_t MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, cstr_t value) {
 }
 
 template<class Head, class Tail>
-id_t MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, typename Tail::type_t value) {
+id_t
+MetaRepositoryManager::selectBatId (BAT<Head, Tail> *bat, typename Tail::type_t value) {
     auto iter = bat->begin();
     for (; iter->hasNext(); ++*iter) {
         if (iter->tail() == value) {
@@ -78,7 +83,8 @@ id_t MetaRepositoryManager::selectBatId(Bat<Head, Tail> *bat, typename Tail::typ
 }
 
 template<class Head, class Tail>
-typename Head::type_t MetaRepositoryManager::selection(Bat<Head, Tail> *bat, typename Tail::type_t value) {
+typename Head::type_t
+MetaRepositoryManager::selection (BAT<Head, Tail> *bat, typename Tail::type_t value) {
     auto iter = bat->begin();
     for (; iter->hasNext(); ++*iter) {
         if (iter->tail() == value) {
@@ -92,7 +98,8 @@ typename Head::type_t MetaRepositoryManager::selection(Bat<Head, Tail> *bat, typ
 }
 
 template<class Head, class Tail>
-id_t MetaRepositoryManager::selectPKId(Bat<Head, Tail> *bat, typename Head::type_t batId) {
+id_t
+MetaRepositoryManager::selectPKId (BAT<Head, Tail> *bat, typename Head::type_t batId) {
     auto iter = bat->begin();
     for (; iter->hasNext(); ++*iter) {
         if (iter->head() == batId) {
@@ -106,7 +113,8 @@ id_t MetaRepositoryManager::selectPKId(Bat<Head, Tail> *bat, typename Head::type
 }
 
 template<class Head, class Tail>
-bool MetaRepositoryManager::dataAlreadyExists(Bat<Head, Tail> *bat, cstr_t name_value) {
+bool
+MetaRepositoryManager::dataAlreadyExists (BAT<Head, Tail> *bat, cstr_t name_value) {
     auto iter = bat->begin();
     for (; iter->hasNext(); ++*iter) {
         if (strcmp(iter->tail(), name_value) == 0) {

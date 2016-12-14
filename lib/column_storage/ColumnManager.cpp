@@ -1,9 +1,12 @@
 
+#include <sstream>
+
 #include "column_storage/ColumnManager.h"
 
 ColumnManager* ColumnManager::instance = 0;
 
-ColumnManager* ColumnManager::getInstance() {
+ColumnManager*
+ColumnManager::getInstance () {
     if (ColumnManager::instance == 0) {
         ColumnManager::instance = new ColumnManager();
     }
@@ -11,50 +14,91 @@ ColumnManager* ColumnManager::getInstance() {
     return ColumnManager::instance;
 }
 
-void ColumnManager::destroyInstance() {
+void
+ColumnManager::destroyInstance () {
     if (ColumnManager::instance) {
         delete ColumnManager::instance;
         ColumnManager::instance = nullptr;
     }
 }
 
-ColumnManager::ColumnManager() : columns() {
+ColumnManager::ColumnManager () : columnMetaData () {
 }
 
-ColumnManager::~ColumnManager() {
-    columns.clear();
+ColumnManager::~ColumnManager () {
+    columnMetaData.clear();
 }
 
-ColumnManager::ColumnIterator* ColumnManager::openColumn(unsigned int id, unsigned int *version) {
-    if (columns.find(id) != columns.end()) {
-        return new ColumnManager::ColumnIterator(&columns.find(id)->second, BucketManager::getInstance()->openStream(id, version));
+ColumnManager::ColumnIterator*
+ColumnManager::openColumn (unsigned int id, unsigned int *version) {
+    if (columnMetaData.find(id) != columnMetaData.end()) {
+        return new ColumnManager::ColumnIterator(columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version));
     } else {
         // Problem : Spalte existiert nicht
         return 0;
     }
 }
 
-std::set<id_t> ColumnManager::listColumns() {
-    std::set<id_t> list;
-    std::map<id_t, Column>::iterator it;
+std::unordered_set<id_t>
+ColumnManager::getColumnIDs () {
+    std::unordered_set<id_t> list;
+    list.reserve(columnMetaData.size());
 
-    for (it = this->columns.begin(); it != this->columns.end(); it++) {
+    for (auto it = this->columnMetaData.begin(); it != this->columnMetaData.end(); it++) {
         list.insert(it->first);
     }
 
     return list;
 }
 
-void ColumnManager::createColumn(id_t id, size_t width) {
-    if (columns.find(id) == columns.end()) {
-        columns[id].width = width; // map auto-generates new entries
-    } else {
-        // Problem : Spalte existiert bereits
+std::unordered_map<id_t, ColumnMetaData> *
+ColumnManager::getColumnMetaData () {
+    auto result = new std::unordered_map<id_t, ColumnMetaData>;
+    result->reserve(columnMetaData.size());
+    for (auto p : columnMetaData) {
+        (*result)[p.first] = p.second;
     }
+    return result;
 }
 
-size_t ColumnManager::ColumnIterator::size() {
-    const unsigned int recordsPerBucket = (unsigned int) ((CHUNK_CONTENT_SIZE - sizeof (unsigned int)) / this->column->width);
+ColumnMetaData
+ColumnManager::getColumnMetaData (id_t id) {
+    auto iter = columnMetaData.find(id);
+    if (iter == columnMetaData.end()) {
+        std::stringstream ss;
+        ss << "ColumnManager::Column::getColumn(id_t) : id " << id << " is invalid!";
+        throw runtime_error(ss.str());
+    }
+    return iter->second;
+}
+
+ColumnMetaData &
+ColumnManager::createColumn (id_t id, uint32_t width) {
+    auto iter = columnMetaData.find(id);
+    if (iter != columnMetaData.end()) {
+        std::stringstream ss;
+        ss << "There is already a column with id " << id;
+        throw runtime_error(ss.str());
+    }
+    columnMetaData.emplace(id, width);
+    return iter->second;
+}
+
+ColumnMetaData &
+ColumnManager::createColumn (id_t id, ColumnMetaData && column) {
+    auto iter = columnMetaData.find(id);
+    if (iter != columnMetaData.end()) {
+        std::stringstream ss;
+        ss << "There is already a column with id " << id;
+        throw runtime_error(ss.str());
+    }
+    columnMetaData.emplace(id, std::forward<ColumnMetaData>(column));
+    return iter->second;
+}
+
+size_t
+ColumnManager::ColumnIterator::size () {
+    const unsigned int recordsPerBucket = (unsigned int)((CHUNK_CONTENT_SIZE - sizeof (unsigned int)) / this->columnMetaData.width);
     unsigned int position;
     unsigned int *elementCounter;
 
@@ -65,7 +109,7 @@ size_t ColumnManager::ColumnIterator::size() {
 
         this->currentChunk = this->iterator->seek(this->iterator->countBuckets() - 1);
 
-        elementCounter = (unsigned int*) this->currentChunk->content;
+        elementCounter = (unsigned int*)this->currentChunk->content;
 
         this->currentChunk = this->iterator->seek(position);
 
@@ -73,13 +117,15 @@ size_t ColumnManager::ColumnIterator::size() {
     }
 }
 
-size_t ColumnManager::ColumnIterator::consumption() {
+size_t
+ColumnManager::ColumnIterator::consumption () {
     return this->iterator->countBuckets() * CHUNK_CONTENT_SIZE;
 }
 
-ColumnManager::Record ColumnManager::ColumnIterator::next() {
+ColumnManager::Record
+ColumnManager::ColumnIterator::next () {
     if (this->currentChunk != 0) {
-        unsigned int *elementCounter = (unsigned int*) this->currentChunk->content;
+        unsigned int *elementCounter = (unsigned int*)this->currentChunk->content;
 
         if (this->currentPosition >= *elementCounter) {
             BucketManager::Chunk *chunk = this->iterator->next();
@@ -94,7 +140,7 @@ ColumnManager::Record ColumnManager::ColumnIterator::next() {
                 return next();
             }
         } else {
-            Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
+            Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->columnMetaData.width);
             this->currentPosition++;
             return rec;
         }
@@ -114,13 +160,14 @@ ColumnManager::Record ColumnManager::ColumnIterator::next() {
     }
 }
 
-ColumnManager::Record ColumnManager::ColumnIterator::seek(oid_t index) {
-    const size_t recordsPerBucket = (size_t) ((CHUNK_CONTENT_SIZE - sizeof (size_t)) / this->column->width);
+ColumnManager::Record
+ColumnManager::ColumnIterator::seek (oid_t index) {
+    const size_t recordsPerBucket = (size_t)((CHUNK_CONTENT_SIZE - sizeof (size_t)) / this->columnMetaData.width);
 
     this->currentChunk = this->iterator->seek(index / recordsPerBucket);
 
     if (this->currentChunk != 0) {
-        unsigned int *elementCounter = (unsigned int*) this->currentChunk->content;
+        unsigned int *elementCounter = (unsigned int*)this->currentChunk->content;
 
         this->currentPosition = index - recordsPerBucket * (index / recordsPerBucket);
 
@@ -129,7 +176,7 @@ ColumnManager::Record ColumnManager::ColumnIterator::seek(oid_t index) {
             rewind();
             return Record(nullptr);
         } else {
-            Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
+            Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->columnMetaData.width);
             this->currentPosition++;
             return rec;
         }
@@ -140,69 +187,73 @@ ColumnManager::Record ColumnManager::ColumnIterator::seek(oid_t index) {
     }
 }
 
-void ColumnManager::ColumnIterator::rewind() {
+void
+ColumnManager::ColumnIterator::rewind () {
     this->iterator->rewind();
     this->currentChunk = 0;
     this->currentPosition = 0;
 }
 
-ColumnManager::Record ColumnManager::ColumnIterator::edit() {
+ColumnManager::Record
+ColumnManager::ColumnIterator::edit () {
     if (this->currentChunk != 0) {
         this->currentChunk = this->iterator->edit();
-        return Record(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + (this->currentPosition - 1) * this->column->width);
+        return Record(reinterpret_cast<char*>(this->currentChunk->content) + sizeof (unsigned int) + (this->currentPosition - 1) * this->columnMetaData.width);
     } else {
         // Problem : Anfang/Ende der Spalte
         return Record(nullptr);
     }
 }
 
-ColumnManager::Record ColumnManager::ColumnIterator::append() {
+ColumnManager::Record
+ColumnManager::ColumnIterator::append () {
     unsigned int *elementCounter = nullptr;
 
     unsigned numBuckets = this->iterator->countBuckets();
     if (numBuckets == 0) {
         this->currentChunk = this->iterator->append();
-        elementCounter = (unsigned*) this->currentChunk->content;
+        elementCounter = (unsigned*)this->currentChunk->content;
         *elementCounter = 0;
     } else {
         this->currentChunk = this->iterator->seek(numBuckets - 1);
-        elementCounter = (unsigned*) this->currentChunk->content;
+        elementCounter = (unsigned*)this->currentChunk->content;
         if (*elementCounter == recordsPerBucket) {
             this->currentChunk = this->iterator->append();
-            elementCounter = (unsigned*) this->currentChunk->content;
+            elementCounter = (unsigned*)this->currentChunk->content;
             *elementCounter = 0;
         } else {
             this->currentChunk = this->iterator->edit();
-            elementCounter = (unsigned*) this->currentChunk->content;
+            elementCounter = (unsigned*)this->currentChunk->content;
         }
     }
 
     this->currentPosition = *elementCounter;
 
-    Record rec(reinterpret_cast<char*> (this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->column->width);
+    Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof (unsigned int) + this->currentPosition * this->columnMetaData.width);
     this->currentPosition++;
     (*elementCounter)++;
     return rec;
 }
 
-void ColumnManager::ColumnIterator::undo() {
+void
+ColumnManager::ColumnIterator::undo () {
     this->iterator->undo();
     this->currentChunk = 0;
     this->currentPosition = 0;
 }
 
-ColumnManager::ColumnIterator::ColumnIterator(Column *column, BucketManager::BucketIterator *iterator) : iterator(iterator), column(column), currentChunk(nullptr), currentPosition(0), recordsPerBucket(static_cast<unsigned> ((CHUNK_CONTENT_SIZE - sizeof (unsigned)) / column->width)) {
+ColumnManager::ColumnIterator::ColumnIterator (ColumnMetaData & columnMetaData, BucketManager::BucketIterator *iterator) : iterator (iterator), columnMetaData (columnMetaData), currentChunk (nullptr), currentPosition (0), recordsPerBucket (static_cast<unsigned>((CHUNK_CONTENT_SIZE - sizeof (unsigned)) / columnMetaData.width)) {
     this->iterator->rewind();
 }
 
-ColumnManager::ColumnIterator::ColumnIterator(const ColumnIterator& copy) : iterator(new BucketManager::BucketIterator(*copy.iterator)), column(new Column(copy.column->width)), currentChunk(copy.currentChunk), currentPosition(copy.currentPosition), recordsPerBucket(copy.recordsPerBucket) {
+ColumnManager::ColumnIterator::ColumnIterator (const ColumnIterator & copy) : iterator (new BucketManager::BucketIterator (*copy.iterator)), columnMetaData (copy.columnMetaData), currentChunk (copy.currentChunk), currentPosition (copy.currentPosition), recordsPerBucket (copy.recordsPerBucket) {
 }
 
-ColumnManager::ColumnIterator::~ColumnIterator() {
+ColumnManager::ColumnIterator::~ColumnIterator () {
     delete iterator;
 }
 
-ColumnManager::ColumnIterator& ColumnManager::ColumnIterator::operator=(const ColumnManager::ColumnIterator &copy) {
+ColumnManager::ColumnIterator& ColumnManager::ColumnIterator::operator= (const ColumnManager::ColumnIterator &copy) {
     new (this) ColumnIterator(copy);
     return *this;
 }

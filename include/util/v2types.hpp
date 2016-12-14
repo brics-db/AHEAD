@@ -39,6 +39,7 @@
 #define MKT3(PREFIX, BASE, SUFFIX) CONCAT(PREFIX, CONCAT(BASE, SUFFIX))
 
 enum type_t {
+
     type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
 };
 
@@ -57,9 +58,11 @@ typedef unsigned version_t;
 // enforce real different types. The typedef's above result in type-clashes!
 
 struct v2_base_t {
+
 };
 
 struct v2_tinyint_t : public v2_base_t {
+
     typedef tinyint_t type_t;
     typedef v2_tinyint_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -71,6 +74,7 @@ struct v2_tinyint_t : public v2_base_t {
 };
 
 struct v2_shortint_t : public v2_base_t {
+
     typedef shortint_t type_t;
     typedef v2_shortint_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -82,6 +86,7 @@ struct v2_shortint_t : public v2_base_t {
 };
 
 struct v2_int_t : public v2_base_t {
+
     typedef int_t type_t;
     typedef v2_int_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -93,6 +98,7 @@ struct v2_int_t : public v2_base_t {
 };
 
 struct v2_bigint_t : public v2_base_t {
+
     typedef bigint_t type_t;
     typedef v2_bigint_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -104,6 +110,7 @@ struct v2_bigint_t : public v2_base_t {
 };
 
 struct v2_char_t : public v2_base_t {
+
     typedef char_t type_t;
     typedef v2_char_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -115,6 +122,7 @@ struct v2_char_t : public v2_base_t {
 };
 
 struct v2_str_t : public v2_base_t {
+
     typedef str_t type_t;
     typedef v2_str_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -126,6 +134,7 @@ struct v2_str_t : public v2_base_t {
 };
 
 struct v2_fixed_t : public v2_base_t {
+
     typedef fixed_t type_t;
     typedef v2_fixed_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -137,6 +146,7 @@ struct v2_fixed_t : public v2_base_t {
 };
 
 struct v2_id_t : public v2_base_t {
+
     typedef id_t type_t;
     typedef v2_id_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -148,6 +158,7 @@ struct v2_id_t : public v2_base_t {
 };
 
 struct v2_oid_t : public v2_base_t {
+
     typedef oid_t type_t;
     typedef v2_oid_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -159,6 +170,7 @@ struct v2_oid_t : public v2_base_t {
 };
 
 struct v2_void_t : public v2_base_t {
+
     typedef oid_t type_t;
     typedef v2_void_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -170,6 +182,7 @@ struct v2_void_t : public v2_base_t {
 };
 
 struct v2_version_t : public v2_base_t {
+
     typedef version_t type_t;
     typedef v2_version_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;
@@ -181,6 +194,7 @@ struct v2_version_t : public v2_base_t {
 };
 
 struct v2_size_t : public v2_base_t {
+
     typedef size_t type_t;
     typedef v2_size_t unenc_v2_t;
     typedef unenc_v2_t v2_copy_t;

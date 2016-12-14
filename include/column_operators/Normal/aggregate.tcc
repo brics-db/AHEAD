@@ -44,12 +44,13 @@ namespace v2 {
              * @return a single sum value
              */
             template<typename v2_result_t, typename Head, typename Tail>
-            typename v2_result_t::type_t aggregate_sum(Bat<Head, Tail>* arg) {
+            typename v2_result_t::type_t
+            aggregate_sum (BAT<Head, Tail>* arg) {
                 typedef typename v2_result_t::type_t result_t;
                 result_t sum = 0;
                 auto iter = arg->begin();
                 for (; iter->hasNext(); ++*iter) {
-                    sum += static_cast<result_t> (iter->tail());
+                    sum += static_cast<result_t>(iter->tail());
                 }
                 delete iter;
                 return sum;
@@ -62,12 +63,13 @@ namespace v2 {
              * @return A single sum of the pair-wise products of the two Bats
              */
             template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-            Result aggregate_mul_sum(Bat<Head1, Tail1>* arg1, Bat<Head2, Tail2>* arg2, Result init = Result(0)) {
+            Result
+            aggregate_mul_sum (BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, Result init = Result (0)) {
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 Result total = init;
                 for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
-                    total += (static_cast<Result> (iter1->tail()) * static_cast<Result> (iter2->tail()));
+                    total += (static_cast<Result>(iter1->tail()) * static_cast<Result>(iter2->tail()));
                 }
                 delete iter2;
                 delete iter1;
@@ -86,9 +88,14 @@ namespace v2 {
                 struct groupby_base {
 
                     template<typename HashMap>
-                    pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, Tail>*> group_base(Bat<Head, Tail>* bat, HashMap& dictionary) const {
-                        auto batHeadtoGID = new TempBat<Head, v2_oid_t>();
-                        auto batGIDtoTail = new TempBat<v2_void_t, Tail>();
+                    pair<BAT<Head, v2_oid_t>*, BAT<v2_void_t, Tail>*>
+                    group_base (BAT<Head, Tail>* bat, HashMap& dictionary) const {
+                        typedef typename TempBAT<Head, v2_oid_t>::coldesc_head_t coldesc_head1_t;
+                        typedef typename TempBAT<Head, v2_oid_t>::coldesc_tail_t coldesc_tail1_t;
+                        typedef typename TempBAT<v2_void_t, Tail>::coldesc_head_t coldesc_head2_t;
+                        typedef typename TempBAT<v2_void_t, Tail>::coldesc_tail_t coldesc_tail2_t;
+                        auto batHeadtoGID = new TempBAT<Head, v2_oid_t>(coldesc_head1_t(bat->head.metaData), coldesc_tail1_t());
+                        auto batGIDtoTail = new TempBAT<v2_void_t, Tail>(coldesc_head2_t(), coldesc_tail2_t(bat->tail.metaData));
                         auto iter = bat->begin();
                         oid_t nextGID = 0;
                         for (; iter->hasNext(); ++*iter) {
@@ -119,7 +126,7 @@ namespace v2 {
                 template<typename Head, typename Tail>
                 struct groupby : public groupby_base<Head, Tail> {
 
-                    pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, Tail>*> operator()(Bat<Head, Tail>* bat) const {
+                    pair<BAT<Head, v2_oid_t>*, BAT<v2_void_t, Tail>*> operator() (BAT<Head, Tail>* bat) const {
                         google::dense_hash_map<typename Tail::type_t, oid_t> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
                         return this->group_base(bat, dictionary);
@@ -135,7 +142,7 @@ namespace v2 {
                 template<typename Head>
                 struct groupby<Head, v2_str_t> : public groupby_base<Head, v2_str_t> {
 
-                    pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, v2_str_t>*> operator()(Bat<Head, v2_str_t>* bat) const {
+                    pair<BAT<Head, v2_oid_t>*, BAT<v2_void_t, v2_str_t>*> operator() (BAT<Head, v2_str_t>* bat) const {
                         google::dense_hash_map<str_t, oid_t, hashstr, eqstr> dictionary;
                         dictionary.set_empty_key(v2_str_t::dhm_emptykey);
                         return this->group_base(bat, dictionary);
@@ -151,7 +158,8 @@ namespace v2 {
              * 2) GroupID -> Value
              */
             template<typename Head, typename Tail>
-            pair<Bat<Head, v2_oid_t>*, Bat<v2_void_t, Tail>*> groupby(Bat<Head, Tail>* bat) {
+            pair<BAT<Head, v2_oid_t>*, BAT<v2_void_t, Tail>*>
+            groupby (BAT<Head, Tail>* bat) {
                 return Private::groupby<Head, Tail>()(bat);
             }
 
@@ -167,7 +175,8 @@ namespace v2 {
              *  5) Mapping group2 (V)OID -> group2 value
              */
             template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
-            tuple<Bat<v2_void_t, V2Result>*, Bat<v2_void_t, v2_oid_t>*, Bat<v2_void_t, Tail2>*, Bat<v2_void_t, v2_oid_t>*, Bat<v2_void_t, Tail3>*> groupedSum(Bat<Head1, Tail1>* bat1, Bat<Head2, Tail2>* bat2, Bat<Head3, Tail3>* bat3) {
+            tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_oid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_oid_t>*, BAT<v2_void_t, Tail3>*>
+            groupedSum (BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2, BAT<Head3, Tail3>* bat3) {
 #ifdef DEBUG
                 StopWatch sw;
                 sw.start();
@@ -187,10 +196,12 @@ namespace v2 {
                 auto size2 = group2.second->size();
                 auto numgroups = size1 * size2;
 
-                auto sumBat = new TempBat<v2_void_t, V2Result>();
+                auto sumBat = new TempBAT<v2_void_t, V2Result>();
                 sumBat->tail.container->resize(numgroups, 0);
-                auto outBat2 = new TempBat<v2_void_t, v2_oid_t>(numgroups);
-                auto outBat4 = new TempBat<v2_void_t, v2_oid_t>(numgroups);
+                auto outBat2 = new TempBAT<v2_void_t, v2_oid_t>();
+                outBat2->reserve(numgroups);
+                auto outBat4 = new TempBAT<v2_void_t, v2_oid_t>();
+                outBat4->reserve(numgroups);
 
                 auto g1SecondIter = group1.second->begin();
                 auto g2SecondIter = group2.second->begin();
@@ -226,7 +237,7 @@ namespace v2 {
                     // std::cerr << std::setw(9) << g2SecondIter->tail() << " |\n";
 #endif
                     size_t pos = g1FirstIter->tail() * size2 + g2FirstIter->tail();
-                    sums[pos] += static_cast<typename V2Result::type_t> (iter1->tail());
+                    sums[pos] += static_cast<typename V2Result::type_t>(iter1->tail());
                 }
 #ifdef DEBUG
                 delete iter3;

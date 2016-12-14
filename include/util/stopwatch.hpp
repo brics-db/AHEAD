@@ -29,6 +29,7 @@ using namespace std;
 using namespace std::chrono;
 
 class StopWatch {
+
 public:
     typedef typename high_resolution_clock::time_point time_point;
     typedef typename high_resolution_clock::rep rep;
@@ -38,24 +39,25 @@ private:
     rep totalNS;
 
 public:
-    StopWatch();
+    StopWatch ();
 
-    void start();
-    void resume();
-    rep stop();
-    rep duration();
+    void start ();
+    void resume ();
+    rep stop ();
+    rep duration ();
 
-    friend StopWatch operator-(StopWatch&, StopWatch&);
+    friend StopWatch operator- (StopWatch&, StopWatch&);
 };
 
 typedef struct hrc_duration {
+
     StopWatch::rep dura;
 
-    hrc_duration(StopWatch::rep dura);
+    hrc_duration (StopWatch::rep dura);
 } hrc_duration;
 
-ostream& operator<<(ostream& stream, hrc_duration hrcd);
-ostream& operator<<(ostream& stream, StopWatch& sw);
+ostream& operator<< (ostream& stream, hrc_duration hrcd);
+ostream& operator<< (ostream& stream, StopWatch& sw);
 
 
 #endif // STOPWATCH_HPP__

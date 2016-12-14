@@ -8,6 +8,7 @@
           <in>encdec.tcc</in>
           <in>groupby.tcc</in>
           <in>hashjoin.tcc</in>
+          <in>miscellaneous.tcc</in>
           <in>select.tcc</in>
         </df>
         <df name="Normal">
@@ -16,6 +17,10 @@
           <in>miscellaneous.tcc</in>
           <in>select.tcc</in>
         </df>
+      </df>
+      <df name="column_storage">
+        <in>ColumnDescriptor.hpp</in>
+        <in>ColumnMetaData.hpp</in>
       </df>
       <df name="util">
         <in>argumentparser.hpp</in>
@@ -165,6 +170,11 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="include/column_operators/AN/miscellaneous.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="include/column_operators/AN/select.tcc"
             ex="false"
             tool="3"
@@ -186,6 +196,16 @@
             flavor2="0">
       </item>
       <item path="include/column_operators/Normal/select.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_storage/ColumnDescriptor.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_storage/ColumnMetaData.hpp"
             ex="false"
             tool="3"
             flavor2="0">
@@ -421,6 +441,11 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="include/column_operators/AN/miscellaneous.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="include/column_operators/AN/select.tcc"
             ex="false"
             tool="3"
@@ -442,6 +467,16 @@
             flavor2="0">
       </item>
       <item path="include/column_operators/Normal/select.tcc"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_storage/ColumnDescriptor.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/column_storage/ColumnMetaData.hpp"
             ex="false"
             tool="3"
             flavor2="0">

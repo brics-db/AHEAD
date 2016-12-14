@@ -30,135 +30,91 @@
 #include <cstdlib>
 
 #include <column_storage/Bat.h>
+#include <column_storage/ColumnMetaData.hpp>
 #include <column_storage/ColumnManager.h>
 #include <column_storage/TransactionManager.h>
 #include <meta_repository/MetaRepositoryManager.h>
 #include <column_storage/ColumnBatIterator.h>
 
-using namespace std;
-
-template<typename Head, typename Tail>
-class ColumnBat : public Bat<Head, Tail> {
-    id_t mColumnId;
-
-public:
-
-    typedef Head v2_head_t;
-    typedef Tail v2_tail_t;
-    typedef typename Head::type_t head_t;
-    typedef typename Tail::type_t tail_t;
-
-    ColumnBat(id_t columnId) : mColumnId(columnId) {
-    }
-
-    ColumnBat(const char *table_name, const char *attribute) : mColumnId(0) {
-        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
-        mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
-    }
-
-    virtual ~ColumnBat() {
-    }
-
-    /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail> * begin() override {
-        return new ColumnBatIterator<Head, Tail>(mColumnId);
-    }
-
-    /** append an item */
-    virtual void append(__attribute__((unused)) pair<head_t, tail_t>& p) override {
-    }
-
-    virtual void append(__attribute__((unused)) pair<head_t, tail_t>&& p) override {
-    }
-
-    virtual Bat<Tail, Head>* reverse() override {
-        return nullptr;
-    }
-
-    virtual Bat<Head, Head>* mirror_head() override {
-        return nullptr;
-    }
-
-    virtual Bat<Tail, Tail>* mirror_tail() override {
-        return nullptr;
-    }
-
-    virtual unsigned size() override {
-        auto iter = begin();
-        unsigned size = iter->size();
-        delete iter;
-        return size;
-    }
-
-    virtual size_t consumption() override {
-        auto iter = begin();
-        unsigned size = iter->consumption();
-        delete iter;
-        return size;
-    }
-};
-
 template<typename Tail>
-class ColumnBat<v2_void_t, Tail> : public Bat<v2_void_t, Tail> {
+class ColumnBAT : public BAT<v2_void_t, Tail> {
+
     typedef v2_void_t Head;
     typedef Head v2_head_t;
     typedef Tail v2_tail_t;
     typedef typename Head::type_t head_t;
     typedef typename Tail::type_t tail_t;
+    typedef ColumnDescriptor<v2_void_t, void> coldesc_head_t;
+    typedef ColumnDescriptor<Tail, vector<tail_t>> coldesc_tail_t;
 
     id_t mColumnId;
 
 public:
 
-    ColumnBat(id_t columnId) : mColumnId(columnId) {
+    coldesc_head_t head;
+    coldesc_tail_t tail;
+
+    ColumnBAT (id_t columnId) : mColumnId (columnId), head (), tail () {
+        tail.metaData = ColumnManager::getInstance()->getColumnMetaData(mColumnId);
     }
 
-    ColumnBat(const char *table_name, const char *attribute) : mColumnId(0) {
-        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
-        mColumnId = mrm->getBatIdOfAttribute(table_name, attribute);
+    ColumnBAT (const char *table_name, const char *attribute) : mColumnId (0), head (), tail () {
+        mColumnId = MetaRepositoryManager::getInstance()->getBatIdOfAttribute(table_name, attribute);
+        tail.metaData = ColumnManager::getInstance()->getColumnMetaData(mColumnId);
     }
 
-    virtual ~ColumnBat() {
+    virtual
+    ~ColumnBAT () {
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual BatIterator<Head, Tail> * begin() override {
+    virtual BATIterator<Head, Tail> *
+    begin () override {
         return new ColumnBatIterator<Head, Tail>(mColumnId);
     }
 
     /** append an item */
-    virtual void append(__attribute__((unused)) pair<head_t, tail_t>& p) override {
+    virtual void
+    append (__attribute__ ((unused)) pair<head_t, tail_t>& p) override {
     }
 
-    virtual void append(__attribute__((unused)) pair<head_t, tail_t>&& p) override {
+    virtual void
+    append (__attribute__ ((unused)) pair<head_t, tail_t>&& p) override {
     }
 
-    virtual void append(__attribute__((unused)) tail_t& t) override {
+    virtual void
+    append (__attribute__ ((unused)) tail_t& t) override {
     }
 
-    virtual void append(__attribute__((unused)) tail_t&& t) override {
+    virtual void
+    append (__attribute__ ((unused)) tail_t&& t) override {
     }
 
-    virtual Bat<Tail, Head>* reverse() override {
+    virtual BAT<Tail, Head>*
+    reverse () override {
         return nullptr;
     }
 
-    virtual Bat<Head, Head>* mirror_head() override {
+    virtual BAT<Head, Head>*
+    mirror_head () override {
         return nullptr;
     }
 
-    virtual Bat<Tail, Tail>* mirror_tail() override {
+    virtual BAT<Tail, Tail>*
+    mirror_tail () override {
         return nullptr;
     }
 
-    virtual unsigned size() override {
+    virtual unsigned
+    size () override {
         auto iter = begin();
         unsigned size = iter->size();
         delete iter;
         return size;
     }
 
-    virtual size_t consumption() override {
+    virtual size_t
+    consumption () override {
         auto iter = begin();
         unsigned size = iter->consumption();
         delete iter;

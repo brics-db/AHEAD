@@ -4,8 +4,9 @@
 PATH_BASE=..
 PATH_BUILD=${PATH_BASE}/build
 PATH_DB=${PATH_BASE}/database
-PATH_EVALDATA=data
-PATH_EVALOUT=out
+PATH_EVAL=${PATH_BASE}/eval
+PATH_EVALDATA=${PATH_EVAL}/data
+PATH_EVALOUT=${PATH_EVAL}/out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
@@ -13,18 +14,18 @@ IMPLEMENTED=(11 12 13 21)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
-if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
-if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
-if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
+if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
+if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi
+if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=0; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
-if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
-if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
+if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=0; fi
+if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=0; fi
 
 # Process specific constants
 CMAKE_BUILD_TYPE=release
 
-BENCHMARK_NUMRUNS=10
-BENCHMARK_NUMBEST=7
+BENCHMARK_NUMRUNS=3
+BENCHMARK_NUMBEST=2
 BENCHMARK_SFMIN=1
 BENCHMARK_SFMAX=1
 
@@ -85,20 +86,53 @@ gnuplotcode () {
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
 #reset
-#set terminal pdf enhanced monochrome
-set term pdf enhanced
+set term pdf enhanced monochrome
+#set term pdf enhanced
 set output '${2}'
 set style data histogram
 set style histogram cluster gap 1
 #set style fill solid border rgb "black"
 set style fill transparent pattern 0.5 border
 set auto x
-set key right outside
+#set key right outside
+unset key
 $(for var in "${@:4}"; do echo $var; done)
 plot '${3}' using 2:xtic(1) title col, \\
         '' using 3:xtic(1) title col, \\
         '' using 4:xtic(1) title col, \\
         '' using 5:xtic(1) title col
+EOM
+}
+
+gnuplotlegend () {
+        # Write GNUplot code to file
+        cat >$1 << EOM
+#!/usr/bin/env gnuplot
+#reset
+set term pdf enhanced monochrome size 6.7in,0.2in
+#set term pdf enhanced
+set output '${2}'
+set datafile separator '\t'
+set style data histogram
+set style histogram cluster gap 1
+set style fill transparent pattern 0.5 border
+unset border
+unset xtics
+unset xlabel
+unset x2tics
+unset x2label
+unset ytics
+unset ylabel
+unset y2tics
+unset y2label
+set xrange [-10:0]
+set yrange [-10:0]
+set key below center
+$(for var in "${@:4}"; do echo $var; done)
+plot '${3}' using 2:xtic(1) t "Unencoded", \\
+        '' using 3:xtic(1) t "Early", \\
+        '' using 4:xtic(1) t "Late", \\
+        '' using 5:xtic(1) t "Continuous"
 EOM
 }
 
@@ -119,16 +153,14 @@ EOM
 if [[ ${DO_COMPILE} -ne 0 ]]; then
     date    
     echo "Compiling."
+    pushd ${PATH_BUILD}
     if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
-        pushd ${PATH_BASE}
-        cmake . -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         exitcode=$?
         if [[ ${exitcode} -ne 0 ]]; then
             exit ${exitcode};
         fi
-        popd
     fi
-    pushd ${PATH_BASE};
     make
     exitcode=$?
     if [[ ${exitcode} -ne 0 ]]; then
@@ -155,7 +187,6 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
             if [[ -e ${PATH_BINARY} ]]; then
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
                 EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
-DO_EVAL=1
                 rm -f ${EVAL_FILEOUT}
                 rm -f ${EVAL_FILEERR}
                 echo -n " * ${type}:"
@@ -165,7 +196,7 @@ DO_EVAL=1
                 done
                 echo " done."
             else
-                echo " * Skipping missing binary \"${PATH_BINARY}\"."
+                echo " * Skipping missing binary \"${type}\"."
             fi
         done
     done
@@ -192,6 +223,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         EVAL_DATAFILE=${PATH_EVALOUT}/${BASE2}.data
         EVAL_NORMALIZEDTEMPFILE=${PATH_EVALDATA}/${BASE2}.norm.tmp
         EVAL_NORMALIZEDDATAFILE=${PATH_EVALOUT}/${BASE2}.norm.data
+
         if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
             echo " * Preparing data for ${BASE2}"
 
@@ -280,14 +312,22 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         fi
 
         echo " * Plotting ${BASE2}"
+		pushd ${PATH_EVALOUT}
         #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
-        gnuplotcode ${PATH_EVALOUT}/${BASE2}.gnuplot ${BASE2}.pdf ${BASE2}.data "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
-        pushd ${PATH_EVALOUT}; gnuplot ${BASE2}.gnuplot; popd
+        gnuplotcode ${BASE2}.m ${BASE2}.pdf ${BASE2}.data "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
 
-        gnuplotcode ${PATH_EVALOUT}/${BASE2}.norm.gnuplot ${BASE2}.norm.pdf ${BASE2}.norm.data "set yrange [0:1.5]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'"
-        pushd ${PATH_EVALOUT}; gnuplot ${BASE2}.norm.gnuplot; popd
+        gnuplotcode ${BASE2}.norm.m ${BASE2}.norm.pdf ${BASE2}.norm.data "set yrange [0:1.5]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'"
+
+		gnuplotlegend ${BASE2}.legend.m ${BASE2}.legend.pdf ${BASE2}.data
+
+        gnuplot ${BASE2}.m
+        gnuplot ${BASE2}.norm.m
+		gnuplot ${BASE2}.legend.m
+
+		popd
     done
 
+    echo " * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
     ALLPDFINFILES=
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
@@ -296,7 +336,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
     ALLPDFOUTFILE=${PATH_EVALOUT}/${BASE}.pdf
     gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
     # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
-    echo " * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
 else
     echo "Skipping evaluation."
 fi

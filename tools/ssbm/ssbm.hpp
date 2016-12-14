@@ -53,13 +53,15 @@
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
 namespace boost {
 
-    void throw_exception(std::exception const & e) { // user defined
+    void
+    throw_exception (std::exception const & e) { // user defined
         throw e;
     }
 }
 
 template<typename Head, typename Tail>
-void printBat(BatIterator<Head, Tail > *iter, const char* message = nullptr, bool doDelete = true) {
+void
+printBat (BATIterator<Head, Tail > *iter, const char* message = nullptr, bool doDelete = true) {
     if (message) {
         std::cout << message << '\n';
     }
@@ -193,6 +195,7 @@ do {                                   \
 ///////////////////////////////
 
 struct ssbmconf_t {
+
     typedef typename ArgumentParser::alias_list_t alias_list_t;
 
     size_t NUM_RUNS;
@@ -207,7 +210,7 @@ private:
 
 public:
 
-    ssbmconf_t() : NUM_RUNS(0), LEN_TIMES(0), LEN_TYPES(0), LEN_SIZES(0), DB_PATH(), VERBOSE(false), parser({
+    ssbmconf_t () : NUM_RUNS (0), LEN_TIMES (0), LEN_TYPES (0), LEN_SIZES (0), DB_PATH (), VERBOSE (false), parser ({
         std::forward_as_tuple("numruns", alias_list_t
         {"--numruns", "-n"}, 15),
         std::forward_as_tuple("lentimes", alias_list_t
@@ -224,20 +227,21 @@ public:
 
         std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, false)
     }
-    ) {
+                                                                                                                    ) {
 #ifdef DEBUG
         std::cout << "ssbmconf_t()" << std::endl;
 #endif
     }
 
-    ssbmconf_t(int argc, char** argv) : ssbmconf_t() {
+    ssbmconf_t (int argc, char** argv) : ssbmconf_t () {
 #ifdef DEBUG
         std::cout << "ssbmconf_t(int argc, char** argv)" << std::endl;
 #endif
         init(argc, argv);
     }
 
-    void init(int argc, char** argv) {
+    void
+    init (int argc, char** argv) {
 #ifdef DEBUG
         std::cout << "ssbmconf_t::init(int argc, char** argv)" << std::endl;
 #endif
@@ -251,7 +255,8 @@ public:
     }
 };
 
-StopWatch::rep loadTable(string& baseDir, const char* const columnName, const ssbmconf_t & CONFIG) {
+StopWatch::rep
+loadTable (string& baseDir, const char* const columnName, const ssbmconf_t & CONFIG) {
     StopWatch sw;
     TransactionManager* tm = TransactionManager::getInstance();
     TransactionManager::Transaction* t = tm->beginTransaction(true);

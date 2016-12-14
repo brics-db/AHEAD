@@ -33,299 +33,327 @@
 #include <column_storage/TempBatIterator.h>
 
 template<class Head, class Tail>
-class TempBat : public Bat<Head, Tail> {
-public:
-    typedef Head v2_head_t;
-    typedef Tail v2_tail_t;
-    typedef typename v2_head_t::type_t head_t;
-    typedef typename v2_tail_t::type_t tail_t;
-    typedef ColumnDescriptor<v2_head_t, std::vector<head_t>> coldesc_head_t;
-    typedef ColumnDescriptor<v2_tail_t, std::vector<tail_t>> coldesc_tail_t;
+class TempBAT : public BAT<Head, Tail> {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+public:
+    using v2_head_t = typename BAT<Head, Tail>::v2_head_t;
+    using v2_tail_t = typename BAT<Head, Tail>::v2_tail_t;
+    using head_t = typename BAT<Head, Tail>::head_t;
+    using tail_t = typename BAT<Head, Tail>::tail_t;
+    using coldesc_head_t = typename BAT<Head, Tail>::coldesc_head_t;
+    using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
 
     /** default constructor */
-    TempBat() : head(), tail() {
+    TempBAT () : BAT<Head, Tail>() {
     }
 
-    /** constructor for n elements */
-    TempBat(size_t n) : head(), tail() {
-        head.container->reserve(n);
-        tail.container->reserve(n);
+    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<Head, Tail>(head, tail) {
     }
 
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
+    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<Head, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
     }
 
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
+    virtual
+    ~TempBAT () {
     }
 
-    virtual ~TempBat() {
+    virtual void
+    reserve (size_t n) {
+        this->head.container->reserve(n);
+        this->tail.container->reserve(n);
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual TempBatIterator<Head, Tail> * begin() override {
-        return new TempBatIterator<Head, Tail>(head, tail);
+    virtual TempBATIterator<Head, Tail> *
+    begin () override {
+        return new TempBATIterator<Head, Tail>(this->head, this->tail);
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>& p) override {
-        head.container->push_back(p.first);
-        tail.container->push_back(p.second);
+    virtual void
+    append (pair<head_t, tail_t>& p) override {
+        this->head.container->push_back(p.first);
+        this->tail.container->push_back(p.second);
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>&& p) override {
-        head.container->push_back(std::move(p.first));
-        tail.container->push_back(std::move(p.second));
+    virtual void
+    append (pair<head_t, tail_t>&& p) override {
+        this->head.container->push_back(p.first);
+        this->tail.container->push_back(p.second);
     }
 
-    virtual Bat<Tail, Head>* reverse() override {
-        return new TempBat<Tail, Head>(this->tail, this->head);
+    virtual BAT<Tail, Head>*
+    reverse () override {
+        return new TempBAT<Tail, Head>(this->tail, this->head);
     }
 
-    virtual Bat<Head, Head>* mirror_head() override {
-        return new TempBat<Head, Head>(this->head, this->head);
+    virtual BAT<Head, Head>*
+    mirror_head () override {
+        return new TempBAT<Head, Head>(this->head, this->head);
     }
 
-    virtual Bat<Tail, Tail>* mirror_tail() override {
-        return new TempBat<Tail, Tail>(this->tail, this->tail);
+    virtual BAT<Tail, Tail>*
+    mirror_tail () override {
+        return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned size() override {
-        return head.container->size();
+    virtual unsigned
+    size () override {
+        return this->head.container->size();
     }
 
-    virtual size_t consumption() override {
+    virtual size_t
+    consumption () override {
         return size() * (sizeof (head_t) + sizeof (tail_t));
     }
 };
 
 template<>
-class TempBat<v2_void_t, v2_void_t> : public Bat<v2_void_t, v2_void_t> {
-public:
-    typedef v2_void_t v2_head_t;
-    typedef v2_void_t v2_tail_t;
-    typedef typename v2_void_t::type_t head_t;
-    typedef typename v2_void_t::type_t tail_t;
-    typedef ColumnDescriptor<v2_void_t, void> coldesc_head_t;
-    typedef ColumnDescriptor<v2_void_t, void> coldesc_tail_t;
+class TempBAT<v2_void_t, v2_void_t> : public BAT<v2_void_t, v2_void_t> {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+public:
+    typedef v2_void_t Head, Tail;
+    using v2_head_t = typename BAT<Head, Tail>::v2_head_t;
+    using v2_tail_t = typename BAT<Head, Tail>::v2_tail_t;
+    using head_t = typename BAT<Head, Tail>::head_t;
+    using tail_t = typename BAT<Head, Tail>::tail_t;
+    using coldesc_head_t = typename BAT<Head, Tail>::coldesc_head_t;
+    using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
+
     oid_t count;
 
     /** default constructor */
-    TempBat() : head(), tail(), count(0) {
+    TempBAT () : BAT<v2_void_t, v2_void_t>(), count (0) {
     }
 
-    virtual ~TempBat() {
+    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<v2_void_t, v2_void_t>(head, tail), count (0) {
     }
 
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail), count(0) {
+    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<v2_void_t, v2_void_t>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)), count (0) {
     }
 
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail), count(0) {
+    virtual
+    ~TempBAT () {
     }
 
-    /** constructor for n elements */
-    TempBat(size_t n) : head(), tail(), count(n) {
+    virtual void
+    reserve (size_t n) {
+        (void)n;
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual TempBatIterator<v2_void_t, v2_void_t> * begin() override {
-        return new TempBatIterator<v2_void_t, v2_void_t>(head, tail, count);
+    virtual TempBATIterator<v2_void_t, v2_void_t> *
+    begin () override {
+        return new TempBATIterator<v2_void_t, v2_void_t>(this->head, this->tail, count);
     }
 
     /** append an item */
-    virtual void append(__attribute__((unused)) pair<head_t, tail_t>& p) override {
+    virtual void
+    append (__attribute__ ((unused)) pair<head_t, tail_t>& p) override {
         ++count;
     }
 
     /** append an item */
-    virtual void append(__attribute__((unused)) pair<head_t, tail_t>&& p) override {
+    virtual void
+    append (__attribute__ ((unused)) pair<head_t, tail_t>&& p) override {
         ++count;
     }
 
-    virtual void append(__attribute__((unused)) tail_t& t) override {
-        ++count;
+    virtual BAT<v2_void_t, v2_void_t>*
+    reverse () override {
+        return new TempBAT<v2_void_t, v2_void_t>(this->tail, this->head);
     }
 
-    virtual void append(__attribute__((unused)) tail_t&& t) override {
-        ++count;
+    virtual BAT<v2_void_t, v2_void_t>*
+    mirror_head () override {
+        return new TempBAT<v2_void_t, v2_void_t>(this->head, this->head);
     }
 
-    virtual Bat<v2_void_t, v2_void_t>* reverse() override {
-        return new TempBat<v2_void_t, v2_void_t>(this->tail, this->head);
+    virtual BAT<v2_void_t, v2_void_t>*
+    mirror_tail () override {
+        return new TempBAT<v2_void_t, v2_void_t>(this->tail, this->tail);
     }
 
-    virtual Bat<v2_void_t, v2_void_t>* mirror_head() override {
-        return new TempBat<v2_void_t, v2_void_t>(this->head, this->head);
-    }
-
-    virtual Bat<v2_void_t, v2_void_t>* mirror_tail() override {
-        return new TempBat<v2_void_t, v2_void_t>(this->tail, this->tail);
-    }
-
-    virtual unsigned size() override {
+    virtual unsigned
+    size () override {
         return count;
     }
 
-    virtual size_t consumption() override {
+    virtual size_t
+    consumption () override {
         return 0;
     }
 };
 
 template<class Head>
-class TempBat<Head, v2_void_t> : public Bat<Head, v2_void_t> {
-public:
-    typedef Head v2_head_t;
-    typedef v2_void_t v2_tail_t;
-    typedef typename Head::type_t head_t;
-    typedef typename v2_void_t::type_t tail_t;
-    typedef std::vector<head_t> containerhead_t;
-    typedef ColumnDescriptor<Head, containerhead_t> coldesc_head_t;
-    typedef ColumnDescriptor<v2_void_t, void> coldesc_tail_t;
+class TempBAT<Head, v2_void_t> : public BAT<Head, v2_void_t> {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+public:
+    typedef v2_void_t Tail;
+    using v2_head_t = typename BAT<Head, Tail>::v2_head_t;
+    using v2_tail_t = typename BAT<Head, Tail>::v2_tail_t;
+    using head_t = typename BAT<Head, Tail>::head_t;
+    using tail_t = typename BAT<Head, Tail>::tail_t;
+    using coldesc_head_t = typename BAT<Head, Tail>::coldesc_head_t;
+    using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
 
     /** default constructor */
-    TempBat() {
+    TempBAT () {
     }
 
-    virtual ~TempBat() {
+    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<Head, v2_void_t>(head, tail) {
     }
 
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
+    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<Head, v2_void_t>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
     }
 
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
+    virtual
+    ~TempBAT () {
     }
 
-    /** constructor for n elements */
-    TempBat(size_t n) {
-        head.container.reserve(n);
+    virtual void
+    reserve (size_t n) {
+        this->head.container->reserve(n);
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual TempBatIterator<Head, v2_void_t> * begin() override {
-        return new TempBatIterator<Head, v2_void_t>(head, tail);
+    virtual TempBATIterator<Head, v2_void_t> *
+    begin () override {
+        return new TempBATIterator<Head, v2_void_t>(this->head, this->tail);
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>& p) override {
-        if (head.container)
-            head.container->push_back(p.first);
+    virtual void
+    append (pair<head_t, tail_t>& p) override {
+        if (this->head.container)
+            this->head.container->push_back(p.first);
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>&& p) override {
-        if (head.container)
-            head.container->push_back(std::move(p.first));
+    virtual void
+    append (pair<head_t, tail_t>&& p) override {
+        if (this->head.container)
+            this->head.container->push_back(std::move(p.first));
     }
 
-    virtual void append(head_t& h) {
-        head.container->push_back(h);
+    virtual void
+    append (head_t& h) {
+        this->head.container->push_back(h);
     }
 
-    virtual void append(head_t&& h) {
-        head.container->push_back(std::move(h));
+    virtual void
+    append (head_t&& h) {
+        this->head.container->push_back(std::move(h));
     }
 
-    virtual Bat<v2_void_t, Head>* reverse() override {
-        return new TempBat<v2_void_t, Head>(this->tail, this->head);
+    virtual BAT<v2_void_t, Head>*
+    reverse () override {
+        return new TempBAT<v2_void_t, Head>(this->tail, this->head);
     }
 
-    virtual Bat<Head, Head>* mirror_head() override {
-        return new TempBat<Head, Head>(this->head, this->head);
+    virtual BAT<Head, Head>*
+    mirror_head () override {
+        return new TempBAT<Head, Head>(this->head, this->head);
     }
 
-    virtual Bat<v2_void_t, v2_void_t>* mirror_tail() override {
-        return new TempBat<v2_void_t, v2_void_t>(this->tail, this->tail);
+    virtual BAT<v2_void_t, v2_void_t>*
+    mirror_tail () override {
+        return new TempBAT<v2_void_t, v2_void_t>(this->tail, this->tail);
     }
 
-    virtual unsigned size() override {
-        return head.container->size();
+    virtual unsigned
+    size () override {
+        return this->head.container->size();
     }
 
-    virtual size_t consumption() override {
+    virtual size_t
+    consumption () override {
         return size() * sizeof (head_t);
     }
 };
 
 template<class Tail>
-class TempBat<v2_void_t, Tail> : public Bat<v2_void_t, Tail> {
-public:
-    typedef v2_void_t v2_head_t;
-    typedef Tail v2_tail_t;
-    typedef typename v2_void_t::type_t head_t;
-    typedef typename Tail::type_t tail_t;
-    typedef ColumnDescriptor<v2_void_t, void> coldesc_head_t;
-    typedef ColumnDescriptor<Tail, vector<tail_t>> coldesc_tail_t;
+class TempBAT<v2_void_t, Tail> : public BAT<v2_void_t, Tail> {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+public:
+    typedef v2_void_t Head;
+    using v2_head_t = typename BAT<Head, Tail>::v2_head_t;
+    using v2_tail_t = typename BAT<Head, Tail>::v2_tail_t;
+    using head_t = typename BAT<Head, Tail>::head_t;
+    using tail_t = typename BAT<Head, Tail>::tail_t;
+    using coldesc_head_t = typename BAT<Head, Tail>::coldesc_head_t;
+    using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
 
     /** default constructor */
-    TempBat() : head(), tail() {
+    TempBAT () : BAT<v2_void_t, Tail>() {
     }
 
-    virtual ~TempBat() {
+    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<v2_void_t, Tail>(head, tail) {
     }
 
-    TempBat(coldesc_head_t& head, coldesc_tail_t& tail) : head(head), tail(tail) {
+    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<v2_void_t, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
     }
 
-    TempBat(coldesc_head_t&& head, coldesc_tail_t&& tail) : head(head), tail(tail) {
+    virtual
+    ~TempBAT () {
     }
 
-    /** constructor for n elements */
-    TempBat(size_t n) : head(), tail() {
-        tail.container->reserve(n);
+    virtual void
+    reserve (size_t n) {
+        this->tail.container->reserve(n);
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual TempBatIterator<v2_void_t, Tail> * begin() override {
-        return new TempBatIterator<v2_void_t, Tail>(head, tail);
+    virtual TempBATIterator<v2_void_t, Tail> *
+    begin () override {
+        return new TempBATIterator<v2_void_t, Tail>(this->head, this->tail);
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>& p) override {
-        tail.container->push_back(p.second);
+    virtual void
+    append (pair<head_t, tail_t>& p) override {
+        this->tail.container->push_back(p.second);
     }
 
     /** append an item */
-    virtual void append(pair<head_t, tail_t>&& p) override {
-        tail.container->emplace_back(std::move(p.second));
+    virtual void
+    append (pair<head_t, tail_t>&& p) override {
+        this->tail.container->emplace_back(std::move(p.second));
     }
 
-    virtual void append(tail_t& t) {
-        tail.container->push_back(t);
+    virtual void
+    append (tail_t& t) {
+        this->tail.container->push_back(t);
     }
 
-    virtual void append(tail_t&& t) {
-        tail.container->emplace_back(std::move(t));
+    virtual void
+    append (tail_t&& t) {
+        this->tail.container->emplace_back(std::move(t));
     }
 
-    virtual Bat<Tail, v2_void_t>* reverse() override {
-        return new TempBat<Tail, v2_void_t>(this->tail, this->head);
+    virtual BAT<Tail, v2_void_t>*
+    reverse () override {
+        return new TempBAT<Tail, v2_void_t>(this->tail, this->head);
     }
 
-    virtual Bat<v2_void_t, v2_void_t>* mirror_head() override {
-        return new TempBat<v2_void_t, v2_void_t>(this->head, this->head);
+    virtual BAT<v2_void_t, v2_void_t>*
+    mirror_head () override {
+        return new TempBAT<v2_void_t, v2_void_t>(this->head, this->head);
     }
 
-    virtual Bat<Tail, Tail>* mirror_tail() override {
-        return new TempBat<Tail, Tail>(this->tail, this->tail);
+    virtual BAT<Tail, Tail>*
+    mirror_tail () override {
+        return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned size() override {
-        return tail.container->size();
+    virtual unsigned
+    size () override {
+        return this->tail.container->size();
     }
 
-    virtual size_t consumption() override {
+    virtual size_t
+    consumption () override {
         return size() * sizeof (Tail);
     }
 };

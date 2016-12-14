@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 /* 
- * File:   ssbm-q13_lazy.cpp
+ * File:   ssbm-q13_continuous.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 31. October 2016, 22:54
@@ -27,9 +27,10 @@
 
 #include "ssbm.hpp"
 
-int main(int argc, char** argv) {
+int
+main (int argc, char** argv) {
     ssbmconf_t CONFIG(argc, argv);
-    StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
+    std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 24;
     cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
@@ -40,24 +41,18 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index tailTypes[NUM_OPS];
     string emptyString;
     size_t x = 0;
+    StopWatch sw1, sw2;
 
     std::cout << "SSBM Query 1.3 Continuous Detection\n===================================" << std::endl;
 
-    boost::filesystem::path p(CONFIG.DB_PATH);
-    if (boost::filesystem::is_regular(p)) {
-        p.remove_filename();
-    }
-    string baseDir = p.remove_trailing_separator().generic_string();
-    MetaRepositoryManager::init(baseDir.c_str());
-
-    StopWatch sw1, sw2;
+    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
     sw1.start();
-    // loadTable(baseDir, "customerAN", CONFIG);
-    loadTable(baseDir, "dateAN", CONFIG);
-    loadTable(baseDir, "lineorderAN", CONFIG);
-    // loadTable(baseDir, "partAN", CONFIG);
-    // loadTable(baseDir, "supplierAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "dateAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "lineorderAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "partAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "supplierAN", CONFIG);
     sw1.stop();
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
 
@@ -106,9 +101,9 @@ int main(int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN(batLQenc, 26 * v2_restiny_t::A, 35 * v2_restiny_t::A)); // lo_quantity between 26 and 35
+        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN(batLQenc, 26 * batLQenc->tail.metaData.getA(), 35 * batLQenc->tail.metaData.getA())); // lo_quantity between 26 and 35
         delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 5 * v2_restiny_t::A, 7 * v2_restiny_t::A)); // lo_discount between 5 and 7
+        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 5 * batLDenc->tail.metaData.getA(), 7 * batLDenc->tail.metaData.getA())); // lo_discount between 5 and 7
         delete pair2.second;
         MEASURE_OP(sw2, x, bat3, pair1.first->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
@@ -122,11 +117,11 @@ int main(int argc, char** argv) {
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(sw2, x, pair7, v2::bat::ops::selectAN<equal_to>(batDYenc, 1994 * v2_resshort_t::A)); // d_year = 1994
+        MEASURE_OP_PAIR(sw2, x, pair7, v2::bat::ops::selectAN<equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.getA())); // d_year = 1994
         delete pair7.second;
         MEASURE_OP(sw2, x, bat8, pair7.first->mirror_head()); // prepare joined selection over d_year and d_weeknuminyear
         delete pair7.first;
-        MEASURE_OP_PAIR(sw2, x, pair9, v2::bat::ops::selectAN<equal_to>(batDWenc, 6 * v2_restiny_t::A)); // d_weeknuminyear = 6
+        MEASURE_OP_PAIR(sw2, x, pair9, v2::bat::ops::selectAN<equal_to>(batDWenc, 6 * batDWenc->tail.metaData.getA())); // d_weeknuminyear = 6
         delete pair9.second;
         MEASURE_OP_TUPLE(sw2, x, tupleA, v2::bat::ops::hashjoinAN(bat8, pair9.first));
         delete bat8;
@@ -163,11 +158,12 @@ int main(int argc, char** argv) {
         auto iter = get<0>(tupleI)->begin();
         auto result = iter->tail();
         delete iter;
+        auto AInvResult = get<0>(tupleI)->tail.metaData.getAinv();
         delete get<0>(tupleI);
 
         totalTimes[i] = sw1.stop();
 
-        std::cout << "(" << setw(2) << i << ")\n\tresult: " << (result * v2_resbigint_t::A_INV) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.\n";
+        std::cout << "(" << setw(2) << i << ")\n\tresult: " << (result * AInvResult) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.\n";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }

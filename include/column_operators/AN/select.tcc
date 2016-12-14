@@ -41,11 +41,11 @@ namespace v2 {
                 template<typename Op, typename Head, typename Tail>
                 struct SelectionAN1 {
 
-                    pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*> operator()(Bat<Head, Tail>* arg, typename Tail::type_t&& threshold, typename Tail::type_t aInv = Tail::A_INV, typename Tail::type_t unEncMaxU = Tail::A_UNENC_MAX_U, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
+                    pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*> operator() (BAT<Head, Tail>* arg, typename Tail::type_t&& threshold, typename Tail::type_t aInv = Tail::A_INV, typename Tail::type_t unEncMaxU = Tail::A_UNENC_MAX_U, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
                         static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                         static_assert(is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
 
-                        auto result = make_pair(new TempBat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t > (), new vector<bool>(arg->size()));
+                        auto result = make_pair(new TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t > (), new vector<bool>(arg->size()));
                         auto iter = arg->begin();
                         Op op;
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
@@ -65,10 +65,10 @@ namespace v2 {
                 template<typename Op, typename Head>
                 struct SelectionAN1<Op, Head, v2_str_t> {
 
-                    pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t>*, vector<bool>*> operator()(Bat<Head, v2_str_t>* arg, str_t&& threshold, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
+                    pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t>*, vector<bool>*> operator() (BAT<Head, v2_str_t>* arg, str_t&& threshold, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
                         static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
-                        auto result = make_pair(new TempBat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t > (), nullptr);
+                        auto result = make_pair(new TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t > (), nullptr);
                         auto iter = arg->begin();
                         Op op;
                         for (; iter->hasNext(); ++*iter) {
@@ -85,11 +85,11 @@ namespace v2 {
                 template<typename Op1, typename Op2, typename Head, typename Tail>
                 struct SelectionAN2 {
 
-                    pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*> operator()(Bat<Head, Tail>* arg, typename Tail::type_t&& threshold1, typename Tail::type_t&& threshold2, typename Tail::type_t aInv = Tail::A_INV, typename Tail::type_t unEncMaxU = Tail::A_UNENC_MAX_U, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
+                    pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*> operator() (BAT<Head, Tail>* arg, typename Tail::type_t&& threshold1, typename Tail::type_t&& threshold2, typename Tail::type_t aInv = Tail::A_INV, typename Tail::type_t unEncMaxU = Tail::A_UNENC_MAX_U, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
                         static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                         static_assert(is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
 
-                        auto result = make_pair(new TempBat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t > (), new vector<bool>(arg->size()));
+                        auto result = make_pair(new TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t > (), new vector<bool>(arg->size()));
                         auto iter = arg->begin();
                         Op1 op1;
                         Op2 op2;
@@ -110,10 +110,10 @@ namespace v2 {
                 template<typename Op1, typename Op2, typename Head>
                 struct SelectionAN2<Op1, Op2, Head, v2_str_t> {
 
-                    pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t>*, vector<bool>*> operator()(Bat<Head, v2_str_t>* arg, str_t&& threshold1, str_t&& threshold2, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
+                    pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t>*, vector<bool>*> operator() (BAT<Head, v2_str_t>* arg, str_t&& threshold1, str_t&& threshold2, typename TypeMap<Head>::v2_encoded_t::type_t AHead = TypeMap<Head>::v2_encoded_t::A) {
                         static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
-                        auto result = make_pair(new TempBat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t > (), new vector<bool>());
+                        auto result = make_pair(new TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, v2_str_t > (), new vector<bool>());
                         auto iter = arg->begin();
                         Op1 op1;
                         Op2 op2;
@@ -130,13 +130,15 @@ namespace v2 {
             }
 
             template<template<typename> class Op, typename Head, typename Tail>
-            pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*> selectAN(Bat<Head, Tail>* arg, typename Tail::type_t&& threshold) {
+            pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*>
+            selectAN (BAT<Head, Tail>* arg, typename Tail::type_t&& threshold) {
                 Private::SelectionAN1 < Op<typename Tail::v2_compare_t::type_t>, Head, Tail> impl;
                 return impl(arg, std::forward<typename Tail::type_t > (threshold));
             }
 
             template<template<typename> class Op1 = greater_equal, template<typename> class Op2 = less_equal, typename Head, typename Tail>
-            pair<Bat<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*> selectAN(Bat<Head, Tail>* arg, typename Tail::type_t&& threshold1, typename Tail::type_t&& threshold2) {
+            pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, vector<bool>*>
+            selectAN (BAT<Head, Tail>* arg, typename Tail::type_t&& threshold1, typename Tail::type_t&& threshold2) {
                 Private::SelectionAN2 < Op1<typename Tail::v2_compare_t::type_t>, Op2<typename Tail::v2_compare_t::type_t>, Head, Tail> impl;
                 return impl(arg, std::forward<typename Tail::type_t > (threshold1), std::forward<typename Tail::type_t > (threshold2));
             }

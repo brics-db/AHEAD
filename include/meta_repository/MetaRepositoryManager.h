@@ -38,6 +38,7 @@ extern const size_t MAXLEN_STRING;
  * The class implements the Singleton Pattern, this makes clear that only one object exists in runtime.
  */
 class MetaRepositoryManager {
+
 public:
     friend class TransactionManager;
 
@@ -49,9 +50,11 @@ public:
      * The function returns a pointer of the one and only existing instance of the class. In the case that no instance
      * exists, it will be created and afterwards returned from the function.
      */
-    static MetaRepositoryManager* getInstance();
+    static MetaRepositoryManager* getInstance ();
 
-    static void init(const char* strBaseDir);
+    static void init (const char* strBaseDir);
+    
+    static void init (const std::string & strBaseDir);
 
     /**
      * @author Christian Vogel
@@ -60,47 +63,47 @@ public:
      *
      * Creates an entry for a table into the meta repository.
      */
-    id_t createTable(const char *name);
+    id_t createTable (const char *name);
 
     /**
      * @author Christian Vogel
      *
      * Creates an entry for an attribute of a specified table into the meta repository.
      */
-    void createAttribute(char *name, char *datatype, unsigned BATId, unsigned table_id);
+    void createAttribute (char *name, char *datatype, unsigned BATId, unsigned table_id);
 
-    char* getDataTypeForAttribute(char *name);
+    char* getDataTypeForAttribute (char *name);
 
-    unsigned getBatIdOfAttribute(const char *nameOfTable, const char *attribute);
+    unsigned getBatIdOfAttribute (const char *nameOfTable, const char *attribute);
 
 private:
     static MetaRepositoryManager *instance;
     static char* strBaseDir;
 
-    static void destroyInstance();
+    static void destroyInstance ();
 
-    // all attributes for the table table :)
-    id_tmpbat_t*pk_table_id;
-    str_tmpbat_t *table_name;
+    // all BATs for the "tables" table
+    id_tmpbat_t *tables_id_pk;
+    str_tmpbat_t *tables_name;
 
-    // all attributes for the attribute table
-    id_tmpbat_t *pk_attribute_id;
-    str_tmpbat_t *attribute_name;
-    id_tmpbat_t *fk_table_id;
-    id_tmpbat_t *fk_type_id;
-    id_tmpbat_t *BAT_number;
+    // all BATs for the "attributes" table
+    id_tmpbat_t *attributes_id_pk;
+    str_tmpbat_t *attributes_name;
+    id_tmpbat_t *attributes_table_id_fk;
+    id_tmpbat_t *attributes_type_id_fk;
+    id_tmpbat_t *attributes_column_id;
 
-    // all attributes for the layout table
-    id_tmpbat_t *pk_layout_id;
+    // all BATs for the "layout" table
+    id_tmpbat_t *layout_id_pk;
     str_tmpbat_t *layout_name;
-    size_tmpbat_t *size;
+    size_tmpbat_t *layout_size;
 
-    // all attributes for the operator table
-    id_tmpbat_t *pk_operator_id;
+    // all BATs for the "operator" table
+    id_tmpbat_t *operator_id_pk;
     str_tmpbat_t *operator_name;
 
-    // all attributes for the datatypes table
-    id_tmpbat_t *pk_datatype_id;
+    // all BATs for the "datatypes" table
+    id_tmpbat_t *datatype_id_pk;
     str_tmpbat_t *datatype_name;
     size_tmpbat_t *datatype_length;
     char_tmpbat_t *datatype_category;
@@ -109,78 +112,81 @@ private:
     char* META_PATH;
     // char* TEST_DATABASE_PATH;
 
-    void createRepository();
+    void createRepository ();
 
-    void createDefaultDataTypes();
-
-    template<class Head, class Tail>
-    pair<typename Head::type_t, typename Tail::type_t> getLastValue(Bat<Head, Tail> *bat);
+    void createDefaultDataTypes ();
 
     template<class Head, class Tail>
-    pair<typename Head::type_t, typename Tail::type_t> unique_selection(Bat<Head, Tail> *bat, typename Tail::type_t value);
+    pair<typename Head::type_t, typename Tail::type_t> getLastValue (BAT<Head, Tail> *bat);
 
     template<class Head, class Tail>
-    bool isBatEmpty(Bat<Head, Tail> *bat);
+    pair<typename Head::type_t, typename Tail::type_t> unique_selection (BAT<Head, Tail> *bat, typename Tail::type_t value);
 
     template<class Head, class Tail>
-    id_t selectBatId(Bat<Head, Tail> *bat, cstr_t value);
+    bool isBatEmpty (BAT<Head, Tail> *bat);
 
     template<class Head, class Tail>
-    id_t selectBatId(Bat<Head, Tail> *bat, typename Tail::type_t value);
+    id_t selectBatId (BAT<Head, Tail> *bat, cstr_t value);
 
     template<class Head, class Tail>
-    typename Head::type_t selection(Bat<Head, Tail> *bat, typename Tail::type_t value);
+    id_t selectBatId (BAT<Head, Tail> *bat, typename Tail::type_t value);
 
     template<class Head, class Tail>
-    id_t selectPKId(Bat<Head, Tail> *bat, typename Head::type_t batId);
+    typename Head::type_t selection (BAT<Head, Tail> *bat, typename Tail::type_t value);
 
     template<class Head, class Tail>
-    bool dataAlreadyExists(Bat<Head, Tail> *bat, cstr_t name_value);
+    id_t selectPKId (BAT<Head, Tail> *bat, typename Head::type_t batId);
 
-    MetaRepositoryManager();
-    MetaRepositoryManager(const MetaRepositoryManager &copy);
-    virtual ~MetaRepositoryManager();
-    MetaRepositoryManager& operator=(const MetaRepositoryManager &copy);
+    template<class Head, class Tail>
+    bool dataAlreadyExists (BAT<Head, Tail> *bat, cstr_t name_value);
+
+    MetaRepositoryManager ();
+    MetaRepositoryManager (const MetaRepositoryManager &copy);
+    virtual
+    ~MetaRepositoryManager ();
+    MetaRepositoryManager& operator= (const MetaRepositoryManager &copy);
 
 public:
 
-    class TablesIterator : public BatIterator<v2_id_t, v2_str_t> {
-        typedef TempBatIterator<v2_void_t, v2_id_t> table_key_iter_t;
-        typedef TempBatIterator<v2_void_t, v2_str_t> table_name_iter_t;
+    class TablesIterator : public BATIterator<v2_id_t, v2_str_t> {
+
+        typedef TempBATIterator<v2_void_t, v2_id_t> table_key_iter_t;
+        typedef TempBATIterator<v2_void_t, v2_str_t> table_name_iter_t;
 
         table_key_iter_t *pKeyIter;
         table_name_iter_t *pNameIter;
 
     public:
 
-        TablesIterator();
+        TablesIterator ();
 
-        TablesIterator(const TablesIterator &iter);
+        TablesIterator (const TablesIterator &iter);
 
-        virtual ~TablesIterator();
+        virtual ~TablesIterator ();
 
-        TablesIterator& operator=(const TablesIterator &copy);
+        TablesIterator& operator= (const TablesIterator &copy);
 
-        virtual void next() override;
+        virtual void next () override;
 
-        virtual TablesIterator& operator++() override;
+        virtual TablesIterator& operator++ () override;
 
-        virtual void position(oid_t index) override;
+        virtual void position (oid_t index) override;
 
-        virtual bool hasNext() override;
+        virtual bool hasNext () override;
 
-        virtual id_t head() override;
+        virtual id_t head () override;
 
-        virtual str_t tail() override;
+        virtual str_t tail () override;
 
-        virtual size_t size() override;
+        virtual size_t size () override;
 
-        virtual size_t consumption() override;
+        virtual size_t consumption () override;
 
         friend class MetaRepositoryManager;
     };
 
-    TablesIterator* listTables() {
+    TablesIterator*
+    listTables () {
         return new TablesIterator;
     }
 };

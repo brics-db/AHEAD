@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 /* 
- * File:   ssbm-q21_continuous.cpp
+ * File:   ssbm-q21_continuous_reenc.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 20. November 2016, 19:13
@@ -49,7 +49,6 @@ main (int argc, char** argv) {
     std::cout << "SSBM Query 2.1 Continuous Detection\n=====================" << std::endl;
 
     MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
-
 
     sw1.start();
     // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);

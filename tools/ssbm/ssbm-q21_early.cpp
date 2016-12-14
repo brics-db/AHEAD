@@ -27,9 +27,10 @@
 
 #include "ssbm.hpp"
 
-int main(int argc, char** argv) {
+int
+main (int argc, char** argv) {
     ssbmconf_t CONFIG(argc, argv);
-    StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
+    std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 42;
     cstr_t OP_NAMES[NUM_OPS] = {"-8", "-7", " - 6", " - 5", " - 4", " - 3", " - 2", " - 1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
@@ -40,24 +41,19 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index tailTypes[NUM_OPS];
     string emptyString;
     size_t x = 0;
+    StopWatch sw1, sw2;
 
     std::cout << "SSBM Query 2.1 Early Detection\n=====================" << std::endl;
 
-    boost::filesystem::path p(CONFIG.DB_PATH);
-    if (boost::filesystem::is_regular(p)) {
-        p.remove_filename();
-    }
-    string baseDir = p.remove_trailing_separator().generic_string();
-    MetaRepositoryManager::init(baseDir.c_str());
+    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
-    StopWatch sw1, sw2;
 
     sw1.start();
-    // loadTable(baseDir, "customerAN", CONFIG);
-    loadTable(baseDir, "dateAN", CONFIG);
-    loadTable(baseDir, "lineorderAN", CONFIG);
-    loadTable(baseDir, "partAN", CONFIG);
-    loadTable(baseDir, "supplierAN", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "dateAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "lineorderAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "partAN", CONFIG);
+    loadTable(CONFIG.DB_PATH, "supplierAN", CONFIG);
     sw1.stop();
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
 
@@ -140,7 +136,7 @@ int main(int argc, char** argv) {
         CLEAR_CHECKANDDECODE_AN(tupleSS);
 
         // s_region = 'AMERICA'
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<equal_to>(batSR, const_cast<str_t> ("AMERICA"))); // OID supplier | s_region
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
         MEASURE_OP(sw2, x, bat2, bat1->mirror_head()); // OID supplier | OID supplier
         delete bat1;
         MEASURE_OP(sw2, x, bat3, get<0>(tupleSS)->reverse()); // s_suppkey | OID supplier
@@ -159,7 +155,7 @@ int main(int argc, char** argv) {
         delete bat6;
 
         // p_category = 'MFGR#12'
-        MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPC, const_cast<str_t> ("MFGR#12"))); // OID part | p_category
+        MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
         // p_brand = 'MFGR#121'
         // MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         MEASURE_OP(sw2, x, bat9, bat8->mirror_head()); // OID part | OID part

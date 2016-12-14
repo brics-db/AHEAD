@@ -31,13 +31,13 @@
 
 #include <util/argumentparser.hpp>
 
-ArgumentParser::ArgumentParser() : uintArgs(), strArgs(), boolArgs(), argTypes() {
+ArgumentParser::ArgumentParser () : uintArgs (), strArgs (), boolArgs (), argTypes () {
 #ifdef DEBUG
     std::cout << "ArgumentParser()" << std::endl;
 #endif
 }
 
-ArgumentParser::ArgumentParser(const uint_args_t & uintArgs, const str_args_t & strArgs, const bool_args_t & boolArgs) : uintArgs(uintArgs), strArgs(strArgs), boolArgs(boolArgs), argTypes(uintArgs.size() + strArgs.size() + boolArgs.size()) {
+ArgumentParser::ArgumentParser (const uint_args_t & uintArgs, const str_args_t & strArgs, const bool_args_t & boolArgs) : uintArgs (uintArgs), strArgs (strArgs), boolArgs (boolArgs), argTypes (uintArgs.size () + strArgs.size () + boolArgs.size ()) {
 #ifdef DEBUG
     std::cout << "ArgumentParser(const &, const &, const &)" << std::endl;
 #endif
@@ -63,7 +63,7 @@ ArgumentParser::ArgumentParser(const uint_args_t & uintArgs, const str_args_t & 
     }
 }
 
-ArgumentParser::ArgumentParser(const uint_args_t && uintArgs, const str_args_t && strArgs, const bool_args_t && boolArgs) : uintArgs(uintArgs), strArgs(strArgs), boolArgs(boolArgs), argTypes(uintArgs.size() + strArgs.size() + boolArgs.size()) {
+ArgumentParser::ArgumentParser (const uint_args_t && uintArgs, const str_args_t && strArgs, const bool_args_t && boolArgs) : uintArgs (uintArgs), strArgs (strArgs), boolArgs (boolArgs), argTypes (uintArgs.size () + strArgs.size () + boolArgs.size ()) {
 #ifdef DEBUG
     std::cout << "ArgumentParser(const &&, const &&, const &&)" << std::endl;
 #endif
@@ -89,10 +89,10 @@ ArgumentParser::ArgumentParser(const uint_args_t && uintArgs, const str_args_t &
     }
 }
 
-ArgumentParser::~ArgumentParser() {
+ArgumentParser::~ArgumentParser () {
 }
 
-ArgumentParser& ArgumentParser::operator=(const ArgumentParser & other) {
+ArgumentParser& ArgumentParser::operator= (const ArgumentParser & other) {
 #ifdef DEBUG
     std::cout << "ArgumentParser& operator=(const ArgumentParser & other)" << std::endl;
 #endif
@@ -107,7 +107,8 @@ ArgumentParser& ArgumentParser::operator=(const ArgumentParser & other) {
     return *this;
 }
 
-size_t ArgumentParser::parseint(const std::string& name, char* arg) {
+size_t
+ArgumentParser::parseint (const std::string& name, char* arg) {
     if (arg == nullptr) {
         std::stringstream ss;
         ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
@@ -139,7 +140,8 @@ size_t ArgumentParser::parseint(const std::string& name, char* arg) {
     return 1;
 }
 
-size_t ArgumentParser::parsestr(const std::string& name, char* arg) {
+size_t
+ArgumentParser::parsestr (const std::string& name, char* arg) {
     if (arg == nullptr) {
         std::stringstream ss;
         ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
@@ -156,7 +158,8 @@ size_t ArgumentParser::parsestr(const std::string& name, char* arg) {
     return 1;
 }
 
-size_t ArgumentParser::parsebool(const std::string& name, __attribute__((unused)) char* arg) {
+size_t
+ArgumentParser::parsebool (const std::string& name, __attribute__ ((unused)) char* arg) {
     size_t start = 0;
     if (boost::starts_with(name, "no-")) {
         start = 3;
@@ -172,7 +175,8 @@ size_t ArgumentParser::parsebool(const std::string& name, __attribute__((unused)
     return 0;
 }
 
-void ArgumentParser::parse(int argc, char** argv, size_t offset) { // no C++17 (array_view), yet :-(
+void
+ArgumentParser::parse (int argc, char** argv, size_t offset) { // no C++17 (array_view), yet :-(
 #ifdef DEBUG
     std::cout << "parse(int argc, char** argv, size_t offset)" << std::endl;
 #endif
@@ -208,7 +212,8 @@ void ArgumentParser::parse(int argc, char** argv, size_t offset) { // no C++17 (
     }
 }
 
-size_t ArgumentParser::get_uint(const std::string & name) {
+size_t
+ArgumentParser::get_uint (const std::string & name) {
     for (auto & tup : uintArgs) {
         if (std::get<0>(tup).compare(name) == 0) {
             return std::get<2>(tup);
@@ -219,7 +224,8 @@ size_t ArgumentParser::get_uint(const std::string & name) {
     throw std::runtime_error(ss.str());
 }
 
-const std::string & ArgumentParser::get_str(const std::string & name) {
+const std::string &
+ArgumentParser::get_str (const std::string & name) {
     for (auto & tup : strArgs) {
         if (std::get<0>(tup).compare(name) == 0) {
             return std::get<2>(tup);
@@ -230,7 +236,8 @@ const std::string & ArgumentParser::get_str(const std::string & name) {
     throw std::runtime_error(ss.str());
 }
 
-bool ArgumentParser::get_bool(const std::string & name) {
+bool
+ArgumentParser::get_bool (const std::string & name) {
     for (auto & tup : boolArgs) {
         if (std::get<0>(tup).compare(name) == 0) {
             return std::get<2>(tup);

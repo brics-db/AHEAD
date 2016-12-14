@@ -27,9 +27,10 @@
 
 #include "ssbm.hpp"
 
-int main(int argc, char** argv) {
+int
+main (int argc, char** argv) {
     ssbmconf_t CONFIG(argc, argv);
-    StopWatch::rep totalTimes[CONFIG.NUM_RUNS] = {0};
+    std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 24;
     cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
@@ -40,24 +41,18 @@ int main(int argc, char** argv) {
     boost::typeindex::type_index tailTypes[NUM_OPS];
     string emptyString;
     size_t x = 0;
+    StopWatch sw1, sw2;
 
     std::cout << "SSBM Query 1.1 Normal\n=====================" << std::endl;
 
-    boost::filesystem::path p(CONFIG.DB_PATH);
-    if (boost::filesystem::is_regular(p)) {
-        p.remove_filename();
-    }
-    string baseDir = p.remove_trailing_separator().generic_string();
-    MetaRepositoryManager::init(baseDir.c_str());
-
-    StopWatch sw1, sw2;
+    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
     sw1.start();
-    // loadTable(baseDir, "customer", CONFIG);
-    loadTable(baseDir, "date", CONFIG);
-    loadTable(baseDir, "lineorder", CONFIG);
-    // loadTable(baseDir, "part", CONFIG);
-    // loadTable(baseDir, "supplier", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "customer", CONFIG);
+    loadTable(CONFIG.DB_PATH, "date", CONFIG);
+    loadTable(CONFIG.DB_PATH, "lineorder", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "part", CONFIG);
+    // loadTable(CONFIG.DB_PATH, "supplier", CONFIG);
     sw1.stop();
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
 

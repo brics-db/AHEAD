@@ -17,6 +17,7 @@
 // global type definitions
 
 #include <util/v2types.hpp>
+#include <util/resilience.hpp>
 
 using namespace std;
 
@@ -78,51 +79,52 @@ class BucketManager;
 class ColumnManager;
 class TransactionManager;
 template<typename Head, typename Tail>
-class Bat;
-template<typename Head, typename Tail>
-class ColumnBat;
+class BAT;
+template<typename Tail>
+class ColumnBAT;
 template<class Head, class Tail>
-class TempBat;
+class TempBAT;
 
 // meta_repository
 class MetaRepositoryManager;
 
-// Fast-Forward declare Bat, ColumnBat, TempBat types
-typedef Bat<v2_void_t, v2_tinyint_t> tinyint_bat_t;
-typedef Bat<v2_void_t, v2_shortint_t> shortint_bat_t;
-typedef Bat<v2_void_t, v2_int_t> int_bat_t;
-typedef Bat<v2_void_t, v2_bigint_t> bigint_bat_t;
-typedef Bat<v2_void_t, v2_char_t> char_bat_t;
-typedef Bat<v2_void_t, v2_str_t> str_bat_t;
-typedef Bat<v2_void_t, v2_fixed_t> fixed_bat_t;
-typedef Bat<v2_void_t, v2_oid_t> oid_bat_t;
-typedef Bat<v2_void_t, v2_id_t> id_bat_t;
-typedef Bat<v2_void_t, v2_version_t> version_bat_t;
-typedef Bat<v2_void_t, v2_size_t> size_bat_t;
+// Fast-Forward declare Bat, ColumnBAT, TempBat types
+typedef ColumnBAT<v2_tinyint_t> tinyint_colbat_t;
+typedef ColumnBAT<v2_shortint_t> shortint_colbat_t;
+typedef ColumnBAT<v2_int_t> int_colbat_t;
+typedef ColumnBAT<v2_bigint_t> bigint_colbat_t;
+typedef ColumnBAT<v2_char_t> char_colbat_t;
+typedef ColumnBAT<v2_str_t> str_colbat_t;
+typedef ColumnBAT<v2_fixed_t> fixed_colbat_t;
+typedef ColumnBAT<v2_oid_t> oid_colbat_t;
+typedef ColumnBAT<v2_id_t> id_colbat_t;
+typedef ColumnBAT<v2_version_t> version_colbat_t;
+typedef ColumnBAT<v2_size_t> size_colbat_t;
 
-typedef ColumnBat<v2_void_t, v2_tinyint_t> tinyint_colbat_t;
-typedef ColumnBat<v2_void_t, v2_shortint_t> shortint_colbat_t;
-typedef ColumnBat<v2_void_t, v2_int_t> int_colbat_t;
-typedef ColumnBat<v2_void_t, v2_bigint_t> bigint_colbat_t;
-typedef ColumnBat<v2_void_t, v2_char_t> char_colbat_t;
-typedef ColumnBat<v2_void_t, v2_str_t> str_colbat_t;
-typedef ColumnBat<v2_void_t, v2_fixed_t> fixed_colbat_t;
-typedef ColumnBat<v2_void_t, v2_oid_t> oid_colbat_t;
-typedef ColumnBat<v2_void_t, v2_id_t> id_colbat_t;
-typedef ColumnBat<v2_void_t, v2_version_t> version_colbat_t;
-typedef ColumnBat<v2_void_t, v2_size_t> size_colbat_t;
+typedef TempBAT<v2_void_t, v2_tinyint_t> tinyint_tmp_t;
+typedef TempBAT<v2_void_t, v2_shortint_t> shortint_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_int_t> int_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_bigint_t> bigint_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_char_t> char_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_str_t> str_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_fixed_t> fixed_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_oid_t> oid_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_id_t> id_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_version_t> version_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_size_t> size_tmpbat_t;
 
-typedef TempBat<v2_void_t, v2_tinyint_t> tinyint_tmp_t;
-typedef TempBat<v2_void_t, v2_shortint_t> shortint_tmpbat_t;
-typedef TempBat<v2_void_t, v2_int_t> int_tmpbat_t;
-typedef TempBat<v2_void_t, v2_bigint_t> bigint_tmpbat_t;
-typedef TempBat<v2_void_t, v2_char_t> char_tmpbat_t;
-typedef TempBat<v2_void_t, v2_str_t> str_tmpbat_t;
-typedef TempBat<v2_void_t, v2_fixed_t> fixed_tmpbat_t;
-typedef TempBat<v2_void_t, v2_oid_t> oid_tmpbat_t;
-typedef TempBat<v2_void_t, v2_id_t> id_tmpbat_t;
-typedef TempBat<v2_void_t, v2_version_t> version_tmpbat_t;
-typedef TempBat<v2_void_t, v2_size_t> size_tmpbat_t;
+// Fast-Forward declare ColumnBAT, TempBat types
+typedef ColumnBAT<v2_restiny_t> restiny_colbat_t;
+typedef ColumnBAT<v2_resshort_t> resshort_colbat_t;
+typedef ColumnBAT<v2_resint_t> resint_colbat_t;
+typedef ColumnBAT<v2_resoid_t> resoid_colbat_t;
+typedef ColumnBAT<v2_resstr_t> resstr_colbat_t;
+
+typedef TempBAT<v2_void_t, v2_restiny_t> restiny_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_resshort_t> resshort_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_resint_t> resint_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_resoid_t> resoid_tmpbat_t;
+typedef TempBAT<v2_void_t, v2_resstr_t> resstr_tmpbat_t;
 
 #endif /* COLUMNSTORE_H */
 

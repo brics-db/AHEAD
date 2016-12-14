@@ -23,13 +23,14 @@ const size_t NUM_RUNS = 10;
 string emptyString;
 
 template<typename Tail>
-void runTable(const char* strTable, const char* strTableAN, const char* strColumn) {
+void
+runTable (const char* strTable, const char* strTableAN, const char* strColumn) {
     typedef typename TypeMap<Tail>::v2_base_t v2_base_t;
     typedef typename TypeMap<Tail>::v2_encoded_t v2_encoded_t;
 
     size_t x = 0;
-    MEASURE_OP(sw1, x, batBc, (new ColumnBat<v2_oid_t, v2_base_t>(strTable, strColumn)));
-    MEASURE_OP(sw1, x, batBcAN, (new ColumnBat<v2_oid_t, v2_encoded_t>(strTableAN, strColumn)));
+    MEASURE_OP(sw1, x, batBc, (new ColumnBAT<v2_oid_t, v2_base_t>(strTable, strColumn)));
+    MEASURE_OP(sw1, x, batBcAN, (new ColumnBAT<v2_oid_t, v2_encoded_t>(strTableAN, strColumn)));
     MEASURE_OP(sw1, x, batTcAN, v2::bat::ops::copy(batBcAN));
 
     cout << "\n#runTable(" << strTable << '.' << strColumn << ")";
@@ -84,14 +85,15 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
 }
 
 template<typename Tail>
-void runTable2(const char* strTable, const char* strTableAN, const char* strColumn) {
+void
+runTable2 (const char* strTable, const char* strTableAN, const char* strColumn) {
     typedef typename TypeMap<Tail>::v2_base_t v2_base_t;
     typedef typename TypeMap<Tail>::v2_encoded_t v2_encoded_t;
 
     const size_t MAX_SCALE = 10;
-    Bat<v2_oid_t, v2_encoded_t>* bats[MAX_SCALE];
-    auto batBc = new ColumnBat<v2_oid_t, v2_base_t>(strTable, strColumn);
-    auto batBcAN = new ColumnBat<v2_oid_t, v2_encoded_t>(strTableAN, strColumn);
+    BAT<v2_oid_t, v2_encoded_t>* bats[MAX_SCALE];
+    auto batBc = new ColumnBAT<v2_oid_t, v2_base_t>(strTable, strColumn);
+    auto batBcAN = new ColumnBAT<v2_oid_t, v2_encoded_t>(strTableAN, strColumn);
 
     cout << "\n#runTable2(" << strTable << '.' << strColumn << ')';
 
@@ -156,7 +158,8 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
     delete batBc;
 }
 
-int main(int argc, char** argv) {
+int
+main (int argc, char** argv) {
     CONFIG.init(argc, argv);
 
     cout << "lineorder_size\n==============" << endl;

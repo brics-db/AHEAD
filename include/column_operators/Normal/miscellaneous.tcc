@@ -33,6 +33,7 @@
 #include <column_storage/TempBat.h>
 
 typedef enum {
+
     left, right
 } hash_side_t;
 
@@ -43,7 +44,7 @@ namespace v2 {
 
                 struct eqstr {
 
-                    bool operator()(str_t s1, str_t s2) const {
+                    bool operator() (str_t s1, str_t s2) const {
                         if (s1 == nullptr) {
                             return s2 == nullptr;
                         }
@@ -60,7 +61,7 @@ namespace v2 {
                  */
                 struct hashstr {
 
-                    size_t operator()(str_t const &s) const {
+                    size_t operator() (str_t const &s) const {
                         size_t len = std::strlen(s);
                         size_t hash(0), multiplier(1);
                         for (int i = len - 1; i >= 0; --i) {
@@ -73,9 +74,28 @@ namespace v2 {
                 };
             }
 
+            template<typename Tail>
+            BAT<v2_void_t, typename Tail::v2_copy_t>*
+            copy (ColumnBAT<Tail>* arg) {
+                typedef typename TempBAT<v2_void_t, typename Tail::v2_copy_t >::coldesc_head_t coldesc_head_t;
+                typedef typename TempBAT<v2_void_t, typename Tail::v2_copy_t >::coldesc_tail_t coldesc_tail_t;
+                auto result = new TempBAT<v2_void_t, typename Tail::v2_copy_t > (coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
+                result->reserve(arg->size());
+                auto *iter = arg->begin();
+                for (; iter->hasNext(); ++*iter) {
+                    result->append(make_pair(iter->head(), iter->tail()));
+                }
+                delete iter;
+                return result;
+            }
+
             template<typename Head, typename Tail>
-            Bat<typename Head::v2_copy_t, typename Tail::v2_copy_t>* copy(Bat<Head, Tail>* arg) {
-                auto result = new TempBat<Head, Tail>(arg->size());
+            BAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
+            copy (TempBAT<Head, Tail>* arg) {
+                typedef typename TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t >::coldesc_head_t coldesc_head_t;
+                typedef typename TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t >::coldesc_tail_t coldesc_tail_t;
+                auto result = new TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t > (coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
+                result->reserve(arg->size());
                 auto *iter = arg->begin();
                 for (; iter->hasNext(); ++*iter) {
                     result->append(make_pair(iter->head(), iter->tail()));

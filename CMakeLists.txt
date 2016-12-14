@@ -11,7 +11,7 @@ ENDIF()
 
 MESSAGE("V2 root CMAKE script. Including lib and build:")
 
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
+#set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
@@ -21,7 +21,7 @@ ELSE()
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra -Weffc++ -march=native -fexceptions -fnon-call-exceptions")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -Wextra -pedantic -Weffc++ -march=native -fexceptions -fnon-call-exceptions")
 #SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DDEBUG -rdynamic -g")
 #SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
 # see

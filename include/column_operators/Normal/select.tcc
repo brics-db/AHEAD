@@ -40,10 +40,12 @@ namespace v2 {
 
                 template<typename Op, typename Head, typename Tail>
                 struct Selection1 {
+
                     typedef typename Tail::type_t tail_t;
 
-                    Bat<typename Head::v2_select_t, typename Tail::v2_select_t>* operator()(Bat<Head, Tail>* arg, tail_t && threshold) {
-                        auto result = new TempBat<typename Head::v2_select_t, typename Tail::v2_select_t > ();
+                    BAT<typename Head::v2_select_t, typename Tail::v2_select_t>* operator() (BAT<Head, Tail>* arg, tail_t && threshold) {
+                        auto result = new TempBAT<typename Head::v2_select_t, typename Tail::v2_select_t > ();
+                        result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op op;
                         for (; iter->hasNext(); ++*iter) {
@@ -60,8 +62,9 @@ namespace v2 {
                 template<typename Op, typename Head>
                 struct Selection1<Op, Head, v2_str_t> {
 
-                    Bat<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator()(Bat<Head, v2_str_t>* arg, str_t && threshold) {
-                        auto result = new TempBat<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                    BAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator() (BAT<Head, v2_str_t>* arg, str_t && threshold) {
+                        auto result = new TempBAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                        result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op op;
                         for (; iter->hasNext(); ++*iter) {
@@ -76,10 +79,12 @@ namespace v2 {
 
                 template<typename Op1, typename Op2, typename Head, typename Tail>
                 struct Selection2 {
+
                     typedef typename Tail::type_t tail_t;
 
-                    Bat<typename Head::v2_select_t, typename Tail::v2_select_t>* operator()(Bat<Head, Tail>* arg, tail_t && th1, tail_t && th2) {
-                        auto result = new TempBat<typename Head::v2_select_t, typename Tail::v2_select_t > ();
+                    BAT<typename Head::v2_select_t, typename Tail::v2_select_t>* operator() (BAT<Head, Tail>* arg, tail_t && th1, tail_t && th2) {
+                        auto result = new TempBAT<typename Head::v2_select_t, typename Tail::v2_select_t > ();
+                        result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op1 op1;
                         Op2 op2;
@@ -97,8 +102,9 @@ namespace v2 {
                 template<typename Op1, typename Op2, typename Head>
                 struct Selection2<Op1, Op2, Head, v2_str_t> {
 
-                    Bat<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator()(Bat<Head, v2_str_t>* arg, str_t && th1, str_t && th2) {
-                        auto result = new TempBat<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                    BAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator() (BAT<Head, v2_str_t>* arg, str_t && th1, str_t && th2) {
+                        auto result = new TempBAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                        result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op1 op1;
                         Op2 op2;
@@ -115,12 +121,14 @@ namespace v2 {
             }
 
             template<template <typename> class Op, typename Head, typename Tail>
-            Bat<typename Head::v2_select_t, typename Tail::v2_select_t>* select(Bat<Head, Tail>* arg, typename Tail::type_t && th1) {
+            BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+            select (BAT<Head, Tail>* arg, typename Tail::type_t && th1) {
                 return Private::Selection1 < Op<typename Tail::v2_compare_t::type_t>, Head, Tail > () (arg, move(th1));
             }
 
             template<template<typename> class Op1 = greater_equal, template<typename> class Op2 = less_equal, typename Head, typename Tail>
-            Bat<typename Head::v2_select_t, typename Tail::v2_select_t>* select(Bat<Head, Tail>* arg, typename Tail::type_t && th1, typename Tail::type_t && th2) {
+            BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+            select (BAT<Head, Tail>* arg, typename Tail::type_t && th1, typename Tail::type_t && th2) {
                 return Private::Selection2 < Op1<typename Tail::type_t>, Op2<typename Tail::type_t>, Head, Tail > () (arg, move(th1), move(th2));
             }
         }

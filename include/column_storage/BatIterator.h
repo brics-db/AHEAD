@@ -27,25 +27,29 @@
 
 #include <utility>
 
-template<typename Head, typename Tail>
-class BatIterator {
-public:
-    typedef typename Head::type_t head_t;
-    typedef typename Tail::type_t tail_t;
+#include <column_storage/Bat.h>
 
-    virtual ~BatIterator() {
+template<typename Head, typename Tail>
+class BATIterator {
+
+public:
+    using head_t = typename BAT<Head, Tail>::head_t;
+    using tail_t = typename BAT<Head, Tail>::tail_t;
+
+    virtual
+    ~BATIterator () {
     }
 
-    virtual void next() = 0;
-    virtual BatIterator& operator++() = 0;
-    virtual void position(oid_t index) = 0;
-    virtual bool hasNext() = 0;
+    virtual void next () = 0;
+    virtual BATIterator& operator++ () = 0;
+    virtual void position (oid_t index) = 0;
+    virtual bool hasNext () = 0;
 
-    virtual head_t head() = 0;
-    virtual tail_t tail() = 0;
+    virtual head_t head () = 0;
+    virtual tail_t tail () = 0;
 
-    virtual size_t size() = 0;
-    virtual size_t consumption() = 0;
+    virtual size_t size () = 0;
+    virtual size_t consumption () = 0;
 };
 
 #endif

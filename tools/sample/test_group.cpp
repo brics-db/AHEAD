@@ -49,7 +49,8 @@
  * @param argv
  * @return 
  */
-int main(int argc, char** argv) {
+int
+main (int argc, char** argv) {
     ssbmconf_t CONFIG(argc, argv);
     StopWatch sw1;
     StopWatch::rep totalTime = 0;
