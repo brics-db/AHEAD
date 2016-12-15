@@ -42,9 +42,12 @@ namespace v2 {
                 struct Selection1 {
 
                     typedef typename Tail::type_t tail_t;
+                    typedef typename Head::v2_select_t head_select_t;
+                    typedef typename Tail::v2_select_t tail_select_t;
+                    typedef BAT<head_select_t, tail_select_t> bat_t;
 
-                    BAT<typename Head::v2_select_t, typename Tail::v2_select_t>* operator() (BAT<Head, Tail>* arg, tail_t && threshold) {
-                        auto result = new TempBAT<typename Head::v2_select_t, typename Tail::v2_select_t > ();
+                    bat_t* operator() (BAT<Head, Tail>* arg, tail_t && threshold) {
+                        auto result = skeleton<head_select_t, tail_select_t>(arg);
                         result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op op;
@@ -62,8 +65,12 @@ namespace v2 {
                 template<typename Op, typename Head>
                 struct Selection1<Op, Head, v2_str_t> {
 
+                    typedef typename Head::v2_select_t head_select_t;
+                    typedef v2_str_t tail_select_t;
+                    typedef BAT<head_select_t, tail_select_t> bat_t;
+
                     BAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator() (BAT<Head, v2_str_t>* arg, str_t && threshold) {
-                        auto result = new TempBAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                        auto result = skeleton<head_select_t, tail_select_t>(arg);
                         result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op op;
@@ -81,9 +88,12 @@ namespace v2 {
                 struct Selection2 {
 
                     typedef typename Tail::type_t tail_t;
+                    typedef typename Head::v2_select_t head_select_t;
+                    typedef typename Tail::v2_select_t tail_select_t;
+                    typedef BAT<head_select_t, tail_select_t> bat_t;
 
                     BAT<typename Head::v2_select_t, typename Tail::v2_select_t>* operator() (BAT<Head, Tail>* arg, tail_t && th1, tail_t && th2) {
-                        auto result = new TempBAT<typename Head::v2_select_t, typename Tail::v2_select_t > ();
+                        auto result = skeleton<head_select_t, tail_select_t>(arg);
                         result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op1 op1;
@@ -102,8 +112,12 @@ namespace v2 {
                 template<typename Op1, typename Op2, typename Head>
                 struct Selection2<Op1, Op2, Head, v2_str_t> {
 
+                    typedef typename Head::v2_select_t head_select_t;
+                    typedef v2_str_t tail_select_t;
+                    typedef BAT<head_select_t, tail_select_t> bat_t;
+
                     BAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator() (BAT<Head, v2_str_t>* arg, str_t && th1, str_t && th2) {
-                        auto result = new TempBAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t > ();
+                        auto result = skeleton<head_select_t, tail_select_t>(arg);
                         result->reserve(1024 * 1024);
                         auto iter = arg->begin();
                         Op1 op1;

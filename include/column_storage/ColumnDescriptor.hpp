@@ -50,50 +50,32 @@ struct ColumnDescriptorContainerType<v2_void_t> {
 template<typename V2Type, typename Container>
 class ColumnDescriptor {
 
-    atomic<ssize_t> *refcount;
-
 public:
     typedef V2Type v2_type_t;
     typedef Container container_t;
     typedef typename V2Type::type_t type_t;
-    typedef ColumnMetaData metadata_t;
 
     std::shared_ptr<container_t> container;
 
-    metadata_t metaData;
+    ColumnMetaData metaData;
 
-    ColumnDescriptor () : refcount (new atomic<ssize_t>), container (new Container), metaData () {
-        *refcount = 1;
+    ColumnDescriptor () : container (new Container), metaData (sizeof (typename V2Type::type_t)) {
     }
 
-    /*
-    ColumnDescriptor(std::shared_ptr<container_t> & heap) : refcount(new atomic<ssize_t>), container(heap), metaData()
-    {
-     *refcount = 1;
-    }
-     */
-
-    ColumnDescriptor (metadata_t & metaData) : refcount (new atomic<ssize_t>), container (new Container), metaData (metaData) {
-        *refcount = 1;
+    ColumnDescriptor (const ColumnDescriptor<V2Type, Container> & cd) : container (cd.container), metaData (std::move (cd.metaData)) {
     }
 
-    ColumnDescriptor (ColumnDescriptor& cd) : refcount (cd.refcount), container (cd.container), metaData (cd.metaData) {
-        ++*refcount;
+    ColumnDescriptor (ColumnDescriptor<V2Type, Container> && cd) : container (cd.container), metaData (std::move (cd.metaData)) {
     }
 
-    ColumnDescriptor (ColumnDescriptor&& cd) : refcount (cd.refcount), container (cd.container), metaData (cd.metaData) {
-        ++*refcount;
+    ColumnDescriptor (ColumnMetaData metaData) : container (new Container), metaData (std::move (metaData)) {
     }
 
     virtual
     ~ColumnDescriptor () {
     }
 
-    ColumnDescriptor& operator= (const ColumnDescriptor &copy) {
-        this->~ColumnDescriptor();
-        new (this) ColumnDescriptor(copy);
-        return *this;
-    }
+    ColumnDescriptor<V2Type, Container> & operator= (const ColumnDescriptor<V2Type, Container> &) = default;
 };
 
 template<>
@@ -102,9 +84,8 @@ class ColumnDescriptor<v2_void_t, void> {
 public:
     typedef v2_void_t v2_type_t;
     typedef v2_void_t::type_t type_t;
-    typedef ColumnMetaData metadata_t;
 
-    metadata_t metaData;
+    ColumnMetaData metaData;
 
     ColumnDescriptor () : metaData () {
         static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
@@ -114,24 +95,18 @@ public:
         static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
     }
 
-    ColumnDescriptor (metadata_t & metaData) : metaData (metaData) {
+    ColumnDescriptor (ColumnMetaData metaData) : metaData (std::move (metaData)) {
     }
 
-    ColumnDescriptor (ColumnDescriptor& cd) : metaData (cd.metaData) {
-    }
+    ColumnDescriptor (const ColumnDescriptor<v2_void_t, void> & cd) = default;
 
-    ColumnDescriptor (ColumnDescriptor&& cd) : metaData (cd.metaData) {
-    }
+    ColumnDescriptor (ColumnDescriptor<v2_void_t, void> && cd) = default;
 
     virtual
     ~ColumnDescriptor () {
     }
 
-    ColumnDescriptor& operator= (ColumnDescriptor & copy) {
-        this->~ColumnDescriptor();
-        new (this) ColumnDescriptor(copy);
-        return *this;
-    }
+    ColumnDescriptor<v2_void_t, void> & operator= (const ColumnDescriptor<v2_void_t, void> &) = default;
 };
 
 template<typename V2Type>
@@ -150,21 +125,17 @@ public:
     ColumnDescriptor (metadata_t & metaData) : metaData (metaData) {
     }
 
-    ColumnDescriptor (ColumnDescriptor& cd) : metaData (cd.metaData) {
+    ColumnDescriptor (const ColumnDescriptor<V2Type, void> & cd) : metaData (std::move (cd.metaData)) {
     }
 
-    ColumnDescriptor (ColumnDescriptor&& cd) : metaData (cd.metaData) {
+    ColumnDescriptor (ColumnDescriptor<V2Type, void> && cd) : metaData (std::move (cd.metaData)) {
     }
 
     virtual
     ~ColumnDescriptor () {
     }
 
-    ColumnDescriptor& operator= (const ColumnDescriptor &copy) {
-        this->~ColumnDescriptor();
-        new (this) ColumnDescriptor(copy);
-        return *this;
-    }
+    ColumnDescriptor<v2_void_t, void> & operator= (const ColumnDescriptor<V2Type, void> &) = default;
 };
 
 #endif /* COLUMNDESCRIPTOR_HPP */

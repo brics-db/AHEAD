@@ -34,6 +34,8 @@
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
 
+#include "miscellaneous.tcc"
+
 namespace v2 {
     namespace bat {
         namespace ops {
@@ -45,10 +47,7 @@ namespace v2 {
                       BAT<H2, T2> *arg2,
                       hash_side_t side = hash_side_t::right
                       ) {
-                // typedef typename TempBAT<typename H1::v2_select_t, typename T1::v2_select_t >::coldesc_head_t coldesc_head_t;
-                // typedef typename TempBAT<typename H2::v2_select_t, typename T2::v2_select_t >::coldesc_tail_t coldesc_tail_t;
-                // auto result = new TempBAT<typename H1::v2_select_t, typename T2::v2_select_t > (coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
-                auto result = new TempBAT<typename H1::v2_select_t, typename T2::v2_select_t > ();
+                auto result = skeletonJoin<typename H1::v2_select_t, typename T2::v2_select_t > (arg1, arg2);
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 if (iter1->hasNext() && iter2->hasNext()) {

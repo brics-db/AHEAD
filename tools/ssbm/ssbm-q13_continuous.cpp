@@ -92,18 +92,20 @@ main (int argc, char** argv) {
     delete batLEcb;
     delete batDWcb;
 
-    COUT_HEADLINE;
-    COUT_RESULT(0, x);
-    std::cout << std::endl;
+    if (CONFIG.VERBOSE) {
+        COUT_HEADLINE;
+        COUT_RESULT(0, x);
+        std::cout << std::endl;
+    }
 
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN(batLQenc, 26 * batLQenc->tail.metaData.getA(), 35 * batLQenc->tail.metaData.getA())); // lo_quantity between 26 and 35
+        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A)); // lo_quantity between 26 and 35
         delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 5 * batLDenc->tail.metaData.getA(), 7 * batLDenc->tail.metaData.getA())); // lo_discount between 5 and 7
+        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A)); // lo_discount between 5 and 7
         delete pair2.second;
         MEASURE_OP(sw2, x, bat3, pair1.first->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
@@ -117,11 +119,11 @@ main (int argc, char** argv) {
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(sw2, x, pair7, v2::bat::ops::selectAN<equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.getA())); // d_year = 1994
+        MEASURE_OP_PAIR(sw2, x, pair7, v2::bat::ops::selectAN<equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.AN_A)); // d_year = 1994
         delete pair7.second;
         MEASURE_OP(sw2, x, bat8, pair7.first->mirror_head()); // prepare joined selection over d_year and d_weeknuminyear
         delete pair7.first;
-        MEASURE_OP_PAIR(sw2, x, pair9, v2::bat::ops::selectAN<equal_to>(batDWenc, 6 * batDWenc->tail.metaData.getA())); // d_weeknuminyear = 6
+        MEASURE_OP_PAIR(sw2, x, pair9, v2::bat::ops::selectAN<equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
         delete pair9.second;
         MEASURE_OP_TUPLE(sw2, x, tupleA, v2::bat::ops::hashjoinAN(bat8, pair9.first));
         delete bat8;
@@ -158,7 +160,7 @@ main (int argc, char** argv) {
         auto iter = get<0>(tupleI)->begin();
         auto result = iter->tail();
         delete iter;
-        auto AInvResult = get<0>(tupleI)->tail.metaData.getAinv();
+        auto AInvResult = get<0>(tupleI)->tail.metaData.AN_Ainv;
         delete get<0>(tupleI);
 
         totalTimes[i] = sw1.stop();

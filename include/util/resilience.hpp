@@ -32,6 +32,8 @@
 #include <array>
 #include <memory>
 #include <limits>
+#include <vector>
+#include <type_traits>
 
 #include <util/v2types.hpp>
 
@@ -42,6 +44,29 @@ typedef uint64_t resbigint_t;
 typedef uint64_t resoid_t;
 
 #define RESOID_INVALID (static_cast<resoid_t>(-1))
+
+// typedef the larger of the types
+
+namespace v2 {
+
+    template<typename T, typename U, bool>
+    struct larger_type0 {
+
+        typedef T type_t;
+    };
+
+    template<typename T, typename U>
+    struct larger_type0<T, U, false> {
+
+        typedef U type_t;
+    };
+
+    template<typename T, typename U>
+    struct larger_type : public larger_type0<T, U, (sizeof (T) >= sizeof (U))> {
+
+        using type_t = typename larger_type0<T, U, (sizeof (T) >= sizeof (U))>::type_t;
+    };
+}
 
 struct ANParameters {
 
@@ -327,5 +352,44 @@ struct ANParametersSelector {
     static constexpr const std::array<uint16_t, 16> * As = selector_t::As;
     static constexpr const std::array<type_t, 16> * Ainvs = selector_t::Ainvs;
 };
+
+template<typename T>
+T
+ext_euclidean (T b0, size_t codewidth) {
+    T a0(1);
+    a0 <<= codewidth;
+    std::vector<T> a, b, q, r, s, t;
+    a.reserve(8);
+    b.reserve(8);
+    q.reserve(8);
+    r.reserve(8);
+    s.reserve(8);
+    t.reserve(8);
+    a.push_back(a0), b.push_back(b0), s.push_back(T(0)), t.push_back(T(0));
+    size_t i = 0;
+    do {
+        q.push_back(a[i] / b[i]);
+        r.push_back(a[i] % b[i]);
+        a.push_back(b[i]);
+        b.push_back(r[i]);
+        s.push_back(0);
+        t.push_back(0);
+    } while (b[++i] > 0);
+    s[i] = 1;
+    t[i] = 0;
+
+    for (size_t j = i; j > 0; --j) {
+        s[j - 1] = t[j];
+        t[j - 1] = s[j] - q[j - 1] * t[j];
+    }
+
+    T result = ((b0 * t.front()) % a0);
+    result += result < 0 ? a0 : 0;
+    if (result == 1) {
+        return t.front();
+    } else {
+        return 0;
+    }
+}
 
 #endif /* RESILIENCE_HPP */

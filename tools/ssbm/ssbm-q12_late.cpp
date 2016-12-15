@@ -103,28 +103,22 @@ main (int argc, char** argv) {
 
         // 1) select from lineorder
         MEASURE_OP(sw2, x, bat1, v2::bat::ops::select(batLQenc, static_cast<restiny_t>(26 * batLQenc->tail.metaData.AN_A), static_cast<restiny_t>(35 * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
-        PRINT_BAT(sw1, printBat(bat1->begin(), "lo_quantity between 26 and 35"));
         MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLDenc, static_cast<restiny_t>(4 * batLDenc->tail.metaData.AN_A), static_cast<restiny_t>(6 * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
-        PRINT_BAT(sw1, printBat(bat2->begin(), "lo_discount between 4 and 6"));
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // join selection
         delete bat3;
         delete bat2;
         MEASURE_OP(sw2, x, bat5, bat4->mirror_head()); // prepare joined selection with lo_orderdate (contains positions in tail)
-        PRINT_BAT(sw1, printBat(bat5->begin(), "lo_discount where lo_quantity between 26 and 35 and lo_discount between 4 and 6"));
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::hashjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
-        PRINT_BAT(sw1, printBat(bat6->begin(), "lo_orderdates where lo_quantity between 26 and 35 and lo_discount between 4 and 6"));
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, static_cast<resint_t>(199401) * batDYenc->tail.metaData.AN_A)); // d_yearmonthnum = 199401
-        PRINT_BAT(sw1, printBat(bat7->begin(), "d_yearmonthnum = 199401"));
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
         delete bat7;
         MEASURE_OP(sw2, x, bat9, v2::bat::ops::hashjoin(bat8, batDDenc)); // only those d_datekey where d_year...
         delete bat8;
-        PRINT_BAT(sw1, printBat(bat9->begin(), "d_datekey where d_yearmonthnum = 199401"));
 
         // 3) join lineorder and date
         MEASURE_OP(sw2, x, batA, bat9->reverse());
@@ -137,11 +131,9 @@ main (int argc, char** argv) {
         delete batB;
         // BatF only contains the 
         MEASURE_OP(sw2, x, batD, v2::bat::ops::hashjoin(batC, batLEenc));
-        PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_yearmonthnum = 199401 and lo_discount between 4 and 6 and lo_quantity between 26 and 35"));
         MEASURE_OP(sw2, x, batE, v2::bat::ops::hashjoin(batC, bat4));
         delete batC;
         delete bat4;
-        PRINT_BAT(sw1, printBat(batE->begin(), "lo_discount where d_yearmonthnum = 199401 and lo_discount between 4 and 6 and lo_quantity between 26 and 35"));
 
         // 4) lazy decode and result
         MEASURE_OP_TUPLE(sw2, x, tupleF, v2::bat::ops::checkAndDecodeAN(batD));

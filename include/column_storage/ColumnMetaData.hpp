@@ -40,14 +40,20 @@ struct ColumnMetaData {
     uint64_t AN_unencMaxU;
     int64_t AN_unencMinS;
 
-    ColumnMetaData () : width (0), seqbase (0), isEncoded (0), AN_A (0), AN_Ainv (0), AN_unencMaxU (0), AN_unencMinS (0) {
+    ColumnMetaData () : width (0), seqbase (0), isEncoded (0), AN_A (1), AN_Ainv (1), AN_unencMaxU (0), AN_unencMinS (0) {
     }
 
-    ColumnMetaData (unsigned int width) : width (width), seqbase (0), isEncoded (0), AN_A (0), AN_Ainv (0), AN_unencMaxU (0), AN_unencMinS (0) {
+    ColumnMetaData (unsigned int width) : width (width), seqbase (0), isEncoded (0), AN_A (1), AN_Ainv (1), AN_unencMaxU (0), AN_unencMinS (0) {
     }
 
     ColumnMetaData (uint32_t width, uint16_t AN_A, uint64_t AN_Ainv, uint64_t AN_unencMaxU, int64_t AN_unencMinS) : width (width), seqbase (0), isEncoded (0xFFFF), AN_A (AN_A), AN_Ainv (AN_Ainv), AN_unencMaxU (AN_unencMaxU), AN_unencMinS (AN_unencMinS) {
     }
+
+    ColumnMetaData (const ColumnMetaData & cmd) = default;
+
+    ColumnMetaData (ColumnMetaData && cmd) = default;
+
+    ColumnMetaData & operator= (const ColumnMetaData &) = default;
 };
 
 #endif /* COLUMNMETADATA_HPP */

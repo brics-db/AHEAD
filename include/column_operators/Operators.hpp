@@ -30,5 +30,6 @@
 #include "Normal/select.tcc"
 #include "Normal/hashjoin.tcc"
 #include "Normal/aggregate.tcc"
+#include "Normal/groupby.tcc"
 
 #endif

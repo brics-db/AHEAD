@@ -47,10 +47,7 @@ public:
     TempBAT () : BAT<Head, Tail>() {
     }
 
-    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<Head, Tail>(head, tail) {
-    }
-
-    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<Head, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
+    TempBAT (coldesc_head_t head, coldesc_tail_t tail) : BAT<Head, Tail>(std::move (head), std::move (tail)) {
     }
 
     virtual
@@ -127,10 +124,10 @@ public:
     TempBAT () : BAT<v2_void_t, v2_void_t>(), count (0) {
     }
 
-    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<v2_void_t, v2_void_t>(head, tail), count (0) {
+    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<Head, Tail>(head, tail), count (0) {
     }
 
-    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<v2_void_t, v2_void_t>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)), count (0) {
+    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<Head, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)), count (0) {
     }
 
     virtual
@@ -143,9 +140,9 @@ public:
     }
 
     /** returns an iterator pointing at the start of the column */
-    virtual TempBATIterator<v2_void_t, v2_void_t> *
+    virtual TempBATIterator<Head, Tail> *
     begin () override {
-        return new TempBATIterator<v2_void_t, v2_void_t>(this->head, this->tail, count);
+        return new TempBATIterator<Head, Tail>(this->head, this->tail, count);
     }
 
     /** append an item */
@@ -160,19 +157,19 @@ public:
         ++count;
     }
 
-    virtual BAT<v2_void_t, v2_void_t>*
+    virtual BAT<Tail, Head>*
     reverse () override {
-        return new TempBAT<v2_void_t, v2_void_t>(this->tail, this->head);
+        return new TempBAT<Tail, Head>(this->tail, this->head);
     }
 
-    virtual BAT<v2_void_t, v2_void_t>*
+    virtual BAT<Head, Head>*
     mirror_head () override {
-        return new TempBAT<v2_void_t, v2_void_t>(this->head, this->head);
+        return new TempBAT<Head, Head>(this->head, this->head);
     }
 
-    virtual BAT<v2_void_t, v2_void_t>*
+    virtual BAT<Tail, Tail>*
     mirror_tail () override {
-        return new TempBAT<v2_void_t, v2_void_t>(this->tail, this->tail);
+        return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
     virtual unsigned
@@ -247,9 +244,9 @@ public:
         this->head.container->push_back(std::move(h));
     }
 
-    virtual BAT<v2_void_t, Head>*
+    virtual BAT<Tail, Head>*
     reverse () override {
-        return new TempBAT<v2_void_t, Head>(this->tail, this->head);
+        return new TempBAT<Tail, Head>(this->tail, this->head);
     }
 
     virtual BAT<Head, Head>*
@@ -257,9 +254,9 @@ public:
         return new TempBAT<Head, Head>(this->head, this->head);
     }
 
-    virtual BAT<v2_void_t, v2_void_t>*
+    virtual BAT<Tail, Tail>*
     mirror_tail () override {
-        return new TempBAT<v2_void_t, v2_void_t>(this->tail, this->tail);
+        return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
     virtual unsigned
@@ -332,12 +329,12 @@ public:
         this->tail.container->emplace_back(std::move(t));
     }
 
-    virtual BAT<Tail, v2_void_t>*
+    virtual BAT<Tail, Head>*
     reverse () override {
         return new TempBAT<Tail, v2_void_t>(this->tail, this->head);
     }
 
-    virtual BAT<v2_void_t, v2_void_t>*
+    virtual BAT<Head, Head>*
     mirror_head () override {
         return new TempBAT<v2_void_t, v2_void_t>(this->head, this->head);
     }

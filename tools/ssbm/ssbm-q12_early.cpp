@@ -147,7 +147,6 @@ main (int argc, char** argv) {
         delete batB;
         MEASURE_OP(sw2, x, batD, v2::bat::ops::hashjoin(batC, get<0>(tupleLE)));
         delete get<0>(tupleLE);
-        PRINT_BAT(sw1, printBat(batD->begin(), "lo_extprice where d_year = 1993 and lo_discount between 1 and 3 and lo_quantity < 25"));
         MEASURE_OP(sw2, x, batE, v2::bat::ops::hashjoin(batC, bat4));
         delete batC;
         delete bat4;

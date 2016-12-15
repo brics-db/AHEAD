@@ -50,13 +50,10 @@ struct BAT {
     coldesc_head_t head;
     coldesc_tail_t tail;
 
-    BAT () : head (), tail () {
+    BAT () : head (ColumnMetaData (sizeof (typename Head::type_t))), tail (sizeof (typename Tail::type_t)) {
     }
 
-    BAT (coldesc_head_t& head, coldesc_tail_t& tail) : head (head), tail (tail) {
-    }
-
-    BAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : head (std::forward<coldesc_head_t>(head)), tail (std::forward<coldesc_tail_t>(tail)) {
+    BAT (coldesc_head_t head, coldesc_tail_t tail) : head (std::move (head)), tail (std::move (tail)) {
     }
 
     virtual

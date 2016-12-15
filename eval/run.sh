@@ -14,12 +14,12 @@ IMPLEMENTED=(11 12 13 21)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
-if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
+if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
 if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi
-if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=0; fi
+if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
-if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=0; fi
-if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=0; fi
+if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
+if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 
 # Process specific constants
 CMAKE_BUILD_TYPE=release

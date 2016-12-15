@@ -39,11 +39,17 @@ namespace v2 {
             template<typename Head, typename Tail>
             BAT<Head, typename TypeMap<Tail>::v2_encoded_t>*
             encodeAN (BAT<Head, Tail>* arg, typename TypeMap<Tail>::v2_encoded_t::type_t A = get<ANParametersSelector<Tail>::As->size () - 1 > (*ANParametersSelector<Tail>::As)) {
-                typedef typename TypeMap<Tail>::v2_encoded_t::type_t tail_t;
+
+                typedef typename TypeMap<Tail>::v2_encoded_t enctail_t;
+                typedef typename enctail_t::type_t tail_t;
+                typedef typename BAT<Head, enctail_t>::coldesc_head_t cd_head_t;
+                typedef typename BAT<Head, enctail_t>::coldesc_tail_t cd_tail_t;
+
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_base_t, Tail>::value, "Tail must be a base type");
 
-                auto result = new TempBAT<Head, typename TypeMap<Tail>::v2_encoded_t > (arg->size());
+                auto result = new TempBAT<Head, enctail_t>(cd_head_t(arg->head.metaData), cd_tail_t(ColumnMetaData(sizeof (typename TypeMap<Tail>::v2_encoded_t::type_t), A, ext_euclidean(A, sizeof (tail_t)), enctail_t::UNENC_MAX_U, enctail_t::UNENC_MIN)));
+                result->reserve(arg->size());
                 auto iter = arg->begin();
                 for (; iter->hasNext(); ++*iter) {
                     result->append(make_pair(iter->head(), static_cast<tail_t>(iter->tail()) * A));
@@ -55,10 +61,12 @@ namespace v2 {
             template<typename Head, typename ResTail>
             vector<bool>*
             checkAN (BAT<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+
+                typedef typename ResTail::type_t res_t;
+
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
 
-                typedef typename ResTail::type_t res_t;
                 res_t Ainv = static_cast<res_t>(arg->tail.metaData.AN_Ainv);
 
                 auto result = new vector<bool>(arg->size());
@@ -73,16 +81,20 @@ namespace v2 {
             }
 
             template<typename Head, typename ResTail>
-            pair<BAT<Head, typename ResTail::unenc_v2_t>*, vector<bool>*>
+            pair<TempBAT<Head, typename ResTail::unenc_v2_t>*, vector<bool>*>
             decodeAN (BAT<Head, ResTail>* arg) {
-                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+
                 typedef typename ResTail::type_t restail_t;
                 typedef typename ResTail::unenc_v2_t Tail;
                 typedef typename Tail::type_t tail_t;
+
+                static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                static_assert(is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+
                 restail_t Ainv = static_cast<restail_t>(arg->tail.metaData.AN_Ainv);
                 restail_t unencMaxU = static_cast<restail_t>(arg->tail.metaData.AN_unencMaxU);
-                auto result = new TempBAT<Head, Tail>(arg->size());
+                auto result = skeletonHead<Head, Tail>(arg);
+                result->reserve(arg->size());
                 auto vec = new vector<bool>;
                 vec->resize(arg->size());
                 auto iter = arg->begin();
@@ -101,9 +113,12 @@ namespace v2 {
             template<typename Head, typename Tail>
             tuple<BAT<typename Head::unenc_v2_t, typename Tail::unenc_v2_t>*, vector<bool>*, vector<bool>*>
             checkAndDecodeAN (BAT<Head, Tail>* arg) {
-                static_assert(is_base_of<v2_anencoded_t, Head>::value || is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
+
                 typedef typename Head::type_t head_t;
                 typedef typename Tail::type_t tail_t;
+
+                static_assert(is_base_of<v2_anencoded_t, Head>::value || is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
+
                 const bool isHeadEncoded = is_base_of<v2_anencoded_t, Head>::value;
                 const bool isTailEncoded = is_base_of<v2_anencoded_t, Tail>::value;
                 head_t hAinv = static_cast<head_t>(arg->head.metaData.AN_Ainv);

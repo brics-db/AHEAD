@@ -57,15 +57,16 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t HEnc;
                     typedef typename TypeMap<Tail>::v2_encoded_t TEnc;
 
-                    tuple<BAT<Head, v2_oid_t>*, BAT<v2_void_t, Tail>*, vector<bool>*, vector<bool>*>
+                    tuple<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*, vector<bool>*, vector<bool>*>
                     operator() (
                         BAT<Head, Tail>* bat,
                         __attribute__ ((unused)) typename v2_resoid_t::type_t AOID = std::get < ANParametersSelector<v2_resoid_t>::As->size () - 1 > (*ANParametersSelector<v2_resoid_t>::As) // use largest A for encoding by default
                         ) const {
-                        head_t HAInv = bat->head.metaData.getAinv();
-                        head_t HUnencMaxU = bat->head.metaData.getMaxUnencoded();
-                        tail_t TAInv = bat->tail.metaData.getAinv();
-                        tail_t TUnencMaxU = bat->tail.metaData.getMaxUnencoded();
+
+                        head_t HAInv = bat->head.metaData.AN_Ainv;
+                        head_t HUnencMaxU = bat->head.metaData.AN_unencMaxU;
+                        tail_t TAInv = bat->tail.metaData.AN_Ainv;
+                        tail_t TUnencMaxU = bat->tail.metaData.AN_unencMaxU;
 
                         google::dense_hash_map<tail_t, oid_t> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
@@ -73,8 +74,8 @@ namespace v2 {
                         const bool isTailEncoded = is_base_of<v2_anencoded_t, Tail>::value;
                         vector<bool> *vec1 = (isHeadEncoded ? new vector<bool>(bat->size()) : nullptr);
                         vector<bool> *vec2 = (isTailEncoded ? new vector<bool>(bat->size()) : nullptr);
-                        auto batHeadtoGID = new TempBAT<Head, v2_oid_t>();
-                        auto batGIDtoTail = new TempBAT<v2_void_t, Tail>();
+                        auto batHeadtoGID = skeletonHead<Head, v2_oid_t>(bat);
+                        auto batGIDtoTail = skeletonTail<v2_void_t, Tail>(bat);
                         auto iter = bat->begin();
                         size_t nextGID = 0;
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
@@ -123,15 +124,16 @@ namespace v2 {
                         BAT<Head, v2_str_t>* bat,
                         __attribute__ ((unused)) typename v2_resoid_t::type_t AOID = std::get < ANParametersSelector<v2_resoid_t>::As->size () - 1 > (*ANParametersSelector<v2_resoid_t>::As) // use largest A for encoding by default
                         ) const {
-                        head_t HAInv = bat->head.metaData.getAinv();
-                        head_t HUnencMaxU = bat->head.metaData.getMaxUnencoded();
+
+                        head_t HAInv = bat->head.metaData.AN_Ainv;
+                        head_t HUnencMaxU = bat->head.metaData.AN_unencMaxU;
 
                         google::dense_hash_map<str_t, oid_t, hashstr, eqstr> dictionary;
                         dictionary.set_empty_key(v2_str_t::dhm_emptykey);
                         const bool isHeadEncoded = is_base_of<v2_anencoded_t, Head>::value;
                         vector<bool> *vec1 = (isHeadEncoded ? new vector<bool>(bat->size()) : nullptr);
-                        auto batHeadtoGID = new TempBAT<Head, v2_oid_t>();
-                        auto batGIDtoTail = new TempBAT<v2_void_t, v2_str_t>();
+                        auto batHeadtoGID = skeletonHead<Head, v2_oid_t>(bat);
+                        auto batGIDtoTail = skeletonTail<v2_void_t, v2_str_t>(bat);
                         auto iter = bat->begin();
                         size_t nextGID = 0;
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
@@ -200,10 +202,10 @@ namespace v2 {
                           BAT<Head3, Tail3>* bat3,
                           __attribute__ ((unused)) typename v2_resoid_t::type_t AOID = std::get < ANParametersSelector<v2_resoid_t>::As->size () - 1 > (*ANParametersSelector<v2_resoid_t>::As) // use largest A for encoding by default
                           ) {
-                typename Head1::type_t H1AInv = bat1->head.metaData.getAinv();
-                typename Head1::type_t H1UnencMaxU = bat1->head.metaData.getMaxUnencoded();
-                typename Tail1::type_t T1AInv = bat1->tail.metaData.getAinv();
-                typename Tail1::type_t T1UnencMaxU = bat1->tail.metaData.getMaxUnencoded();
+                typename Head1::type_t H1AInv = bat1->head.metaData.AN_Ainv;
+                typename Head1::type_t H1UnencMaxU = bat1->head.metaData.AN_unencMaxU;
+                typename Tail1::type_t T1AInv = bat1->tail.metaData.AN_Ainv;
+                typename Tail1::type_t T1UnencMaxU = bat1->tail.metaData.AN_unencMaxU;
 
 #ifdef DEBUG
                 StopWatch sw;
@@ -224,11 +226,14 @@ namespace v2 {
                 auto size2 = get<1>(group2)->size();
                 auto numgroups = size1 * size2;
 
+                auto AOIDinv = ext_euclidean(typename v2_resoid_t::type_t(AOID), sizeof (typename v2_resoid_t::type_t));
                 auto sumBat = new TempBAT<v2_void_t, V2Result>();
                 sumBat->tail.container->resize(numgroups, 0);
-                auto outBat2 = new TempBAT<v2_void_t, v2_resoid_t>();
+                typedef typename TempBAT<v2_void_t, v2_resoid_t>::coldesc_head_t cd_void_t;
+                typedef typename TempBAT<v2_void_t, v2_resoid_t>::coldesc_tail_t cd_resoid_t;
+                auto outBat2 = new TempBAT<v2_void_t, v2_resoid_t>(cd_void_t(), cd_resoid_t(ColumnMetaData(sizeof (typename v2_resoid_t::type_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN)));
                 outBat2->reserve(numgroups);
-                auto outBat4 = new TempBAT<v2_void_t, v2_resoid_t>();
+                auto outBat4 = new TempBAT<v2_void_t, v2_resoid_t>(cd_void_t(), cd_resoid_t(ColumnMetaData(sizeof (typename v2_resoid_t::type_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN)));
                 outBat4->reserve(numgroups);
 
                 auto g1SecondIter = get<1>(group1)->begin();

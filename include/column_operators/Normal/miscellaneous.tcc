@@ -74,34 +74,85 @@ namespace v2 {
                 };
             }
 
-            template<typename Tail>
-            BAT<v2_void_t, typename Tail::v2_copy_t>*
-            copy (ColumnBAT<Tail>* arg) {
-                typedef typename TempBAT<v2_void_t, typename Tail::v2_copy_t >::coldesc_head_t coldesc_head_t;
-                typedef typename TempBAT<v2_void_t, typename Tail::v2_copy_t >::coldesc_tail_t coldesc_tail_t;
-                auto result = new TempBAT<v2_void_t, typename Tail::v2_copy_t > (coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
-                result->reserve(arg->size());
-                auto *iter = arg->begin();
-                for (; iter->hasNext(); ++*iter) {
-                    result->append(make_pair(iter->head(), iter->tail()));
-                }
-                delete iter;
-                return result;
+            template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
+            TempBAT<TargetHead, TargetTail>*
+            skeleton (BAT<Head, Tail>* arg) {
+                typedef TempBAT<TargetHead, TargetTail> bat_t;
+                typedef typename bat_t::coldesc_head_t coldesc_head_t;
+                typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+                return new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
+            }
+
+            template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
+            TempBAT<TargetHead, TargetTail>*
+            skeletonHead (BAT<Head, Tail>* arg) {
+                typedef TempBAT<TargetHead, TargetTail> bat_t;
+                typedef typename bat_t::coldesc_head_t coldesc_head_t;
+                typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+                return new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t());
+            }
+
+            template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
+            TempBAT<TargetHead, TargetTail>*
+            skeletonTail (BAT<Head, Tail>* arg) {
+                typedef TempBAT<TargetHead, TargetTail> bat_t;
+                typedef typename bat_t::coldesc_head_t coldesc_head_t;
+                typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+                return new bat_t(coldesc_head_t(), coldesc_tail_t(arg->tail.metaData));
+            }
+
+            template<typename TargetHead, typename TargetTail, typename Head1, typename Tail1, typename Head2, typename Tail2>
+            TempBAT<TargetHead, TargetTail>*
+            skeletonJoin (BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2) {
+                typedef TempBAT<TargetHead, TargetTail> bat_t;
+                typedef typename bat_t::coldesc_head_t coldesc_head_t;
+                typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+                return new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
+            }
+
+            namespace Private {
+
+                template<typename Head, typename Tail>
+                struct copy0 {
+
+                    typedef typename Head::v2_copy_t CHead;
+                    typedef typename Tail::v2_copy_t CTail;
+
+                    TempBAT<CHead, CTail> * operator() (BAT<Head, Tail> * arg) {
+                        auto result = skeleton<CHead, CTail>(arg);
+                        result->reserve(arg->size());
+                        auto *iter = arg->begin();
+                        for (; iter->hasNext(); ++*iter) {
+                            result->append(make_pair(std::move(iter->head()), std::move(iter->tail())));
+                        }
+                        delete iter;
+                        return result;
+                    }
+                };
+
+                template<typename Tail>
+                struct copy0<v2_void_t, Tail> {
+
+                    typedef typename Tail::v2_copy_t CTail;
+
+                    TempBAT<v2_void_t, CTail> * operator() (BAT<v2_void_t, Tail> * arg) {
+                        auto result = skeleton<v2_void_t, CTail>(arg);
+                        result->reserve(arg->size());
+                        auto *iter = arg->begin();
+                        for (; iter->hasNext(); ++*iter) {
+                            result->append(std::move(iter->tail()));
+                        }
+                        delete iter;
+                        return result;
+                    }
+                };
+
             }
 
             template<typename Head, typename Tail>
-            BAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
-            copy (TempBAT<Head, Tail>* arg) {
-                typedef typename TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t >::coldesc_head_t coldesc_head_t;
-                typedef typename TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t >::coldesc_tail_t coldesc_tail_t;
-                auto result = new TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t > (coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
-                result->reserve(arg->size());
-                auto *iter = arg->begin();
-                for (; iter->hasNext(); ++*iter) {
-                    result->append(make_pair(iter->head(), iter->tail()));
-                }
-                delete iter;
-                return result;
+            TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
+            copy (BAT<Head, Tail>* arg) {
+                return Private::copy0<typename Head::v2_copy_t, typename Tail::v2_copy_t > ()(arg);
             }
         }
     }

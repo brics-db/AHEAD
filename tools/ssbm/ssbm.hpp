@@ -66,7 +66,7 @@ printBat (BATIterator<Head, Tail > *iter, const char* message = nullptr, bool do
         std::cout << message << '\n';
     }
     size_t i = 0;
-    for (; iter->hasNext(); ++iter) {
+    for (; iter->hasNext(); ++*iter) {
         std::cout << i++ << ": " << iter->head() << " = " << iter->tail() << '\n';
     }
     std::cout << std::flush;

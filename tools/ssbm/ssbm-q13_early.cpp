@@ -92,9 +92,11 @@ main (int argc, char** argv) {
     delete batLEcb;
     delete batDWcb;
 
-    COUT_HEADLINE;
-    COUT_RESULT(0, x);
-    std::cout << std::endl;
+    if (CONFIG.VERBOSE) {
+        COUT_HEADLINE;
+        COUT_RESULT(0, x);
+        std::cout << std::endl;
+    }
 
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
