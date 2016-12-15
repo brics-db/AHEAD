@@ -163,10 +163,10 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
     fi
     make
     exitcode=$?
+    popd
     if [[ ${exitcode} -ne 0 ]]; then
         exit ${exitcode};
     fi
-    popd
 else
     echo "Skipping compilation."
 fi
