@@ -28,6 +28,9 @@ const bool OUTPUT_INSERT_DOT = true;
 StopWatch::StopWatch () : startNS (), stopNS (), totalNS (duration_cast<nanoseconds>(stopNS - startNS).count ()) {
 }
 
+StopWatch::StopWatch (time_point startNS, time_point stopNS, rep totalNS) : startNS (startNS), stopNS (stopNS), totalNS (totalNS) {
+}
+
 void
 StopWatch::start () {
     totalNS = 0;
@@ -78,6 +81,6 @@ ostream& operator<< (ostream& stream, hrc_duration hrcd) {
     return stream;
 }
 
-ostream& operator<< (ostream& stream, StopWatch& sw) {
+ostream& operator<< (ostream& stream, StopWatch sw) {
     return stream << hrc_duration(sw.duration());
 }

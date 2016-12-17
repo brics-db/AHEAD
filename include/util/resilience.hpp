@@ -45,29 +45,6 @@ typedef uint64_t resoid_t;
 
 #define RESOID_INVALID (static_cast<resoid_t>(-1))
 
-// typedef the larger of the types
-
-namespace v2 {
-
-    template<typename T, typename U, bool>
-    struct larger_type0 {
-
-        typedef T type_t;
-    };
-
-    template<typename T, typename U>
-    struct larger_type0<T, U, false> {
-
-        typedef U type_t;
-    };
-
-    template<typename T, typename U>
-    struct larger_type : public larger_type0<T, U, (sizeof (T) >= sizeof (U))> {
-
-        using type_t = typename larger_type0<T, U, (sizeof (T) >= sizeof (U))>::type_t;
-    };
-}
-
 struct ANParameters {
 
     static constexpr const std::array<uint16_t, 16> Atiny = {1, 3, 7, 13, 29, 59, 115, 233, 233, 233, 233, 233, 233, 233, 233, 233}; //, 487, 857, 1939, 3813, 7463, 13963, 27247, 55831};

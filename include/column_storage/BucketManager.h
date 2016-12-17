@@ -25,14 +25,14 @@
 #endif
 
 /**
- * Die Konstante bestimmt die Anzahl der Bytes die f�r einen Bucket reserviert werden.
+ * Die Konstante bestimmt die Anzahl der Bytes die für einen Bucket reserviert werden.
  */
-#define CHUNK_CONTENT_SIZE 4096
+#define CHUNK_CONTENT_SIZE (16 * 1024 * 1024)
 
 /**
- * @brief Klasse zur Verwaltung von Bucket-Streams mit Buckets fester Gr��e
+ * @brief Klasse zur Verwaltung von Bucket-Streams mit Buckets fester Größe
  *
- * Die Klasse verwaltet einfach verkettete Listen von Speicherbereichen fester Gr��e, sogenannte Bucket-Streams. Jegliche �nderungen an einem Bucket-Stream werden nach dem Mehrversionen-Konzept archiviert, wodurch keine Synchronisation zwischen mehreren Lesern notwendig ist. Die Klasse implemtiert das Singleton-Pattern, wodurch sichergestellt wird, dass maximal ein Objekt der Klasse existiert.
+ * Die Klasse verwaltet einfach verkettete Listen von Speicherbereichen fester Größe, sogenannte Bucket-Streams. Jegliche Änderungen an einem Bucket-Stream werden nach dem Mehrversionen-Konzept archiviert, wodurch keine Synchronisation zwischen mehreren Lesern notwendig ist. Die Klasse implemtiert das Singleton-Pattern, wodurch sichergestellt wird, dass maximal ein Objekt der Klasse existiert.
  */
 class BucketManager {
 
@@ -40,7 +40,7 @@ public:
     friend class TransactionManager;
 
     /**
-     * Die Datenstruktur kapselt einen Zeiger auf einen Speicherbereich fester Gr��e f�r die Datenstruktur Bucket.
+     * Die Datenstruktur kapselt einen Zeiger auf einen Speicherbereich fester Größe für die Datenstruktur Bucket.
      */
     struct Chunk {
 
@@ -54,7 +54,7 @@ public:
     };
 
     /**
-     * Die Datenstruktur stellt den Zustand eines Buckets zu einer festen Version dar und beinhaltet neben einem Zeiger auf einen Chunk auch einen Zeiger auf den im Bucket-Stream nachfolgenden Bucket, sowie jeweils einen Zeiger auf die n�chst aktuellere und die �ltere Version des Buckets. Au�erdem enth�lt die Datenstruktur die Version und die Position eines Buckets innerhalb des Bucket-Stream.
+     * Die Datenstruktur stellt den Zustand eines Buckets zu einer festen Version dar und beinhaltet neben einem Zeiger auf einen Chunk auch einen Zeiger auf den im Bucket-Stream nachfolgenden Bucket, sowie jeweils einen Zeiger auf die nächst aktuellere und die ältere Version des Buckets. Außerdem enthält die Datenstruktur die Version und die Position eines Buckets innerhalb des Bucket-Stream.
      */
     struct Bucket {
 

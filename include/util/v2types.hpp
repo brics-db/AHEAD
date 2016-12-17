@@ -38,6 +38,33 @@
 #define MKT2(BASE, SUFFIX) MKT1(CONCAT(BASE, SUFFIX))
 #define MKT3(PREFIX, BASE, SUFFIX) CONCAT(PREFIX, CONCAT(BASE, SUFFIX))
 
+// typedef the larger of the types
+
+namespace v2 {
+
+    template<typename T, typename U, bool>
+    struct larger_type0 {
+
+        typedef T type_t;
+    };
+
+    template<typename T, typename U>
+    struct larger_type0<T, U, false> {
+
+        typedef U type_t;
+    };
+
+    template<typename T, typename U>
+    struct larger_type : public larger_type0<T, U, (sizeof (T) >= sizeof (U))> {
+
+        using type_t = typename larger_type0<T, U, (sizeof (T) >= sizeof (U))>::type_t;
+
+        constexpr static const bool areEquallyLarge = sizeof (T) == sizeof (U);
+        constexpr static const bool isFirstLarger = sizeof (T) > sizeof (U);
+        constexpr static const bool isSecondLarger = sizeof (T) < sizeof (U);
+    };
+}
+
 enum type_t {
 
     type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
@@ -51,9 +78,9 @@ typedef char char_t, *str_t;
 typedef const char cchar_t, *cstr_t;
 typedef double fixed_t;
 
-typedef unsigned id_t;
-typedef unsigned oid_t;
-typedef unsigned version_t;
+typedef uint32_t id_t;
+typedef uint32_t oid_t;
+typedef uint32_t version_t;
 
 // enforce real different types. The typedef's above result in type-clashes!
 
