@@ -182,7 +182,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
 
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
-        for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous; do
+        for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous ${BASE2}_continuous_reenc; do
             PATH_BINARY=${PATH_BUILD}/${type}
             if [[ -e ${PATH_BINARY} ]]; then
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
@@ -234,7 +234,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             echo -n "SF " >${EVAL_TEMPFILE}
             echo $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}) >>${EVAL_TEMPFILE}
 
-            for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous; do
+            for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous ${BASE2}_continuous_reenc; do
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
                 EVAL_FILERESULTS="${PATH_EVALDATA}/${type}.results"
                 EVAL_FILESUMMARY="${PATH_EVALDATA}/${type}.summary"
@@ -351,13 +351,14 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
         early=${PATH_EVALDATA}/${BASE2}_early.results
         late=${PATH_EVALDATA}/${BASE2}_late.results
         contin=${PATH_EVALDATA}/${BASE2}_continuous.results
+        reenc=${PATH_EVALDATA}/${BASE2}_continuous_reenc.results
         DIFF1=$(if [[ $(diff ${normal} ${early}  | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
         DIFF2=$(if [[ $(diff ${normal} ${late}   | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
         DIFF3=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${normal} - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
         DIFF4=$(if [[ $(diff ${early}  ${late}   | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
         DIFF5=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${early}  - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
         DIFF6=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${late}   - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-
+		DIFF7=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${reenc}   - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
         if [[ ${DIFF1} == "OK" ]] && [[ ${DIFF2} == "OK" ]] && [[ ${DIFF3} == "OK" ]] && [[ ${DIFF4} == "OK" ]] && [[ ${DIFF5} == "OK" ]] && [[ ${DIFF6} == "OK" ]]; then
             echo " * Q${NUM}: all OK"
         elif [[ ${DIFF1} == "OK" ]]; then

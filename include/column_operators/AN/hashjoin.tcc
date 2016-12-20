@@ -36,6 +36,8 @@
 #include <google/dense_hash_map>
 
 #include <ColumnStore.h>
+#include <column_storage/Bat.h>
+#include <column_storage/TempBat.h>
 
 using boost::multiprecision::uint128_t;
 
@@ -44,11 +46,23 @@ namespace v2 {
         namespace ops {
             namespace Private {
 
+                template<typename T, bool>
+                struct ReturnTypeSelector {
+
+                    typedef typename T::v2_select_t v2_select_t;
+                };
+
+                template<typename T>
+                struct ReturnTypeSelector<T, true> {
+
+                    typedef typename TypeMap<T>::v2_encoded_t::v2_select_t v2_select_t;
+                };
+
                 template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencode = false >
                 struct hashjoinANunencHashmap {
 
-                    typedef typename Head1::v2_select_t head1_v2_select_t;
-                    typedef typename Tail2::v2_select_t tail2_v2_select_t;
+                    typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
+                    typedef typename ReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
                     typedef typename H1Enc::type_t h1enc_t;
                     typedef typename TypeMap<Tail1>::v2_encoded_t T1Enc;
@@ -57,11 +71,13 @@ namespace v2 {
                     typedef typename H2Enc::type_t h2enc_t;
                     typedef typename TypeMap<Tail2>::v2_encoded_t T2Enc;
                     typedef typename T2Enc::type_t t2enc_t;
+                    typedef typename TypeMap<Head1>::v2_base_t::type_t h1unenc_t;
                     typedef typename TypeMap<Tail1>::v2_base_t::type_t t1unenc_t;
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
+                    typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
                     typedef typename v2::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    tuple<TempBAT<head1_v2_select_t, tail2_v2_select_t>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*>
+                    tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*>
                     operator() (
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,
@@ -86,13 +102,13 @@ namespace v2 {
                         // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
                         const h1enc_t reencFactorH1 = AH1R * AH1Inv;
                         const t2enc_t reencFactorT2 = AT2R * AT2Inv;
-                        TempBAT<head1_v2_select_t, tail2_v2_select_t> * bat = nullptr;
+                        TempBAT<v2_h1_select_t, v2_t2_select_t> * bat = nullptr;
                         if (reencode) {
-                            typedef typename TempBAT<head1_v2_select_t, tail2_v2_select_t>::coldesc_head_t bat_coldesc_head_t;
-                            typedef typename TempBAT<head1_v2_select_t, tail2_v2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
-                            bat = new TempBAT<head1_v2_select_t, tail2_v2_select_t>(bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)), bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AH1R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
+                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)), bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
                         } else {
-                            bat = skeletonJoin<head1_v2_select_t, tail2_v2_select_t>(arg1, arg2);
+                            bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
                         }
                         vector<bool> *vec1 = (isHead1Encoded ? new vector<bool>(arg1->size()) : nullptr);
                         vector<bool> *vec2 = (isTail1Encoded ? new vector<bool>(arg1->size()) : nullptr);
@@ -100,7 +116,12 @@ namespace v2 {
                         vector<bool> *vec4 = (isTail2Encoded ? new vector<bool>(arg2->size()) : nullptr);
                         auto iter1 = arg1->begin();
                         auto iter2 = arg2->begin();
-                        // std::cout << "head1 [" << arg1->head.metaData.width << ", " << arg1->head.metaData.seqbase << ", " << (arg1->head.metaData.isEncoded ? "enc" : "unenc") << ", " << arg1->head.metaData.AN_A << ", " << AH1Inv << ", " << static_cast<typename Head1::unenc_v2_t::type_t>(arg1->head.metaData.AN_A * AH1Inv) << ", " << arg1->head.metaData.AN_unencMaxU << ", " << arg1->head.metaData.AN_unencMinS << "]\ntail1 [" << arg1->tail.metaData.width << ", " << arg1->tail.metaData.seqbase << ", " << (arg1->tail.metaData.isEncoded ? "enc" : "unenc") << ", " << arg1->tail.metaData.AN_A << ", " << AT1Inv << ", " << static_cast<typename Tail1::unenc_v2_t::type_t>(arg1->tail.metaData.AN_A * AT1Inv) << ", " << arg1->tail.metaData.AN_unencMaxU << ", " << arg1->tail.metaData.AN_unencMinS << "]\nhead2 [" << arg2->head.metaData.width << ", " << arg2->head.metaData.seqbase << ", " << (arg2->head.metaData.isEncoded ? "enc" : "unenc") << ", " << arg2->head.metaData.AN_A << ", " << AH2Inv << ", " << static_cast<typename Head2::unenc_v2_t::type_t>(arg2->head.metaData.AN_A * AH2Inv) << ", " << arg2->head.metaData.AN_unencMaxU << ", " << arg2->head.metaData.AN_unencMinS << "]\ntail2 [" << arg2->tail.metaData.width << ", " << arg2->tail.metaData.seqbase << ", " << (arg2->tail.metaData.isEncoded ? "enc" : "unenc") << ", " << arg2->tail.metaData.AN_A << ", " << AT2Inv << ", " << static_cast<typename Tail2::unenc_v2_t::type_t>(arg2->tail.metaData.AN_A * AT2Inv) << ", " << arg2->tail.metaData.AN_unencMaxU << ", " << arg2->tail.metaData.AN_unencMinS << "]\n";
+#ifdef DEBUG
+                        std::cout << "head1 [" << arg1->head.metaData.width << ", " << arg1->head.metaData.seqbase << ", " << (arg1->head.metaData.isEncoded ? "enc" : "unenc") << ", " << arg1->head.metaData.AN_A << ", " << AH1Inv << ", " << static_cast<uint64_t>(static_cast<h1unenc_t>(arg1->head.metaData.AN_A * AH1Inv)) << ", " << arg1->head.metaData.AN_unencMaxU << ", " << arg1->head.metaData.AN_unencMinS << "]\n";
+                        std::cout << "tail1 [" << arg1->tail.metaData.width << ", " << arg1->tail.metaData.seqbase << ", " << (arg1->tail.metaData.isEncoded ? "enc" : "unenc") << ", " << arg1->tail.metaData.AN_A << ", " << AT1Inv << ", " << static_cast<uint64_t>(static_cast<t1unenc_t>(arg1->tail.metaData.AN_A * AT1Inv)) << ", " << arg1->tail.metaData.AN_unencMaxU << ", " << arg1->tail.metaData.AN_unencMinS << "]\n";
+                        std::cout << "head2 [" << arg2->head.metaData.width << ", " << arg2->head.metaData.seqbase << ", " << (arg2->head.metaData.isEncoded ? "enc" : "unenc") << ", " << arg2->head.metaData.AN_A << ", " << AH2Inv << ", " << static_cast<uint64_t>(static_cast<h2unenc_t>(arg2->head.metaData.AN_A * AH2Inv)) << ", " << arg2->head.metaData.AN_unencMaxU << ", " << arg2->head.metaData.AN_unencMinS << "]\n";
+                        std::cout << "tail2 [" << arg2->tail.metaData.width << ", " << arg2->tail.metaData.seqbase << ", " << (arg2->tail.metaData.isEncoded ? "enc" : "unenc") << ", " << arg2->tail.metaData.AN_A << ", " << AT2Inv << ", " << static_cast<uint64_t>(static_cast<t2unenc_t>(arg2->tail.metaData.AN_A * AT2Inv)) << ", " << arg2->tail.metaData.AN_unencMaxU << ", " << arg2->tail.metaData.AN_unencMinS << "]\n";
+#endif
                         if (iter1->hasNext() && iter2->hasNext()) { // only really continue when both BATs are not empty
                             size_t pos = 0;
                             if (hashside == hash_side_t::left) {
@@ -129,19 +150,18 @@ namespace v2 {
                                     if (isHead2Encoded && h2 > AH2UnencMaxU) {
                                         (*vec3)[pos] = true;
                                     }
-                                    auto t = iter2->tail();
-                                    if (isTail2Encoded && (t * AT2Inv) > AT2UnencMaxU) {
+                                    auto t2 = iter2->tail();
+                                    if (isTail2Encoded && (t2 * AT2Inv) > AT2UnencMaxU) {
                                         (*vec4)[pos] = true;
                                     }
-                                    auto h2l = static_cast<larger_t>(h2);
-                                    if (h2l <= t1max) {
-                                        auto mapIter = hashMap.find(static_cast<t1unenc_t>(h2l));
+                                    if (static_cast<larger_t>(h2) <= t1max) { // do not probe values which are too large anyways
+                                        auto mapIter = hashMap.find(static_cast<t1unenc_t>(h2));
                                         if (mapIter != mapEnd) {
                                             for (auto matched : mapIter->second) {
                                                 if (reencode) {
-                                                    bat->append(std::make_pair(matched * reencFactorH1, t * reencFactorT2));
+                                                    bat->append(std::make_pair(matched * reencFactorH1, t2 * reencFactorT2));
                                                 } else {
-                                                    bat->append(std::make_pair(matched, t));
+                                                    bat->append(std::make_pair(matched, t2));
                                                 }
                                             }
                                         }
@@ -169,12 +189,12 @@ namespace v2 {
                                     if (isHead1Encoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
                                         (*vec1)[pos] = true;
                                     }
-                                    auto t = isTail1Encoded ? static_cast<t1enc_t>(iter1->tail() * AT1Inv) : iter1->tail();
-                                    if (isTail1Encoded && t > AT1UnencMaxU) {
+                                    auto t1 = isTail1Encoded ? static_cast<t1enc_t>(iter1->tail() * AT1Inv) : iter1->tail();
+                                    if (isTail1Encoded && t1 > AT1UnencMaxU) {
                                         (*vec2)[pos] = true;
                                     }
-                                    if (static_cast<larger_t>(t) <= h2max) {
-                                        auto mapIter = hashMap.find(static_cast<h2unenc_t>(t));
+                                    if (static_cast<larger_t>(t1) <= h2max) { // do not probe values which are too large anyways
+                                        auto mapIter = hashMap.find(static_cast<h2unenc_t>(t1));
                                         if (mapIter != mapEnd) {
                                             for (auto matched : mapIter->second) {
                                                 if (reencode) {
@@ -264,20 +284,19 @@ namespace v2 {
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // probe
-                                    auto h = iter2->head();
-                                    auto t = iter2->tail();
-                                    if (isHead2Encoded && (h * AH2Inv) > AH2UnencMaxU) {
+                                    auto h2 = isHead2Encoded ? (iter2->head() * AH2Inv) : iter2->head();
+                                    auto t2 = iter2->tail();
+                                    if (isHead2Encoded && h2 > AH2UnencMaxU) {
                                         (*vec3)[pos] = true;
                                     }
-                                    auto h2 = static_cast<larger_t>(isHead2Encoded ? (h * AH2Inv) : h);
-                                    if (h2 <= t1max) {
+                                    if (static_cast<larger_t>(h2) <= t1max) {
                                         auto mapIter = hashMap.find(static_cast<t1unenc_t>(h2));
                                         if (mapIter != mapEnd) {
                                             for (auto matched : mapIter->second) {
                                                 if (reencode) {
-                                                    bat->append(std::make_pair(matched * reencFactorH1, t));
+                                                    bat->append(std::make_pair(matched * reencFactorH1, t2));
                                                 } else {
-                                                    bat->append(std::make_pair(matched, t));
+                                                    bat->append(std::make_pair(matched, t2));
                                                 }
                                             }
                                         }
@@ -288,37 +307,36 @@ namespace v2 {
                                 google::dense_hash_map<h2unenc_t, vector<str_t> > hashMap(arg2->size());
                                 hashMap.set_empty_key(Head2::dhm_emptykey);
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // build
-                                    auto h = iter2->head();
-                                    auto t = iter2->tail();
-                                    if (isHead2Encoded && (h * AH2Inv) > AH2UnencMaxU) {
+                                    auto h2 = isHead2Encoded ? (iter2->head() * AH2Inv) : iter2->head();
+                                    auto t2 = iter2->tail();
+                                    if (isHead2Encoded && h2 > AH2UnencMaxU) {
                                         (*vec3)[pos] = true;
                                     }
                                     if (isHead2Encoded) {
-                                        hashMap[static_cast<h2unenc_t>(h * AH2Inv)].push_back(t);
+                                        hashMap[static_cast<h2unenc_t>(h2)].push_back(t2);
                                     } else {
-                                        hashMap[h].push_back(t);
+                                        hashMap[h2].push_back(t2);
                                     }
                                 }
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // probe
-                                    auto h = iter1->head();
-                                    auto t = iter1->tail();
-                                    if (isHead1Encoded && (h * AH1Inv) > AH1UnencMaxU) {
+                                    auto h1 = isHead1Encoded ? (iter1->head() * AH1Inv) : iter1->head();
+                                    auto t1 = isTail1Encoded ? (iter1->tail() * AT1Inv) : iter1->tail();
+                                    if (isHead1Encoded && h1 > AH1UnencMaxU) {
                                         (*vec1)[pos] = true;
                                     }
-                                    if (isTail1Encoded && (t * AT1Inv) > AT1UnencMaxU) {
+                                    if (isTail1Encoded && t1 > AT1UnencMaxU) {
                                         (*vec2)[pos] = true;
                                     }
-                                    auto t1 = static_cast<larger_t>(isTail1Encoded ? (t * AT1Inv) : t);
-                                    if (t1 <= h2max) {
+                                    if (static_cast<larger_t>(t1) <= h2max) {
                                         auto mapIter = hashMap.find(static_cast<h2unenc_t>(t1));
                                         if (mapIter != mapEnd) {
                                             for (auto matched : mapIter->second) {
                                                 if (reencode) {
-                                                    bat->append(std::make_pair(h * reencFactorH1, matched));
+                                                    bat->append(std::make_pair(h1 * reencFactorH1, matched));
                                                 } else {
-                                                    bat->append(std::make_pair(h, matched));
+                                                    bat->append(std::make_pair(h1, matched));
                                                 }
                                             }
                                         }
@@ -544,7 +562,7 @@ namespace v2 {
             hashjoinAN (
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,
-                        typename TypeMap<Tail2>::v2_encoded_t::type_t AH1reenc,
+                        typename TypeMap<Head1>::v2_encoded_t::type_t AH1reenc,
                         typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc,
                         hash_side_t hashside = hash_side_t::right
                         ) {
@@ -553,7 +571,7 @@ namespace v2 {
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-            tuple<TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*>
+            tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename TypeMap<Tail2>::v2_encoded_t::v2_select_t>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*>
             hashjoinAN (
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,

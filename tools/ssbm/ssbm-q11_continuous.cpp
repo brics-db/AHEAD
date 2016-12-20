@@ -26,6 +26,7 @@
  */
 
 #include "ssbm.hpp"
+#include <column_operators/OperatorsAN.hpp>
 
 int
 main (int argc, char** argv) {

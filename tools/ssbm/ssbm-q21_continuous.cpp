@@ -25,10 +25,8 @@
  * Created on 20. November 2016, 19:13
  */
 
-template<typename T> // declaration only for TD;
-class TD; // TD == "Type Displayer"
-
 #include "ssbm.hpp"
+#include <column_operators/OperatorsAN.hpp>
 
 int
 main (int argc, char** argv) {
@@ -46,7 +44,7 @@ main (int argc, char** argv) {
     size_t x = 0;
     StopWatch sw1, sw2;
 
-    std::cout << "SSBM Query 2.1 Continuous Detection\n=====================" << std::endl;
+    std::cout << "SSBM Query 2.1 Continuous Detection\n===================================" << std::endl;
 
     MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
@@ -131,7 +129,7 @@ main (int argc, char** argv) {
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP_TUPLE(sw2, x, tuple5, v2::bat::ops::hashjoinAN(batLSenc, get<0>(tuple4))); // OID lineorder | OID supplier
+        MEASURE_OP_TUPLE(sw2, x, tuple5, v2::bat::ops::hashjoinAN(batLSenc, get<0>(tuple4), get < v2_resoid_t::As->size() - 1 > (*v2_resoid_t::As), get < v2_resoid_t::Ainvs->size() - 1 > (*v2_resoid_t::Ainvs), get<0>(tuple4)->tail.metaData.AN_A, get<0>(tuple4)->tail.metaData.AN_Ainv)); // OID lineorder | OID supplier
         CLEAR_HASHJOIN_AN(tuple5);
         delete get<0>(tuple4);
         // join with LO_PARTKEY to already reduce the join partners
@@ -159,23 +157,23 @@ main (int argc, char** argv) {
         delete get<0>(tupleB);
 
         // join with date now!
-        MEASURE_OP(sw2, x, batE, get<0>(tupleC)->mirror_head()); // OID lineorder | OID lineorder  (where ...)
+        MEASURE_OP(sw2, x, batD, get<0>(tupleC)->mirror_head()); // OID lineorder | OID lineorder  (where ...)
         delete get<0>(tupleC);
-        MEASURE_OP_TUPLE(sw2, x, tupleF, v2::bat::ops::hashjoinAN(batE, batLOenc)); // OID lineorder | lo_orderdate (where ...)
-        CLEAR_HASHJOIN_AN(tupleF);
-        delete batE;
-        MEASURE_OP(sw2, x, batH, batDDenc->reverse()); // d_datekey | OID date
-        MEASURE_OP_TUPLE(sw2, x, tupleI, v2::bat::ops::hashjoinAN(get<0>(tupleF), batH)); // OID lineorder | OID date (where ..., joined with date)
-        CLEAR_HASHJOIN_AN(tupleI);
-        delete get<0>(tupleF);
-        delete batH;
+        MEASURE_OP_TUPLE(sw2, x, tupleE, v2::bat::ops::hashjoinAN(batD, batLOenc)); // OID lineorder | lo_orderdate (where ...)
+        CLEAR_HASHJOIN_AN(tupleE);
+        delete batD;
+        MEASURE_OP(sw2, x, batF, batDDenc->reverse()); // d_datekey | OID date
+        MEASURE_OP_TUPLE(sw2, x, tupleG, v2::bat::ops::hashjoinAN(get<0>(tupleE), batF, get<0>(tupleE)->head.metaData.AN_A, get<0>(tupleE)->head.metaData.AN_Ainv, get < v2_resoid_t::As->size() - 1 > (*v2_resoid_t::As), get < v2_resoid_t::Ainvs->size() - 1 > (*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
+        CLEAR_HASHJOIN_AN(tupleG);
+        delete get<0>(tupleE);
+        delete batF;
 
         // now prepare grouped sum and check inputs
-        MEASURE_OP(sw2, x, batW, get<0>(tupleI)->mirror_head()); // OID lineorder | OID lineorder
+        MEASURE_OP(sw2, x, batW, get<0>(tupleG)->mirror_head()); // OID lineorder | OID lineorder
         MEASURE_OP_TUPLE(sw2, x, tupleX, v2::bat::ops::hashjoinAN(batW, batLPenc)); // OID lineorder | lo_partkey
         CLEAR_HASHJOIN_AN(tupleX);
         MEASURE_OP(sw2, x, batY, batPPenc->reverse()); // p_partkey | OID part
-        MEASURE_OP_TUPLE(sw2, x, tupleZ, v2::bat::ops::hashjoinAN(get<0>(tupleX), batY)); // OID lineorder | OID part
+        MEASURE_OP_TUPLE(sw2, x, tupleZ, v2::bat::ops::hashjoinAN(get<0>(tupleX), batY, get<0>(tupleX)->head.metaData.AN_A, get<0>(tupleX)->head.metaData.AN_Ainv, get < ANParametersSelector<v2_resoid_t>::As->size() - 1 > (*ANParametersSelector<v2_resoid_t>::As), get < ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1 > (*ANParametersSelector<v2_resoid_t>::Ainvs))); // OID lineorder | OID part
         CLEAR_HASHJOIN_AN(tupleZ);
         delete get<0>(tupleX);
         delete batY;
@@ -183,9 +181,9 @@ main (int argc, char** argv) {
         CLEAR_HASHJOIN_AN(tupleA1);
         delete get<0>(tupleZ);
 
-        MEASURE_OP_TUPLE(sw2, x, tupleA2, v2::bat::ops::hashjoinAN(get<0>(tupleI), batDYenc)); // OID lineorder | d_year
+        MEASURE_OP_TUPLE(sw2, x, tupleA2, v2::bat::ops::hashjoinAN(get<0>(tupleG), batDYenc)); // OID lineorder | d_year
         CLEAR_HASHJOIN_AN(tupleA2);
-        delete get<0>(tupleI);
+        delete get<0>(tupleG);
 
         MEASURE_OP_TUPLE(sw2, x, tupleA3, v2::bat::ops::hashjoinAN(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
         CLEAR_HASHJOIN_AN(tupleA3);
@@ -201,49 +199,52 @@ main (int argc, char** argv) {
 
         std::cout << "(" << setw(2) << i << ")\n\tresult-size: " << get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.\n";
 
-        if (CONFIG.VERBOSE && i == 0) {
+        if (CONFIG.PRINT_RESULT && i == 0) {
             size_t sum = 0;
-            auto iter1 = get<0>(tupleK)->begin();
-            auto iter2 = get<1>(tupleK)->begin();
-            auto iter3 = get<2>(tupleK)->begin();
-            auto iter4 = get<3>(tupleK)->begin();
-            auto iter5 = get<4>(tupleK)->begin();
+            auto iter0 = get<0>(tupleK)->begin();
+            auto iter1 = get<1>(tupleK)->begin();
+            auto iter2 = get<2>(tupleK)->begin();
+            auto iter3 = get<3>(tupleK)->begin();
+            auto iter4 = get<4>(tupleK)->begin();
+            // we need the following typedefs to cast the inverses to the correct length
             typedef std::remove_pointer < std::remove_reference < decltype(get<0>(tupleK))>::type>::type tupleK_0_t;
-            typedef tupleK_0_t::v2_tail_t tupleK_0_v2_tail_t;
-            typedef typename TypeMap<tupleK_0_v2_tail_t>::v2_encoded_t::type_t tail_K0_t;
+            typedef typename TypeMap<tupleK_0_t::v2_tail_t>::v2_encoded_t::type_t K0_tail_enc_t;
+            typedef typename TypeMap<tupleK_0_t::v2_tail_t>::v2_base_t::type_t K0_tail_unenc_t;
             typedef std::remove_pointer < std::remove_reference < decltype(get<1>(tupleK))>::type>::type tupleK_1_t;
-            typedef tupleK_1_t::v2_tail_t tupleK_1_v2_tail_t;
-            typedef typename TypeMap<tupleK_1_v2_tail_t>::v2_encoded_t::type_t tail_K1_t;
+            typedef typename TypeMap<tupleK_1_t::v2_tail_t>::v2_encoded_t::type_t K1_tail_enc_t;
+            typedef typename TypeMap<tupleK_1_t::v2_tail_t>::v2_base_t::type_t K1_tail_unenc_t;
             typedef std::remove_pointer < std::remove_reference < decltype(get<2>(tupleK))>::type>::type tupleK_2_t;
-            typedef tupleK_2_t::v2_tail_t tupleK_2_v2_tail_t;
-            typedef typename TypeMap<tupleK_2_v2_tail_t>::v2_encoded_t::type_t tail_K2_t;
+            typedef typename TypeMap<tupleK_2_t::v2_tail_t>::v2_encoded_t::type_t K2_tail_enc_t;
+            typedef typename TypeMap<tupleK_2_t::v2_tail_t>::v2_base_t::type_t K2_tail_unenc_t;
             typedef std::remove_pointer < std::remove_reference < decltype(get<3>(tupleK))>::type>::type tupleK_3_t;
-            typedef tupleK_3_t::v2_tail_t tupleK_3_v2_tail_t;
-            typedef typename TypeMap<tupleK_3_v2_tail_t>::v2_encoded_t::type_t tail_K3_t;
-            tail_K0_t Ainv0 = static_cast<tail_K0_t>(get<0>(tupleK)->tail.metaData.AN_Ainv);
-            tail_K1_t Ainv1 = static_cast<tail_K1_t>(get<1>(tupleK)->tail.metaData.AN_Ainv);
-            tail_K2_t Ainv2 = static_cast<tail_K2_t>(get<2>(tupleK)->tail.metaData.AN_Ainv);
-            tail_K3_t Ainv3 = static_cast<tail_K3_t>(get<3>(tupleK)->tail.metaData.AN_Ainv);
+            typedef typename TypeMap<tupleK_3_t::v2_tail_t>::v2_encoded_t::type_t K3_tail_enc_t;
+            typedef typename TypeMap<tupleK_3_t::v2_tail_t>::v2_base_t::type_t K3_tail_unenc_t;
+            // OK now get the correct inverses
+            auto Ainv0 = static_cast<K0_tail_enc_t>(get<0>(tupleK)->tail.metaData.AN_Ainv);
+            auto Ainv1 = static_cast<K1_tail_enc_t>(get<1>(tupleK)->tail.metaData.AN_Ainv);
+            auto Ainv2 = static_cast<K2_tail_enc_t>(get<2>(tupleK)->tail.metaData.AN_Ainv);
+            auto Ainv3 = static_cast<K3_tail_enc_t>(get<3>(tupleK)->tail.metaData.AN_Ainv);
             std::cerr << "+------------+--------+-----------+\n";
             std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
-            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
-                auto value1 = iter1->tail() * Ainv0;
-                sum += value1;
-                std::cerr << "| " << setw(10) << value1;
-                iter3->position(iter2->tail() * Ainv1);
-                auto value2 = iter3->tail() * Ainv2;
-                std::cerr << " | " << setw(6) << value2;
-                iter5->position(iter4->tail() * Ainv3);
-                std::cerr << " | " << setw(9) << iter5->tail() << " |\n";
+            for (; iter0->hasNext(); ++*iter0, ++*iter1, ++*iter3) {
+                auto value0 = static_cast<K0_tail_unenc_t>(iter0->tail() * Ainv0);
+                sum += value0;
+                std::cerr << "| " << setw(10) << value0;
+                auto pos2 = static_cast<K1_tail_unenc_t>(iter1->tail() * Ainv1);
+                iter2->position(pos2);
+                std::cerr << " | " << setw(6) << static_cast<K2_tail_unenc_t>(iter2->tail() * Ainv2);
+                auto pos4 = static_cast<K3_tail_unenc_t>(iter3->tail() * Ainv3);
+                iter4->position(pos4);
+                std::cerr << " | " << setw(9) << iter4->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
-            std::cout << "\t   sum: " << sum << std::endl;
+            std::cerr << "\t   sum: " << sum << std::endl;
+            delete iter0;
             delete iter1;
             delete iter2;
             delete iter3;
             delete iter4;
-            delete iter5;
         }
         delete get<0>(tupleK);
         delete get<1>(tupleK);

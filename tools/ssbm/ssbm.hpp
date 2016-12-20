@@ -47,7 +47,6 @@
 #include <column_storage/ColumnBat.h>
 #include <column_storage/TransactionManager.h>
 #include <column_operators/Operators.hpp>
-#include <column_operators/OperatorsAN.hpp>
 
 // define
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
@@ -204,13 +203,14 @@ struct ssbmconf_t {
     size_t LEN_SIZES;
     string DB_PATH;
     bool VERBOSE;
+    bool PRINT_RESULT;
 
 private:
     ArgumentParser parser;
 
 public:
 
-    ssbmconf_t () : NUM_RUNS (0), LEN_TIMES (0), LEN_TYPES (0), LEN_SIZES (0), DB_PATH (), VERBOSE (false), parser ({
+    ssbmconf_t () : NUM_RUNS (0), LEN_TIMES (0), LEN_TYPES (0), LEN_SIZES (0), DB_PATH (), VERBOSE (false), PRINT_RESULT (0), parser ({
         std::forward_as_tuple("numruns", alias_list_t
         {"--numruns", "-n"}, 15),
         std::forward_as_tuple("lentimes", alias_list_t
@@ -225,9 +225,9 @@ public:
     },
     {
 
-        std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, false)
-    }
-                                                                                                                    ) {
+        std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, false),
+        std::forward_as_tuple("printresult", alias_list_t{"--print-result", "-p"}, false)
+    }) {
 #ifdef DEBUG
         std::cout << "ssbmconf_t()" << std::endl;
 #endif
@@ -252,6 +252,7 @@ public:
         LEN_SIZES = parser.get_uint("lensizes");
         DB_PATH = parser.get_str("dbpath");
         VERBOSE = parser.get_bool("verbose");
+        PRINT_RESULT = parser.get_bool("printresult");
     }
 };
 

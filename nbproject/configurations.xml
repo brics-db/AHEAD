@@ -8,7 +8,6 @@
           <in>encdec.tcc</in>
           <in>groupby.tcc</in>
           <in>hashjoin.tcc</in>
-          <in>miscellaneous.tcc</in>
           <in>select.tcc</in>
         </df>
         <df name="Normal">
@@ -29,6 +28,9 @@
       </df>
     </df>
     <df root="lib" name="1">
+      <df name="column_operators">
+        <in>Operators.cpp</in>
+      </df>
       <df name="column_storage">
         <in>BucketManager.cpp</in>
         <in>ColumnManager.cpp</in>
@@ -56,18 +58,22 @@
       <df name="ssbm">
         <in>ssbm-q11.cpp</in>
         <in>ssbm-q11_continuous.cpp</in>
+        <in>ssbm-q11_continuous_reenc.cpp</in>
         <in>ssbm-q11_early.cpp</in>
         <in>ssbm-q11_late.cpp</in>
         <in>ssbm-q12.cpp</in>
         <in>ssbm-q12_continuous.cpp</in>
+        <in>ssbm-q12_continuous_reenc.cpp</in>
         <in>ssbm-q12_early.cpp</in>
         <in>ssbm-q12_late.cpp</in>
         <in>ssbm-q13.cpp</in>
         <in>ssbm-q13_continuous.cpp</in>
+        <in>ssbm-q13_continuous_reenc.cpp</in>
         <in>ssbm-q13_early.cpp</in>
         <in>ssbm-q13_late.cpp</in>
         <in>ssbm-q21.cpp</in>
         <in>ssbm-q21_continuous.cpp</in>
+        <in>ssbm-q21_continuous_reenc.cpp</in>
         <in>ssbm-q21_early.cpp</in>
         <in>ssbm-q21_late.cpp</in>
       </df>
@@ -96,13 +102,16 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-march=native -march=native -O3 -std=gnu++14"/>
-        <element flagsID="1" commonFlags="-std=c++14"/>
+        <element flagsID="1"
+                 commonFlags="-march=native -pedantic -march=native -O3 -std=gnu++14"/>
+        <element flagsID="2"
+                 commonFlags="-march=native -pedantic -march=native -std=gnu++14"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
         <makeTool>
-          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommandWorkingDir>build</buildCommandWorkingDir>
           <buildCommand>make all</buildCommand>
           <cleanCommand>make clean</cleanCommand>
           <executablePath></executablePath>
@@ -118,30 +127,20 @@
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
-          <preBuildCommand></preBuildCommand>
+          <preBuildCommand>rm -Rf build ; mkdir build ; cd build ; cmake .. -DCMAKE_BUILD_TYPE=Release</preBuildCommand>
         </preBuild>
       </makefileType>
-      <folder path="1/column_storage">
+      <folder path="1">
         <ccTool>
           <incDir>
-            <pElem>lib</pElem>
+            <pElem>build/lib</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NDEBUG</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
-      <folder path="1/meta_repository">
-        <ccTool>
-          <incDir>
-            <pElem>lib</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="2">
+      <folder path="2/sample">
         <ccTool>
           <incDir>
             <pElem>tools</pElem>
@@ -151,144 +150,73 @@
           </preprocessorList>
         </ccTool>
       </folder>
-      <item path="include/column_operators/AN/aggregate.tcc"
+      <folder path="2/ssbm">
+        <ccTool>
+          <incDir>
+            <pElem>build/tools</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <item path="lib/column_operators/Operators.cpp"
             ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/AN/encdec.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/AN/groupby.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/AN/hashjoin.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/AN/miscellaneous.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/AN/select.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/Normal/aggregate.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/Normal/groupby.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/Normal/hashjoin.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/Normal/miscellaneous.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/Normal/select.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_storage/ColumnDescriptor.hpp"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_storage/ColumnMetaData.hpp"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/util/argumentparser.hpp" ex="false" tool="3" flavor2="0">
+            tool="1"
+            flavor2="11">
+        <ccTool flags="2">
+        </ccTool>
       </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="lib/column_storage/ColumnManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="lib/column_storage/Transaction.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="lib/column_storage/TransactionManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="lib/meta_repository/MetaRepositoryManager.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
-      <item path="lib/util/argumentparser.cpp" ex="false" tool="1" flavor2="0">
+      <item path="lib/util/argumentparser.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
       </item>
       <item path="lib/util/resilience.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-          <incDir>
-            <pElem>lib</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-          </preprocessorList>
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="lib/util/rss.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>/usr/include</pElem>
-            <pElem>lib</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="lib/util/stopwatch.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="1">
-          <incDir>
-            <pElem>/usr/include</pElem>
-            <pElem>lib</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="lib/util/v2types.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
-          <incDir>
-            <pElem>lib</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NDEBUG</Elem>
-          </preprocessorList>
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/sample/lineorder_size.cpp" ex="false" tool="1" flavor2="11">
@@ -308,79 +236,107 @@
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11_continuous.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q11_continuous_reenc.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_continuous.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q12_continuous_reenc.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_continuous.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q13_continuous_reenc.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_continuous.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q21_continuous_reenc.cpp"
+            ex="false"
+            tool="1"
+            flavor2="11">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="0">
+        <ccTool flags="2">
         </ccTool>
       </item>
     </conf>
@@ -398,9 +354,9 @@
       </codeAssistance>
       <makefileType>
         <makeTool>
-          <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>DEBUG=1 ./build</buildCommand>
-          <cleanCommand>./clean</cleanCommand>
+          <buildCommandWorkingDir>build</buildCommandWorkingDir>
+          <buildCommand>make all</buildCommand>
+          <cleanCommand>make clean</cleanCommand>
           <executablePath></executablePath>
           <cTool>
             <standard>10</standard>
@@ -415,7 +371,7 @@
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
-          <preBuildCommand></preBuildCommand>
+          <preBuildCommand>rm -Rf build ; mkdir build ; cd build ; cmake .. -DCMAKE_BUILD_TYPE=Debug</preBuildCommand>
         </preBuild>
       </makefileType>
       <item path="CMakeLists.txt" ex="false" tool="3" flavor2="0">
@@ -443,11 +399,6 @@
             flavor2="0">
       </item>
       <item path="include/column_operators/AN/hashjoin.tcc"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="include/column_operators/AN/miscellaneous.tcc"
             ex="false"
             tool="3"
             flavor2="0">
@@ -495,6 +446,8 @@
       <item path="include/util/argumentparser.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/util/v2types.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/column_operators/Operators.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"

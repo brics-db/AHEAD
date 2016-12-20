@@ -62,7 +62,7 @@ struct v2_anencoded_t {
 struct v2_restiny_t : public v2_anencoded_t {
 
     typedef restiny_t type_t;
-    typedef v2_tinyint_t unenc_v2_t;
+    typedef v2_tinyint_t v2_unenc_t;
     typedef v2_restiny_t v2_copy_t;
     typedef v2_restiny_t v2_select_t;
     typedef v2_restiny_t v2_compare_t;
@@ -81,7 +81,7 @@ struct v2_restiny_t : public v2_anencoded_t {
 struct v2_resshort_t : public v2_anencoded_t {
 
     typedef resshort_t type_t;
-    typedef v2_shortint_t unenc_v2_t;
+    typedef v2_shortint_t v2_unenc_t;
     typedef v2_resshort_t v2_copy_t;
     typedef v2_resshort_t v2_select_t;
     typedef v2_resshort_t v2_compare_t;
@@ -100,7 +100,7 @@ struct v2_resshort_t : public v2_anencoded_t {
 struct v2_resint_t : public v2_anencoded_t {
 
     typedef resint_t type_t;
-    typedef v2_int_t unenc_v2_t;
+    typedef v2_int_t v2_unenc_t;
     typedef v2_resint_t v2_copy_t;
     typedef v2_resint_t v2_select_t;
     typedef v2_resint_t v2_compare_t;
@@ -119,7 +119,7 @@ struct v2_resint_t : public v2_anencoded_t {
 struct v2_resbigint_t : public v2_anencoded_t {
 
     typedef resbigint_t type_t;
-    typedef v2_bigint_t unenc_v2_t;
+    typedef v2_bigint_t v2_unenc_t;
     typedef v2_resbigint_t v2_copy_t;
     typedef v2_resbigint_t v2_select_t;
     typedef v2_resbigint_t v2_compare_t;
@@ -138,7 +138,7 @@ struct v2_resbigint_t : public v2_anencoded_t {
 struct v2_resoid_t : public v2_anencoded_t {
 
     typedef resoid_t type_t;
-    typedef v2_oid_t unenc_v2_t;
+    typedef v2_oid_t v2_unenc_t;
     typedef v2_resoid_t v2_copy_t;
     typedef v2_resoid_t v2_select_t;
     typedef v2_resoid_t v2_compare_t;
@@ -157,7 +157,7 @@ struct v2_resoid_t : public v2_anencoded_t {
 struct v2_resstr_t : public v2_anencoded_t {
 
     typedef str_t type_t;
-    typedef v2_str_t unenc_v2_t;
+    typedef v2_str_t v2_unenc_t;
     typedef v2_str_t v2_copy_t;
     typedef v2_str_t v2_select_t;
     typedef v2_str_t v2_compare_t;

@@ -30,7 +30,9 @@
 
 #include <type_traits>
 
-#include <util/resilience.hpp>
+#include <ColumnStore.h>
+#include <column_storage/Bat.h>
+#include <column_storage/TempBat.h>
 
 namespace v2 {
     namespace bat {

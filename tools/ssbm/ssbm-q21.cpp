@@ -182,7 +182,7 @@ main (int argc, char** argv) {
 
         std::cout << "(" << setw(2) << i << ")\n\tresult-size: " << get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.\n";
 
-        if (CONFIG.VERBOSE && i == 0) {
+        if (CONFIG.PRINT_RESULT && i == 0) {
             size_t sum = 0;
             auto iter1 = get<0>(tupleK)->begin();
             auto iter2 = get<1>(tupleK)->begin();
@@ -201,7 +201,7 @@ main (int argc, char** argv) {
                 std::cerr << " | " << setw(9) << iter5->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
-            std::cout << "\t   sum: " << sum << std::endl;
+            std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;

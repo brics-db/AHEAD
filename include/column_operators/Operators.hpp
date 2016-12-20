@@ -26,10 +26,99 @@
 #ifndef OPERATORS_H
 #define OPERATORS_H
 
-#include "Normal/miscellaneous.tcc"
-#include "Normal/select.tcc"
-#include "Normal/hashjoin.tcc"
-#include "Normal/aggregate.tcc"
-#include "Normal/groupby.tcc"
+#include <ColumnStore.h>
+
+#include <column_operators/Normal/miscellaneous.tcc>
+#include <column_operators/Normal/select.tcc>
+#include <column_operators/Normal/hashjoin.tcc>
+#include <column_operators/Normal/aggregate.tcc>
+#include <column_operators/Normal/groupby.tcc>
+
+#define V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, HEAD) \
+extern template RETURN<HEAD, v2_oid_t> * NAME<HEAD, v2_oid_t>(BAT<HEAD, v2_oid_t> * arg); \
+extern template RETURN<HEAD, v2_id_t> * NAME<HEAD, v2_id_t>(BAT<HEAD, v2_id_t> * arg); \
+extern template RETURN<HEAD, v2_size_t> * NAME<HEAD, v2_size_t>(BAT<HEAD, v2_size_t> * arg); \
+extern template RETURN<HEAD, v2_tinyint_t> * NAME<HEAD, v2_tinyint_t>(BAT<HEAD, v2_tinyint_t> * arg); \
+extern template RETURN<HEAD, v2_shortint_t> * NAME<HEAD, v2_shortint_t>(BAT<HEAD, v2_shortint_t> * arg); \
+extern template RETURN<HEAD, v2_int_t> * NAME<HEAD, v2_int_t>(BAT<HEAD, v2_int_t> * arg); \
+extern template RETURN<HEAD, v2_bigint_t> * NAME<HEAD, v2_bigint_t>(BAT<HEAD, v2_bigint_t> * arg); \
+extern template RETURN<HEAD, v2_char_t> * NAME<HEAD, v2_char_t>(BAT<HEAD, v2_char_t> * arg); \
+extern template RETURN<HEAD, v2_str_t> * NAME<HEAD, v2_str_t>(BAT<HEAD, v2_str_t> * arg); \
+extern template RETURN<HEAD, v2_fixed_t> * NAME<HEAD, v2_fixed_t>(BAT<HEAD, v2_fixed_t> * arg);
+
+#define V2_FUNCTION_SINGLE(NAME, RETURN) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_oid_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_void_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_id_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_size_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_tinyint_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_shortint_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_int_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_bigint_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_char_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_str_t) \
+V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_fixed_t)
+
+#define V2_CLASS_SINGLE_HEAD(NAME, HEAD) \
+extern template class NAME <HEAD, v2_oid_t>; \
+extern template class NAME <HEAD, v2_id_t>; \
+extern template class NAME <HEAD, v2_size_t>; \
+extern template class NAME <HEAD, v2_tinyint_t>; \
+extern template class NAME <HEAD, v2_shortint_t>; \
+extern template class NAME <HEAD, v2_int_t>; \
+extern template class NAME <HEAD, v2_bigint_t>; \
+extern template class NAME <HEAD, v2_char_t>; \
+extern template class NAME <HEAD, v2_str_t>; \
+extern template class NAME <HEAD, v2_fixed_t>;
+
+#define V2_CLASS_SINGLE(NAME) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_oid_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_void_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_id_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_size_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_tinyint_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_shortint_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_int_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_bigint_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_char_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_str_t) \
+V2_CLASS_SINGLE_HEAD(NAME, v2_fixed_t)
+
+#define V2_STRUCT_SINGLE_HEAD(NAME, HEAD) \
+extern template struct NAME <HEAD, v2_oid_t>; \
+extern template struct NAME <HEAD, v2_id_t>; \
+extern template struct NAME <HEAD, v2_size_t>; \
+extern template struct NAME <HEAD, v2_tinyint_t>; \
+extern template struct NAME <HEAD, v2_shortint_t>; \
+extern template struct NAME <HEAD, v2_int_t>; \
+extern template struct NAME <HEAD, v2_bigint_t>; \
+extern template struct NAME <HEAD, v2_char_t>; \
+extern template struct NAME <HEAD, v2_str_t>; \
+extern template struct NAME <HEAD, v2_fixed_t>;
+
+#define V2_STRUCT_SINGLE(NAME) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_oid_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_void_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_id_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_size_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_tinyint_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_shortint_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_int_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_bigint_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_char_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_str_t) \
+V2_STRUCT_SINGLE_HEAD(NAME, v2_fixed_t)
+
+namespace v2 {
+    namespace bat {
+        namespace ops {
+            namespace Private {
+                V2_STRUCT_SINGLE (copy0)
+            }
+
+            V2_FUNCTION_SINGLE (copy, TempBAT)
+        }
+    }
+}
 
 #endif

@@ -30,7 +30,9 @@
 
 #include <type_traits>
 
-#include <util/resilience.hpp>
+#include <ColumnStore.h>
+#include <column_storage/Bat.h>
+#include <column_storage/TempBat.h>
 
 namespace v2 {
     namespace bat {
@@ -81,11 +83,11 @@ namespace v2 {
             }
 
             template<typename Head, typename ResTail>
-            pair<TempBAT<Head, typename ResTail::unenc_v2_t>*, vector<bool>*>
+            pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, vector<bool>*>
             decodeAN (BAT<Head, ResTail>* arg) {
 
                 typedef typename ResTail::type_t restail_t;
-                typedef typename ResTail::unenc_v2_t Tail;
+                typedef typename ResTail::v2_unenc_t Tail;
                 typedef typename Tail::type_t tail_t;
 
                 static_assert(is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -111,7 +113,7 @@ namespace v2 {
             }
 
             template<typename Head, typename Tail>
-            tuple<BAT<typename Head::unenc_v2_t, typename Tail::unenc_v2_t>*, vector<bool>*, vector<bool>*>
+            tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, vector<bool>*, vector<bool>*>
             checkAndDecodeAN (BAT<Head, Tail>* arg) {
 
                 typedef typename Head::type_t head_t;
@@ -127,7 +129,7 @@ namespace v2 {
                 tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
                 vector<bool> *vec1 = (isHeadEncoded ? new vector<bool>(arg->size()) : nullptr);
                 vector<bool> *vec2 = (isTailEncoded ? new vector<bool>(arg->size()) : nullptr);
-                auto result = new TempBAT<typename Head::unenc_v2_t, typename Tail::unenc_v2_t > ();
+                auto result = new TempBAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t > ();
                 result->reserve(arg->size());
                 auto iter = arg->begin();
                 for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
@@ -140,19 +142,19 @@ namespace v2 {
                         if (decT <= tUnencMaxU) {
                             (*vec2)[i] = true;
                         }
-                        result->append(make_pair(static_cast<typename Tail::unenc_v2_t::type_t>(decH), static_cast<typename Tail::unenc_v2_t::type_t>(decT)));
+                        result->append(make_pair(static_cast<typename Tail::v2_unenc_t::type_t>(decH), static_cast<typename Tail::v2_unenc_t::type_t>(decT)));
                     } else if (isHeadEncoded) {
                         auto decH = iter->head() * hAinv;
                         if (decH <= hUnencMaxU) {
                             (*vec1)[i] = true;
                         }
-                        result->append(make_pair(static_cast<typename Tail::unenc_v2_t::type_t>(decH), iter->tail()));
+                        result->append(make_pair(static_cast<typename Tail::v2_unenc_t::type_t>(decH), iter->tail()));
                     } else {
                         auto decT = iter->tail() * tAinv;
                         if (decT <= tUnencMaxU) {
                             (*vec2)[i] = true;
                         }
-                        result->append(make_pair(iter->head(), static_cast<typename Tail::unenc_v2_t::type_t>(decT)));
+                        result->append(make_pair(iter->head(), static_cast<typename Tail::v2_unenc_t::type_t>(decT)));
                     }
                 }
                 delete iter;
