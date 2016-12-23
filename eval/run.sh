@@ -15,7 +15,7 @@ IMPLEMENTED=(11 12 13 21)
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
-if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi
+if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
 if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
@@ -24,10 +24,10 @@ if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 # Process specific constants
 CMAKE_BUILD_TYPE=release
 
-BENCHMARK_NUMRUNS=3
-BENCHMARK_NUMBEST=2
+BENCHMARK_NUMRUNS=15
+BENCHMARK_NUMBEST=10
 BENCHMARK_SFMIN=1
-BENCHMARK_SFMAX=1
+BENCHMARK_SFMAX=10
 
 # functions etc
 pushd () {
@@ -100,7 +100,8 @@ $(for var in "${@:4}"; do echo $var; done)
 plot '${3}' using 2:xtic(1) title col, \\
         '' using 3:xtic(1) title col, \\
         '' using 4:xtic(1) title col, \\
-        '' using 5:xtic(1) title col
+        '' using 5:xtic(1) title col, \\
+        '' using 6:xtic(1) title col
 EOM
 }
 
@@ -132,7 +133,8 @@ $(for var in "${@:4}"; do echo $var; done)
 plot '${3}' using 2:xtic(1) t "Unencoded", \\
         '' using 3:xtic(1) t "Early", \\
         '' using 4:xtic(1) t "Late", \\
-        '' using 5:xtic(1) t "Continuous"
+        '' using 5:xtic(1) t "Continuous", \\
+        '' using 6:xtic(1) t "Cont. w/ reenc"
 EOM
 }
 
@@ -151,7 +153,10 @@ EOM
 
 # Compile
 if [[ ${DO_COMPILE} -ne 0 ]]; then
-    date    
+    date
+    echo "Recreating build dir \"${PATH_BUILD}\""
+    rm -Rf ${PATH_BUILD}
+    mkdir -p ${PATH_BUILD}
     echo "Compiling."
     pushd ${PATH_BUILD}
     if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
@@ -161,7 +166,7 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
             exit ${exitcode};
         fi
     fi
-    make
+    make -j
     exitcode=$?
     popd
     if [[ ${exitcode} -ne 0 ]]; then
@@ -192,7 +197,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                 echo -n " * ${type}:"
                 for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
                     echo -n " sf${sf}"
-                    env ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                    taskset -c 5 ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                 done
                 echo " done."
             else
