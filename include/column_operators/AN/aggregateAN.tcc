@@ -45,7 +45,7 @@ namespace v2 {
              * @return A single sum of the pair-wise products of the two BATs
              */
             template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-            tuple<BAT<v2_void_t, Result>*, vector<bool>*, vector<bool>*>
+            std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*>
             aggregate_mul_sumAN (
                                  BAT<Head1, Tail1>* arg1,
                                  BAT<Head2, Tail2>* arg2,
@@ -60,12 +60,12 @@ namespace v2 {
                 typename T2Enc::type_t AT2inv = arg2->tail.metaData.AN_Ainv;
                 typename T2Enc::type_t AT2unencMaxU = arg2->tail.metaData.AN_unencMaxU;
 
-                const bool isTail1Encoded = is_base_of<v2_anencoded_t, Tail1>::value;
-                const bool isTail2Encoded = is_base_of<v2_anencoded_t, Tail2>::value;
-                const bool isResultEncoded = is_base_of<v2_anencoded_t, Result>::value;
+                const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
+                const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
+                const bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
                 typename Result::type_t total = init;
-                vector<bool>* vec1 = (isTail1Encoded ? new vector<bool>(arg1->size()) : nullptr);
-                vector<bool>* vec2 = (isTail2Encoded ? new vector<bool>(arg2->size()) : nullptr);
+                std::vector<bool>* vec1 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
+                std::vector<bool>* vec2 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 for (size_t i = 0; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2, ++i) {
@@ -87,7 +87,7 @@ namespace v2 {
                 typedef typename TempBAT<v2_void_t, Result>::coldesc_tail_t cd_tail_t;
                 auto bat = new TempBAT<v2_void_t, Result>(cd_head_t(), cd_tail_t(ColumnMetaData(sizeof (result_t), RA, RAInv, Result::UNENC_MAX_U, Result::UNENC_MIN)));
                 bat->append(total);
-                return make_tuple(bat, vec1, vec2);
+                return std::make_tuple(bat, vec1, vec2);
             }
         }
     }

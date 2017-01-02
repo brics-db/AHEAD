@@ -7,8 +7,6 @@
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
 
-using namespace std;
-
 extern const char* NAME_TINYINT;
 extern const char* NAME_SHORTINT;
 extern const char* NAME_INTEGER;
@@ -53,7 +51,7 @@ public:
     static MetaRepositoryManager* getInstance ();
 
     static void init (const char* strBaseDir);
-    
+
     static void init (const std::string & strBaseDir);
 
     /**
@@ -117,10 +115,10 @@ private:
     void createDefaultDataTypes ();
 
     template<class Head, class Tail>
-    pair<typename Head::type_t, typename Tail::type_t> getLastValue (BAT<Head, Tail> *bat);
+    std::pair<typename Head::type_t, typename Tail::type_t> getLastValue (BAT<Head, Tail> *bat);
 
     template<class Head, class Tail>
-    pair<typename Head::type_t, typename Tail::type_t> unique_selection (BAT<Head, Tail> *bat, typename Tail::type_t value);
+    std::pair<typename Head::type_t, typename Tail::type_t> unique_selection (BAT<Head, Tail> *bat, typename Tail::type_t value);
 
     template<class Head, class Tail>
     bool isBatEmpty (BAT<Head, Tail> *bat);

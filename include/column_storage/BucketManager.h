@@ -76,11 +76,11 @@ public:
     struct BucketStream {
 
         Bucket *head, *tail;
-        vector<Bucket*> index;
+        std::vector<Bucket*> index;
         size_t size;
 
         BucketStream ();
-        BucketStream (Bucket *head, Bucket *tail, vector<Bucket*> index, size_t size);
+        BucketStream (Bucket *head, Bucket *tail, std::vector<Bucket*> & index, size_t size);
         BucketStream (const BucketStream &);
 
         BucketStream& operator= (const BucketStream &);
@@ -176,7 +176,7 @@ public:
         Bucket *previousBucket;
 
         /**
-         * Der Stack wird ben�tigt um die Undo-Funktionalit�t zu realisieren. Bei jedem Aufruf der Funktion append() oder edit() auf ein Bucket, welches bisher nicht von einem BucketIterator mit der gleichen Version (Referenzgleichheit) angelegt oder ge�ndert wurde, wird ein Zeiger auf den Vorg�ngerbucket auf dem Stack abgelegt.
+         * Der Stack wird benötigt um die Undo-Funktionalität zu realisieren. Bei jedem Aufruf der Funktion append() oder edit() auf ein Bucket, welches bisher nicht von einem BucketIterator mit der gleichen Version (Referenzgleichheit) angelegt oder geändert wurde, wird ein Zeiger auf den Vorgängerbucket auf dem Stack abgelegt.
          */
         std::stack<Bucket*> log;
 

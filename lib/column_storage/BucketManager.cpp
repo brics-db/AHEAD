@@ -51,7 +51,7 @@ BucketManager::Bucket& BucketManager::Bucket::operator= (const Bucket &copy) {
 BucketManager::BucketStream::BucketStream () : head (nullptr), tail (nullptr), index (), size (0) {
 }
 
-BucketManager::BucketStream::BucketStream (Bucket *head, Bucket *tail, vector<Bucket*> index, size_t size) : head (head), tail (tail), index (index), size (size) {
+BucketManager::BucketStream::BucketStream (Bucket *head, Bucket *tail, std::vector<Bucket*> & index, size_t size) : head (head), tail (tail), index (index), size (size) {
 }
 
 BucketManager::BucketStream::BucketStream (const BucketStream &copy) : head (copy.head), tail (copy.tail), index (copy.index), size (copy.size) {
@@ -103,13 +103,13 @@ BucketManager::printDebugInformation () {
 BucketManager::BucketIterator::BucketIterator (BucketManager::BucketStream *stream, version_t *version) : stream (stream), version (version), currentBucket (0), previousBucket (0), log () {
     if (stream == nullptr || version == nullptr) {
         // Problem : Falsche Parameter
-        stringstream ss;
+        std::stringstream ss;
         ss << "BucketIterator::BucketIterator(stream, version):";
         if (stream == nullptr)
             ss << " stream is null.";
         if (version == nullptr)
             ss << " version is null.";
-        throw runtime_error(ss.str());
+        throw std::runtime_error(ss.str());
     }
 }
 

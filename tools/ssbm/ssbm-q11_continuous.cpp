@@ -40,7 +40,7 @@ main (int argc, char** argv) {
     bool hasTwoTypes[NUM_OPS] = {false};
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
-    string emptyString;
+    std::string emptyString;
     size_t x = 0;
     StopWatch sw1, sw2;
 
@@ -100,62 +100,62 @@ main (int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN<less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
+        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
         delete pair1.second;
         MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
         delete pair2.second;
         MEASURE_OP(sw2, x, bat3, pair1.first->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
-        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::hashjoinAN(bat3, pair2.first)); // join selection
+        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::matchjoinAN(bat3, pair2.first)); // join selection
         delete bat3;
         delete pair2.first;
         CLEAR_HASHJOIN_AN(tuple4);
-        MEASURE_OP(sw2, x, bat5, (get<0>(tuple4)->mirror_head())); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::hashjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(sw2, x, bat5, (std::get<0>(tuple4)->mirror_head())); // prepare joined selection with lo_orderdate (contains positions in tail)
+        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::matchjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(sw2, x, pair7, (v2::bat::ops::selectAN<equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A))); // d_year = 1993
+        MEASURE_OP_PAIR(sw2, x, pair7, (v2::bat::ops::selectAN<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A))); // d_year = 1993
         if (pair7.second) delete pair7.second;
         MEASURE_OP(sw2, x, bat8, (pair7.first->mirror_head())); // prepare joined selection over d_year and d_datekey
         delete pair7.first;
-        MEASURE_OP_TUPLE(sw2, x, tuple9, (v2::bat::ops::hashjoinAN(bat8, batDDenc))); // only those d_datekey where d_year...
+        MEASURE_OP_TUPLE(sw2, x, tuple9, (v2::bat::ops::matchjoinAN(bat8, batDDenc))); // only those d_datekey where d_year...
         delete bat8;
         CLEAR_HASHJOIN_AN(tuple9);
 
         // 3) join lineorder and date
-        MEASURE_OP(sw2, x, batA, (get<0>(tuple9)->reverse()));
-        delete get<0>(tuple9);
-        MEASURE_OP_TUPLE(sw2, x, tupleB, (v2::bat::ops::hashjoinAN(get<0>(tuple6), batA))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
-        delete get<0>(tuple6);
+        MEASURE_OP(sw2, x, batA, (std::get<0>(tuple9)->reverse()));
+        delete std::get<0>(tuple9);
+        MEASURE_OP_TUPLE(sw2, x, tupleB, (v2::bat::ops::hashjoinAN(std::get<0>(tuple6), batA))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        delete std::get<0>(tuple6);
         delete batA;
         CLEAR_HASHJOIN_AN(tupleB);
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
-        MEASURE_OP(sw2, x, batC, (get<0>(tupleB)->mirror_head())); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
-        delete get<0>(tupleB);
-        MEASURE_OP_TUPLE(sw2, x, tupleD, (v2::bat::ops::hashjoinAN(batC, batLEenc)));
+        MEASURE_OP(sw2, x, batC, (std::get<0>(tupleB)->mirror_head())); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
+        delete std::get<0>(tupleB);
+        MEASURE_OP_TUPLE(sw2, x, tupleD, (v2::bat::ops::matchjoinAN(batC, batLEenc)));
         CLEAR_HASHJOIN_AN(tupleD);
-        MEASURE_OP_TUPLE(sw2, x, tupleE, (v2::bat::ops::hashjoinAN(batC, get<0>(tuple4))));
+        MEASURE_OP_TUPLE(sw2, x, tupleE, (v2::bat::ops::matchjoinAN(batC, std::get<0>(tuple4))));
         delete batC;
-        delete get<0>(tuple4);
+        delete std::get<0>(tuple4);
         CLEAR_HASHJOIN_AN(tupleE);
 
         // 4) result
-        MEASURE_OP_TUPLE(sw2, x, tupleF, (v2::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(get<0>(tupleD), get<0>(tupleE))));
-        delete get<0>(tupleD);
-        delete get<0>(tupleE);
-        delete get<1>(tupleF);
-        delete get<2>(tupleF);
-        auto iter = get<0>(tupleF)->begin();
+        MEASURE_OP_TUPLE(sw2, x, tupleF, (v2::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
+        delete std::get<0>(tupleD);
+        delete std::get<0>(tupleE);
+        delete std::get<1>(tupleF);
+        delete std::get<2>(tupleF);
+        auto iter = std::get<0>(tupleF)->begin();
         auto result = iter->tail();
         delete iter;
-        auto Ainv = get<0>(tupleF)->tail.metaData.AN_Ainv;
-        delete get<0>(tupleF);
+        auto Ainv = std::get<0>(tupleF)->tail.metaData.AN_Ainv;
+        delete std::get<0>(tupleF);
 
         totalTimes[i] = sw1.stop();
 
-        std::cout << "(" << setw(2) << i << ")\n\tresult: " << (result * Ainv) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.\n";
+        std::cout << "(" << std::setw(2) << i << ")\n\tresult: " << (result * Ainv) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.\n";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
@@ -166,7 +166,7 @@ main (int argc, char** argv) {
 
     std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        std::cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
+        std::cout << '\n' << std::setw(2) << i << '\t' << totalTimes[i];
     }
     std::cout << std::endl;
 

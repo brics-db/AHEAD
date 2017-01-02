@@ -64,8 +64,8 @@ struct BAT {
     virtual BATIterator<Head, Tail>* begin () = 0;
 
     /** append an item */
-    virtual void append (pair<head_t, tail_t>& p) = 0;
-    virtual void append (pair<head_t, tail_t>&& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>&& p) = 0;
 
     virtual BAT<Tail, Head>* reverse () = 0;
 
@@ -124,8 +124,8 @@ struct BAT<v2_void_t, v2_void_t> {
     virtual BATIterator<Head, Tail>* begin () = 0;
 
     /** append an item */
-    virtual void append (pair<head_t, tail_t>& p) = 0;
-    virtual void append (pair<head_t, tail_t>&& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>&& p) = 0;
 
     virtual BAT<Tail, Head>* reverse () = 0;
 
@@ -183,8 +183,8 @@ struct BAT<Head, v2_void_t> {
     virtual BATIterator<Head, Tail>* begin () = 0;
 
     /** append an item */
-    virtual void append (pair<head_t, tail_t>& p) = 0;
-    virtual void append (pair<head_t, tail_t>&& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>&& p) = 0;
     virtual void append (head_t & t) = 0;
     virtual void append (head_t && t) = 0;
 
@@ -244,8 +244,8 @@ struct BAT<v2_void_t, Tail> {
     virtual BATIterator<Head, Tail>* begin () = 0;
 
     /** append an item */
-    virtual void append (pair<head_t, tail_t>& p) = 0;
-    virtual void append (pair<head_t, tail_t>&& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>& p) = 0;
+    virtual void append (std::pair<head_t, tail_t>&& p) = 0;
     virtual void append (tail_t & t) = 0;
     virtual void append (tail_t && t) = 0;
 

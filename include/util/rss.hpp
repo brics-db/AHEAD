@@ -28,9 +28,9 @@
 #ifndef RSS_HPP
 #define RSS_HPP
 
+#include <cstddef>
+#include <cstdint>
 #include <cinttypes>
-
-using namespace std;
 
 typedef enum size_e {
 

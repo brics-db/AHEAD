@@ -25,7 +25,6 @@
 #include <iomanip>
 #include <chrono>
 
-using namespace std;
 using namespace std::chrono;
 
 class StopWatch {
@@ -60,8 +59,8 @@ typedef struct hrc_duration {
     hrc_duration (StopWatch::rep dura);
 } hrc_duration;
 
-ostream& operator<< (ostream& stream, hrc_duration hrcd);
-ostream& operator<< (ostream& stream, StopWatch sw);
+std::ostream& operator<< (std::ostream& stream, hrc_duration hrcd);
+std::ostream& operator<< (std::ostream& stream, StopWatch sw);
 
 
 #endif // STOPWATCH_HPP__

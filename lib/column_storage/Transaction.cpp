@@ -60,11 +60,11 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
     static const size_t LEN_VALUE = 256;
 
     if (path == nullptr) {
-        throw runtime_error("[TransactionManager::load] You must provide a path!");
+        throw std::runtime_error("[TransactionManager::load] You must provide a path!");
     }
     size_t pathLen = strnlen(path, LEN_PATH);
     if (pathLen == 0 || pathLen == LEN_PATH) {
-        throw runtime_error("[TransactionManager::load] path is too long (>1024)");
+        throw std::runtime_error("[TransactionManager::load] path is too long (>1024)");
     }
     const char* actDelim = delim == nullptr ? "|" : delim;
 
@@ -110,8 +110,8 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
 
     if (!this->isUpdater) {
         // Problem : Transaktion darf keine Änderungen vornehmen
-        sserr << "Problem : Transaktion darf keine Änderungen vornehmen" << endl;
-        throw runtime_error(sserr.str());
+        sserr << "Problem : Transaktion darf keine Änderungen vornehmen" << std::endl;
+        throw std::runtime_error(sserr.str());
     }
 
     valuesFile = std::fopen(valuesPath.c_str(), "r");
@@ -119,8 +119,8 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
 
     if (!valuesFile || !headerFile) {
         // Problem : Dateien konnten nicht geöffnet werden
-        sserr << "Problem : Dateien konnten nicht geöffnet werden:\n\tvaluesPath = " << valuesPath << "\n\theaderPath = " << headerPath << endl;
-        throw runtime_error(sserr.str());
+        sserr << "Problem : Dateien konnten nicht geöffnet werden:\n\tvaluesPath = " << valuesPath << "\n\theaderPath = " << headerPath << std::endl;
+        throw std::runtime_error(sserr.str());
     }
 
     auto curColumnIDs = cm->getColumnIDs();
@@ -167,7 +167,7 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
         if (lenPrefix + lenBuf > (LEN_VALUE - 1)) {
             // Problem : Name für Spalte (inkl. Prefix) zu lang
             sserr << "[TransactionManager::load] Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
-            throw runtime_error(sserr.str());
+            throw std::runtime_error(sserr.str());
         }
 
         bun = append(ID_BAT_COLNAMES);
@@ -281,8 +281,8 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
             cm->createColumn(columnId, ColumnMetaData(columnWidth, std::get<15>(*v2_resint_t::As), std::get<15>(*v2_resint_t::Ainvs), v2_resint_t::UNENC_MAX_U, v2_resint_t::UNENC_MIN));
             stdCreate = false;
         } else {
-            sserr << "TransactionManager::Transaction::load() data type " << buffer << " in header unknown" << endl;
-            throw runtime_error(sserr.str());
+            sserr << "TransactionManager::Transaction::load() data type " << buffer << " in header unknown" << std::endl;
+            throw std::runtime_error(sserr.str());
         }
 
         columnWidths.push_back(columnWidth);
@@ -341,7 +341,7 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
                     continue;
                 } else {
                     sserr << "TransactionManager::Transaction::load() more values than types registered (#" << numVal << ")!";
-                    throw runtime_error(sserr.str());
+                    throw std::runtime_error(sserr.str());
                 }
             }
 
@@ -391,8 +391,8 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
                     break;
 
                 default:
-                    sserr << "TransactionManager::Transaction::load() data type unknown" << endl;
-                    throw runtime_error(sserr.str());
+                    sserr << "TransactionManager::Transaction::load() data type unknown" << std::endl;
+                    throw std::runtime_error(sserr.str());
             }
 
             ++colIdx;
@@ -429,7 +429,7 @@ TransactionManager::Transaction::list () {
     return ColumnManager::getInstance()->getColumnIDs();
 }
 
-pair<size_t, size_t>
+std::pair<size_t, size_t>
 TransactionManager::Transaction::open (id_t id) {
     bool isOK = false;
     if (id >= this->iterators.size()) {
@@ -461,7 +461,7 @@ TransactionManager::Transaction::open (id_t id) {
     } else {
         // Problem : Spalte bereits geoffnet
     }
-    return isOK ? make_pair<size_t, size_t>(this->iterators[id]->size(), this->iterators[id]->consumption()) : make_pair<size_t, size_t>(0, 0);
+    return isOK ? std::make_pair<size_t, size_t>(this->iterators[id]->size(), this->iterators[id]->consumption()) : std::make_pair<size_t, size_t>(0, 0);
 }
 
 void
@@ -549,7 +549,7 @@ TransactionManager::Transaction::append (id_t id) {
                 TransactionManager::BinaryUnit bun;
                 bun.head.oid = this->iteratorPositions[id]++;
                 bun.tail = record.content;
-                return move(bun);
+                return std::move(bun);
             } else {
                 // Problem : Record konnte nicht an Spalte angehängt werden
                 return TransactionManager::BinaryUnit();

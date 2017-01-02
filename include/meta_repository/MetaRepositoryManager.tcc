@@ -15,7 +15,7 @@
 #define METAREPOSITORYMANAGER_TCC
 
 template<class Head, class Tail>
-pair<typename Head::type_t, typename Tail::type_t>
+std::pair<typename Head::type_t, typename Tail::type_t>
 MetaRepositoryManager::getLastValue (BAT<Head, Tail> *bat) {
     auto *iter = bat->begin();
     if (iter->hasNext() && bat->size()) {
@@ -23,14 +23,14 @@ MetaRepositoryManager::getLastValue (BAT<Head, Tail> *bat) {
         auto h = iter->head();
         auto t = iter->tail();
         delete iter;
-        return make_pair(h, t);
+        return std::make_pair(h, t);
     } else {
-        return make_pair(-1, -1);
+        return std::make_pair(-1, -1);
     }
 }
 
 template<class Head, class Tail>
-pair<typename Head::type_t, typename Tail::type_t>
+std::pair<typename Head::type_t, typename Tail::type_t>
 MetaRepositoryManager::unique_selection (BAT<Head, Tail> *bat, typename Tail::type_t value) {
     auto iter = bat->begin();
     for (; iter->hasNext(); ++*iter) {
@@ -38,11 +38,11 @@ MetaRepositoryManager::unique_selection (BAT<Head, Tail> *bat, typename Tail::ty
             auto h = iter->head();
             auto t = iter->tail();
             delete iter;
-            return make_pair(h, t);
+            return std::make_pair(h, t);
         }
     }
     delete iter;
-    return make_pair(0, 0);
+    return std::make_pair(0, 0);
 }
 
 template<class Head, class Tail>

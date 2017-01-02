@@ -40,7 +40,7 @@ main (int argc, char** argv) {
     bool hasTwoTypes[NUM_OPS] = {false};
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
-    string emptyString;
+    std::string emptyString;
     size_t x = 0;
     StopWatch sw1, sw2;
 
@@ -102,22 +102,22 @@ main (int argc, char** argv) {
         // LAZY MODE !!! NO AN-OPERATORS UNTIL DECODING !!!
 
         // 1) select from lineorder
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
         MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
         MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
-        MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // join selection
+        MEASURE_OP(sw2, x, bat4, v2::bat::ops::matchjoin(bat3, bat2)); // join selection
         delete bat3;
         delete bat2;
         MEASURE_OP(sw2, x, bat5, bat4->mirror_head()); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP(sw2, x, bat6, v2::bat::ops::hashjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(sw2, x, bat6, v2::bat::ops::matchjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A)); // d_year = 1993
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A)); // d_year = 1993
         MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_datekey
         delete bat7;
-        MEASURE_OP(sw2, x, bat9, v2::bat::ops::hashjoin(bat8, batDDenc)); // only those d_datekey where d_year...
+        MEASURE_OP(sw2, x, bat9, v2::bat::ops::matchjoin(bat8, batDDenc)); // only those d_datekey where d_year...
         delete bat8;
 
         // 3) join lineorder and date
@@ -129,8 +129,8 @@ main (int argc, char** argv) {
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
         MEASURE_OP(sw2, x, batC, batB->mirror_head()); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batB;
-        MEASURE_OP(sw2, x, batD, v2::bat::ops::hashjoin(batC, batLEenc));
-        MEASURE_OP(sw2, x, batE, v2::bat::ops::hashjoin(batC, bat4));
+        MEASURE_OP(sw2, x, batD, v2::bat::ops::matchjoin(batC, batLEenc));
+        MEASURE_OP(sw2, x, batE, v2::bat::ops::matchjoin(batC, bat4));
         delete batC;
         delete bat4;
 
@@ -141,13 +141,13 @@ main (int argc, char** argv) {
         MEASURE_OP_TUPLE(sw2, x, tupleG, v2::bat::ops::checkAndDecodeAN(batE));
         CLEAR_CHECKANDDECODE_AN(tupleG);
         delete batE;
-        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(get<0>(tupleF), get<0>(tupleG)));
-        delete get<0>(tupleF);
-        delete get<0>(tupleG);
+        MEASURE_OP(sw2, x, uint64_t, result, v2::bat::ops::aggregate_mul_sum<uint64_t>(std::get<0>(tupleF), std::get<0>(tupleG)));
+        delete std::get<0>(tupleF);
+        delete std::get<0>(tupleG);
 
         totalTimes[i] = sw1.stop();
 
-        std::cout << "(" << setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.\n";
+        std::cout << "(" << std::setw(2) << i << ")\n\tresult: " << result << "\n\t  time: " << sw1 << " ns.\n";
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
     }
@@ -158,7 +158,7 @@ main (int argc, char** argv) {
 
     std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        std::cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
+        std::cout << '\n' << std::setw(2) << i << '\t' << totalTimes[i];
     }
     std::cout << std::endl;
 

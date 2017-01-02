@@ -68,14 +68,14 @@ public:
 
     /** append an item */
     virtual void
-    append (pair<head_t, tail_t>& p) override {
+    append (std::pair<head_t, tail_t>& p) override {
         this->head.container->push_back(p.first);
         this->tail.container->push_back(p.second);
     }
 
     /** append an item */
     virtual void
-    append (pair<head_t, tail_t>&& p) override {
+    append (std::pair<head_t, tail_t>&& p) override {
         this->head.container->push_back(p.first);
         this->tail.container->push_back(p.second);
     }
@@ -147,13 +147,13 @@ public:
 
     /** append an item */
     virtual void
-    append (__attribute__ ((unused)) pair<head_t, tail_t>& p) override {
+    append (__attribute__ ((unused)) std::pair<head_t, tail_t>& p) override {
         ++count;
     }
 
     /** append an item */
     virtual void
-    append (__attribute__ ((unused)) pair<head_t, tail_t>&& p) override {
+    append (__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) override {
         ++count;
     }
 
@@ -222,14 +222,14 @@ public:
 
     /** append an item */
     virtual void
-    append (pair<head_t, tail_t>& p) override {
+    append (std::pair<head_t, tail_t>& p) override {
         if (this->head.container)
             this->head.container->push_back(p.first);
     }
 
     /** append an item */
     virtual void
-    append (pair<head_t, tail_t>&& p) override {
+    append (std::pair<head_t, tail_t>&& p) override {
         if (this->head.container)
             this->head.container->push_back(std::move(p.first));
     }
@@ -309,14 +309,14 @@ public:
 
     /** append an item */
     virtual void
-    append (pair<head_t, tail_t>& p) override {
+    append (std::pair<head_t, tail_t>& p) override {
         this->tail.container->push_back(p.second);
     }
 
     /** append an item */
     virtual void
-    append (pair<head_t, tail_t>&& p) override {
-        this->tail.container->emplace_back(std::move(p.second));
+    append (std::pair<head_t, tail_t>&& p) override {
+        this->tail.container->push_back(std::move(p.second));
     }
 
     virtual void
@@ -326,7 +326,7 @@ public:
 
     virtual void
     append (tail_t&& t) {
-        this->tail.container->emplace_back(std::move(t));
+        this->tail.container->push_back(std::move(t));
     }
 
     virtual BAT<Tail, Head>*

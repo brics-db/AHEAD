@@ -67,7 +67,7 @@ ColumnManager::getColumnMetaData (id_t id) {
     if (iter == columnMetaData.end()) {
         std::stringstream ss;
         ss << "ColumnManager::Column::getColumn(id_t) : id " << id << " is invalid!";
-        throw runtime_error(ss.str());
+        throw std::runtime_error(ss.str());
     }
     return iter->second;
 }
@@ -78,7 +78,7 @@ ColumnManager::createColumn (id_t id, uint32_t width) {
     if (iter != columnMetaData.end()) {
         std::stringstream ss;
         ss << "There is already a column with id " << id;
-        throw runtime_error(ss.str());
+        throw std::runtime_error(ss.str());
     }
     columnMetaData.emplace(id, width);
     return iter->second;
@@ -90,7 +90,7 @@ ColumnManager::createColumn (id_t id, ColumnMetaData && column) {
     if (iter != columnMetaData.end()) {
         std::stringstream ss;
         ss << "There is already a column with id " << id;
-        throw runtime_error(ss.str());
+        throw std::runtime_error(ss.str());
     }
     columnMetaData.emplace(id, std::forward<ColumnMetaData>(column));
     return iter->second;

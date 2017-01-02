@@ -19,8 +19,6 @@
 #include <util/v2types.hpp>
 #include <util/resilience.hpp>
 
-using namespace std;
-
 #define TOSTRING0(str) #str
 #define TOSTRING(str) TOSTRING0(str)
 

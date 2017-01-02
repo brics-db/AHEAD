@@ -40,7 +40,7 @@ main (int argc, char** argv) {
     bool hasTwoTypes[NUM_OPS] = {false};
     boost::typeindex::type_index headTypes[NUM_OPS];
     boost::typeindex::type_index tailTypes[NUM_OPS];
-    string emptyString;
+    std::string emptyString;
     size_t x = 0;
     StopWatch sw1, sw2;
 
@@ -137,32 +137,32 @@ main (int argc, char** argv) {
         CLEAR_CHECKANDDECODE_AN(tupleSS);
 
         // s_region = 'AMERICA'
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
         MEASURE_OP(sw2, x, bat2, bat1->mirror_head()); // OID supplier | OID supplier
         delete bat1;
-        MEASURE_OP(sw2, x, bat3, get<0>(tupleSS)->reverse()); // s_suppkey | OID supplier
-        delete get<0>(tupleSS);
-        MEASURE_OP(sw2, x, bat4, v2::bat::ops::hashjoin(bat3, bat2)); // s_suppkey | OID supplier
+        MEASURE_OP(sw2, x, bat3, std::get<0>(tupleSS)->reverse()); // s_suppkey | OID supplier
+        delete std::get<0>(tupleSS);
+        MEASURE_OP(sw2, x, bat4, v2::bat::ops::matchjoin(bat3, bat2)); // s_suppkey | OID supplier
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP(sw2, x, bat5, v2::bat::ops::hashjoin(get<0>(tupleLS), bat4)); // OID lineorder | OID supplier
-        delete get<0>(tupleLS);
+        MEASURE_OP(sw2, x, bat5, v2::bat::ops::hashjoin(std::get<0>(tupleLS), bat4)); // OID lineorder | OID supplier
+        delete std::get<0>(tupleLS);
         delete bat4;
         // join with LO_PARTKEY to already reduce the join partners
         MEASURE_OP(sw2, x, bat6, bat5->mirror_head()); // OID lineorder | OID Lineorder
         delete bat5;
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::hashjoin(bat6, get<0>(tupleLP))); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
+        MEASURE_OP(sw2, x, bat7, v2::bat::ops::matchjoin(bat6, std::get<0>(tupleLP))); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
         // p_category = 'MFGR#12'
-        MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
+        MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<std::equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
         // p_brand = 'MFGR#121'
         // MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         MEASURE_OP(sw2, x, bat9, bat8->mirror_head()); // OID part | OID part
         delete bat8;
-        MEASURE_OP(sw2, x, batA, get<0>(tuplePP)->reverse()); // p_partkey | OID part
-        MEASURE_OP(sw2, x, batB, v2::bat::ops::hashjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
+        MEASURE_OP(sw2, x, batA, std::get<0>(tuplePP)->reverse()); // p_partkey | OID part
+        MEASURE_OP(sw2, x, batB, v2::bat::ops::matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
         delete batA;
         delete bat9;
         MEASURE_OP(sw2, x, batC, v2::bat::ops::hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
@@ -172,34 +172,34 @@ main (int argc, char** argv) {
         // join with date now!
         MEASURE_OP(sw2, x, batE, batC->mirror_head()); // OID lineorder | OID lineorder  (where ...)
         delete batC;
-        MEASURE_OP(sw2, x, batF, v2::bat::ops::hashjoin(batE, get<0>(tupleLO))); // OID lineorder | lo_orderdate (where ...)
+        MEASURE_OP(sw2, x, batF, v2::bat::ops::matchjoin(batE, std::get<0>(tupleLO))); // OID lineorder | lo_orderdate (where ...)
         delete batE;
-        delete get<0>(tupleLO);
-        MEASURE_OP(sw2, x, batH, get<0>(tupleDD)->reverse()); // d_datekey | OID date
-        delete get<0>(tupleDD);
+        delete std::get<0>(tupleLO);
+        MEASURE_OP(sw2, x, batH, std::get<0>(tupleDD)->reverse()); // d_datekey | OID date
+        delete std::get<0>(tupleDD);
         MEASURE_OP(sw2, x, batI, v2::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
         delete batF;
         delete batH;
 
         // now prepare grouped sum
         MEASURE_OP(sw2, x, batW, batI->mirror_head()); // OID lineorder | OID lineorder
-        MEASURE_OP(sw2, x, batX, v2::bat::ops::hashjoin(batW, get<0>(tupleLP))); // OID lineorder | lo_partkey
-        delete get<0>(tupleLP);
-        MEASURE_OP(sw2, x, batY, get<0>(tuplePP)->reverse()); // p_partkey | OID part
-        delete get<0>(tuplePP);
+        MEASURE_OP(sw2, x, batX, v2::bat::ops::matchjoin(batW, std::get<0>(tupleLP))); // OID lineorder | lo_partkey
+        delete std::get<0>(tupleLP);
+        MEASURE_OP(sw2, x, batY, std::get<0>(tuplePP)->reverse()); // p_partkey | OID part
+        delete std::get<0>(tuplePP);
         MEASURE_OP(sw2, x, batZ, v2::bat::ops::hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
         MEASURE_OP(sw2, x, batA1, v2::bat::ops::hashjoin(batZ, batPB)); // OID lineorder | p_brand
         delete batZ;
 
-        MEASURE_OP(sw2, x, batA2, v2::bat::ops::hashjoin(batI, get<0>(tupleDY))); // OID lineorder | d_year
+        MEASURE_OP(sw2, x, batA2, v2::bat::ops::hashjoin(batI, std::get<0>(tupleDY))); // OID lineorder | d_year
         delete batI;
-        delete get<0>(tupleDY);
+        delete std::get<0>(tupleDY);
 
-        MEASURE_OP(sw2, x, batA3, v2::bat::ops::hashjoin(batW, get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
+        MEASURE_OP(sw2, x, batA3, v2::bat::ops::matchjoin(batW, std::get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
         delete batW;
-        delete get<0>(tupleLR);
+        delete std::get<0>(tupleLR);
 
         MEASURE_OP_TUPLE(sw2, x, tupleK, v2::bat::ops::groupedSum<v2_bigint_t>(batA3, batA2, batA1));
         delete batA1;
@@ -208,25 +208,25 @@ main (int argc, char** argv) {
 
         totalTimes[i] = sw1.stop();
 
-        std::cout << "(" << setw(2) << i << ")\n\tresult-size: " << get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.\n";
+        std::cout << "(" << std::setw(2) << i << ")\n\tresult-size: " << std::get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.\n";
 
         if (CONFIG.PRINT_RESULT && i == 0) {
             size_t sum = 0;
-            auto iter1 = get<0>(tupleK)->begin();
-            auto iter2 = get<1>(tupleK)->begin();
-            auto iter3 = get<2>(tupleK)->begin();
-            auto iter4 = get<3>(tupleK)->begin();
-            auto iter5 = get<4>(tupleK)->begin();
+            auto iter1 = std::get<0>(tupleK)->begin();
+            auto iter2 = std::get<1>(tupleK)->begin();
+            auto iter3 = std::get<2>(tupleK)->begin();
+            auto iter4 = std::get<3>(tupleK)->begin();
+            auto iter5 = std::get<4>(tupleK)->begin();
             std::cerr << "+------------+--------+-----------+\n";
             std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
                 sum += iter1->tail();
-                std::cerr << "| " << setw(10) << iter1->tail();
+                std::cerr << "| " << std::setw(10) << iter1->tail();
                 iter3->position(iter2->tail());
-                std::cerr << " | " << setw(6) << iter3->tail();
+                std::cerr << " | " << std::setw(6) << iter3->tail();
                 iter5->position(iter4->tail());
-                std::cerr << " | " << setw(9) << iter5->tail() << " |\n";
+                std::cerr << " | " << std::setw(9) << iter5->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
@@ -236,11 +236,11 @@ main (int argc, char** argv) {
             delete iter4;
             delete iter5;
         }
-        delete get<0>(tupleK);
-        delete get<1>(tupleK);
-        delete get<2>(tupleK);
-        delete get<3>(tupleK);
-        delete get<4>(tupleK);
+        delete std::get<0>(tupleK);
+        delete std::get<1>(tupleK);
+        delete std::get<2>(tupleK);
+        delete std::get<3>(tupleK);
+        delete std::get<4>(tupleK);
 
         COUT_HEADLINE;
         COUT_RESULT(0, x, OP_NAMES);
@@ -252,7 +252,7 @@ main (int argc, char** argv) {
 
     std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        std::cout << '\n' << setw(2) << i << '\t' << totalTimes[i];
+        std::cout << '\n' << std::setw(2) << i << '\t' << totalTimes[i];
     }
     std::cout << std::endl;
 

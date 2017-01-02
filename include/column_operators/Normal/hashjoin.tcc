@@ -58,7 +58,7 @@ namespace v2 {
                     typedef typename v2::larger_type<t1_t, h2_t>::type_t larger_t;
                     if (side == hash_side_t::left) {
                         const larger_t t1max = static_cast<larger_t>(std::numeric_limits<t1_t>::max());
-                        google::dense_hash_map<t1_t, vector < h1_t >> hashMap(arg1->size());
+                        google::dense_hash_map<t1_t, std::vector < h1_t >> hashMap(arg1->size());
                         hashMap.set_empty_key(T1::dhm_emptykey);
                         for (; iter1->hasNext(); ++*iter1) {
                             hashMap[iter1->tail()].push_back(iter1->head());
@@ -71,14 +71,14 @@ namespace v2 {
                                 if (mapIter != mapEnd) {
                                     auto t2 = iter2->tail();
                                     for (auto matched : mapIter->second) {
-                                        result->append(make_pair(matched, t2));
+                                        result->append(std::make_pair(std::move(matched), std::move(t2)));
                                     }
                                 }
                             }
                         }
                     } else {
                         const larger_t h2max = static_cast<larger_t>(std::numeric_limits<h2_t>::max());
-                        google::dense_hash_map<h2_t, vector<t2_t> > hashMap(arg2->size());
+                        google::dense_hash_map<h2_t, std::vector<t2_t> > hashMap(arg2->size());
                         hashMap.set_empty_key(H2::dhm_emptykey);
                         for (; iter2->hasNext(); ++*iter2) {
                             hashMap[iter2->head()].push_back(iter2->tail());
@@ -91,7 +91,7 @@ namespace v2 {
                                 if (iterMap != mapEnd) {
                                     auto h1 = iter1->head();
                                     for (auto matched : iterMap->second) {
-                                        result->append(make_pair(move(h1), move(matched)));
+                                        result->append(std::make_pair(std::move(h1), std::move(matched)));
                                     }
                                 }
                             }
@@ -102,6 +102,7 @@ namespace v2 {
                 delete iter2;
                 return result;
             }
+
         }
     }
 }

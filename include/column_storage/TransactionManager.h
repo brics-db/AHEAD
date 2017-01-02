@@ -91,7 +91,7 @@ public:
          *
          * Die Funktion öffnet die Spalte mit der übergebenen Identifikationsnummer. Falls die Spalte bereits geöffnet ist oder keine Spalte zur übergebenen Identifikationsnummer existiert, wird keine Operation ausgeführt.
          */
-        pair<size_t, size_t> open (id_t id);
+        std::pair<size_t, size_t> open (id_t id);
         /**
          * @author Julian Hollender
          *
@@ -151,8 +151,8 @@ public:
          * Die Zuordnungsvorschrift weißt jeder Identifikationsnummer einer Spalte den ggf. geöffneten ColumnIterator zu und die aktuelle Position des ColumnIterators innerhalb der Spalte zu. Falls die Spalte geschlossen wurde, wird die Position des ColumnIterators auf (-1) gesetzt, um ggf. ein Undo durchführen zu können.
          */
         //		std::map<unsigned int, std::pair<ColumnManager::ColumnIterator*, unsigned int> > iterators;
-        vector<ColumnManager::ColumnIterator*> iterators;
-        vector<ssize_t> iteratorPositions;
+        std::vector<ColumnManager::ColumnIterator*> iterators;
+        std::vector<ssize_t> iteratorPositions;
 
         Transaction (bool isUpdater, unsigned int currentVersion);
         Transaction (const Transaction &copy);
@@ -208,7 +208,7 @@ private:
     /**
      * Die Menge enthält alle aktuell aktiven Transaktionen.
      */
-    unordered_set<Transaction*> transactions;
+    std::unordered_set<Transaction*> transactions;
 
     TransactionManager ();
     TransactionManager (const TransactionManager &copy);

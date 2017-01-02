@@ -60,7 +60,7 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t HEnc;
                     typedef typename TypeMap<Tail>::v2_encoded_t TEnc;
 
-                    tuple<TempBAT<Head, v2_resoid_t>*, TempBAT<v2_void_t, Tail>*, vector<bool>*, vector<bool>*>
+                    std::tuple<TempBAT<Head, v2_resoid_t>*, TempBAT<v2_void_t, Tail>*, std::vector<bool>*, std::vector<bool>*>
                     operator() (
                         BAT<Head, Tail>* bat,
                         typename v2_resoid_t::type_t AOID,
@@ -74,10 +74,10 @@ namespace v2 {
 
                         google::dense_hash_map<tail_t, resoid_t> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
-                        const bool isHeadEncoded = is_base_of<v2_anencoded_t, Head>::value;
-                        const bool isTailEncoded = is_base_of<v2_anencoded_t, Tail>::value;
-                        vector<bool> *vec1 = (isHeadEncoded ? new vector<bool>(bat->size()) : nullptr);
-                        vector<bool> *vec2 = (isTailEncoded ? new vector<bool>(bat->size()) : nullptr);
+                        const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
+                        const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
+                        std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(bat->size()) : nullptr);
+                        std::vector<bool> *vec2 = (isTailEncoded ? new std::vector<bool>(bat->size()) : nullptr);
                         auto batHeadtoGID = skeletonHead<Head, v2_resoid_t>(bat);
                         batHeadtoGID->tail.metaData = ColumnMetaData(sizeof (resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batGIDtoTail = skeletonTail<v2_void_t, Tail>(bat);
@@ -97,15 +97,15 @@ namespace v2 {
                             auto iterDict = dictionary.find(curTail);
                             if (iterDict == dictionary.end()) {
                                 batGIDtoTail->append(curTail);
-                                batHeadtoGID->append(make_pair(curHead, nextGID * AOID));
+                                batHeadtoGID->append(std::make_pair(curHead, nextGID * AOID));
                                 dictionary[curTail] = nextGID * AOID;
                                 ++nextGID;
                             } else {
-                                batHeadtoGID->append(make_pair(curHead, iterDict->second));
+                                batHeadtoGID->append(std::make_pair(curHead, iterDict->second));
                             }
                         }
                         delete iter;
-                        return make_tuple(batHeadtoGID, batGIDtoTail, vec1, vec2);
+                        return std::make_tuple(batHeadtoGID, batGIDtoTail, vec1, vec2);
                     }
                 };
 
@@ -125,7 +125,7 @@ namespace v2 {
                     typedef typename HEnc::type_t head_t;
                     typedef typename TEnc::type_t tail_t;
 
-                    tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, v2_str_t>*, vector<bool>*, vector<bool>*>
+                    std::tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, v2_str_t>*, std::vector<bool>*, std::vector<bool>*>
                     operator() (
                         BAT<Head, v2_str_t>* bat,
                         typename v2_resoid_t::type_t AOID,
@@ -137,8 +137,8 @@ namespace v2 {
 
                         google::dense_hash_map<str_t, oid_t, hashstr, eqstr> dictionary;
                         dictionary.set_empty_key(v2_str_t::dhm_emptykey);
-                        const bool isHeadEncoded = is_base_of<v2_anencoded_t, Head>::value;
-                        vector<bool> *vec1 = (isHeadEncoded ? new vector<bool>(bat->size()) : nullptr);
+                        const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
+                        std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(bat->size()) : nullptr);
                         auto batHeadtoGID = skeletonHead<Head, v2_resoid_t>(bat);
                         batHeadtoGID->tail.metaData = ColumnMetaData(sizeof (resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batGIDtoTail = skeletonTail<v2_void_t, v2_str_t>(bat);
@@ -154,11 +154,11 @@ namespace v2 {
                             auto iterDict = dictionary.find(curTail);
                             if (iterDict == dictionary.end()) {
                                 batGIDtoTail->append(curTail);
-                                batHeadtoGID->append(make_pair(iter->head(), nextGID * AOID));
+                                batHeadtoGID->append(std::make_pair(iter->head(), nextGID * AOID));
                                 dictionary[curTail] = nextGID * AOID;
                                 ++nextGID;
                             } else {
-                                batHeadtoGID->append(make_pair(iter->head(), iterDict->second));
+                                batHeadtoGID->append(std::make_pair(iter->head(), iterDict->second));
                             }
                         }
                         delete iter;
@@ -177,7 +177,7 @@ namespace v2 {
              * 4) Bitmap Tail: position -> error detected (true) or not (false)
              */
             template<typename Head, typename Tail>
-            tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, Tail>*, vector<bool>*, vector<bool>*>
+            std::tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, Tail>*, std::vector<bool>*, std::vector<bool>*>
             groupbyAN (
                        BAT<Head, Tail>* bat,
                        typename v2_resoid_t::type_t AOID = std::get < ANParametersSelector<v2_resoid_t>::As->size () - 1 > (*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
@@ -205,7 +205,7 @@ namespace v2 {
              * 11) Bitmap Tail3: position -> error detected (true) or not (false)
              */
             template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
-            tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail3>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*, vector<bool>*>
+            std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail3>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
             groupedSumAN (
                           BAT<Head1, Tail1>* bat1,
                           BAT<Head2, Tail2>* bat2,
@@ -237,8 +237,8 @@ namespace v2 {
                 sw.start();
 #endif
                 // create an array which can hold enough sums
-                auto size1 = get<1>(group1)->size();
-                auto size2 = get<1>(group2)->size();
+                auto size1 = std::get<1>(group1)->size();
+                auto size2 = std::get<1>(group2)->size();
                 auto numgroups = size1 * size2;
 
                 typedef typename TempBAT<v2_void_t, v2_resoid_t>::coldesc_head_t cd_void_t;
@@ -251,8 +251,8 @@ namespace v2 {
                 auto outBat4 = new TempBAT<v2_void_t, v2_resoid_t>(cd_void_t(), cd_resoid_t(ColumnMetaData(sizeof (typename v2_resoid_t::type_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN)));
                 outBat4->reserve(numgroups);
 
-                auto g1SecondIter = get<1>(group1)->begin();
-                auto g2SecondIter = get<1>(group2)->begin();
+                auto g1SecondIter = std::get<1>(group1)->begin();
+                auto g2SecondIter = std::get<1>(group2)->begin();
                 for (; g1SecondIter->hasNext(); ++*g1SecondIter) {
                     g2SecondIter->position(0);
                     for (; g2SecondIter->hasNext(); ++*g2SecondIter) {
@@ -261,17 +261,17 @@ namespace v2 {
                     }
                 }
 
-                const bool isHead1Encoded = is_base_of<v2_anencoded_t, Head1>::value;
-                const bool isTail1Encoded = is_base_of<v2_anencoded_t, Tail1>::value;
-                vector<bool> *vec1 = (isHead1Encoded ? new vector<bool>(bat1->size()) : nullptr);
-                vector<bool> *vec2 = (isTail1Encoded ? new vector<bool>(bat1->size()) : nullptr);
+                const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
+                const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
+                std::vector<bool> *vec1 = (isHead1Encoded ? new std::vector<bool>(bat1->size()) : nullptr);
+                std::vector<bool> *vec2 = (isTail1Encoded ? new std::vector<bool>(bat1->size()) : nullptr);
 
                 auto sums = sumBat->tail.container->data();
                 auto iter1 = bat1->begin();
-                auto g1FirstIter = get<0>(group1)->begin();
-                v2_resoid_t::type_t AG1Inv = get<0>(group1)->tail.metaData.AN_Ainv;
-                auto g2FirstIter = get<0>(group2)->begin();
-                v2_resoid_t::type_t AG2Inv = get<0>(group2)->tail.metaData.AN_Ainv;
+                auto g1FirstIter = std::get<0>(group1)->begin();
+                v2_resoid_t::type_t AG1Inv = std::get<0>(group1)->tail.metaData.AN_Ainv;
+                auto g2FirstIter = std::get<0>(group2)->begin();
+                v2_resoid_t::type_t AG2Inv = std::get<0>(group2)->tail.metaData.AN_Ainv;
 #ifdef DEBUG
                 auto iter2 = bat2->begin();
                 auto iter3 = bat3->begin();
@@ -311,13 +311,13 @@ namespace v2 {
                 delete g2FirstIter;
                 delete g1SecondIter;
                 delete g2SecondIter;
-                delete get<0>(group1);
-                delete get<0>(group2);
+                delete std::get<0>(group1);
+                delete std::get<0>(group2);
 #ifdef DEBUG
                 auto time3 = sw.stop();
                 std::cout << "group1 took " << time1 << " ns. group2 took " << time2 << " ns. grouped sum took " << time3 << " ns." << endl;
 #endif
-                return make_tuple(sumBat, outBat2, get<1>(group1), outBat4, get<1>(group2), vec1, vec2, get<2>(group1), get<3>(group1), get<2>(group2), get<3>(group2));
+                return make_tuple(sumBat, outBat2, std::get<1>(group1), outBat4, std::get<1>(group2), vec1, vec2, std::get<2>(group1), std::get<3>(group1), std::get<2>(group2), std::get<3>(group2));
             }
         }
     }

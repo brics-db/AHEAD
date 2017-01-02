@@ -72,11 +72,11 @@ public:
 
     /** append an item */
     virtual void
-    append (__attribute__ ((unused)) pair<head_t, tail_t>& p) override {
+    append (__attribute__ ((unused)) std::pair<head_t, tail_t>& p) override {
     }
 
     virtual void
-    append (__attribute__ ((unused)) pair<head_t, tail_t>&& p) override {
+    append (__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) override {
     }
 
     virtual void

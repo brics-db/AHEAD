@@ -51,16 +51,16 @@ public:
         TransactionManager* tm = TransactionManager::getInstance();
         if (tm == nullptr) {
             std::stringstream ss;
-            ss << "TA manager is not available!" << endl;
-            throw runtime_error(ss.str());
+            ss << "TA manager is not available!" << std::endl;
+            throw std::runtime_error(ss.str());
         }
         ta = tm->beginTransaction(false);
         if (ta == nullptr) {
             std::stringstream ss;
-            ss << "Column is not available!" << endl;
-            throw runtime_error(ss.str());
+            ss << "Column is not available!" << std::endl;
+            throw std::runtime_error(ss.str());
         }
-        tie(Csize, Cconsumption) = ta->open(columnId);
+        std::tie(Csize, Cconsumption) = ta->open(columnId);
         buNext = ta->next(mColumnId);
         next(); // init to first 
     }

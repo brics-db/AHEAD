@@ -31,6 +31,7 @@
 #include <column_operators/Normal/miscellaneous.tcc>
 #include <column_operators/Normal/select.tcc>
 #include <column_operators/Normal/hashjoin.tcc>
+#include <column_operators/Normal/matchjoin.tcc>
 #include <column_operators/Normal/aggregate.tcc>
 #include <column_operators/Normal/groupby.tcc>
 

@@ -28,10 +28,11 @@
 #ifndef OPERATORSAN_TCC
 #define OPERATORSAN_TCC
 
-#include "AN/encdec.tcc"
-#include "AN/select.tcc"
-#include "AN/hashjoin.tcc"
-#include "AN/aggregate.tcc"
-#include "AN/groupby.tcc"
+#include "AN/encdecAN.tcc"
+#include "AN/selectAN.tcc"
+#include "AN/hashjoinAN.tcc"
+#include "AN/matchjoinAN.tcc"
+#include "AN/aggregateAN.tcc"
+#include "AN/groupbyAN.tcc"
 
 #endif /* OPERATORSAN_TCC */

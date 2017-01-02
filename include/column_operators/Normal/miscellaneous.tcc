@@ -123,7 +123,7 @@ namespace v2 {
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
                         for (; iter->hasNext(); ++*iter) {
-                            result->append(make_pair(std::move(iter->head()), std::move(iter->tail())));
+                            result->append(std::make_pair(std::move(iter->head()), std::move(iter->tail())));
                         }
                         delete iter;
                         return result;

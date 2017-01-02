@@ -54,7 +54,7 @@ namespace v2 {
                         for (; iter->hasNext(); ++*iter) {
                             auto t = iter->tail();
                             if (op(t, threshold)) {
-                                result->append(make_pair(iter->head(), t));
+                                result->append(std::make_pair(iter->head(), t));
                             }
                         }
                         delete iter;
@@ -77,7 +77,7 @@ namespace v2 {
                         for (; iter->hasNext(); ++*iter) {
                             auto t = iter->tail();
                             if (op(strcmp(t, threshold), 0)) {
-                                result->append(make_pair(iter->head(), t));
+                                result->append(std::make_pair(iter->head(), t));
                             }
                         }
                         return result;
@@ -101,7 +101,7 @@ namespace v2 {
                         for (; iter->hasNext(); ++*iter) {
                             auto t = iter->tail();
                             if (op1(t, th1) && op2(t, th2)) {
-                                result->append(make_pair(iter->head(), t));
+                                result->append(std::make_pair(iter->head(), t));
                             }
                         }
                         delete iter;
@@ -125,7 +125,7 @@ namespace v2 {
                         for (; iter->hasNext(); ++*iter) {
                             auto t = iter->tail();
                             if (op1(strcmp(t, th1), 0) && op2(strcmp(t, th2), 0)) {
-                                result->append(make_pair(iter->head(), t));
+                                result->append(std::make_pair(iter->head(), t));
                             }
                         }
                         delete iter;
@@ -137,13 +137,13 @@ namespace v2 {
             template<template <typename> class Op, typename Head, typename Tail>
             BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
             select (BAT<Head, Tail>* arg, typename Tail::type_t && th1) {
-                return Private::Selection1 < Op<typename Tail::v2_compare_t::type_t>, Head, Tail > () (arg, move(th1));
+                return Private::Selection1 < Op<typename Tail::v2_compare_t::type_t>, Head, Tail > () (arg, std::move(th1));
             }
 
-            template<template<typename> class Op1 = greater_equal, template<typename> class Op2 = less_equal, typename Head, typename Tail>
+            template<template<typename> class Op1 = std::greater_equal, template<typename> class Op2 = std::less_equal, typename Head, typename Tail>
             BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
             select (BAT<Head, Tail>* arg, typename Tail::type_t && th1, typename Tail::type_t && th2) {
-                return Private::Selection2 < Op1<typename Tail::type_t>, Op2<typename Tail::type_t>, Head, Tail > () (arg, move(th1), move(th2));
+                return Private::Selection2 < Op1<typename Tail::type_t>, Op2<typename Tail::type_t>, Head, Tail > () (arg, std::move(th1), std::move(th2));
             }
         }
     }

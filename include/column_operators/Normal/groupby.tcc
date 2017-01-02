@@ -50,7 +50,7 @@ namespace v2 {
                 struct groupby_base {
 
                     template<typename HashMap>
-                    pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*>
+                    std::pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*>
                     group_base (BAT<Head, Tail>* bat, HashMap& dictionary) const {
                         auto batHeadtoGID = skeletonHead<Head, v2_oid_t>(bat);
                         auto batGIDtoTail = skeletonTail<v2_void_t, Tail>(bat);
@@ -63,15 +63,15 @@ namespace v2 {
                             auto iterDict = dictionary.find(curTail);
                             if (iterDict == dictionary.end()) {
                                 batGIDtoTail->append(curTail);
-                                batHeadtoGID->append(make_pair(iter->head(), nextGID));
+                                batHeadtoGID->append(std::make_pair(iter->head(), nextGID));
                                 dictionary[curTail] = nextGID;
                                 ++nextGID;
                             } else {
-                                batHeadtoGID->append(make_pair(iter->head(), iterDict->second));
+                                batHeadtoGID->append(std::make_pair(iter->head(), iterDict->second));
                             }
                         }
                         delete iter;
-                        return make_pair(batHeadtoGID, batGIDtoTail);
+                        return std::make_pair(batHeadtoGID, batGIDtoTail);
                     }
                 };
 
@@ -84,7 +84,7 @@ namespace v2 {
                 template<typename Head, typename Tail>
                 struct groupby : public groupby_base<Head, Tail> {
 
-                    pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*> operator() (BAT<Head, Tail>* bat) const {
+                    std::pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*> operator() (BAT<Head, Tail>* bat) const {
                         google::dense_hash_map<typename Tail::type_t, oid_t> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
                         return this->group_base(bat, dictionary);
@@ -100,7 +100,7 @@ namespace v2 {
                 template<typename Head>
                 struct groupby<Head, v2_str_t> : public groupby_base<Head, v2_str_t> {
 
-                    pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> operator() (BAT<Head, v2_str_t>* bat) const {
+                    std::pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> operator() (BAT<Head, v2_str_t>* bat) const {
                         google::dense_hash_map<str_t, oid_t, hashstr, eqstr> dictionary;
                         dictionary.set_empty_key(v2_str_t::dhm_emptykey);
                         return this->group_base(bat, dictionary);
@@ -116,7 +116,7 @@ namespace v2 {
              * 2) GroupID -> Value
              */
             template<typename Head, typename Tail>
-            pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*>
+            std::pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*>
             groupby (BAT<Head, Tail>* bat) {
                 return Private::groupby<Head, Tail>()(bat);
             }
@@ -133,7 +133,7 @@ namespace v2 {
              *  5) Mapping group2 (V)OID -> group2 value
              */
             template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
-            tuple<TempBAT<v2_void_t, V2Result>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail2>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail3>*>
+            std::tuple<TempBAT<v2_void_t, V2Result>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail2>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail3>*>
             groupedSum (BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2, BAT<Head3, Tail3>* bat3) {
 #ifdef DEBUG
                 StopWatch sw;
@@ -213,7 +213,7 @@ namespace v2 {
                 auto time3 = sw.stop();
                 cout << "group1 took " << time1 << " ns. group2 took " << time2 << " ns. grouped sum took " << time3 << " ns." << endl;
 #endif
-                return make_tuple(sumBat, outBat2, group1.second, outBat4, group2.second);
+                return std::make_tuple(sumBat, outBat2, group1.second, outBat4, group2.second);
             }
         }
     }

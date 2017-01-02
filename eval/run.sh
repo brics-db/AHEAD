@@ -169,22 +169,26 @@ EOM
 #    echo "Skipping cleaning."
 #fi
 
+numcpus=$(cat /proc/cpuinfo | grep processor | wc -l)
+
 # Compile
 if [[ ${DO_COMPILE} -ne 0 ]]; then
     date
-    echo "Recreating build dir \"${PATH_BUILD}\""
-    rm -Rf ${PATH_BUILD}
-    mkdir -p ${PATH_BUILD}
-    echo "Compiling."
-    pushd ${PATH_BUILD}
     if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
+        echo "Recreating build dir \"${PATH_BUILD}\"."
+        rm -Rf ${PATH_BUILD}
+        mkdir -p ${PATH_BUILD}
+        pushd ${PATH_BUILD}
         cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         exitcode=$?
         if [[ ${exitcode} -ne 0 ]]; then
             exit ${exitcode};
         fi
+    else
+        pushd ${PATH_BUILD}
     fi
-    make -j
+    echo "Compiling."
+    /bin/bash -c "make -j${numcpus}"
     exitcode=$?
     popd
     if [[ ${exitcode} -ne 0 ]]; then
@@ -202,6 +206,9 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
     if [[ ! -d ${PATH_EVALDATA} ]]; then
         mkdir -p ${PATH_EVALDATA}
     fi
+    # Use a fixed but random CPU core to test
+    corenum=$RANDOM
+    let "corenum %= $numcpus"
 
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
@@ -215,7 +222,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                 echo -n " * ${type}:"
                 for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
                     echo -n " sf${sf}"
-                    taskset -c 5 ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                    taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                 done
                 echo " done."
             else

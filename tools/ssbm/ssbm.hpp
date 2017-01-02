@@ -34,7 +34,7 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
-// #include <cassert>
+#include <limits>
 
 #include <boost/filesystem.hpp>
 // #include <boost/algorithm/string/predicate.hpp>
@@ -60,30 +60,37 @@ namespace boost {
 
 template<typename Head, typename Tail>
 void
-printBat (BATIterator<Head, Tail > *iter, const char* message = nullptr, bool doDelete = true) {
+printBat (BAT<Head, Tail > *bat, const char* filename, const char* message = nullptr) {
+    std::ofstream fout(filename);
+    typedef typename Head::type_t head_t;
+    typedef typename Tail::type_t tail_t;
+    fout << bat->size() << " ";
     if (message) {
-        std::cout << message << '\n';
+        fout << message << '\n';
     }
-    size_t i = 0;
-    for (; iter->hasNext(); ++*iter) {
-        std::cout << i++ << ": " << iter->head() << " = " << iter->tail() << '\n';
+    oid_t i = 0;
+    auto iter = bat->begin();
+    fout << std::right;
+    fout << std::setw(std::numeric_limits<oid_t>::max_digits10) << "void";
+    fout << " | " << std::setw(std::numeric_limits<head_t>::max_digits10) << "head";
+    fout << " | " << std::setw(std::numeric_limits<tail_t>::max_digits10) << "tail";
+    fout << '\n';
+    for (; iter->hasNext(); ++i, ++*iter) {
+        fout << std::setw(std::numeric_limits<oid_t>::max_digits10) << i;
+        fout << " | " << std::setw(std::numeric_limits<head_t>::max_digits10) << iter->head();
+        fout << " | " << std::setw(std::numeric_limits<tail_t>::max_digits10) << iter->tail();
+        fout << '\n';
     }
-    std::cout << std::flush;
-    if (doDelete) {
-        delete iter;
-    }
+    fout << std::flush;
+    delete iter;
 }
 
-#if not defined NDEBUG
 #define PRINT_BAT(SW, PRINT) \
 do {                         \
     SW.stop();               \
     PRINT;                   \
     SW.resume();             \
 } while (false)
-#else
-#define PRINT_BAT(SW, PRINT)
-#endif
 
 #define SAVE_TYPE(I, BAT)          \
 headTypes[I] = BAT->type_head();   \
@@ -119,21 +126,21 @@ SAVE_TYPE(I-1, (std::get<0>(TUPLE)))
 
 #define COUT_HEADLINE \
 do { \
-    std::cout << "\tname\t" << setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << setw(CONFIG.LEN_TYPES) << "type head" << "\t" << setw(CONFIG.LEN_TYPES) << "type tail\n"; \
+    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail\n"; \
 } while (0)
 
 #define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
 #define COUT_RESULT3(START, MAX, OPNAMES) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        std::cout << "\top" << setw(2) << OPNAMES[k] << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
+        std::cout << "\top" << std::setw(2) << OPNAMES[k] << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
     } \
-    std::cout << flush; \
+    std::cout << std::flush; \
 } while (0)
 #define COUT_RESULT2(START, MAX) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        std::cout << "\top" << setw(2) << k << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
+        std::cout << "\top" << std::setw(2) << k << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
     } \
     std::cout << std::flush; \
 } while (0)
@@ -201,7 +208,7 @@ struct ssbmconf_t {
     size_t LEN_TIMES;
     size_t LEN_TYPES;
     size_t LEN_SIZES;
-    string DB_PATH;
+    std::string DB_PATH;
     bool VERBOSE;
     bool PRINT_RESULT;
 
@@ -257,12 +264,12 @@ public:
 };
 
 StopWatch::rep
-loadTable (string& baseDir, const char* const columnName, const ssbmconf_t & CONFIG) {
+loadTable (std::string& baseDir, const char* const columnName, const ssbmconf_t & CONFIG) {
     StopWatch sw;
     TransactionManager* tm = TransactionManager::getInstance();
     TransactionManager::Transaction* t = tm->beginTransaction(true);
     assert(t != nullptr);
-    string path = baseDir + "/" + columnName;
+    std::string path = baseDir + "/" + columnName;
     sw.start();
     size_t num = t->load(path.c_str(), columnName);
     sw.stop();
