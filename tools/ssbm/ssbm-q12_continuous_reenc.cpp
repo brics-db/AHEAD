@@ -100,9 +100,9 @@ main (int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, (v2::bat::ops::selectAN(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
+        MEASURE_OP_PAIR(sw2, x, pair1, (v2::bat::ops::selectAN(batLQenc, static_cast<restiny_t>(26) * batLQenc->tail.metaData.AN_A, static_cast<restiny_t>(35) * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
         delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair2, (v2::bat::ops::selectAN(batLDenc, 4 * batLDenc->tail.metaData.AN_A, 6 * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
+        MEASURE_OP_PAIR(sw2, x, pair2, (v2::bat::ops::selectAN(batLDenc, static_cast<restiny_t>(4) * batLDenc->tail.metaData.AN_A, static_cast<restiny_t>(6) * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
         delete pair2.second;
         MEASURE_OP(sw2, x, bat3, pair1.first->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
@@ -116,7 +116,7 @@ main (int argc, char** argv) {
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(sw2, x, pair7, (v2::bat::ops::selectAN<equal_to>(batDYenc, 199401 * batDYenc->tail.metaData.AN_A))); // d_yearmonthnum = 199401
+        MEASURE_OP_PAIR(sw2, x, pair7, (v2::bat::ops::selectAN<equal_to>(batDYenc, static_cast<resint_t>(199401) * batDYenc->tail.metaData.AN_A))); // d_yearmonthnum = 199401
         if (pair7.second) delete pair7.second;
         MEASURE_OP(sw2, x, bat8, (pair7.first->mirror_head())); // prepare joined selection over d_year and d_datekey
         delete pair7.first;

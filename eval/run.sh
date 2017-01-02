@@ -86,7 +86,7 @@ gnuplotcode () {
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
 #reset
-set term pdf enhanced monochrome
+set term pdf enhanced monochrome size 3.25in,1.25in
 #set term pdf enhanced
 set output '${2}'
 set style data histogram
@@ -129,12 +129,30 @@ unset y2label
 set xrange [-10:0]
 set yrange [-10:0]
 set key below center
-$(for var in "${@:4}"; do echo $var; done)
-plot '${3}' using 2:xtic(1) t "Unencoded", \\
+$(for var in "${@:5}"; do echo $var; done)
+plot '${4}' using 2:xtic(1) t "Unencoded", \\
         '' using 3:xtic(1) t "Early", \\
         '' using 4:xtic(1) t "Late", \\
         '' using 5:xtic(1) t "Continuous", \\
         '' using 6:xtic(1) t "Cont. w/ reenc"
+        
+set term pdf enhanced monochrome size 0.2in,1.25in
+set output '${3}'
+unset border
+unset xtics
+unset ytics
+unset x2tics
+unset y2tics
+unset xlabel
+unset x2label
+unset ylabel
+unset y2label
+unset label
+unset arrow
+unset key
+#set label 'Relative Throughput' at screen 0.5, bm + 0.4 * (size + gap) offset 0,-strlen("Relative Throughput")/4.0 rotate by 90
+set label 'Relative Throughput' at screen 0.5,0.625 rotate by 90
+plot 1 ls 0 with linespoints
 EOM
 }
 
@@ -323,7 +341,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 
         gnuplotcode ${BASE2}.norm.m ${BASE2}.norm.pdf ${BASE2}.norm.data "set yrange [0:1.5]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'"
 
-		gnuplotlegend ${BASE2}.legend.m ${BASE2}.legend.pdf ${BASE2}.data
+		gnuplotlegend ${BASE2}.legend.m ${BASE2}.legend.pdf ${BASE2}.xlabel.pdf ${BASE2}.data
 
         gnuplot ${BASE2}.m
         gnuplot ${BASE2}.norm.m

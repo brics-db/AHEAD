@@ -48,7 +48,6 @@ main (int argc, char** argv) {
 
     MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
-
     sw1.start();
     // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
     loadTable(CONFIG.DB_PATH, "dateAN", CONFIG);
