@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Basic constants
+CXX_COMPILER=g++-6
 PATH_BASE=..
 PATH_BUILD=${PATH_BASE}/build
 PATH_DB=${PATH_BASE}/database
@@ -179,6 +180,13 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
         rm -Rf ${PATH_BUILD}
         mkdir -p ${PATH_BUILD}
         pushd ${PATH_BUILD}
+        cxx=$(which ${CXX_COMPILER})
+        if [[ -e ${cxx} ]]; then
+            export CXX=$cxx
+        else
+            echo "This benchmark requires G++-6. You may modify variable CXX_COMPILER at the top of the script."
+            exit 1
+        fi
         cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         exitcode=$?
         if [[ ${exitcode} -ne 0 ]]; then
