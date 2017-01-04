@@ -34,6 +34,7 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <limits>
 
 #include <boost/filesystem.hpp>
