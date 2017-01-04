@@ -15,9 +15,9 @@ IMPLEMENTED=(11 12 13 21)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
-if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
-if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
-if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
+if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
+if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi
+if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=0; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
 if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
@@ -87,7 +87,7 @@ gnuplotcode () {
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
 #reset
-set term pdf enhanced monochrome size 3.25in,1.25in
+set term pdf enhanced monochrome fontscale 0.44 size 3.25in,1.25in
 #set term pdf enhanced
 set output '${2}'
 set style data histogram
@@ -111,13 +111,15 @@ gnuplotlegend () {
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
 #reset
-set term pdf enhanced monochrome size 6.7in,0.2in
+set term pdf enhanced monochrome fontscale 0.44 size 6in,0.2in
 #set term pdf enhanced
 set output '${2}'
 set datafile separator '\t'
 set style data histogram
 set style histogram cluster gap 1
 set style fill transparent pattern 0.5 border
+set lmargin 0
+set rmargin 0
 unset border
 unset xtics
 unset xlabel
@@ -129,16 +131,18 @@ unset y2tics
 unset y2label
 set xrange [-10:0]
 set yrange [-10:0]
-set key below center
+set key below maxcols 5 maxrows 1 horizontal width 0.5
 $(for var in "${@:5}"; do echo $var; done)
 plot '${4}' using 2:xtic(1) t "Unencoded", \\
         '' using 3:xtic(1) t "Early", \\
         '' using 4:xtic(1) t "Late", \\
         '' using 5:xtic(1) t "Continuous", \\
-        '' using 6:xtic(1) t "Cont. w/ reenc"
+        '' using 6:xtic(1) t "Reencoding"
         
-set term pdf enhanced monochrome size 0.2in,1.25in
+set term pdf enhanced monochrome fontscale 0.44 size 0.2in,1.25in
 set output '${3}'
+set lmargin 0
+set rmargin 0
 unset border
 unset xtics
 unset ytics
@@ -152,7 +156,7 @@ unset label
 unset arrow
 unset key
 #set label 'Relative Throughput' at screen 0.5, bm + 0.4 * (size + gap) offset 0,-strlen("Relative Throughput")/4.0 rotate by 90
-set label 'Relative Throughput' at screen 0.5,0.625 rotate by 90
+set label 'Relative Throughput' at screen 0.5,0.15 rotate by 90
 plot 1 ls 0 with linespoints
 EOM
 }
@@ -352,9 +356,11 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         echo " * Plotting ${BASE2}"
 		pushd ${PATH_EVALOUT}
         #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
-        gnuplotcode ${BASE2}.m ${BASE2}.pdf ${BASE2}.data "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
+        gnuplotcode ${BASE2}.m ${BASE2}.pdf ${BASE2}.data \
+            "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
 
-        gnuplotcode ${BASE2}.norm.m ${BASE2}.norm.pdf ${BASE2}.norm.data "set yrange [0:1.5]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Normalized Runtime'"
+        gnuplotcode ${BASE2}.norm.m ${BASE2}.norm.pdf ${BASE2}.norm.data \
+            "set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
 
 		gnuplotlegend ${BASE2}.legend.m ${BASE2}.legend.pdf ${BASE2}.xlabel.pdf ${BASE2}.data
 
