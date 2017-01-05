@@ -136,22 +136,22 @@ namespace v2 {
                     if (isHeadEncoded & isTailEncoded) {
                         auto decH = iter->head() * hAinv;
                         auto decT = iter->tail() * tAinv;
-                        if (decH <= hUnencMaxU) {
+                        if (decH > hUnencMaxU) {
                             (*vec1)[i] = true;
                         }
-                        if (decT <= tUnencMaxU) {
+                        if (decT > tUnencMaxU) {
                             (*vec2)[i] = true;
                         }
                         result->append(std::make_pair(static_cast<typename Tail::v2_unenc_t::type_t>(decH), static_cast<typename Tail::v2_unenc_t::type_t>(decT)));
                     } else if (isHeadEncoded) {
                         auto decH = iter->head() * hAinv;
-                        if (decH <= hUnencMaxU) {
+                        if (decH > hUnencMaxU) {
                             (*vec1)[i] = true;
                         }
                         result->append(std::make_pair(static_cast<typename Tail::v2_unenc_t::type_t>(decH), iter->tail()));
                     } else {
                         auto decT = iter->tail() * tAinv;
-                        if (decT <= tUnencMaxU) {
+                        if (decT > tUnencMaxU) {
                             (*vec2)[i] = true;
                         }
                         result->append(std::make_pair(iter->head(), static_cast<typename Tail::v2_unenc_t::type_t>(decT)));
