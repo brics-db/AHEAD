@@ -277,14 +277,16 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS}
                 grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" >${EVAL_FILESUMMARY}
                 count=0
+                sfidx=0
 
                 rm -f ${EVAL_FILEBESTRUNS}
                 echo -n "${type}" >>${EVAL_TEMPFILE}
 
                 for i in $(awk '{print $2;}' ${EVAL_FILESUMMARY}); do
-                    sf=${BENCHMARK_SCALEFACTORS[$count]}
+                    sf=${BENCHMARK_SCALEFACTORS[$sfidx]}
                     array+=($i)
                     ((count++))
+                    ((sfidx++))
                     if [[ ${count} -eq ${BENCHMARK_NUMRUNS} ]]; then
                         # a batch of ${BENCHMARK_NUMRUNS} runs, i.e. all runs of a scale factor
                         # 1) compute the best runs (i.e. remove outliers)
@@ -316,19 +318,20 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 
             # prepare awk statement to normalize all columns and output them to the normalized temp file
             # 2016-11-04: normalize to "normal" (unencoded) base variant
+            sfIdxs=$(seq 1 ${#BENCHMARK_SCALEFACTORS[@]})
             arg="FNR==NR {if (FNR==2) { "
-            for sf in ${BENCHMARK_SCALEFACTORS[*]}; do # number of scale factors
+            for sf in ${sfIdxs}; do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
                 #arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
                 arg+="max${sf}=\$${column};"
             done
             arg+="};next} FNR==1 {print \$1"
-            for sf in ${BENCHMARK_SCALEFACTORS[*]}; do
+            for sf in ${sfIdxs}; do
                 column=$(echo "${sf}+1" | bc)
                 arg+=",\$${column}"
             done
             arg+=";next} {print \$1"
-            for sf in ${BENCHMARK_SCALEFACTORS[*]}; do # number of scale factors
+            for sf in ${sfIdxs}; do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
                 arg+=",\$${column}/max${sf}"
             done
