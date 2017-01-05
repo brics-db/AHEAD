@@ -11,7 +11,7 @@ PATH_EVALOUT=${PATH_EVAL}/out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-IMPLEMENTED=(11 12 13 21)
+IMPLEMENTED=(11) # 12 13 21)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
@@ -23,13 +23,13 @@ if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
 if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 
 # Process specific constants
-CMAKE_BUILD_TYPE=release
+CMAKE_BUILD_TYPE=Release
 
-BENCHMARK_NUMRUNS=15
-BENCHMARK_NUMBEST=10
+BENCHMARK_NUMRUNS=5
+BENCHMARK_NUMBEST=3
 BENCHMARK_SFMIN=1
-BENCHMARK_SFMAX=10
-BENCHMARK_SCALEFACTORS=$(seq -s " " ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX})
+BENCHMARK_SFMAX=5
+BENCHMARK_SCALEFACTORS=($(seq -s " " ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}))
 
 # functions etc
 pushd () {
@@ -278,15 +278,14 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" >${EVAL_FILESUMMARY}
                 count=0
                 sfidx=0
+                sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
 
                 rm -f ${EVAL_FILEBESTRUNS}
                 echo -n "${type}" >>${EVAL_TEMPFILE}
 
                 for i in $(awk '{print $2;}' ${EVAL_FILESUMMARY}); do
-                    sf=${BENCHMARK_SCALEFACTORS[$sfidx]}
                     array+=($i)
                     ((count++))
-                    ((sfidx++))
                     if [[ ${count} -eq ${BENCHMARK_NUMRUNS} ]]; then
                         # a batch of ${BENCHMARK_NUMRUNS} runs, i.e. all runs of a scale factor
                         # 1) compute the best runs (i.e. remove outliers)
@@ -304,6 +303,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         count=0
                         unset array
                         array=()
+                        ((sfidx++))
+                        sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
                     fi
                 done
                 echo "" >>${EVAL_TEMPFILE}
@@ -318,7 +319,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 
             # prepare awk statement to normalize all columns and output them to the normalized temp file
             # 2016-11-04: normalize to "normal" (unencoded) base variant
-            sfIdxs=$(seq 1 ${#BENCHMARK_SCALEFACTORS[@]})
+            sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
             arg="FNR==NR {if (FNR==2) { "
             for sf in ${sfIdxs}; do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
