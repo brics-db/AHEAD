@@ -33,7 +33,7 @@ main (int argc, char** argv) {
     ssbmconf_t CONFIG(argc, argv);
     std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 42;
-    cstr_t OP_NAMES[NUM_OPS] = {"-8", "-7", " - 6", " - 5", " - 4", " - 3", " - 2", " - 1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+    cstr_t OP_NAMES[NUM_OPS] = {"-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
     StopWatch::rep opTimes[NUM_OPS] = {0};
     size_t batSizes[NUM_OPS] = {0};
     size_t batConsumptions[NUM_OPS] = {0};

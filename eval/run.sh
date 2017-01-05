@@ -29,6 +29,7 @@ BENCHMARK_NUMRUNS=15
 BENCHMARK_NUMBEST=10
 BENCHMARK_SFMIN=1
 BENCHMARK_SFMAX=10
+BENCHMARK_SCALEFACTORS=$(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX})
 
 # functions etc
 pushd () {
@@ -86,23 +87,19 @@ gnuplotcode () {
         # Write GNUplot code to file
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
-#reset
 set term pdf enhanced monochrome fontscale 0.44 size 3.25in,1.25in
-#set term pdf enhanced
 set output '${2}'
 set style data histogram
 set style histogram cluster gap 1
-#set style fill solid border rgb "black"
-set style fill transparent pattern 0.5 border
+#set style fill pattern 0 border 1
 set auto x
-#set key right outside
 unset key
 $(for var in "${@:4}"; do echo $var; done)
-plot '${3}' using 2:xtic(1) title col, \\
-        '' using 3:xtic(1) title col, \\
-        '' using 4:xtic(1) title col, \\
-        '' using 5:xtic(1) title col, \\
-        '' using 6:xtic(1) title col
+plot '${3}' using 2:xtic(1) title col fs pattern 0 bo lw 1 dt 1, \\
+        '' using 3:xtic(1) title col fs pattern 2 bo lw 1 dt 1, \\
+        '' using 4:xtic(1) title col fs pattern 6 bo lw 1 dt 1, \\
+        '' using 5:xtic(1) title col fs pattern 3 bo lw 1 dt 1, \\
+        '' using 6:xtic(1) title col fs pattern 7 bo lw 1 dt 1
 EOM
 }
 
@@ -110,14 +107,12 @@ gnuplotlegend () {
         # Write GNUplot code to file
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
-#reset
 set term pdf enhanced monochrome fontscale 0.44 size 6in,0.2in
-#set term pdf enhanced
 set output '${2}'
 set datafile separator '\t'
 set style data histogram
 set style histogram cluster gap 1
-set style fill transparent pattern 0.5 border
+set style fill pattern 0 border
 set lmargin 0
 set rmargin 0
 unset border
@@ -232,7 +227,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                 rm -f ${EVAL_FILEOUT}
                 rm -f ${EVAL_FILEERR}
                 echo -n " * ${type}:"
-                for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
+                for sf in ${BENCHMARK_SCALEFACTORS[*]}; do
                     echo -n " sf${sf}"
                     taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                 done
@@ -269,12 +264,10 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
             echo " * Preparing data for ${BASE2}"
 
-            #for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
-                rm -f ${EVAL_TEMPFILE}
-                rm -f ${EVAL_DATAFILE}
-            #done
+            rm -f ${EVAL_TEMPFILE}
+            rm -f ${EVAL_DATAFILE}
             echo -n "SF " >${EVAL_TEMPFILE}
-            echo $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}) >>${EVAL_TEMPFILE}
+            echo "${BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE}
 
             for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous ${BASE2}_continuous_reenc; do
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
@@ -284,12 +277,12 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS}
                 grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" >${EVAL_FILESUMMARY}
                 count=0
-                sf=${BENCHMARK_SFMIN}
 
                 rm -f ${EVAL_FILEBESTRUNS}
                 echo -n "${type}" >>${EVAL_TEMPFILE}
 
                 for i in $(awk '{print $2;}' ${EVAL_FILESUMMARY}); do
+                    sf=${BENCHMARK_SCALEFACTORS[$count]}
                     array+=($i)
                     ((count++))
                     if [[ ${count} -eq ${BENCHMARK_NUMRUNS} ]]; then
@@ -309,7 +302,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         count=0
                         unset array
                         array=()
-                        ((sf++))
                     fi
                 done
                 echo "" >>${EVAL_TEMPFILE}
@@ -325,18 +317,18 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             # prepare awk statement to normalize all columns and output them to the normalized temp file
             # 2016-11-04: normalize to "normal" (unencoded) base variant
             arg="FNR==NR {if (FNR==2) { "
-            for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do # number of scale factors
+            for sf in ${BENCHMARK_SCALEFACTORS[*]}; do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
                 #arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
                 arg+="max${sf}=\$${column};"
             done
             arg+="};next} FNR==1 {print \$1"
-            for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do
+            for sf in ${BENCHMARK_SCALEFACTORS[*]}; do
                 column=$(echo "${sf}+1" | bc)
                 arg+=",\$${column}"
             done
             arg+=";next} {print \$1"
-            for sf in $(seq ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}); do # number of scale factors
+            for sf in ${BENCHMARK_SCALEFACTORS[*]}; do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
                 arg+=",\$${column}/max${sf}"
             done
