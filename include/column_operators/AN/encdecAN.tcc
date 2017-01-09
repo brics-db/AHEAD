@@ -121,8 +121,8 @@ namespace v2 {
 
                 static_assert(std::is_base_of<v2_anencoded_t, Head>::value || std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
 
-                const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
-                const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
+                constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
+                constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
                 head_t hAinv = static_cast<head_t>(arg->head.metaData.AN_Ainv);
                 head_t hUnencMaxU = static_cast<head_t>(arg->head.metaData.AN_unencMaxU);
                 tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
