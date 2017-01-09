@@ -11,13 +11,13 @@ PATH_EVALOUT=${PATH_EVAL}/out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-IMPLEMENTED=(11) # 12 13 21)
+IMPLEMENTED=(11 12 13 21)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
 if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi
-if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=0; fi
+if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
 if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
@@ -27,9 +27,9 @@ CMAKE_BUILD_TYPE=Release
 
 BENCHMARK_NUMRUNS=5
 BENCHMARK_NUMBEST=3
-BENCHMARK_SFMIN=1
-BENCHMARK_SFMAX=5
-BENCHMARK_SCALEFACTORS=($(seq -s " " ${BENCHMARK_SFMIN} ${BENCHMARK_SFMAX}))
+BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10))
+#BENCHMARK_SCALEFACTORS=(8 9 10)
+BENCHMARK_TIMEOUT="1m"
 
 # functions etc
 pushd () {
@@ -230,6 +230,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                 for sf in ${BENCHMARK_SCALEFACTORS[*]}; do
                     echo -n " sf${sf}"
                     taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                    #sleep ${BENCHMARK_TIMEOUT}
                 done
                 echo " done."
             else
