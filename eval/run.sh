@@ -15,8 +15,8 @@ IMPLEMENTED=(11 12 13 21)
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
-if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
-if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi
+if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
+if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
 if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
@@ -169,7 +169,11 @@ EOM
 #    echo "Skipping cleaning."
 #fi
 
-numcpus=$(cat /proc/cpuinfo | grep processor | wc -l)
+numcpus=$(nproc)
+if [[ $? -ne 0 ]]; then
+    numcpus=$(cat /proc/cpuinfo | grep processor | wc -l)
+fi
+
 
 # Compile
 if [[ ${DO_COMPILE} -ne 0 ]]; then
@@ -231,6 +235,8 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                     echo -n " sf${sf}"
                     taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                     #sleep ${BENCHMARK_TIMEOUT}
+                    let "corenum++"
+                    let "corenum %= $numcpus"
                 done
                 echo " done."
             else
