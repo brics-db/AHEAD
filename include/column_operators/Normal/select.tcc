@@ -48,7 +48,7 @@ namespace v2 {
 
                     bat_t* operator() (BAT<Head, Tail>* arg, tail_t && threshold) {
                         auto result = skeleton<head_select_t, tail_select_t>(arg);
-                        result->reserve(1024 * 1024);
+                        result->reserve(arg->size() / 2);
                         auto iter = arg->begin();
                         Op op;
                         for (; iter->hasNext(); ++*iter) {
@@ -71,7 +71,7 @@ namespace v2 {
 
                     BAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator() (BAT<Head, v2_str_t>* arg, str_t && threshold) {
                         auto result = skeleton<head_select_t, tail_select_t>(arg);
-                        result->reserve(1024 * 1024);
+                        result->reserve(arg->size() / 2);
                         auto iter = arg->begin();
                         Op op;
                         for (; iter->hasNext(); ++*iter) {
@@ -94,7 +94,7 @@ namespace v2 {
 
                     BAT<typename Head::v2_select_t, typename Tail::v2_select_t>* operator() (BAT<Head, Tail>* arg, tail_t && th1, tail_t && th2) {
                         auto result = skeleton<head_select_t, tail_select_t>(arg);
-                        result->reserve(1024 * 1024);
+                        result->reserve(arg->size() / 2);
                         auto iter = arg->begin();
                         Op1 op1;
                         Op2 op2;
@@ -118,7 +118,7 @@ namespace v2 {
 
                     BAT<typename Head::v2_select_t, typename v2_str_t::v2_select_t>* operator() (BAT<Head, v2_str_t>* arg, str_t && th1, str_t && th2) {
                         auto result = skeleton<head_select_t, tail_select_t>(arg);
-                        result->reserve(1024 * 1024);
+                        result->reserve(arg->size() / 2);
                         auto iter = arg->begin();
                         Op1 op1;
                         Op2 op2;

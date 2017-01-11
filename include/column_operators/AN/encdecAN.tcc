@@ -97,8 +97,7 @@ namespace v2 {
                 restail_t unencMaxU = static_cast<restail_t>(arg->tail.metaData.AN_unencMaxU);
                 auto result = skeletonHead<Head, Tail>(arg);
                 result->reserve(arg->size());
-                auto vec = new std::vector<bool>;
-                vec->resize(arg->size());
+                auto vec = new std::vector<bool>(arg->size());
                 auto iter = arg->begin();
                 size_t pos = 0;
                 for (; iter->hasNext(); ++*iter, ++pos) {

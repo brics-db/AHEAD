@@ -27,7 +27,7 @@
 /**
  * Die Konstante bestimmt die Anzahl der Bytes die für einen Bucket reserviert werden.
  */
-#define CHUNK_CONTENT_SIZE (16 * 1024 * 1024)
+#define CHUNK_CONTENT_SIZE (2 * 1024 * 1024)
 
 /**
  * @brief Klasse zur Verwaltung von Bucket-Streams mit Buckets fester Größe

@@ -54,23 +54,25 @@ namespace v2 {
                                  typename ResEnc::type_t RAInv = std::get < ANParametersSelector<ResEnc>::Ainvs->size () - 1 > (*ANParametersSelector<ResEnc>::Ainvs)
                                  ) {
                 typedef typename Result::type_t result_t;
+                typedef typename T1Enc::type_t t1enc_t;
+                typedef typename T2Enc::type_t t2enc_t;
 
-                typename T1Enc::type_t AT1inv = arg1->tail.metaData.AN_Ainv;
-                typename T1Enc::type_t AT1unencMaxU = arg1->tail.metaData.AN_unencMaxU;
-                typename T2Enc::type_t AT2inv = arg2->tail.metaData.AN_Ainv;
-                typename T2Enc::type_t AT2unencMaxU = arg2->tail.metaData.AN_unencMaxU;
+                t1enc_t AT1inv = arg1->tail.metaData.AN_Ainv;
+                t1enc_t AT1unencMaxU = arg1->tail.metaData.AN_unencMaxU;
+                t2enc_t AT2inv = arg2->tail.metaData.AN_Ainv;
+                t2enc_t AT2unencMaxU = arg2->tail.metaData.AN_unencMaxU;
 
                 const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
                 const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
                 const bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
-                typename Result::type_t total = init;
+                result_t total = init;
                 std::vector<bool>* vec1 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
                 std::vector<bool>* vec2 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 for (size_t i = 0; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2, ++i) {
-                    typename T1Enc::type_t x1 = iter1->tail() * (isTail1Encoded ? AT1inv : 1);
-                    typename T2Enc::type_t x2 = iter2->tail() * (isTail2Encoded ? AT2inv : 1);
+                    t1enc_t x1 = iter1->tail() * (isTail1Encoded ? AT1inv : 1);
+                    t2enc_t x2 = iter2->tail() * (isTail2Encoded ? AT2inv : 1);
                     if (isTail1Encoded && x1 <= AT1unencMaxU) {
                         (*vec1)[i] = true;
                     }
