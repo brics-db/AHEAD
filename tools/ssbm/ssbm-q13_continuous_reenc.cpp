@@ -104,18 +104,18 @@ main (int argc, char** argv) {
         x = 0;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A)); // lo_quantity between 26 and 35
+        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A, std::get<6>(*v2_restiny_t::As), std::get<6>(*v2_restiny_t::Ainvs))); // lo_quantity between 26 and 35
         delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A)); // lo_discount between 5 and 7
+        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A, std::get<5>(*v2_restiny_t::As), std::get<5>(*v2_restiny_t::Ainvs))); // lo_discount between 5 and 7
         delete pair2.second;
         MEASURE_OP(sw2, x, bat3, pair1.first->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
-        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::matchjoinAN(bat3, pair2.first, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<6>(*v2_restiny_t::As), std::get<6>(*v2_restiny_t::Ainvs))); // join selection
+        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::matchjoinAN(bat3, pair2.first, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<4>(*v2_restiny_t::As), std::get<4>(*v2_restiny_t::Ainvs))); // join selection
         delete pair2.first;
         delete bat3;
         CLEAR_HASHJOIN_AN(tuple4);
         MEASURE_OP(sw2, x, bat5, std::get<0>(tuple4)->mirror_head()); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::matchjoinAN(bat5, batLOenc, std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs))); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::matchjoinAN(bat5, batLOenc, std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs))); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
         CLEAR_HASHJOIN_AN(tuple6);
 
@@ -126,28 +126,28 @@ main (int argc, char** argv) {
         delete pair7.first;
         MEASURE_OP_PAIR(sw2, x, pair9, v2::bat::ops::selectAN<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
         delete pair9.second;
-        MEASURE_OP_TUPLE(sw2, x, tupleA, v2::bat::ops::matchjoinAN(bat8, pair9.first, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resshort_t::As), std::get<14>(*v2_resshort_t::Ainvs)));
+        MEASURE_OP_TUPLE(sw2, x, tupleA, v2::bat::ops::matchjoinAN(bat8, pair9.first, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resshort_t::As), std::get<14>(*v2_resshort_t::Ainvs)));
         delete bat8;
         delete pair9.first;
         CLEAR_HASHJOIN_AN(tupleA);
         MEASURE_OP(sw2, x, batB, std::get<0>(tupleA)->mirror_head());
         delete std::get<0>(tupleA);
-        MEASURE_OP_TUPLE(sw2, x, tupleC, v2::bat::ops::matchjoinAN(batB, batDDenc, std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs))); // only those d_datekey where d_year and d_weeknuminyear...
+        MEASURE_OP_TUPLE(sw2, x, tupleC, v2::bat::ops::matchjoinAN(batB, batDDenc, std::get<10>(*v2_resoid_t::As), std::get<10>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs))); // only those d_datekey where d_year and d_weeknuminyear...
         delete batB;
         CLEAR_HASHJOIN_AN(tupleC);
 
         // 3) join lineorder and date
         MEASURE_OP(sw2, x, batD, std::get<0>(tupleC)->reverse());
         delete std::get<0>(tupleC);
-        MEASURE_OP_TUPLE(sw2, x, tupleE, v2::bat::ops::hashjoinAN(std::get<0>(tuple6), batD, std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs), std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP_TUPLE(sw2, x, tupleE, v2::bat::ops::hashjoinAN(std::get<0>(tuple6), batD, std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         CLEAR_HASHJOIN_AN(tupleE);
         delete std::get<0>(tuple6);
         delete batD;
         // batE has in the Head the positions from lineorder and in the Tail the positions from date
         MEASURE_OP(sw2, x, batF, std::get<0>(tupleE)->mirror_head()); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
-        MEASURE_OP_TUPLE(sw2, x, tupleG, v2::bat::ops::matchjoinAN(batF, batLEenc, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs)));
+        MEASURE_OP_TUPLE(sw2, x, tupleG, v2::bat::ops::matchjoinAN(batF, batLEenc, std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs)));
         CLEAR_HASHJOIN_AN(tupleG);
-        MEASURE_OP_TUPLE(sw2, x, tupleH, v2::bat::ops::matchjoinAN(batF, std::get<0>(tuple4), std::get<10>(*v2_resoid_t::As), std::get<10>(*v2_resoid_t::Ainvs), std::get<5>(*v2_restiny_t::As), std::get<5>(*v2_restiny_t::Ainvs)));
+        MEASURE_OP_TUPLE(sw2, x, tupleH, v2::bat::ops::matchjoinAN(batF, std::get<0>(tuple4), std::get<7>(*v2_resoid_t::As), std::get<7>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As), std::get<3>(*v2_restiny_t::Ainvs)));
         CLEAR_HASHJOIN_AN(tupleH);
         delete batF;
         delete std::get<0>(tuple4);

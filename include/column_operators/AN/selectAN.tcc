@@ -40,7 +40,7 @@ namespace v2 {
 
             namespace Private {
 
-                template<typename Op, typename Head, typename Tail, bool reencode = false >
+                template<typename Op, typename Head, typename Tail, bool reencode>
                 struct SelectionAN1 {
 
                     typedef typename Head::type_t head_t;
@@ -48,12 +48,13 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
+                    typedef typename v2_tail_select_t::type_t tail_select_t;
 
                     std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> operator() (
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t&& threshold,
-                        tail_t ATR = 1, // for reencoding
-                        tail_t ATInvR = 1 // for reencoding
+                        tail_select_t ATR = 1, // for reencoding
+                        tail_select_t ATInvR = 1 // for reencoding
                         ) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -62,11 +63,16 @@ namespace v2 {
                         // always encode head (will usually be a conversion from void -> oid)
                         const head_select_t AHead = std::get < v2_head_select_t::As->size() - 1 > (*v2_head_select_t::As);
                         const head_select_t AHeadInv = std::get < v2_head_select_t::Ainvs->size() - 1 > (*v2_head_select_t::Ainvs);
-                        const tail_t ATailInv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
-                        const tail_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
+                        const tail_select_t ATailInv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
+                        const tail_select_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
                         auto result = std::make_pair(v2::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new std::vector<bool>(arg->size()));
                         result.first->head.metaData = ColumnMetaData(sizeof (head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                         result.first->reserve(arg->size() / 2);
+                        if (reencode) {
+                            result.first->tail.metaData.AN_A = ATR;
+                            result.first->tail.metaData.AN_Ainv = ATInvR;
+                        }
+                        tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
                         auto iter = arg->begin();
                         Op op;
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
@@ -75,6 +81,8 @@ namespace v2 {
                                 (*result.second)[i] = true;
                             }
                             if (op(t, threshold)) {
+                                if (reencode)
+                                    t *= Areenc;
                                 result.first->append(std::make_pair(iter->head() * AHead, t));
                             }
                         }
@@ -84,7 +92,7 @@ namespace v2 {
                 };
 
                 template<typename Op, typename Head>
-                struct SelectionAN1<Op, Head, v2_str_t> {
+                struct SelectionAN1<Op, Head, v2_str_t, false> {
 
                     typedef typename Head::type_t head_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
@@ -93,7 +101,9 @@ namespace v2 {
 
                     std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> operator() (
                         BAT<Head, v2_str_t> * arg,
-                        str_t && threshold
+                        str_t && threshold,
+                        __attribute__ ((unused)) str_t ATR = nullptr, // cuurently only to match the signature
+                        __attribute__ ((unused)) str_t ATInvR = nullptr // cuurently only to match the signature
                         ) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -117,7 +127,7 @@ namespace v2 {
                     }
                 };
 
-                template<typename Op1, typename Op2, typename Head, typename Tail, bool reencode = false >
+                template<typename Op1, typename Op2, typename Head, typename Tail, bool reencode>
                 struct SelectionAN2 {
 
                     typedef typename Head::type_t head_t;
@@ -125,12 +135,13 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
+                    typedef typename v2_tail_select_t::type_t tail_select_t;
 
                     std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> operator() (
                         BAT<Head, Tail> * arg,
                         tail_t && threshold1, tail_t && threshold2,
-                        tail_t ATR = 1, // for reencoding
-                        tail_t ATInvR = 1 // for reencoding
+                        tail_select_t ATR = 1, // for reencoding
+                        tail_select_t ATInvR = 1 // for reencoding
                         ) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -139,16 +150,16 @@ namespace v2 {
                         // always encode head (will usually be a conversion from void -> oid)
                         const head_select_t AHead = std::get < v2_head_select_t::As->size() - 1 > (*v2_head_select_t::As);
                         const head_select_t AHeadInv = std::get < v2_head_select_t::Ainvs->size() - 1 > (*v2_head_select_t::Ainvs);
-                        const tail_t ATailInv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
-                        const tail_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
+                        const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
+                        const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
                         auto result = std::make_pair(v2::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new std::vector<bool>(arg->size()));
                         result.first->head.metaData = ColumnMetaData(sizeof (head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                         result.first->reserve(arg->size() / 2);
                         if (reencode) {
-                            result->first->tail.metaData.AN_A = ATR;
-                            result->first->tail.metaData.AN_Ainv = ATInvR;
+                            result.first->tail.metaData.AN_A = ATR;
+                            result.first->tail.metaData.AN_Ainv = ATInvR;
                         }
-                        tail_t Areenc = reencode ? arg->tail.metaData.AN_Ainv * ATR : 1;
+                        tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
                         auto iter = arg->begin();
                         Op1 op1;
                         Op2 op2;
@@ -169,7 +180,7 @@ namespace v2 {
                 };
 
                 template<typename Op1, typename Op2, typename Head>
-                struct SelectionAN2<Op1, Op2, Head, v2_str_t> {
+                struct SelectionAN2<Op1, Op2, Head, v2_str_t, false> {
 
                     typedef typename Head::type_t head_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
@@ -179,7 +190,9 @@ namespace v2 {
                     std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> operator() (
                         BAT<Head, v2_str_t> * arg,
                         str_t&& threshold1,
-                        str_t&& threshold2
+                        str_t&& threshold2,
+                        str_t ATR = nullptr, // cuurently only to match the signature
+                        str_t ATInvR = nullptr // cuurently only to match the signature
                         ) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -207,16 +220,56 @@ namespace v2 {
 
             template<template<typename> class Op, typename Head, typename Tail>
             std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*>
-            selectAN (TempBAT<Head, Tail>* arg, typename Tail::type_t&& threshold) {
-                Private::SelectionAN1 < Op<typename Tail::v2_compare_t::type_t>, Head, Tail> impl;
-                return impl(arg, std::forward<typename Tail::type_t > (threshold));
+            selectAN (
+                      TempBAT<Head, Tail>* arg,
+                      typename Tail::type_t&& threshold
+                      ) {
+                typedef typename Tail::v2_compare_t::type_t v2_compare_t;
+                typedef typename Tail::type_t tail_t;
+                Private::SelectionAN1<Op<v2_compare_t>, Head, Tail, false> impl;
+                return impl(arg, std::forward<tail_t>(threshold));
             }
 
             template<template<typename> class Op1 = std::greater_equal, template<typename> class Op2 = std::less_equal, typename Head, typename Tail>
             std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*>
-            selectAN (TempBAT<Head, Tail>* arg, typename Tail::type_t&& threshold1, typename Tail::type_t&& threshold2) {
-                Private::SelectionAN2 < Op1<typename Tail::v2_compare_t::type_t>, Op2<typename Tail::v2_compare_t::type_t>, Head, Tail> impl;
-                return impl(arg, std::forward<typename Tail::type_t > (threshold1), std::forward<typename Tail::type_t > (threshold2));
+            selectAN (
+                      TempBAT<Head, Tail>* arg,
+                      typename Tail::type_t&& threshold1,
+                      typename Tail::type_t&& threshold2
+                      ) {
+                typedef typename Tail::v2_compare_t::type_t v2_compare_t;
+                typedef typename Tail::type_t tail_t;
+                Private::SelectionAN2<Op1<v2_compare_t>, Op2<v2_compare_t>, Head, Tail, false> impl;
+                return impl(arg, std::forward<tail_t>(threshold1), std::forward<tail_t>(threshold2));
+            }
+
+            template<template<typename> class Op, typename Head, typename Tail>
+            std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*>
+            selectAN (
+                      TempBAT<Head, Tail>* arg,
+                      typename Tail::type_t && threshold,
+                      typename Tail::v2_select_t::type_t ATR,
+                      typename Tail::v2_select_t::type_t ATInvR
+                      ) {
+                typedef typename Tail::v2_compare_t::type_t v2_compare_t;
+                typedef typename Tail::type_t tail_t;
+                Private::SelectionAN1<Op<v2_compare_t>, Head, Tail, false> impl;
+                return impl(arg, std::forward<tail_t>(threshold), ATR, ATInvR);
+            }
+
+            template<template<typename> class Op1 = std::greater_equal, template<typename> class Op2 = std::less_equal, typename Head, typename Tail>
+            std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*>
+            selectAN (
+                      TempBAT<Head, Tail>* arg,
+                      typename Tail::type_t&& threshold1,
+                      typename Tail::type_t&& threshold2,
+                      typename Tail::v2_select_t::type_t ATR,
+                      typename Tail::v2_select_t::type_t ATInvR
+                      ) {
+                typedef typename Tail::v2_compare_t::type_t v2_compare_t;
+                typedef typename Tail::type_t tail_t;
+                Private::SelectionAN2<Op1<v2_compare_t>, Op2<v2_compare_t>, Head, Tail, false> impl;
+                return impl(arg, std::forward<tail_t>(threshold1), std::forward<tail_t>(threshold2), ATR, ATInvR);
             }
         }
     }
