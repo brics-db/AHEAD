@@ -12,6 +12,8 @@ BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 IMPLEMENTED=(11 12 13 21)
+VARIANTS=("_normal" "_early" "_late" "_continuous" "_continuous_reenc")
+#VARIANTS=("_normal")
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
@@ -28,7 +30,7 @@ CMAKE_BUILD_TYPE=Release
 BENCHMARK_NUMRUNS=5
 BENCHMARK_NUMBEST=3
 BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10))
-#BENCHMARK_SCALEFACTORS=(8 9 10)
+#BENCHMARK_SCALEFACTORS=(1)
 BENCHMARK_TIMEOUT="1m"
 
 # functions etc
@@ -218,12 +220,13 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
         mkdir -p ${PATH_EVALDATA}
     fi
     # Use a fixed but random CPU core to test
-    corenum=$RANDOM
-    let "corenum %= $numcpus"
+    #corenum=$RANDOM
+    #let "corenum %= $numcpus"
 
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
-        for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous ${BASE2}_continuous_reenc; do
+        for var in "${VARIANTS[@]}"; do
+		    type="${BASE2}${var}"
             PATH_BINARY=${PATH_BUILD}/${type}
             if [[ -e ${PATH_BINARY} ]]; then
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
@@ -233,10 +236,11 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                 echo -n " * ${type}:"
                 for sf in ${BENCHMARK_SCALEFACTORS[*]}; do
                     echo -n " sf${sf}"
-                    taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                    #taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                    ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                     #sleep ${BENCHMARK_TIMEOUT}
-                    let "corenum++"
-                    let "corenum %= $numcpus"
+                    #let "corenum++"
+                    #let "corenum %= $numcpus"
                 done
                 echo " done."
             else
@@ -276,7 +280,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             echo -n "SF " >${EVAL_TEMPFILE}
             echo "${BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE}
 
-            for type in ${BASE2} ${BASE2}_early ${BASE2}_late ${BASE2}_continuous ${BASE2}_continuous_reenc; do
+		for var in "${VARIANTS[@]}"; do
+			type="${BASE2}${var}"
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
                 EVAL_FILERESULTS="${PATH_EVALDATA}/${type}.results"
                 EVAL_FILESUMMARY="${PATH_EVALDATA}/${type}.summary"
@@ -388,6 +393,7 @@ else
 fi
 
 # Verification
+# TODO make it dependent on the VARIANTS list
 EXITSTAT=0
 if [[ ${DO_VERIFY} -ne 0 ]]; then
     date
