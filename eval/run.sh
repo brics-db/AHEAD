@@ -11,15 +11,14 @@ PATH_EVALOUT=${PATH_EVAL}/out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-IMPLEMENTED=(11 12 13 21)
-VARIANTS=("_normal" "_early" "_late" "_continuous" "_continuous_reenc")
-#VARIANTS=("_normal")
+IMPLEMENTED=(11) #12 13 21)
+VARIANTS=("_normal" "_early" "_late") #"_continuous" "_continuous_reenc")
 
 # Process Switches
 #DO_CLEAN_EVALTEMP=0
-if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
+if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
 if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
-if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
+if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=0; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
 if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
@@ -29,9 +28,9 @@ CMAKE_BUILD_TYPE=Release
 
 BENCHMARK_NUMRUNS=5
 BENCHMARK_NUMBEST=3
-BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10))
-#BENCHMARK_SCALEFACTORS=(1)
-BENCHMARK_TIMEOUT="1m"
+#BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10))
+BENCHMARK_SCALEFACTORS=(1)
+BENCHMARK_TIMEOUT="20s"
 
 # functions etc
 pushd () {
@@ -238,7 +237,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                     echo -n " sf${sf}"
                     #taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                     ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
-                    #sleep ${BENCHMARK_TIMEOUT}
+                    sleep ${BENCHMARK_TIMEOUT}
                     #let "corenum++"
                     #let "corenum %= $numcpus"
                 done
@@ -393,56 +392,34 @@ else
 fi
 
 # Verification
-# TODO make it dependent on the VARIANTS list
-EXITSTAT=0
 if [[ ${DO_VERIFY} -ne 0 ]]; then
     date
     echo "Verifying:"
     for NUM in "${IMPLEMENTED[@]}"; do
-        BASE2=${BASE}${NUM}
-        normal=${PATH_EVALDATA}/${BASE2}.results
-        early=${PATH_EVALDATA}/${BASE2}_early.results
-        late=${PATH_EVALDATA}/${BASE2}_late.results
-        contin=${PATH_EVALDATA}/${BASE2}_continuous.results
-        reenc=${PATH_EVALDATA}/${BASE2}_continuous_reenc.results
-        DIFF1=$(if [[ $(diff ${normal} ${early}  | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF2=$(if [[ $(diff ${normal} ${late}   | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF3=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${normal} - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF4=$(if [[ $(diff ${early}  ${late}   | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF5=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${early}  - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        DIFF6=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${late}   - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-		DIFF7=$(if [[ $(cat ${contin} | awk '{print $1,$2}' | diff ${reenc}   - | wc -l) -eq 0 ]]; then echo -n "OK"; else echo -n "FAIL"; fi)
-        if [[ ${DIFF1} == "OK" ]] && [[ ${DIFF2} == "OK" ]] && [[ ${DIFF3} == "OK" ]] && [[ ${DIFF4} == "OK" ]] && [[ ${DIFF5} == "OK" ]] && [[ ${DIFF6} == "OK" ]]; then
-            echo " * Q${NUM}: all OK"
-        elif [[ ${DIFF1} == "OK" ]]; then
-            if [[ ${DIFF2} == "OK" ]]; then
-                echo " * Q${NUM}: normal, early and late produce the same result"
-                ((++EXITSTAT))
-            elif [[ ${DIFF3} == "OK" ]]; then
-                echo " * Q${NUM}: normal, early and continuous produce the same result"
-                ((++EXITSTAT))
+        echo -n " * Q${NUM}:"
+        BASE2="${BASE}${NUM}"
+        NUMVARS="${#VARIANTS[@]}"
+        baseline1="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}.results"
+        baseline1Tmp="${baseline1}.tmp"
+        baseline2="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}.err"
+        awk '{print $1,$2}' "${baseline1}" >"${baseline1Tmp}"
+        for i in $(seq 1 $(echo "$NUMVARS-1"|bc)); do
+            echo -n " ${VARIANTS[$i]:1}="
+            other1="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}.results"
+            other1Tmp="${other1}.tmp"
+            awk '{print $1,$2}' "${other1}" >"${other1Tmp}" # filters out e.g. the encoded value for the continuous encoding variants
+            other2="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}.err"
+            RES1=$(diff "${baseline1Tmp}" "${other1Tmp}" | wc -l)
+            RES2=$(diff "${baseline2}" "${other2}" | wc -l)
+            if [[ "${RES1}" -eq 0 ]] && [[ "${RES2}" -eq 0 ]]; then
+                echo -n "OK";
             else
-                echo " * Q${NUM}: normal and early produce the same result"
-                ((++EXITSTAT))
+                echo -n "BAD";
+                if [[ "${RES2}" -eq 0 ]]; then echo -n "(result)"; else echo -n "(err)"; fi
             fi
-        elif [[ ${DIFF2} == "OK" ]]; then
-            if [[ ${DIFF3} == "OK" ]]; then
-                echo " * Q${NUM}: normal, late and continuous produce the same result"
-                ((++EXITSTAT))
-            else
-                echo " * Q${NUM}: normal and late produce the same result"
-                ((++EXITSTAT))
-            fi
-        elif [[ ${DIFF3} == "OK" ]]; then
-            echo " * Q${NUM}: normal and continuous produce the same result"
-            ((++EXITSTAT))
-        else
-            echo " * Q${NUM}: no results match"
-            ((++EXITSTAT))
-        fi
+        done
+        echo ""
     done
 else
     echo "Skipping verification."
 fi
-
-exit ${EXITSTAT}

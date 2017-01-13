@@ -108,36 +108,36 @@ main (int argc, char** argv) {
         // 1) select from lineorder
         MEASURE_OP(sw2, x, bat1, v2::bat::ops::select(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A)); // lo_quantity between 26 and 35
         MEASURE_OP(sw2, x, bat2, v2::bat::ops::select(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A)); // lo_discount between 5 and 7
-        MEASURE_OP(sw2, x, bat3, bat1->mirror_head()); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
+        auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(sw2, x, bat4, v2::bat::ops::matchjoin(bat3, bat2)); // join selection
         delete bat2;
         delete bat3;
-        MEASURE_OP(sw2, x, bat5, bat4->mirror_head()); // prepare joined selection with lo_orderdate (contains positions in tail)
+        auto bat5 = bat4->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
         MEASURE_OP(sw2, x, bat6, v2::bat::ops::matchjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP(sw2, x, bat7, v2::bat::ops::select<std::equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.AN_A)); // d_year = 1994
-        MEASURE_OP(sw2, x, bat8, bat7->mirror_head()); // prepare joined selection over d_year and d_weeknuminyear
+        auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_weeknuminyear
         delete bat7;
         MEASURE_OP(sw2, x, bat9, v2::bat::ops::select<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
         MEASURE_OP(sw2, x, batA, v2::bat::ops::matchjoin(bat8, bat9));
         delete bat8;
         delete bat9;
-        MEASURE_OP(sw2, x, batB, batA->mirror_head());
+        auto batB = batA->mirror_head();
         delete batA;
         MEASURE_OP(sw2, x, batC, v2::bat::ops::matchjoin(batB, batDDenc)); // only those d_datekey where d_year and d_weeknuminyear...
         delete batB;
 
         // 3) join lineorder and date
-        MEASURE_OP(sw2, x, batD, batC->reverse());
+        auto batD = batC->reverse();
         delete batC;
         MEASURE_OP(sw2, x, batE, v2::bat::ops::hashjoin(bat6, batD)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         delete bat6;
         delete batD;
         // batE has in the Head the positions from lineorder and in the Tail the positions from date
-        MEASURE_OP(sw2, x, batF, batE->mirror_head()); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
+        auto batF = batE->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batE;
         MEASURE_OP(sw2, x, batG, v2::bat::ops::matchjoin(batF, batLEenc));
         MEASURE_OP(sw2, x, batH, v2::bat::ops::matchjoin(batF, bat4));
