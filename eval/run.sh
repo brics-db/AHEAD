@@ -1,5 +1,32 @@
 #!/usr/bin/env bash
 
+# distinct warmup and test phases
+ARGS=("$@")
+if [[ $# -eq 0 ]] ; then
+    case "${ARGS[0]}" in
+        WARMUP)
+            #BENCHMARK_NUMRUNS=1
+            #BENCHMARK_NUMBEST=1
+            ;;
+        ACTUAL)
+            # for now just a fall-through
+            ;;
+        *)
+            /usr/bin/env DO_BENCHMARK=0 DO_EVAL=0 DO_VERIFY=0 $0 WARMUP $@
+            for i in $(seq 1 2); do
+                /usr/bin/env $0 WARMUP
+                mv data "data_wu${i}"
+                mv out "out_wu${i}"
+            done
+            for i in $(seq 1 3); do
+                /usr/bin/env DO_COMPILE=0 $0 ACTUAL
+                mv data "data_act${i}"
+                mv out "out_act${i}"
+            done
+            exit 0
+    esac
+fi
+
 # Basic constants
 CXX_COMPILER=g++-6
 PATH_BASE=..
@@ -11,26 +38,26 @@ PATH_EVALOUT=${PATH_EVAL}/out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-IMPLEMENTED=(11) #12 13 21)
-VARIANTS=("_normal" "_early" "_late") #"_continuous" "_continuous_reenc")
+IMPLEMENTED=(11 12 13 21)
+VARIANTS=("_normal" "_early" "_late" "_continuous" "_continuous_reenc")
 
 # Process Switches
-#DO_CLEAN_EVALTEMP=0
+#DO_CLEAN_EVALTEMP=0 # should not be uncommented, as we assume that the script resides in the eval dir!!!
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
 if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
-if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=0; fi
+if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
 if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 
 # Process specific constants
-CMAKE_BUILD_TYPE=Release
+if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
-BENCHMARK_NUMRUNS=5
-BENCHMARK_NUMBEST=3
-#BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10))
-BENCHMARK_SCALEFACTORS=(1)
-BENCHMARK_TIMEOUT="20s"
+if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
+if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=10; fi
+declare -p BENCHMARK_SCALEFACTORS 2>/dev/null | grep -q '^declare \-a'
+if [[ $? -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
+#BENCHMARK_SCALEFACTORS=(1)
 
 # functions etc
 pushd () {
@@ -218,28 +245,22 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
     if [[ ! -d ${PATH_EVALDATA} ]]; then
         mkdir -p ${PATH_EVALDATA}
     fi
-    # Use a fixed but random CPU core to test
-    #corenum=$RANDOM
-    #let "corenum %= $numcpus"
 
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
         for var in "${VARIANTS[@]}"; do
-		    type="${BASE2}${var}"
+            type="${BASE2}${var}"
             PATH_BINARY=${PATH_BUILD}/${type}
             if [[ -e ${PATH_BINARY} ]]; then
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
                 EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
-                rm -f ${EVAL_FILEOUT}
-                rm -f ${EVAL_FILEERR}
+                EVAL_FILETIME="${PATH_EVALDATA}/${type}.time"
+                rm -f ${EVAL_FILEOUT} ${EVAL_FILEERR} ${EVAL_FILETIME}
                 echo -n " * ${type}:"
                 for sf in ${BENCHMARK_SCALEFACTORS[*]}; do
                     echo -n " sf${sf}"
-                    #taskset -c $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
-                    ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
-                    sleep ${BENCHMARK_TIMEOUT}
-                    #let "corenum++"
-                    #let "corenum %= $numcpus"
+                    echo "Scale Factor ${sf} ===========================" >>${EVAL_FILETIME}
+                    /usr/bin/time -v -o ${EVAL_FILETIME} -a $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                 done
                 echo " done."
             else
