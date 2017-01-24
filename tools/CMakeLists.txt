@@ -1,4 +1,16 @@
-# author: Till Kolditz (C) 2016 Till.Kolditz@TU-Dresden.de
+# Copyright (c) 2016-2017 Till Kolditz
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1 FATAL_ERROR)
 
@@ -37,5 +49,26 @@ MACRO(add_ssbm arg_queries)
     ENDFOREACH(Q QUERIES)
 ENDMACRO(add_ssbm)
 
-add_ssbm("ssbm-q11_normal ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc ssbm-q12_normal ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc ssbm-q13_normal ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc ssbm-q21_normal ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
+MACRO(append_target_property arg_target arg_property arg_setting)
+	GET_TARGET_PROPERTY(TEMP ${arg_target} ${arg_property})
+	IF(TEMP STREQUAL "TEMP-NOTFOUND")
+		SET(TEMP "") # set to empty string
+	ELSE()
+		SET(TEMP "${TEMP} ") # a space to cleanly separate from existing content
+	ENDIF()
+	# append our values
+	SET(TEMP "${TEMP}${arg_setting}")
+	SET_TARGET_PROPERTIES(${arg_target} PROPERTIES ${arg_property} ${TEMP})
+ENDMACRO(append_target_property)
 
+MACRO(enable_openmp arg_queries)
+    STRING(REPLACE " " ";" QUERIES "${arg_queries}")
+    FOREACH(Q ${QUERIES})
+        append_target_property(${Q} "COMPILE_FLAGS" "-fopenmp")
+        append_target_property(${Q} "LINK_FLAGS" "-fopenmp")
+    ENDFOREACH(Q QUERIES)
+ENDMACRO(add_ssbm)
+
+add_ssbm("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_dmr_mt ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_dmr_mt ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_dmr_mt ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_dmr_mt ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
+
+enable_openmp("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")

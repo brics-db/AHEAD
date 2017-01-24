@@ -52,21 +52,29 @@
       <df name="ssbm">
         <in>ssbm-q11_continuous.cpp</in>
         <in>ssbm-q11_continuous_reenc.cpp</in>
+        <in>ssbm-q11_dmr_mt.cpp</in>
+        <in>ssbm-q11_dmr_seq.cpp</in>
         <in>ssbm-q11_early.cpp</in>
         <in>ssbm-q11_late.cpp</in>
         <in>ssbm-q11_normal.cpp</in>
         <in>ssbm-q12_continuous.cpp</in>
         <in>ssbm-q12_continuous_reenc.cpp</in>
+        <in>ssbm-q12_dmr_mt.cpp</in>
+        <in>ssbm-q12_dmr_seq.cpp</in>
         <in>ssbm-q12_early.cpp</in>
         <in>ssbm-q12_late.cpp</in>
         <in>ssbm-q12_normal.cpp</in>
         <in>ssbm-q13_continuous.cpp</in>
         <in>ssbm-q13_continuous_reenc.cpp</in>
+        <in>ssbm-q13_dmr_mt.cpp</in>
+        <in>ssbm-q13_dmr_seq.cpp</in>
         <in>ssbm-q13_early.cpp</in>
         <in>ssbm-q13_late.cpp</in>
         <in>ssbm-q13_normal.cpp</in>
         <in>ssbm-q21_continuous.cpp</in>
         <in>ssbm-q21_continuous_reenc.cpp</in>
+        <in>ssbm-q21_dmr_mt.cpp</in>
+        <in>ssbm-q21_dmr_seq.cpp</in>
         <in>ssbm-q21_early.cpp</in>
         <in>ssbm-q21_late.cpp</in>
         <in>ssbm-q21_normal.cpp</in>
@@ -97,11 +105,11 @@
       <flagsDictionary>
         <element flagsID="0" commonFlags="-march=native -march=native -O3 -std=gnu++14"/>
         <element flagsID="1"
-                 commonFlags="-march=native -pedantic -march=native -O3 -fPIC -std=gnu++14"/>
+                 commonFlags="-march=native -pedantic -march=native -O2 -fPIC -std=gnu++14"/>
         <element flagsID="2"
-                 commonFlags="-march=native -pedantic -march=native -O3 -std=gnu++14"/>
+                 commonFlags="-march=native -pedantic -march=native -O2 -fopenmp -std=gnu++14"/>
         <element flagsID="3"
-                 commonFlags="-march=native -pedantic -march=native -std=gnu++14"/>
+                 commonFlags="-march=native -pedantic -march=native -O2 -std=gnu++14"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -129,7 +137,7 @@
           <preBuildCommand>rm -Rf build ; mkdir build ; cd build ; cmake .. -DCMAKE_BUILD_TYPE=Release</preBuildCommand>
         </preBuild>
       </makefileType>
-      <folder path="1/column_operators">
+      <folder path="1">
         <ccTool>
           <incDir>
             <pElem>build_shared/lib</pElem>
@@ -137,33 +145,6 @@
           <preprocessorList>
             <Elem>v2core_EXPORTS</Elem>
           </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="1/column_storage">
-        <ccTool>
-          <incDir>
-            <pElem>build_shared/lib</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>v2core_EXPORTS</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="1/meta_repository">
-        <ccTool>
-          <incDir>
-            <pElem>build_shared/lib</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>v2core_EXPORTS</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
-      <folder path="1/util">
-        <ccTool>
-          <incDir>
-            <pElem>build/lib</pElem>
-          </incDir>
         </ccTool>
       </folder>
       <folder path="2/sample">
@@ -223,23 +204,23 @@
         </ccTool>
       </item>
       <item path="lib/util/argumentparser.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="lib/util/resilience.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="3">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="lib/util/rss.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="lib/util/stopwatch.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="3">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="lib/util/v2types.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="3">
+        <ccTool flags="1">
         </ccTool>
       </item>
       <item path="tools/sample/lineorder_size.cpp" ex="false" tool="1" flavor2="11">
@@ -262,104 +243,136 @@
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11_continuous_reenc.cpp"
             ex="false"
             tool="1"
             flavor2="11">
+        <ccTool flags="3">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q11_dmr_mt.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q11_dmr_seq.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q11_normal.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_continuous.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_continuous_reenc.cpp"
             ex="false"
             tool="1"
             flavor2="11">
+        <ccTool flags="3">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q12_dmr_mt.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q12_dmr_seq.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q12_normal.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_continuous.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_continuous_reenc.cpp"
             ex="false"
             tool="1"
             flavor2="11">
+        <ccTool flags="3">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q13_dmr_mt.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q13_dmr_seq.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q13_normal.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_continuous.cpp"
             ex="false"
             tool="1"
             flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_continuous_reenc.cpp"
             ex="false"
             tool="1"
             flavor2="11">
+        <ccTool flags="3">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q21_dmr_mt.cpp" ex="false" tool="1" flavor2="11">
         <ccTool flags="2">
+        </ccTool>
+      </item>
+      <item path="tools/ssbm/ssbm-q21_dmr_seq.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_early.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_late.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
       <item path="tools/ssbm/ssbm-q21_normal.cpp" ex="false" tool="1" flavor2="11">
-        <ccTool flags="2">
+        <ccTool flags="3">
         </ccTool>
       </item>
     </conf>
