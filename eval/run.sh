@@ -18,27 +18,50 @@
 ARGS=("$@")
 if [[ $# -eq 0 ]] ; then
     case "${ARGS[0]}" in
+        COMPILE)
+            echo "COMPILE Phase"
+			DO_COMPILE=1
+			DO_COMPILE_CMAKE=1
+			DO_BENCHMARK=0
+			DO_EVAL=0
+			DO_VERIFY=0
+            ;;
         WARMUP)
-            #BENCHMARK_NUMRUNS=1
-            #BENCHMARK_NUMBEST=1
+            echo "WARMUP Phase"
+			DO_COMPILE=0
+			DO_BENCHMARK=1
+			DO_EVAL=1
+			DO_VERIFY=1
             ;;
         ACTUAL)
-            # for now just a fall-through
+            echo "ACTUAL Phase"
+			DO_COMPILE=0
+			DO_BENCHMARK=1
+			DO_EVAL=1
+			DO_VERIFY=1
             ;;
-        *)
-            /usr/bin/env DO_BENCHMARK=0 DO_EVAL=0 DO_VERIFY=0 $0 WARMUP $@
-            for i in $(seq 1 2); do
-                /usr/bin/env $0 WARMUP
-                mv data "data_wu${i}"
-                mv out "out_wu${i}"
-            done
-            for i in $(seq 1 3); do
-                /usr/bin/env DO_COMPILE=0 $0 ACTUAL
+		EVALONLY)
+            echo "EVALONLY Phase"
+			DO_COMPILE=0
+			DO_BENCHMARK=0
+			DO_EVAL=1
+			DO_EVAL_PREPARE=1
+			DO_VERIFY=1
+			;;
+        BATCH)
+            /usr/bin/env $0 COMPILE
+            for i in $(seq 1 1); do
+                /usr/bin/env $0 ACTUAL
                 mv data "data_act${i}"
                 mv out "out_act${i}"
             done
             exit 0
+		*)
+            echo "UNKNOWN Phase"
+			;;
     esac
+else
+	echo "DEFAULT Phase"
 fi
 
 # Basic constants
@@ -53,11 +76,10 @@ BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 IMPLEMENTED=(11 12 13 21)
-VARIANTS=("_normal" "_early" "_late" "_continuous" "_continuous_reenc")
+VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 
 # Process Switches
-#DO_CLEAN_EVALTEMP=0 # should not be uncommented, as we assume that the script resides in the eval dir!!!
-if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=0; fi # yes we want to set it either when it's unset or empty
+if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
 if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
 if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
@@ -69,9 +91,9 @@ if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
 if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
 if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=10; fi
-declare -p BENCHMARK_SCALEFACTORS 2>/dev/null | grep -q '^declare \-a'
-if [[ $? -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
-#BENCHMARK_SCALEFACTORS=(1)
+declare -p BENCHMARK_SCALEFACTORS 2>/dev/null
+ret=$?
+if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
 
 # functions etc
 pushd () {
@@ -141,7 +163,9 @@ plot '${3}' using 2:xtic(1) title col fs pattern 0 bo lw 1 dt 1, \\
         '' using 3:xtic(1) title col fs pattern 2 bo lw 1 dt 1, \\
         '' using 4:xtic(1) title col fs pattern 6 bo lw 1 dt 1, \\
         '' using 5:xtic(1) title col fs pattern 3 bo lw 1 dt 1, \\
-        '' using 6:xtic(1) title col fs pattern 7 bo lw 1 dt 1
+        '' using 6:xtic(1) title col fs pattern 7 bo lw 1 dt 1, \\
+        '' using 7:xtic(1) title col fs pattern 1 bo lw 1 dt 1, \\
+        '' using 8:xtic(1) title col fs pattern 4 bo lw 1 dt 1
 EOM
 }
 
@@ -174,7 +198,9 @@ plot '${4}' using 2:xtic(1) t "Unencoded", \\
         '' using 3:xtic(1) t "Early", \\
         '' using 4:xtic(1) t "Late", \\
         '' using 5:xtic(1) t "Continuous", \\
-        '' using 6:xtic(1) t "Reencoding"
+        '' using 6:xtic(1) t "Reencoding", \\
+        '' using 7:xtic(1) t "DMR Seq", \\
+        '' using 8:xtic(1) t "DMR MT"
         
 set term pdf enhanced monochrome fontscale 0.44 size 0.2in,1.25in
 set output '${3}'
@@ -201,15 +227,6 @@ EOM
 #############################
 # Actual Script starts here #
 #############################
-
-# Clean temp dir
-#if [[ DO_CLEAN_EVALTEMP -ne 0 ]]; then
-#    echo "Cleaning temp dir \"${PATH_EVALDATA}\"."
-#    rm -rf ${PATH_EVALDATA}
-#    mkdir ${PATH_EVALDATA}
-#else
-#    echo "Skipping cleaning."
-#fi
 
 numcpus=$(nproc)
 if [[ $? -ne 0 ]]; then
