@@ -14,6 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# Basic constants
+CXX_COMPILER=g++-6
+PATH_BASE=..
+PATH_BUILD=${PATH_BASE}/build
+PATH_DB=${PATH_BASE}/database
+PATH_EVAL=${PATH_BASE}/eval
+PATH_EVALDATA=${PATH_EVAL}/data
+PATH_EVALOUT=${PATH_EVAL}/out
+BASE=ssbm-q
+BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
+BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
+IMPLEMENTED=(11 12 13 21)
+VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
+
+
 # distinct warmup and test phases
 ARGS=("$@")
 if [[ $# -eq 0 ]] ; then
@@ -52,8 +68,8 @@ if [[ $# -eq 0 ]] ; then
             /usr/bin/env $0 COMPILE
             for i in $(seq 1 1); do
                 /usr/bin/env $0 ACTUAL
-                mv data "data_act${i}"
-                mv out "out_act${i}"
+                mv ${PATH_EVALDATA} "${PATH_EVALDATA}_act${i}"
+                mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
             done
             exit 0
 		*)
@@ -63,20 +79,6 @@ if [[ $# -eq 0 ]] ; then
 else
 	echo "DEFAULT Phase"
 fi
-
-# Basic constants
-CXX_COMPILER=g++-6
-PATH_BASE=..
-PATH_BUILD=${PATH_BASE}/build
-PATH_DB=${PATH_BASE}/database
-PATH_EVAL=${PATH_BASE}/eval
-PATH_EVALDATA=${PATH_EVAL}/data
-PATH_EVALOUT=${PATH_EVAL}/out
-BASE=ssbm-q
-BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
-BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-IMPLEMENTED=(11 12 13 21)
-VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 
 # Process Switches
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
