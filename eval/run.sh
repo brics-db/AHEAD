@@ -26,6 +26,7 @@ PATH_EVALOUT=${PATH_EVAL}/out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
+VARREPLACE="s/_//g"
 IMPLEMENTED=(11 12 13 21)
 VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 
@@ -36,34 +37,34 @@ if [[ $# -ne 0 ]] ; then
     case "${ARGS[0]}" in
         COMPILE)
             echo "COMPILE Phase"
-			DO_COMPILE=1
-			DO_COMPILE_CMAKE=1
-			DO_BENCHMARK=0
-			DO_EVAL=0
-			DO_VERIFY=0
+            DO_COMPILE=1
+            DO_COMPILE_CMAKE=1
+            DO_BENCHMARK=0
+            DO_EVAL=0
+            DO_VERIFY=0
             ;;
         WARMUP)
             echo "WARMUP Phase"
-			DO_COMPILE=0
-			DO_BENCHMARK=1
-			DO_EVAL=1
-			DO_VERIFY=1
+            DO_COMPILE=0
+            DO_BENCHMARK=1
+            DO_EVAL=1
+            DO_VERIFY=1
             ;;
         ACTUAL)
             echo "ACTUAL Phase"
-			DO_COMPILE=0
-			DO_BENCHMARK=1
-			DO_EVAL=1
-			DO_VERIFY=1
+            DO_COMPILE=0
+            DO_BENCHMARK=1
+            DO_EVAL=1
+            DO_VERIFY=1
             ;;
-		EVALONLY)
+        EVALONLY)
             echo "EVALONLY Phase"
-			DO_COMPILE=0
-			DO_BENCHMARK=0
-			DO_EVAL=1
-			DO_EVAL_PREPARE=1
-			DO_VERIFY=1
-			;;
+            DO_COMPILE=0
+            DO_BENCHMARK=0
+            DO_EVAL=1
+            DO_EVAL_PREPARE=1
+            DO_VERIFY=1
+            ;;
         BATCH)
             /usr/bin/env $0 COMPILE
             for i in $(seq 1 1); do
@@ -72,13 +73,13 @@ if [[ $# -ne 0 ]] ; then
                 mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
             done
             exit 0
-			;;
-		*)
+            ;;
+        *)
             echo "UNKNOWN Phase"
-			;;
+            ;;
     esac
 else
-	echo "DEFAULT Phase"
+    echo "DEFAULT Phase"
 fi
 
 # Process Switches
@@ -154,21 +155,27 @@ gnuplotcode () {
         # Write GNUplot code to file
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
-set term pdf enhanced monochrome fontscale 0.44 size 3.25in,1.25in
+set term pdf enhanced color fontscale 0.44 size 3.25in,1.25in
 set output '${2}'
 set style data histogram
 set style histogram cluster gap 1
-#set style fill pattern 0 border 1
 set auto x
 unset key
+set style line 1 lc rgb "#9400d3"
+set style line 2 lc rgb "#009e73"
+set style line 3 lc rgb "#56b4e9"
+set style line 4 lc rgb "#e69f00"
+set style line 5 lc rgb "#000000"
+set style line 6 lc rgb "#0072b2"
+set style line 7 lc rgb "#e51e10"
 $(for var in "${@:4}"; do echo $var; done)
-plot '${3}' using 2:xtic(1) title col fs pattern 0 bo lw 1 dt 1, \\
-        '' using 3:xtic(1) title col fs pattern 2 bo lw 1 dt 1, \\
-        '' using 4:xtic(1) title col fs pattern 6 bo lw 1 dt 1, \\
-        '' using 5:xtic(1) title col fs pattern 3 bo lw 1 dt 1, \\
-        '' using 6:xtic(1) title col fs pattern 7 bo lw 1 dt 1, \\
-        '' using 7:xtic(1) title col fs pattern 1 bo lw 1 dt 1, \\
-        '' using 8:xtic(1) title col fs pattern 4 bo lw 1 dt 1
+plot '${3}' using 2:xtic(1) title col fillstyle pattern 0 border ls 1 lw 1 dt 1, \\
+         '' using 3:xtic(1) title col fillstyle pattern 2 border ls 2 lw 1 dt 1, \\
+         '' using 4:xtic(1) title col fillstyle pattern 6 border ls 3 lw 1 dt 1, \\
+         '' using 5:xtic(1) title col fillstyle pattern 3 border ls 4 lw 1 dt 1, \\
+         '' using 6:xtic(1) title col fillstyle pattern 7 border ls 5 lw 1 dt 1, \\
+         '' using 7:xtic(1) title col fillstyle pattern 1 border ls 6 lw 1 dt 1, \\
+         '' using 8:xtic(1) title col fillstyle pattern 4 border ls 7 lw 1 dt 1
 EOM
 }
 
@@ -176,7 +183,7 @@ gnuplotlegend () {
         # Write GNUplot code to file
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
-set term pdf enhanced monochrome fontscale 0.44 size 6in,0.2in
+set term pdf enhanced color fontscale 0.44 size 3.25in,0.4in
 set output '${2}'
 set datafile separator '\t'
 set style data histogram
@@ -195,16 +202,23 @@ unset y2tics
 unset y2label
 set xrange [-10:0]
 set yrange [-10:0]
-set key below maxcols 5 maxrows 1 horizontal width 0.5
+set key below horizontal
+set style line 1 lc rgb "#9400d3"
+set style line 2 lc rgb "#009e73"
+set style line 3 lc rgb "#56b4e9"
+set style line 4 lc rgb "#e69f00"
+set style line 5 lc rgb "#000000"
+set style line 6 lc rgb "#0072b2"
+set style line 7 lc rgb "#e51e10"
 $(for var in "${@:5}"; do echo $var; done)
-plot '${4}' using 2:xtic(1) t "Unencoded", \\
-        '' using 3:xtic(1) t "Early", \\
-        '' using 4:xtic(1) t "Late", \\
-        '' using 5:xtic(1) t "Continuous", \\
-        '' using 6:xtic(1) t "Reencoding", \\
-        '' using 7:xtic(1) t "DMR Seq", \\
-        '' using 8:xtic(1) t "DMR MT"
-        
+plot '${4}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 t "Unencoded", \\
+         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 t "DMR Seq", \\
+         '' using 4:xtic(1) fillstyle pattern 6 border ls 3 lw 1 dt 1 t "DMR MT", \\
+         '' using 5:xtic(1) fillstyle pattern 3 border ls 4 lw 1 dt 1 t "Early", \\
+         '' using 6:xtic(1) fillstyle pattern 7 border ls 5 lw 1 dt 1 t "Late", \\
+         '' using 7:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 t "Continuous", \\
+         '' using 8:xtic(1) fillstyle pattern 4 border ls 7 lw 1 dt 1 t "Reencoding"
+
 set term pdf enhanced monochrome fontscale 0.44 size 0.2in,1.25in
 set output '${3}'
 set lmargin 0
@@ -319,6 +333,19 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         mkdir -p ${PATH_EVALOUT}
     fi
 
+    # Prepare File for a single complete normalized overhead graph across all scale factors
+    EVAL_NORMALIZEDALLDATAFILE=${PATH_EVALOUT}/norm.all.data
+    EVAL_NORMALIZEDALLPLOTFILE=${PATH_EVALOUT}/norm.all.m
+    EVAL_NORMALIZEDALLPDFFILE=${PATH_EVALOUT}/norm.all.pdf
+    if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
+        rm -f ${EVAL_NORMALIZEDALLDATAFILE}
+        echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE}
+        for var in "${VARIANTS[@]}"; do
+            echo -n " ${var}" >>${EVAL_NORMALIZEDALLDATAFILE}
+        done
+        echo "" >>${EVAL_NORMALIZEDALLDATAFILE}
+    fi
+
     for NUM in "${IMPLEMENTED[@]}"; do
         BASE2=${BASE}${NUM}
         EVAL_TEMPFILE=${PATH_EVALDATA}/${BASE2}.tmp
@@ -334,8 +361,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             echo -n "SF " >${EVAL_TEMPFILE}
             echo "${BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE}
 
-		for var in "${VARIANTS[@]}"; do
-			type="${BASE2}${var}"
+            for var in "${VARIANTS[@]}"; do
+                type="${BASE2}${var}"
                 EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
                 EVAL_FILERESULTS="${PATH_EVALDATA}/${type}.results"
                 EVAL_FILESUMMARY="${PATH_EVALDATA}/${type}.summary"
@@ -390,7 +417,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             for sf in ${sfIdxs}; do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
                 #arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
-                arg+="max${sf}=\$${column};"
+                arg+="norm${sf}=\$${column};"
             done
             arg+="};next} FNR==1 {print \$1"
             for sf in ${sfIdxs}; do
@@ -400,7 +427,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             arg+=";next} {print \$1"
             for sf in ${sfIdxs}; do # number of scale factors
                 column=$(echo "${sf}+1" | bc)
-                arg+=",\$${column}/max${sf}"
+                arg+=",\$${column}/norm${sf}"
             done
             arg+="}"
             # EVAL_TEMPFILE already contains the average (arithmetic mean) of the best X of Y runs
@@ -412,11 +439,31 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             if [[ ${BASEREPLACE1} ]]; then
                 sed -i -e ${BASEREPLACE1} ${EVAL_NORMALIZEDDATAFILE}
                 sed -i -e ${BASEREPLACE2} ${EVAL_NORMALIZEDDATAFILE}
+				tr <${EVAL_NORMALIZEDDATAFILE} -d '\000' >${EVAL_NORMALIZEDDATAFILE}.tmp
+				mv ${EVAL_NORMALIZEDDATAFILE}.tmp ${EVAL_NORMALIZEDDATAFILE}
             fi
+
+			# Append current Query name to normalized overall temp file
+            echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE}
+			echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE}
+			#prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
+            sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
+			varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
+            arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
+            for sf in ${sfIdxs}; do
+                column=$(echo "${sf}+1" | bc)
+                arg+="\$${column}+"
+            done
+			arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
+			awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE} ${EVAL_NORMALIZEDTEMPFILE} >>${EVAL_NORMALIZEDALLDATAFILE}
+			echo "" >>${EVAL_NORMALIZEDALLDATAFILE}
+			sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE}
+			tr <${EVAL_NORMALIZEDALLDATAFILE} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE}.tmp
+			mv ${EVAL_NORMALIZEDALLDATAFILE}.tmp ${EVAL_NORMALIZEDALLDATAFILE}
         fi
 
         echo " * Plotting ${BASE2}"
-		pushd ${PATH_EVALOUT}
+        pushd ${PATH_EVALOUT}
         #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
         gnuplotcode ${BASE2}.m ${BASE2}.pdf ${BASE2}.data \
             "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
@@ -424,13 +471,13 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         gnuplotcode ${BASE2}.norm.m ${BASE2}.norm.pdf ${BASE2}.norm.data \
             "set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
 
-		gnuplotlegend ${BASE2}.legend.m ${BASE2}.legend.pdf ${BASE2}.xlabel.pdf ${BASE2}.data
+        gnuplotlegend ${BASE2}.legend.m ${BASE2}.legend.pdf ${BASE2}.xlabel.pdf ${BASE2}.data
 
         gnuplot ${BASE2}.m
         gnuplot ${BASE2}.norm.m
-		gnuplot ${BASE2}.legend.m
+        gnuplot ${BASE2}.legend.m
 
-		popd
+        popd
     done
 
     echo " * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
@@ -442,6 +489,10 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
     ALLPDFOUTFILE=${PATH_EVALOUT}/${BASE}.pdf
     gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
     # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
+
+    gnuplotcode  ${EVAL_NORMALIZEDALLPLOTFILE} ${EVAL_NORMALIZEDALLPDFFILE} ${EVAL_NORMALIZEDALLDATAFILE} \
+        "set yrange [0.9:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
+    gnuplot ${EVAL_NORMALIZEDALLPLOTFILE}
 else
     echo "Skipping evaluation."
 fi
