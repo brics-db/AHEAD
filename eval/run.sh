@@ -32,7 +32,7 @@ VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_contin
 
 # distinct warmup and test phases
 ARGS=("$@")
-if [[ $# -eq 0 ]] ; then
+if [[ $# -ne 0 ]] ; then
     case "${ARGS[0]}" in
         COMPILE)
             echo "COMPILE Phase"
@@ -72,6 +72,7 @@ if [[ $# -eq 0 ]] ; then
                 mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
             done
             exit 0
+			;;
 		*)
             echo "UNKNOWN Phase"
 			;;
