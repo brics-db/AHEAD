@@ -39,10 +39,13 @@ main (int argc, char** argv) {
     std::string emptyString;
     size_t x = 0;
     StopWatch sw1, sw2;
+    size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
 
     std::cout << "SSBM Query 1.2 Parallel\n===========================" << std::endl;
 
     MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
+
+    rssBeforeLoad = getPeakRSS(size_enum_t::KB);
 
     sw1.start();
     // loadTable(CONFIG.DB_PATH, "customer", CONFIG);
@@ -52,6 +55,8 @@ main (int argc, char** argv) {
     // loadTable(CONFIG.DB_PATH, "supplier", CONFIG);
     sw1.stop();
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
+
+    rssAfterLoad = getPeakRSS(size_enum_t::KB);
 
     if (CONFIG.VERBOSE) {
         std::cout << "SSBM Q1.2:\n";
@@ -99,6 +104,8 @@ main (int argc, char** argv) {
     delete batLDcb;
     delete batLOcb;
     delete batLEcb;
+
+    rssAfterCopy = getPeakRSS(size_enum_t::KB);
 
     if (CONFIG.VERBOSE) {
         COUT_HEADLINE;
@@ -169,15 +176,18 @@ main (int argc, char** argv) {
         COUT_RESULT(0, x, OP_NAMES);
     }
 
+    rssAfterQueries = getPeakRSS(size_enum_t::KB);
+
     if (CONFIG.VERBOSE) {
-        std::cout << "peak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
+        std::cout << "Memory statistics (Resident Set size in KB):\n" << std::setw(16) << "before load: " << rssBeforeLoad << "\n" << std::setw(16) << "after load: " << rssAfterLoad << "\n" << std::setw(16) << "after copy: " << rssAfterCopy << "\n" << std::setw(16) << "after queries: " << rssAfterQueries << "\n";
     }
 
     std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         std::cout << '\n' << std::setw(2) << i << '\t' << totalTimes[i];
     }
-    std::cout << std::endl;
+
+    std::cout << "\nMemory:\n" << rssBeforeLoad << '\n' << rssAfterLoad << '\n' << rssAfterCopy << '\n' << rssAfterQueries << std::endl;
 
     for (size_t k = 0; k < MODULARITY; ++k) {
         delete batDYs[k];

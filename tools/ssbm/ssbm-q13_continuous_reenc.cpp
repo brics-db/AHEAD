@@ -37,10 +37,13 @@ main (int argc, char** argv) {
     std::string emptyString;
     size_t x = 0;
     StopWatch sw1, sw2;
+    size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
 
     std::cout << "SSBM Query 1.3 Continuous Detection With Reencoding\n===================================================" << std::endl;
 
     MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
+
+    rssBeforeLoad = getPeakRSS(size_enum_t::KB);
 
     sw1.start();
     // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
@@ -50,6 +53,8 @@ main (int argc, char** argv) {
     // loadTable(CONFIG.DB_PATH, "supplierAN", CONFIG);
     sw1.stop();
     std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
+
+    rssAfterLoad = getPeakRSS(size_enum_t::KB);
 
     if (CONFIG.VERBOSE) {
         std::cout << "\nSSBM Q1.3:\n";
@@ -79,6 +84,7 @@ main (int argc, char** argv) {
     MEASURE_OP(sw1, x, batLOenc, v2::bat::ops::copy(batLOcb));
     MEASURE_OP(sw1, x, batLEenc, v2::bat::ops::copy(batLEcb));
     MEASURE_OP(sw1, x, batDWenc, v2::bat::ops::copy(batDWcb));
+
     delete batDYcb;
     delete batDDcb;
     delete batLQcb;
@@ -86,6 +92,8 @@ main (int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
     delete batDWcb;
+
+    rssAfterCopy = getPeakRSS(size_enum_t::KB);
 
     if (CONFIG.VERBOSE) {
         COUT_HEADLINE;
@@ -165,15 +173,18 @@ main (int argc, char** argv) {
         COUT_RESULT(0, x, OP_NAMES);
     }
 
+    rssAfterQueries = getPeakRSS(size_enum_t::KB);
+
     if (CONFIG.VERBOSE) {
-        std::cout << "peak RSS: " << getPeakRSS(size_enum_t::MB) << " MB.\n";
+        std::cout << "Memory statistics (Resident Set size in KB):\n" << std::setw(16) << "before load: " << rssBeforeLoad << "\n" << std::setw(16) << "after load: " << rssAfterLoad << "\n" << std::setw(16) << "after copy: " << rssAfterCopy << "\n" << std::setw(16) << "after queries: " << rssAfterQueries << "\n";
     }
 
     std::cout << "TotalTimes:";
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         std::cout << '\n' << std::setw(2) << i << '\t' << totalTimes[i];
     }
-    std::cout << std::endl;
+
+    std::cout << "\nMemory:\n" << rssBeforeLoad << '\n' << rssAfterLoad << '\n' << rssAfterCopy << '\n' << rssAfterQueries << std::endl;
 
     delete batDYenc;
     delete batDDenc;
