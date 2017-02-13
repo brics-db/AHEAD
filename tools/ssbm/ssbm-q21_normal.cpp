@@ -27,13 +27,7 @@ main (int argc, char** argv) {
     std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 34;
     cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-    StopWatch::rep opTimes[NUM_OPS] = {0};
-    size_t batSizes[NUM_OPS] = {0};
-    size_t batConsumptions[NUM_OPS] = {0};
-    bool hasTwoTypes[NUM_OPS] = {false};
-    boost::typeindex::type_index headTypes[NUM_OPS];
-    boost::typeindex::type_index tailTypes[NUM_OPS];
-    std::string emptyString;
+    SSBM_REQUIRED_VARIABLES
     size_t x = 0;
     StopWatch sw1, sw2;
     size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;

@@ -30,13 +30,7 @@ main (int argc, char** argv) {
     std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 34;
     cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-    StopWatch::rep opTimes[NUM_OPS] = {0};
-    size_t batSizes[NUM_OPS] = {0};
-    size_t batConsumptions[NUM_OPS] = {0};
-    bool hasTwoTypes[NUM_OPS] = {false};
-    boost::typeindex::type_index headTypes[NUM_OPS];
-    boost::typeindex::type_index tailTypes[NUM_OPS];
-    std::string emptyString;
+    SSBM_REQUIRED_VARIABLES
     size_t x = 0;
     StopWatch sw1, sw2;
     size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
@@ -97,29 +91,29 @@ main (int argc, char** argv) {
     int_tmpbat_t * batSSs[2];
     str_tmpbat_t * batSRs[2];
 
-    MEASURE_OP(sw1, x, batDDs, [0], v2::bat::ops::copy(batDDcb), batDDs[0]->size(), batDDs[0]->consumption());
-    MEASURE_OP(sw1, x, batDYs, [0], v2::bat::ops::copy(batDYcb), batDYs[0]->size(), batDYs[0]->consumption());
-    MEASURE_OP(sw1, x, batLPs, [0], v2::bat::ops::copy(batLPcb), batLPs[0]->size(), batLPs[0]->consumption());
-    MEASURE_OP(sw1, x, batLSs, [0], v2::bat::ops::copy(batLScb), batLSs[0]->size(), batLSs[0]->consumption());
-    MEASURE_OP(sw1, x, batLOs, [0], v2::bat::ops::copy(batLOcb), batLOs[0]->size(), batLOs[0]->consumption());
-    MEASURE_OP(sw1, x, batLRs, [0], v2::bat::ops::copy(batLRcb), batLRs[0]->size(), batLRs[0]->consumption());
-    MEASURE_OP(sw1, x, batPPs, [0], v2::bat::ops::copy(batPPcb), batPPs[0]->size(), batPPs[0]->consumption());
-    MEASURE_OP(sw1, x, batPCs, [0], v2::bat::ops::copy(batPCcb), batPCs[0]->size(), batPCs[0]->consumption());
-    MEASURE_OP(sw1, x, batPBs, [0], v2::bat::ops::copy(batPBcb), batPBs[0]->size(), batPBs[0]->consumption());
-    MEASURE_OP(sw1, x, batSSs, [0], v2::bat::ops::copy(batSScb), batSSs[0]->size(), batSSs[0]->consumption());
-    MEASURE_OP(sw1, x, batSRs, [0], v2::bat::ops::copy(batSRcb), batSRs[0]->size(), batSRs[0]->consumption());
+    MEASURE_OP(sw1, x, batDDs, [0], v2::bat::ops::copy(batDDcb), batDDs[0]->size(), batDDs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batDYs, [0], v2::bat::ops::copy(batDYcb), batDYs[0]->size(), batDYs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLPs, [0], v2::bat::ops::copy(batLPcb), batLPs[0]->size(), batLPs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLSs, [0], v2::bat::ops::copy(batLScb), batLSs[0]->size(), batLSs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLOs, [0], v2::bat::ops::copy(batLOcb), batLOs[0]->size(), batLOs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLRs, [0], v2::bat::ops::copy(batLRcb), batLRs[0]->size(), batLRs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batPPs, [0], v2::bat::ops::copy(batPPcb), batPPs[0]->size(), batPPs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batPCs, [0], v2::bat::ops::copy(batPCcb), batPCs[0]->size(), batPCs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batPBs, [0], v2::bat::ops::copy(batPBcb), batPBs[0]->size(), batPBs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batSSs, [0], v2::bat::ops::copy(batSScb), batSSs[0]->size(), batSSs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batSRs, [0], v2::bat::ops::copy(batSRcb), batSRs[0]->size(), batSRs[0]->consumption(), batDDs[0]->consumptionProjected());
 
-    MEASURE_OP(sw1, x, batDDs, [1], v2::bat::ops::copy(batDDcb), batDDs[1]->size(), batDDs[1]->consumption());
-    MEASURE_OP(sw1, x, batDYs, [1], v2::bat::ops::copy(batDYcb), batDYs[1]->size(), batDYs[1]->consumption());
-    MEASURE_OP(sw1, x, batLPs, [1], v2::bat::ops::copy(batLPcb), batLPs[1]->size(), batLPs[1]->consumption());
-    MEASURE_OP(sw1, x, batLSs, [1], v2::bat::ops::copy(batLScb), batLSs[1]->size(), batLSs[1]->consumption());
-    MEASURE_OP(sw1, x, batLOs, [1], v2::bat::ops::copy(batLOcb), batLOs[1]->size(), batLOs[1]->consumption());
-    MEASURE_OP(sw1, x, batLRs, [1], v2::bat::ops::copy(batLRcb), batLRs[1]->size(), batLRs[1]->consumption());
-    MEASURE_OP(sw1, x, batPPs, [1], v2::bat::ops::copy(batPPcb), batPPs[1]->size(), batPPs[1]->consumption());
-    MEASURE_OP(sw1, x, batPCs, [1], v2::bat::ops::copy(batPCcb), batPCs[1]->size(), batPCs[1]->consumption());
-    MEASURE_OP(sw1, x, batPBs, [1], v2::bat::ops::copy(batPBcb), batPBs[1]->size(), batPBs[1]->consumption());
-    MEASURE_OP(sw1, x, batSSs, [1], v2::bat::ops::copy(batSScb), batSSs[1]->size(), batSSs[1]->consumption());
-    MEASURE_OP(sw1, x, batSRs, [1], v2::bat::ops::copy(batSRcb), batSRs[1]->size(), batSRs[1]->consumption());
+    MEASURE_OP(sw1, x, batDDs, [1], v2::bat::ops::copy(batDDcb), batDDs[1]->size(), batDDs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batDYs, [1], v2::bat::ops::copy(batDYcb), batDYs[1]->size(), batDYs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLPs, [1], v2::bat::ops::copy(batLPcb), batLPs[1]->size(), batLPs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLSs, [1], v2::bat::ops::copy(batLScb), batLSs[1]->size(), batLSs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLOs, [1], v2::bat::ops::copy(batLOcb), batLOs[1]->size(), batLOs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLRs, [1], v2::bat::ops::copy(batLRcb), batLRs[1]->size(), batLRs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batPPs, [1], v2::bat::ops::copy(batPPcb), batPPs[1]->size(), batPPs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batPCs, [1], v2::bat::ops::copy(batPCcb), batPCs[1]->size(), batPCs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batPBs, [1], v2::bat::ops::copy(batPBcb), batPBs[1]->size(), batPBs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batSSs, [1], v2::bat::ops::copy(batSScb), batSSs[1]->size(), batSSs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batSRs, [1], v2::bat::ops::copy(batSRcb), batSRs[1]->size(), batSRs[1]->consumption(), batDDs[1]->consumptionProjected());
 
     delete batDDcb;
     delete batDYcb;

@@ -67,7 +67,7 @@ MACRO(enable_openmp arg_queries)
         append_target_property(${Q} "COMPILE_FLAGS" "-fopenmp")
         append_target_property(${Q} "LINK_FLAGS" "-fopenmp")
     ENDFOREACH(Q QUERIES)
-ENDMACRO(add_ssbm)
+ENDMACRO(enable_openmp)
 
 add_ssbm("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_dmr_mt ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_dmr_mt ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_dmr_mt ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_dmr_mt ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
 

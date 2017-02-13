@@ -284,6 +284,42 @@ struct TypeMap<v2_resstr_t> {
     static cstr_t TYPENAME;
 };
 
+template<>
+struct TypeMap<v2_fixed_t> {
+
+    typedef v2_fixed_t v2_base_t;
+    typedef v2_fixed_t v2_encoded_t;
+    typedef v2_fixed_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
+struct TypeMap<v2_char_t> {
+
+    typedef v2_char_t v2_base_t;
+    typedef v2_char_t v2_encoded_t;
+    typedef v2_char_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
+struct TypeMap<v2_id_t> {
+
+    typedef v2_id_t v2_base_t;
+    typedef v2_id_t v2_encoded_t;
+    typedef v2_id_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
+template<>
+struct TypeMap<v2_size_t> {
+
+    typedef v2_size_t v2_base_t;
+    typedef v2_size_t v2_encoded_t;
+    typedef v2_size_t v2_actual_t;
+    static cstr_t TYPENAME;
+};
+
 template<typename V2Type, bool isV2BaseType>
 struct ANParametersSelector0 {
 

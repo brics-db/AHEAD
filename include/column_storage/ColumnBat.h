@@ -131,6 +131,11 @@ public:
         delete iter;
         return size;
     }
+
+    virtual size_t
+    consumptionProjected () override {
+        return consumption();
+    }
 };
 
 #endif

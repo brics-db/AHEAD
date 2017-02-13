@@ -119,6 +119,19 @@ public:
     consumption () override {
         return size() * (sizeof (head_t) + sizeof (tail_t));
     }
+
+    virtual size_t
+    consumptionProjected () override {
+        size_t szHead = sizeof (typename TypeMap<Head>::v2_base_t::type_t);
+        if (std::is_base_of<v2_anencoded_t, Head>::value) {
+            szHead += sizeof (this->head.metaData.AN_A) * 8 - __builtin_clzll(this->head.metaData.AN_A);
+        }
+        size_t szTail = sizeof (typename TypeMap<Tail>::v2_base_t::type_t);
+        if (std::is_base_of<v2_anencoded_t, Tail>::value) {
+            szTail += sizeof (this->tail.metaData.AN_A) * 8 - __builtin_clzll(this->tail.metaData.AN_A);
+        }
+        return size() * (szHead + szTail);
+    }
 };
 
 template<>
@@ -194,6 +207,11 @@ public:
 
     virtual size_t
     consumption () override {
+        return 0;
+    }
+
+    virtual size_t
+    consumptionProjected () override {
         return 0;
     }
 };
@@ -283,6 +301,15 @@ public:
     consumption () override {
         return size() * sizeof (head_t);
     }
+
+    virtual size_t
+    consumptionProjected () override {
+        size_t szHead = sizeof (typename TypeMap<Head>::v2_base_t::type_t);
+        if (std::is_base_of<v2_anencoded_t, Head>::value) {
+            szHead += sizeof (this->head.metaData.AN_A) * 8 - __builtin_clzll(this->head.metaData.AN_A);
+        }
+        return size() * szHead;
+    }
 };
 
 template<class Tail>
@@ -367,6 +394,15 @@ public:
     virtual size_t
     consumption () override {
         return size() * sizeof (tail_t);
+    }
+
+    virtual size_t
+    consumptionProjected () override {
+        size_t szTail = sizeof (typename TypeMap<Tail>::v2_base_t::type_t);
+        if (std::is_base_of<v2_anencoded_t, Tail>::value) {
+            szTail += sizeof (this->tail.metaData.AN_A) * 8 - __builtin_clzll(this->tail.metaData.AN_A);
+        }
+        return size() * szTail;
     }
 };
 

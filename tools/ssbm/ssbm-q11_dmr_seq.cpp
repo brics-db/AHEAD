@@ -29,13 +29,7 @@ main (int argc, char** argv) {
     std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
     const size_t NUM_OPS = 24;
     cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
-    StopWatch::rep opTimes[NUM_OPS] = {0};
-    size_t batSizes[NUM_OPS] = {0};
-    size_t batConsumptions[NUM_OPS] = {0};
-    bool hasTwoTypes[NUM_OPS] = {false};
-    boost::typeindex::type_index headTypes[NUM_OPS];
-    boost::typeindex::type_index tailTypes[NUM_OPS];
-    std::string emptyString;
+    SSBM_REQUIRED_VARIABLES
     size_t x = 0;
     StopWatch sw1, sw2;
     size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
@@ -83,19 +77,19 @@ main (int argc, char** argv) {
     int_tmpbat_t * batLOs[2];
     int_tmpbat_t * batLEs[2];
 
-    MEASURE_OP(sw1, x, batDYs, [0], v2::bat::ops::copy(batDYcb), batDYs[0]->size(), batDYs[0]->consumption());
-    MEASURE_OP(sw1, x, batDDs, [0], v2::bat::ops::copy(batDDcb), batDDs[0]->size(), batDDs[0]->consumption());
-    MEASURE_OP(sw1, x, batLQs, [0], v2::bat::ops::copy(batLQcb), batLQs[0]->size(), batLQs[0]->consumption());
-    MEASURE_OP(sw1, x, batLDs, [0], v2::bat::ops::copy(batLDcb), batLDs[0]->size(), batLDs[0]->consumption());
-    MEASURE_OP(sw1, x, batLOs, [0], v2::bat::ops::copy(batLOcb), batLOs[0]->size(), batLOs[0]->consumption());
-    MEASURE_OP(sw1, x, batLEs, [0], v2::bat::ops::copy(batLEcb), batLEs[0]->size(), batLEs[0]->consumption());
+    MEASURE_OP(sw1, x, batDYs, [0], v2::bat::ops::copy(batDYcb), batDYs[0]->size(), batDYs[0]->consumption(), batDYs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batDDs, [0], v2::bat::ops::copy(batDDcb), batDDs[0]->size(), batDDs[0]->consumption(), batDDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLQs, [0], v2::bat::ops::copy(batLQcb), batLQs[0]->size(), batLQs[0]->consumption(), batLQs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLDs, [0], v2::bat::ops::copy(batLDcb), batLDs[0]->size(), batLDs[0]->consumption(), batLDs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLOs, [0], v2::bat::ops::copy(batLOcb), batLOs[0]->size(), batLOs[0]->consumption(), batLOs[0]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLEs, [0], v2::bat::ops::copy(batLEcb), batLEs[0]->size(), batLEs[0]->consumption(), batLEs[0]->consumptionProjected());
 
-    MEASURE_OP(sw1, x, batDYs, [1], v2::bat::ops::copy(batDYcb), batDYs[1]->size(), batDYs[1]->consumption());
-    MEASURE_OP(sw1, x, batDDs, [1], v2::bat::ops::copy(batDDcb), batDDs[1]->size(), batDDs[1]->consumption());
-    MEASURE_OP(sw1, x, batLQs, [1], v2::bat::ops::copy(batLQcb), batLQs[1]->size(), batLQs[1]->consumption());
-    MEASURE_OP(sw1, x, batLDs, [1], v2::bat::ops::copy(batLDcb), batLDs[1]->size(), batLDs[1]->consumption());
-    MEASURE_OP(sw1, x, batLOs, [1], v2::bat::ops::copy(batLOcb), batLOs[1]->size(), batLOs[1]->consumption());
-    MEASURE_OP(sw1, x, batLEs, [1], v2::bat::ops::copy(batLEcb), batLEs[1]->size(), batLEs[1]->consumption());
+    MEASURE_OP(sw1, x, batDYs, [1], v2::bat::ops::copy(batDYcb), batDYs[1]->size(), batDYs[1]->consumption(), batDYs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batDDs, [1], v2::bat::ops::copy(batDDcb), batDDs[1]->size(), batDDs[1]->consumption(), batDDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLQs, [1], v2::bat::ops::copy(batLQcb), batLQs[1]->size(), batLQs[1]->consumption(), batLQs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLDs, [1], v2::bat::ops::copy(batLDcb), batLDs[1]->size(), batLDs[1]->consumption(), batLDs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLOs, [1], v2::bat::ops::copy(batLOcb), batLOs[1]->size(), batLOs[1]->consumption(), batLOs[1]->consumptionProjected());
+    MEASURE_OP(sw1, x, batLEs, [1], v2::bat::ops::copy(batLEcb), batLEs[1]->size(), batLEs[1]->consumption(), batLEs[1]->consumptionProjected());
 
     delete batDYcb;
     delete batDDcb;

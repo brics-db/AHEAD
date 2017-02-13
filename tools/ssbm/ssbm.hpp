@@ -87,6 +87,16 @@ do {                         \
     SW.resume();             \
 } while (false)
 
+#define SSBM_REQUIRED_VARIABLES                   \
+StopWatch::rep opTimes[NUM_OPS] = {0};            \
+size_t batSizes[NUM_OPS] = {0};                   \
+size_t batConsumptions[NUM_OPS] = {0};            \
+size_t batConsumptionsProj[NUM_OPS] = {0};        \
+bool hasTwoTypes[NUM_OPS] = {false};              \
+boost::typeindex::type_index headTypes[NUM_OPS];  \
+boost::typeindex::type_index tailTypes[NUM_OPS];  \
+std::string emptyString;
+
 #define SAVE_TYPE(I, BAT)          \
 headTypes[I] = BAT->type_head();   \
 tailTypes[I] = BAT->type_tail();   \
@@ -94,41 +104,42 @@ hasTwoTypes[I] = true
 
 #define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
 
-#define MEASURE_OP7(SW, I, TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP) \
-SW.start();                                \
-TYPE VAR = OP;                             \
-opTimes[I] = SW.stop();                    \
-batSizes[I] = STORE_SIZE_OP;               \
-batConsumptions[I] = STORE_CONSUMPTION_OP; \
+#define MEASURE_OP8(SW, I, TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP, STORE_PROJECTEDCONSUMPTION_OP) \
+SW.start();                                              \
+TYPE VAR = OP;                                           \
+opTimes[I] = SW.stop();                                  \
+batSizes[I] = STORE_SIZE_OP;                             \
+batConsumptions[I] = STORE_CONSUMPTION_OP;               \
+batConsumptionsProj[I] = STORE_PROJECTEDCONSUMPTION_OP;  \
 ++I
 
-#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                        \
-MEASURE_OP7(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE));              \
-headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info();  \
+#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                         \
+MEASURE_OP8(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE), sizeof(TYPE));  \
+headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info();   \
 hasTwoTypes[I-1] = false
 
-#define MEASURE_OP4(SW, I, BAT, OP)                                      \
-MEASURE_OP7(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption());      \
+#define MEASURE_OP4(SW, I, BAT, OP)                                                              \
+MEASURE_OP8(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption(), BAT->consumptionProjected());  \
 SAVE_TYPE(I-1, BAT)
 
-#define MEASURE_OP_PAIR(SW, I, PAIR, OP)                                           \
-MEASURE_OP7(SW, I, auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption()); \
+#define MEASURE_OP_PAIR(SW, I, PAIR, OP)                                                                      \
+MEASURE_OP8(SW, I, auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption(), PAIR.first->consumptionProjected());  \
 SAVE_TYPE(I-1, PAIR.first)
 
-#define MEASURE_OP_TUPLE(SW, I, TUPLE, OP)                                                \
-MEASURE_OP7(SW, I, auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption()); \
+#define MEASURE_OP_TUPLE(SW, I, TUPLE, OP)                                                                                                      \
+MEASURE_OP8(SW, I, auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption(), std::get<0>(TUPLE)->consumptionProjected());  \
 SAVE_TYPE(I-1, (std::get<0>(TUPLE)))
 
 #define COUT_HEADLINE \
 do { \
-    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail\n"; \
+    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "consum proj [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail\n"; \
 } while (0)
 
 #define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
 #define COUT_RESULT3(START, MAX, OPNAMES) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        std::cout << "\top" << std::setw(2) << OPNAMES[k] << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
+        std::cout << "\top" << std::setw(2) << OPNAMES[k] << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptionsProj[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
     } \
     std::cout << std::flush; \
 } while (0)

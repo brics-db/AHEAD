@@ -92,6 +92,9 @@ struct BAT {
     /** Compute the actual memory consumption of the BAT */
     virtual size_t consumption () = 0;
 
+    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+    virtual size_t consumptionProjected () = 0;
+
     virtual boost::typeindex::type_index
     type_head () const BOOST_NOEXCEPT {
         return boost::typeindex::type_id<v2_head_t>();
@@ -151,6 +154,9 @@ struct BAT<v2_void_t, v2_void_t> {
 
     /** Compute the actual memory consumption of the BAT */
     virtual size_t consumption () = 0;
+
+    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+    virtual size_t consumptionProjected () = 0;
 
     virtual boost::typeindex::type_index
     type_head () const BOOST_NOEXCEPT {
@@ -213,6 +219,9 @@ struct BAT<Head, v2_void_t> {
     /** Compute the actual memory consumption of the BAT */
     virtual size_t consumption () = 0;
 
+    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+    virtual size_t consumptionProjected () = 0;
+
     virtual boost::typeindex::type_index
     type_head () const BOOST_NOEXCEPT {
         return boost::typeindex::type_id<v2_head_t>();
@@ -273,6 +282,9 @@ struct BAT<v2_void_t, Tail> {
 
     /** Compute the actual memory consumption of the BAT */
     virtual size_t consumption () = 0;
+
+    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+    virtual size_t consumptionProjected () = 0;
 
     virtual boost::typeindex::type_index
     type_head () const BOOST_NOEXCEPT {
