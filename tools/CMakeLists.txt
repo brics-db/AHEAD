@@ -30,7 +30,7 @@ MACRO( add_algorithm arg_name arg_path )
     ADD_EXECUTABLE(${arg_name} ${SOURCE_FILES})
     SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD 14)
     SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD_REQUIRED ON)
-    TARGET_LINK_LIBRARIES(${arg_name} v2core)
+    TARGET_LINK_LIBRARIES(${arg_name} RStoreCore)
     MESSAGE(STATUS "Add executable ${arg_name}")
 ENDMACRO( add_algorithm )
 

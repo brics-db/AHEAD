@@ -27,6 +27,12 @@
 #include <util/v2types.hpp>
 #include <util/resilience.hpp>
 
+#define BITS_PER_BYTE 8
+#define BITS_SIZEOF(x) (sizeof(x) * BITS_PER_BYTE)
+#define BITS_TO_BYTES(x) (((x) + (BITS_PER_BYTE - 1)) / BITS_PER_BYTE)
+// the following macro takes into account the actual data width of "x", since we call clzll which converts it always into an unsigned long long
+#define BITS_CLZ(x) (__builtin_clzll(x) - ((sizeof(unsigned long long) * BITS_PER_BYTE) - (sizeof(x) * BITS_PER_BYTE)))
+
 #define TOSTRING0(str) #str
 #define TOSTRING(str) TOSTRING0(str)
 

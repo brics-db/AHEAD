@@ -54,5 +54,5 @@ ENDMACRO( add_shared_lib )
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
-#add_static_lib(v2core "util/resilience.cpp util/rss.cpp util/stopwatch.cpp util/v2types.cpp util/argumentparser.cpp column_storage/BucketManager.cpp column_storage/ColumnManager.cpp column_storage/Transaction.cpp column_storage/TransactionManager.cpp column_operators/Operators.cpp meta_repository/MetaRepositoryManager.cpp" "")
-add_shared_lib(v2core "util/resilience.cpp util/rss.cpp util/stopwatch.cpp util/v2types.cpp util/argumentparser.cpp column_storage/BucketManager.cpp column_storage/ColumnManager.cpp column_storage/Transaction.cpp column_storage/TransactionManager.cpp column_operators/Operators.cpp meta_repository/MetaRepositoryManager.cpp" "")
+#add_static_lib(RStoreCore "util/resilience.cpp util/rss.cpp util/stopwatch.cpp util/v2types.cpp util/argumentparser.cpp column_storage/BucketManager.cpp column_storage/ColumnManager.cpp column_storage/Transaction.cpp column_storage/TransactionManager.cpp column_operators/Operators.cpp meta_repository/MetaRepositoryManager.cpp" "")
+add_shared_lib(RStoreCore "util/resilience.cpp util/rss.cpp util/stopwatch.cpp util/v2types.cpp util/argumentparser.cpp column_storage/BucketManager.cpp column_storage/ColumnManager.cpp column_storage/Transaction.cpp column_storage/TransactionManager.cpp column_operators/Operators.cpp meta_repository/MetaRepositoryManager.cpp" "")

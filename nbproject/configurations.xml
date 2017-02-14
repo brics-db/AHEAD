@@ -105,11 +105,10 @@
       <flagsDictionary>
         <element flagsID="0" commonFlags="-march=native -march=native -O3 -std=gnu++14"/>
         <element flagsID="1"
-                 commonFlags="-march=native -pedantic -march=native -O2 -fPIC -std=gnu++14"/>
+                 commonFlags="-march=native -pedantic -O3 -fPIC -std=gnu++14"/>
         <element flagsID="2"
-                 commonFlags="-march=native -pedantic -march=native -O2 -fopenmp -std=gnu++14"/>
-        <element flagsID="3"
-                 commonFlags="-march=native -pedantic -march=native -O2 -std=gnu++14"/>
+                 commonFlags="-march=native -pedantic -O3 -fopenmp -std=gnu++14"/>
+        <element flagsID="3" commonFlags="-march=native -pedantic -O3 -std=gnu++14"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -140,10 +139,10 @@
       <folder path="1">
         <ccTool>
           <incDir>
-            <pElem>build_shared/lib</pElem>
+            <pElem>build/lib</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>v2core_EXPORTS</Elem>
+            <Elem>RStoreCore_EXPORTS</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -157,7 +156,7 @@
       <folder path="2/ssbm">
         <ccTool>
           <incDir>
-            <pElem>build_shared/tools</pElem>
+            <pElem>build/tools</pElem>
           </incDir>
         </ccTool>
       </folder>

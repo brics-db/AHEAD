@@ -122,15 +122,15 @@ public:
 
     virtual size_t
     consumptionProjected () override {
-        size_t szHead = sizeof (typename TypeMap<Head>::v2_base_t::type_t);
+        size_t szHead = BITS_SIZEOF(typename TypeMap<Head>::v2_base_t::type_t);
         if (std::is_base_of<v2_anencoded_t, Head>::value) {
-            szHead += sizeof (this->head.metaData.AN_A) * 8 - __builtin_clzll(this->head.metaData.AN_A);
+            szHead += BITS_SIZEOF(this->head.metaData.AN_A) - BITS_CLZ(this->head.metaData.AN_A);
         }
-        size_t szTail = sizeof (typename TypeMap<Tail>::v2_base_t::type_t);
+        size_t szTail = sizeof (typename TypeMap<Tail>::v2_base_t::type_t) * BITS_PER_BYTE;
         if (std::is_base_of<v2_anencoded_t, Tail>::value) {
-            szTail += sizeof (this->tail.metaData.AN_A) * 8 - __builtin_clzll(this->tail.metaData.AN_A);
+            szTail += BITS_SIZEOF(this->tail.metaData.AN_A) - BITS_CLZ(this->tail.metaData.AN_A);
         }
-        return size() * (szHead + szTail);
+        return BITS_TO_BYTES(size() * (szHead + szTail));
     }
 };
 
@@ -268,12 +268,12 @@ public:
     }
 
     virtual void
-    append (head_t& h) {
+    append (head_t& h) override {
         this->head.container->push_back(h);
     }
 
     virtual void
-    append (head_t&& h) {
+    append (head_t&& h) override {
         this->head.container->push_back(std::move(h));
     }
 
@@ -304,11 +304,11 @@ public:
 
     virtual size_t
     consumptionProjected () override {
-        size_t szHead = sizeof (typename TypeMap<Head>::v2_base_t::type_t);
+        size_t szHead = BITS_SIZEOF(typename TypeMap<Head>::v2_base_t::type_t);
         if (std::is_base_of<v2_anencoded_t, Head>::value) {
-            szHead += sizeof (this->head.metaData.AN_A) * 8 - __builtin_clzll(this->head.metaData.AN_A);
+            szHead += BITS_SIZEOF(this->head.metaData.AN_A) - BITS_CLZ(this->head.metaData.AN_A);
         }
-        return size() * szHead;
+        return BITS_TO_BYTES(size() * szHead);
     }
 };
 
@@ -398,11 +398,11 @@ public:
 
     virtual size_t
     consumptionProjected () override {
-        size_t szTail = sizeof (typename TypeMap<Tail>::v2_base_t::type_t);
+        size_t szTail = BITS_SIZEOF(typename TypeMap<Tail>::v2_base_t::type_t);
         if (std::is_base_of<v2_anencoded_t, Tail>::value) {
-            szTail += sizeof (this->tail.metaData.AN_A) * 8 - __builtin_clzll(this->tail.metaData.AN_A);
+            szTail += BITS_SIZEOF(this->tail.metaData.AN_A) - BITS_CLZ(this->tail.metaData.AN_A);
         }
-        return size() * szTail;
+        return BITS_TO_BYTES(size() * szTail);
     }
 };
 

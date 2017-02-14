@@ -132,7 +132,7 @@ SAVE_TYPE(I-1, (std::get<0>(TUPLE)))
 
 #define COUT_HEADLINE \
 do { \
-    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "consum proj [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail\n"; \
+    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "projected [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail" << "\n"; \
 } while (0)
 
 #define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
@@ -146,7 +146,7 @@ do { \
 #define COUT_RESULT2(START, MAX) \
 do { \
     for (size_t k = START; k < MAX; ++k) { \
-        std::cout << "\top" << std::setw(2) << k << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
+        std::cout << "\top" << std::setw(2) << k << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptionsProj[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
     } \
     std::cout << std::flush; \
 } while (0)
@@ -227,11 +227,11 @@ public:
         std::forward_as_tuple("numruns", alias_list_t
         {"--numruns", "-n"}, 15),
         std::forward_as_tuple("lentimes", alias_list_t
-        {"--lentimes"}, 13),
+        {"--lentimes"}, 16),
         std::forward_as_tuple("lentypes", alias_list_t
-        {"--lentypes"}, 16),
+        {"--lentypes"}, 14),
         std::forward_as_tuple("lensizes", alias_list_t
-        {"--lensizes"}, 12)
+        {"--lensizes"}, 16)
     },
     {
         std::forward_as_tuple("dbpath", alias_list_t{"--dbpath", "-d"}, ".")

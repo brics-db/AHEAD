@@ -134,7 +134,11 @@ public:
 
     virtual size_t
     consumptionProjected () override {
-        return consumption();
+        size_t szTail = BITS_SIZEOF(typename TypeMap<Tail>::v2_base_t::type_t);
+        if (std::is_base_of<v2_anencoded_t, Tail>::value) {
+            szTail += BITS_SIZEOF(this->tail.metaData.AN_A) - BITS_CLZ(this->tail.metaData.AN_A);
+        }
+        return BITS_TO_BYTES(size() * szTail);
     }
 };
 
