@@ -99,41 +99,56 @@ do {                         \
     SW.resume();             \
 } while (false)
 
-#define SSBM_REQUIRED_VARIABLES                   \
-StopWatch::rep opTimes[NUM_OPS] = {0};            \
-size_t batSizes[NUM_OPS] = {0};                   \
-size_t batConsumptions[NUM_OPS] = {0};            \
-size_t batConsumptionsProj[NUM_OPS] = {0};        \
-bool hasTwoTypes[NUM_OPS] = {false};              \
-boost::typeindex::type_index headTypes[NUM_OPS];  \
-boost::typeindex::type_index tailTypes[NUM_OPS];  \
-std::string emptyString;                          \
-std::vector<CoreCounterState> cstate1, cstate2;                   \
-std::vector<SocketCounterState> sktstate1, sktstate2;             \
-SystemCounterState sysstate1, sysstate2;                          \
-set_signal_handlers();                            \
-PCM * m = PCM::getInstance();                     \
-PCM::ErrorCode pcmStatus = m->program();          \
-if (pcmStatus == PCM::PMUBusy) {                  \
-    m->resetPMU();                                \
-    pcmStatus = m->program();                     \
-}                                                 \
-if (pcmStatus != PCM::Success) {                  \
+#define SSBM_REQUIRED_VARIABLES                                   \
+StopWatch::rep opTimes[NUM_OPS] = {0};                            \
+size_t batSizes[NUM_OPS] = {0};                                   \
+size_t batConsumptions[NUM_OPS] = {0};                            \
+size_t batConsumptionsProj[NUM_OPS] = {0};                        \
+bool hasTwoTypes[NUM_OPS] = {false};                              \
+boost::typeindex::type_index headTypes[NUM_OPS];                  \
+boost::typeindex::type_index tailTypes[NUM_OPS];                  \
+std::string emptyString;                                          \
+std::vector<CoreCounterState> cstate1, cstate2, cstate3;          \
+std::vector<SocketCounterState> sktstate1, sktstate2, sktstate3;  \
+SystemCounterState sysstate1, sysstate2, sysstate3;               \
+set_signal_handlers();                                            \
+PCM * m = PCM::getInstance();                                     \
+PCM::ErrorCode pcmStatus = m->program();                          \
+if (pcmStatus == PCM::PMUBusy) {                                  \
+    m->resetPMU();                                                \
+    pcmStatus = m->program();                                     \
+}                                                                 \
+if (pcmStatus != PCM::Success) {                                  \
     std::cerr << "Intel's PCM couldn't start" << '\n';            \
     std::cerr << "Error code: " << pcmStatus << '\n';             \
-} else {                                                          \
+}                                                                 \
+if (pcmStatus == PCM::Success) {                                  \
     m->getAllCounterStates(sysstate1, sktstate1, cstate1);        \
 }
+
+#define SSBM_BEFORE_QUERY                                         \
+if (pcmStatus == PCM::Success) {                                  \
+    m->getAllCounterStates(sysstate2, sktstate2, cstate2);        \
+}
+
+#define PCM_PRINT(attr, proc, state1, state2, state3)                                   \
+std::cout << std::setw(10) << attr;                                                     \
+std::cout << std::setw(10) << proc(state1, state2);                                     \
+std::cout << std::setw(10) << proc(state2, state3);                                     \
+std::cout << '\n';
 
 #define SSBM_FINALIZE                                                                   \
 if (pcmStatus == PCM::Success) {                                                        \
     m->getAllCounterStates(sysstate2, sktstate2, cstate2);                              \
-    std::cout << "PCM:" << '\n';                                                        \
-    std::cout << "IPC:" << getIPC(sysstate1, sysstate2) << '\n';                        \
-    std::cout << "MC Read:" << getBytesReadFromMC(sysstate1, sysstate2) << '\n';        \
-    std::cout << "MC written:" << getBytesWrittenToMC(sysstate1, sysstate2) << '\n';    \
-    std::cout << "energy:" << getConsumedEnergy(sysstate1, sysstate2) << '\n';          \
-    std::cout << "Joules:" << getConsumedJoules(sysstate1, sysstate2) << '\n';          \
+    std::cout << "PCM:\n";                                                              \
+    std::cout << std::setw(10) << "Attribute";                                          \
+    std::cout << std::setw(10) << "init";                                               \
+    std::cout << std::setw(10) << "query" << '\n';                                      \
+    PCM_PRINT("IPC", getIPC, sysstate1, sysstate2, sysstate3);                          \
+    PCM_PRINT("MC Read", getBytesReadFromMC, sysstate1, sysstate2, sysstate3);          \
+    PCM_PRINT("MC written", getBytesWrittenToMC, sysstate1, sysstate2, sysstate3);      \
+    PCM_PRINT("Joules", getConsumedEnergy, sysstate1, sysstate2, sysstate3);            \
+    PCM_PRINT("PCM", getConsumedJoules, sysstate1, sysstate2, sysstate3);               \
 }
 
 #define SAVE_TYPE(I, BAT)          \

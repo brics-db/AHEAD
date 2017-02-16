@@ -108,6 +108,8 @@ main (int argc, char** argv) {
         std::cout << std::endl;
     }
 
+    SSBM_BEFORE_QUERY
+
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         x = 0;
