@@ -108,27 +108,33 @@ bool hasTwoTypes[NUM_OPS] = {false};              \
 boost::typeindex::type_index headTypes[NUM_OPS];  \
 boost::typeindex::type_index tailTypes[NUM_OPS];  \
 std::string emptyString;                          \
-set_signal_handlers();                            \
-PCM * m = PCM::getInstance();                     \
-PCM::ErrorCode returnResult = m->program();       \
-if (returnResult != PCM::Success) {               \
-    std::cerr << "Intel's PCM couldn't start" << '\n';            \
-    std::cerr << "Error code: " << returnResult << '\n';          \
-    exit(1);                                                      \
-}                                                                 \
 std::vector<CoreCounterState> cstate1, cstate2;                   \
 std::vector<SocketCounterState> sktstate1, sktstate2;             \
 SystemCounterState sysstate1, sysstate2;                          \
-m->getAllCounterStates(sysstate1, sktstate1, cstate1);
+set_signal_handlers();                            \
+PCM * m = PCM::getInstance();                     \
+PCM::ErrorCode pcmStatus = m->program();          \
+if (pcmStatus == PCM::PMUBusy) {                  \
+    m->resetPMU();                                \
+    pcmStatus = m->program();                     \
+}                                                 \
+if (pcmStatus != PCM::Success) {                  \
+    std::cerr << "Intel's PCM couldn't start" << '\n';            \
+    std::cerr << "Error code: " << pcmStatus << '\n';             \
+} else {                                                          \
+    m->getAllCounterStates(sysstate1, sktstate1, cstate1);        \
+}
 
 #define SSBM_FINALIZE                                                                   \
-m->getAllCounterStates(sysstate2, sktstate2, cstate2);                                  \
-std::cout << "PCM:" << '\n';                                                            \
-std::cout << "IPC:" << getIPC(sysstate1, sysstate2) << '\n';                            \
-std::cout << "MC Read:" << getBytesReadFromMC(sysstate1, sysstate2) << '\n';            \
-std::cout << "MC written:" << getBytesWrittenToMC(sysstate1, sysstate2) << '\n';        \
-std::cout << "energy:" << getConsumedEnergy(sysstate1, sysstate2) << '\n';              \
-std::cout << "Joules:" << getConsumedJoules(sysstate1, sysstate2) << '\n';
+if (pcmStatus == PCM::Success) {                                                        \
+    m->getAllCounterStates(sysstate2, sktstate2, cstate2);                              \
+    std::cout << "PCM:" << '\n';                                                        \
+    std::cout << "IPC:" << getIPC(sysstate1, sysstate2) << '\n';                        \
+    std::cout << "MC Read:" << getBytesReadFromMC(sysstate1, sysstate2) << '\n';        \
+    std::cout << "MC written:" << getBytesWrittenToMC(sysstate1, sysstate2) << '\n';    \
+    std::cout << "energy:" << getConsumedEnergy(sysstate1, sysstate2) << '\n';          \
+    std::cout << "Joules:" << getConsumedJoules(sysstate1, sysstate2) << '\n';          \
+}
 
 #define SAVE_TYPE(I, BAT)          \
 headTypes[I] = BAT->type_head();   \
