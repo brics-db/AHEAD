@@ -33,12 +33,12 @@ SET(ROOTDIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 SET(PCMDIR "${ROOTDIR}/pcm")
 SET(LIBPCMDIR "${PCMDIR}/pcm.so")
 MESSAGE("Checking for PCM")
-IF(NOT EXISTS "${PCMDIR}")
+IF(NOT EXISTS "${PCMDIR}" OR NOT EXISTS "${LIBPCMDIR}")
 	MESSAGE(STATUS "Fetching PCM from github as submodule")
 	EXECUTE_PROCESS(
 		COMMAND git submodule add "https://github.com/opcm/pcm.git"
 		WORKING_DIRECTORY "${ROOTDIR}")
-ENDIF(NOT EXISTS "${PCMDIR}")
+ENDIF(NOT EXISTS "${PCMDIR}" OR NOT EXISTS "${LIBPCMDIR}")
 
 # The same as above ---> build libpcm.so only once. Until we have a cmake project file in pcm/ the responsibility for recreating the library is on the user side
 IF(NOT EXISTS "${LIBPCMDIR}/libpcm.so")
