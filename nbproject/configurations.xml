@@ -125,6 +125,7 @@
             <standard>11</standard>
             <incDir>
               <pElem>include</pElem>
+              <pElem>pcm</pElem>
             </incDir>
             <preprocessorList>
               <Elem>NDEBUG</Elem>

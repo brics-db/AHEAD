@@ -189,5 +189,7 @@ main (int argc, char** argv) {
 
     TransactionManager::destroyInstance();
 
+    SSBM_FINALIZE
+
     return 0;
 }

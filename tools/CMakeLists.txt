@@ -24,13 +24,47 @@ ELSE()
     PROJECT(RSTORETOOLS LANGUAGES CXX)
 ENDIF()
 
+###########
+### PCM ###
+###########
+
+# We check the following at configure time because we need to do this only once
+SET(ROOTDIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
+SET(PCMDIR "${ROOTDIR}/pcm")
+SET(LIBPCMDIR "${PCMDIR}/pcm.so")
+MESSAGE("Checking for PCM")
+IF(NOT EXISTS "${PCMDIR}")
+	MESSAGE(STATUS "Fetching PCM from github as submodule")
+	EXECUTE_PROCESS(
+		COMMAND git submodule add "https://github.com/opcm/pcm.git"
+		WORKING_DIRECTORY "${ROOTDIR}")
+ENDIF(NOT EXISTS "${PCMDIR}")
+
+# The same as above ---> build libpcm.so only once. Until we have a cmake project file in pcm/ the responsibility for recreating the library is on the user side
+IF(NOT EXISTS "${LIBPCMDIR}/libpcm.so")
+	MESSAGE(STATUS "Generating PCM library")
+	EXECUTE_PROCESS(
+		COMMAND make
+		WORKING_DIRECTORY "${LIBPCMDIR}")
+ENDIF(NOT EXISTS "${LIBPCMDIR}/libpcm.so")
+
+FIND_LIBRARY(LIBPCM pcm "${LIBPCMDIR}")
+IF(LIBPCM)
+	MESSAGE(STATUS "PCM library can be found")
+ENDIF(LIBPCM)
+
+#######################
+### SAMPLES & TOOLS ###
+#######################
+
 MACRO( add_algorithm arg_name arg_path )
     FILE(GLOB SOURCE_FILES
         "${arg_path}/${arg_name}.cpp")
     ADD_EXECUTABLE(${arg_name} ${SOURCE_FILES})
     SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD 14)
     SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD_REQUIRED ON)
-    TARGET_LINK_LIBRARIES(${arg_name} RStoreCore)
+	TARGET_INCLUDE_DIRECTORIES(${arg_name} PUBLIC "${PCMDIR}")
+    TARGET_LINK_LIBRARIES(${arg_name} ${LIBPCM} RStoreCore)
     MESSAGE(STATUS "Add executable ${arg_name}")
 ENDMACRO( add_algorithm )
 
@@ -64,11 +98,17 @@ ENDMACRO(append_target_property)
 MACRO(enable_openmp arg_queries)
     STRING(REPLACE " " ";" QUERIES "${arg_queries}")
     FOREACH(Q ${QUERIES})
-        append_target_property(${Q} "COMPILE_FLAGS" "-fopenmp")
-        append_target_property(${Q} "LINK_FLAGS" "-fopenmp")
+        APPEND_TARGET_PROPERTY(${Q} "COMPILE_FLAGS" "${OpenMP_CXX_FLAGS}")
+        APPEND_TARGET_PROPERTY(${Q} "LINK_FLAGS" "${OpenMP_CXX_FLAGS}")
     ENDFOREACH(Q QUERIES)
 ENDMACRO(enable_openmp)
 
 add_ssbm("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_dmr_mt ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_dmr_mt ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_dmr_mt ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_dmr_mt ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
 
-enable_openmp("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
+##############
+### OPENMP ###
+##############
+FIND_PACKAGE(OpenMP)
+IF(OPENMP_FOUND)
+	enable_openmp("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
+ENDIF(OPENMP_FOUND)
