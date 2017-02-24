@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Till Kolditz
+// Copyright (c) 2016-2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <fstream>
 #include <limits>
+#include <stdexcept>
 
 
 #ifdef __GNUC__
@@ -43,14 +44,11 @@
 #pragma GCC diagnostic pop
 #endif
 
-#include <boost/filesystem.hpp>
-// #include <boost/algorithm/string/predicate.hpp>
-// #include <boost/lexical_cast.hpp>
-
 #include <util/argumentparser.hpp>
 #include <util/rss.hpp>
 #include <util/stopwatch.hpp>
 
+#include <ColumnStore.h>
 #include <column_storage/ColumnBat.h>
 #include <column_storage/TransactionManager.h>
 #include <column_operators/Operators.hpp>
@@ -92,169 +90,385 @@ printBat (BAT<Head, Tail > *bat, const char* filename, const char* message = nul
     delete iter;
 }
 
-#define PRINT_BAT(SW, PRINT) \
-do {                         \
-    SW.stop();               \
-    PRINT;                   \
-    SW.resume();             \
+#define PRINT_BAT(SW, PRINT)                                                   \
+do {                                                                           \
+    SW.stop();                                                                 \
+    PRINT;                                                                     \
+    SW.resume();                                                               \
 } while (false)
 
-#define SSBM_REQUIRED_VARIABLES                                   \
-StopWatch::rep opTimes[NUM_OPS] = {0};                            \
-size_t batSizes[NUM_OPS] = {0};                                   \
-size_t batConsumptions[NUM_OPS] = {0};                            \
-size_t batConsumptionsProj[NUM_OPS] = {0};                        \
-bool hasTwoTypes[NUM_OPS] = {false};                              \
-boost::typeindex::type_index headTypes[NUM_OPS];                  \
-boost::typeindex::type_index tailTypes[NUM_OPS];                  \
-std::string emptyString;                                          \
-std::vector<CoreCounterState> cstate1, cstate2, cstate3;          \
-std::vector<SocketCounterState> sktstate1, sktstate2, sktstate3;  \
-SystemCounterState sysstate1, sysstate2, sysstate3;               \
-set_signal_handlers();                                            \
-PCM * m = PCM::getInstance();                                     \
-PCM::ErrorCode pcmStatus = m->program();                          \
-if (pcmStatus == PCM::PMUBusy) {                                  \
-    m->resetPMU();                                                \
-    pcmStatus = m->program();                                     \
-}                                                                 \
-if (pcmStatus != PCM::Success) {                                  \
-    std::cerr << "Intel's PCM couldn't start" << '\n';            \
-    std::cerr << "Error code: " << pcmStatus << '\n';             \
-}                                                                 \
-if (pcmStatus == PCM::Success) {                                  \
-    m->getAllCounterStates(sysstate1, sktstate1, cstate1);        \
-}
+/////////////////////////////
+// SSBM_REQUIRED_VARIABLES //
+/////////////////////////////
+#define SSBM_REQUIRED_VARIABLES(Headline, OpsNum, ...)                         \
+ssbmconf_t CONFIG(argc, argv);                                                 \
+std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);                       \
+const size_t NUM_OPS = OpsNum;                                                 \
+cstr_t OP_NAMES[NUM_OPS] = {__VA_ARGS__};                                      \
+size_t I = 0;                                                                  \
+StopWatch sw1, sw2;                                                            \
+StopWatch::rep opTimes[NUM_OPS] = {0};                                         \
+size_t batSizes[NUM_OPS] = {0};                                                \
+size_t batConsumptions[NUM_OPS] = {0};                                         \
+size_t batConsumptionsProj[NUM_OPS] = {0};                                     \
+size_t batRSS[NUM_OPS] = {0};                                                  \
+bool hasTwoTypes[NUM_OPS] = {false};                                           \
+boost::typeindex::type_index headTypes[NUM_OPS];                               \
+boost::typeindex::type_index tailTypes[NUM_OPS];                               \
+std::string emptyString;                                                       \
+size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;             \
+std::vector<CoreCounterState> cstate1, cstate2, cstate3;                       \
+std::vector<SocketCounterState> sktstate1, sktstate2, sktstate3;               \
+SystemCounterState sysstate1, sysstate2, sysstate3;                            \
+set_signal_handlers();                                                         \
+PCM * m = nullptr;                                                             \
+PCM::ErrorCode pcmStatus = PCM::UnknownError;                                  \
+do {                                                                           \
+    m = PCM::getInstance();                                                    \
+    pcmStatus = m->program();                                                  \
+    if (pcmStatus == PCM::PMUBusy) {                                           \
+        m->resetPMU();                                                         \
+        pcmStatus = m->program();                                              \
+    }                                                                          \
+    if (pcmStatus != PCM::Success) {                                           \
+        std::cerr << "Intel's PCM couldn't start" << '\n';                     \
+        std::cerr << "\tError code: " << pcmStatus << '\n';                    \
+    }                                                                          \
+    if (pcmStatus == PCM::Success) {                                           \
+        m->getAllCounterStates(sysstate1, sktstate1, cstate1);                 \
+    }                                                                          \
+    std::cout << Headline << std::endl;                                        \
+    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());                       \
+} while (false)
 
-#define SSBM_BEFORE_QUERY                                         \
-if (pcmStatus == PCM::Success) {                                  \
-    m->getAllCounterStates(sysstate2, sktstate2, cstate2);        \
-}
+///////////////
+// SSBM_LOAD //
+///////////////
+#define SSBM_LOAD(...) VFUNC(SSBM_LOAD, __VA_ARGS__)
+#define SSBM_LOAD5(tab1, tab2, tab3, tab4, QueryString)                        \
+do {                                                                           \
+    rssBeforeLoad = getPeakRSS(size_enum_t::B);                                \
+    sw1.start();                                                               \
+    loadTable(CONFIG.DB_PATH, tab1, CONFIG);                                   \
+    loadTable(CONFIG.DB_PATH, tab2, CONFIG);                                   \
+    loadTable(CONFIG.DB_PATH, tab3, CONFIG);                                   \
+    loadTable(CONFIG.DB_PATH, tab4, CONFIG);                                   \
+    sw1.stop();                                                                \
+    rssAfterLoad = getPeakRSS(size_enum_t::B);                                 \
+    std::cout << "Total loading time: " << sw1 << " ns.\n" << std::endl;       \
+    if (CONFIG.VERBOSE) {                                                      \
+        std::cout << QueryString << std::endl;                                 \
+    }                                                                          \
+} while (false)
+#define SSBM_LOAD3(tab1, tab2, QueryString)                                    \
+do {                                                                           \
+    rssBeforeLoad = getPeakRSS(size_enum_t::B);                                \
+    sw1.start();                                                               \
+    loadTable(CONFIG.DB_PATH, tab1, CONFIG);                                   \
+    loadTable(CONFIG.DB_PATH, tab2, CONFIG);                                   \
+    sw1.stop();                                                                \
+    rssAfterLoad = getPeakRSS(size_enum_t::B);                                 \
+    std::cout << "Total loading time: " << sw1 << " ns.\n" << std::endl;       \
+    if (CONFIG.VERBOSE) {                                                      \
+        std::cout << QueryString << std::endl;                                 \
+    }                                                                          \
+} while (false)
 
-#define PCM_PRINT(attr, proc, state1, state2, state3)                                   \
-std::cout << std::setw(10) << attr;                                                     \
-std::cout << std::setw(10) << proc(state1, state2);                                     \
-std::cout << std::setw(10) << proc(state2, state3);                                     \
-std::cout << '\n';
+/////////////////////////
+// SSBM_BEFORE_QUERIES //
+/////////////////////////
+#define SSBM_BEFORE_QUERIES                                                    \
+do {                                                                           \
+    rssAfterCopy = getPeakRSS(size_enum_t::B);                                 \
+    if (CONFIG.VERBOSE) {                                                      \
+        std::cout << "\n(Copying)\n";                                          \
+        COUT_HEADLINE;                                                         \
+        COUT_RESULT(0, I);                                                     \
+        std::cout << std::endl;                                                \
+    }                                                                          \
+    if (pcmStatus == PCM::Success) {                                           \
+        m->getAllCounterStates(sysstate2, sktstate2, cstate2);                 \
+    }                                                                          \
+} while (false)
 
-#define SSBM_FINALIZE                                                                   \
-if (pcmStatus == PCM::Success) {                                                        \
-    m->getAllCounterStates(sysstate2, sktstate2, cstate2);                              \
-    std::cout << "PCM:\n";                                                              \
-    std::cout << std::setw(10) << "Attribute";                                          \
-    std::cout << std::setw(10) << "init";                                               \
-    std::cout << std::setw(10) << "query" << '\n';                                      \
-    PCM_PRINT("IPC", getIPC, sysstate1, sysstate2, sysstate3);                          \
-    PCM_PRINT("MC Read", getBytesReadFromMC, sysstate1, sysstate2, sysstate3);          \
-    PCM_PRINT("MC written", getBytesWrittenToMC, sysstate1, sysstate2, sysstate3);      \
-    PCM_PRINT("Joules", getConsumedEnergy, sysstate1, sysstate2, sysstate3);            \
-    PCM_PRINT("PCM", getConsumedJoules, sysstate1, sysstate2, sysstate3);               \
-}
+///////////////////////
+// SSBM_BEFORE_QUERY //
+///////////////////////
+#define SSBM_BEFORE_QUERY                                                      \
+do {                                                                           \
+    sw2.start();                                                               \
+    I = 0;                                                                     \
+} while (false)
 
-#define SAVE_TYPE(I, BAT)          \
-headTypes[I] = BAT->type_head();   \
-tailTypes[I] = BAT->type_tail();   \
-hasTwoTypes[I] = true
+//////////////////////
+// SSBM_AFTER_QUERY //
+//////////////////////
+#define SSBM_AFTER_QUERY(index, result)                                        \
+do {                                                                           \
+    totalTimes[index] = sw2.stop();                                            \
+    std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << sw2 << " ns.\n"; \
+    COUT_HEADLINE;                                                             \
+    COUT_RESULT(0, I, OP_NAMES);                                               \
+} while (false)
 
+////////////////////////
+// SSBM_AFTER_QUERIES //
+////////////////////////
+#define SSBM_AFTER_QUERIES                                                     \
+do {                                                                           \
+    rssAfterQueries = getPeakRSS(size_enum_t::B);                              \
+    if (CONFIG.VERBOSE) {                                                      \
+        std::cout << "Memory statistics (Resident Set size in B):\n\t" << std::setw(15) << "before load: " << std::setw(CONFIG.LEN_SIZES) << rssBeforeLoad << "\n\t" << std::setw(15) << "after load: " << std::setw(CONFIG.LEN_SIZES) << rssAfterLoad << "\n\t" << std::setw(15) << "after copy: " << std::setw(CONFIG.LEN_SIZES) << rssAfterCopy << "\n\t" << std::setw(15) << "after queries: " << std::setw(CONFIG.LEN_SIZES) << rssAfterQueries << "\n"; \
+    }                                                                          \
+    std::cout << "TotalTimes:\n";                                              \
+    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {                             \
+        std::cout << std::setw(2) << i << '\t' << totalTimes[i] << '\n';       \
+    }                                                                          \
+    std::cout << "Memory:\n" << rssBeforeLoad << '\n' << rssAfterLoad << '\n' << rssAfterCopy << '\n' << rssAfterQueries << std::endl; \
+} while (false)
+
+///////////////
+// PCM_PRINT //
+///////////////
+#define PCM_PRINT(attr, proc, state1, state2, state3)                          \
+do {                                                                           \
+    std::cout << std::setw(CONFIG.LEN_SIZES) << attr << '\t';                  \
+    std::cout << std::setw(CONFIG.LEN_SIZES) << proc(state1, state2) << '\t';  \
+    std::cout << std::setw(CONFIG.LEN_SIZES) << proc(state2, state3) << '\n';  \
+} while (false)
+
+///////////////////
+// SSBM_FINALIZE //
+///////////////////
+#define SSBM_FINALIZE                                                                  \
+do {                                                                                   \
+    TransactionManager::destroyInstance();                                             \
+    if (pcmStatus == PCM::Success) {                                                   \
+        m->getAllCounterStates(sysstate2, sktstate2, cstate2);                         \
+        std::cout << "PCM:\n";                                                         \
+        std::cout << std::setw(CONFIG.LEN_SIZES) << "Attribute" << '\t';               \
+        std::cout << std::setw(CONFIG.LEN_SIZES) << "init" << '\t';                    \
+        std::cout << std::setw(CONFIG.LEN_SIZES) << "query" << '\n';                   \
+        PCM_PRINT("IPC", getIPC, sysstate1, sysstate2, sysstate3);                     \
+        PCM_PRINT("MC Read", getBytesReadFromMC, sysstate1, sysstate2, sysstate3);     \
+        PCM_PRINT("MC written", getBytesWrittenToMC, sysstate1, sysstate2, sysstate3); \
+        PCM_PRINT("Joules", getConsumedEnergy, sysstate1, sysstate2, sysstate3);       \
+        PCM_PRINT("PCM", getConsumedJoules, sysstate1, sysstate2, sysstate3);          \
+    }                                                                                  \
+} while (false)
+
+///////////////
+// SAVE_TYPE //
+///////////////
+#define SAVE_TYPE(BAT)                                                         \
+do {                                                                           \
+    headTypes[I - 1] = BAT->type_head();                                       \
+    tailTypes[I - 1] = BAT->type_tail();                                       \
+    hasTwoTypes[I - 1] = true;                                                 \
+} while (false)
+
+////////////////
+// MEASURE_OP //
+////////////////
 #define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
 
-#define MEASURE_OP8(SW, I, TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP, STORE_PROJECTEDCONSUMPTION_OP) \
-SW.start();                                              \
-TYPE VAR = OP;                                           \
-opTimes[I] = SW.stop();                                  \
-batSizes[I] = STORE_SIZE_OP;                             \
-batConsumptions[I] = STORE_CONSUMPTION_OP;               \
-batConsumptionsProj[I] = STORE_PROJECTEDCONSUMPTION_OP;  \
-++I
+#define MEASURE_OP6(TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP, STORE_PROJECTEDCONSUMPTION_OP) \
+sw1.start();                                                                   \
+TYPE VAR = OP;                                                                 \
+do {                                                                           \
+    opTimes[I] = sw1.stop();                                                   \
+    batSizes[I] = STORE_SIZE_OP;                                               \
+    batConsumptions[I] = STORE_CONSUMPTION_OP;                                 \
+    batConsumptionsProj[I] = STORE_PROJECTEDCONSUMPTION_OP;                    \
+    batRSS[I] = getPeakRSS(size_enum_t::B);                                    \
+    ++I;                                                                       \
+} while (false)
 
-#define MEASURE_OP5(SW, I, TYPE, VAR, OP)                         \
-MEASURE_OP8(SW, I, TYPE, VAR, OP, 1, sizeof(TYPE), sizeof(TYPE));  \
-headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info();   \
-hasTwoTypes[I-1] = false
+#define MEASURE_OP3(TYPE, VAR, OP)                                             \
+MEASURE_OP6(TYPE, VAR, OP, 1, sizeof(TYPE), sizeof(TYPE));                     \
+do {                                                                           \
+    headTypes[I-1] = boost::typeindex::type_id<TYPE>().type_info();            \
+    hasTwoTypes[I-1] = false;                                                  \
+} while (false)
 
-#define MEASURE_OP4(SW, I, BAT, OP)                                                              \
-MEASURE_OP8(SW, I, auto, BAT, OP, BAT->size(), BAT->consumption(), BAT->consumptionProjected());  \
-SAVE_TYPE(I-1, BAT)
+#define MEASURE_OP2(BAT, OP)                                                               \
+MEASURE_OP6(auto, BAT, OP, BAT->size(), BAT->consumption(), BAT->consumptionProjected());  \
+SAVE_TYPE(BAT)
 
-#define MEASURE_OP_PAIR(SW, I, PAIR, OP)                                                                      \
-MEASURE_OP8(SW, I, auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption(), PAIR.first->consumptionProjected());  \
-SAVE_TYPE(I-1, PAIR.first)
+#define DEBUG_PRINT_OP_NAME(OP)                                                \
+do {                                                                           \
+    if (CONFIG.VERBOSE) {                                                      \
+        std::cout << "[op" << std::setw(2) << OP_NAMES[I - 1] << "] " << #OP << "\n"; \
+    }                                                                          \
+} while (false)
 
-#define MEASURE_OP_TUPLE(SW, I, TUPLE, OP)                                                                                                      \
-MEASURE_OP8(SW, I, auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption(), std::get<0>(TUPLE)->consumptionProjected());  \
-SAVE_TYPE(I-1, (std::get<0>(TUPLE)))
-
-#define COUT_HEADLINE \
+#define DEBUG_PRINT_VECBOOL_PAIR(PAIR) \
 do { \
-    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "projected [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail" << "\n"; \
-} while (0)
+    if (CONFIG.VERBOSE) { \
+        std::cout << "\tpair<1>: " << std::get<1>(PAIR)->capacity() << " / " << sizeof(std::vector<bool>::size_type) << " = " << (std::get<1>(PAIR)->capacity() / sizeof(std::vector<bool>::size_type)) << " + " << sizeof(*std::get<1>(PAIR)) << " = " << (sizeof(*std::get<1>(PAIR)) + std::get<1>(PAIR)->capacity() / sizeof(std::vector<bool>::size_type)) << std::endl; \
+    } \
+} while (false)
 
+#define DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, idx) \
+do { \
+    if (CONFIG.VERBOSE) { \
+        std::cout << "\ttuple<" << idx << ">: " << std::get<idx>(TUPLE)->capacity() << " / " << sizeof(std::vector<bool>::size_type) << " = " << (std::get<idx>(TUPLE)->capacity() / sizeof(std::vector<bool>::size_type)) << " + " << sizeof(*std::get<idx>(TUPLE)) << " = " << (sizeof(*std::get<idx>(TUPLE)) + std::get<idx>(TUPLE)->capacity() / sizeof(std::vector<bool>::size_type)) << std::endl; \
+    } \
+} while (false)
+
+#define MEASURE_OP_PAIR(PAIR, OP)                                              \
+MEASURE_OP6(auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption(),     \
+    PAIR.first->consumptionProjected());                                       \
+SAVE_TYPE(PAIR.first);                                                         \
+do {                                                                           \
+    if (std::get<1>(PAIR)) {                                                   \
+        DEBUG_PRINT_OP_NAME(OP);                                               \
+        DEBUG_PRINT_VECBOOL_PAIR(PAIR);                                        \
+    }                                                                          \
+} while (false)
+
+#define MEASURE_OP_TUPLE(TUPLE, OP)                                            \
+MEASURE_OP6(auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption(), std::get<0>(TUPLE)->consumptionProjected());  \
+SAVE_TYPE((std::get<0>(TUPLE)))
+
+///////////////////
+// COUT_HEADLINE //
+///////////////////
+#define COUT_HEADLINE                                                          \
+do {                                                                           \
+    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "proj [B]" << "\t" << std::setw(CONFIG.LEN_SIZES) << " RSS Δ [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail" << "\n"; \
+} while (false)
+
+/////////////////
+// COUT_RESULT //
+/////////////////
 #define COUT_RESULT(...) VFUNC(COUT_RESULT, __VA_ARGS__)
-#define COUT_RESULT3(START, MAX, OPNAMES) \
-do { \
+
+#define COUT_RESULT3(START, MAX, OPNAMES)                                      \
+do {                                                                           \
+    for (size_t k = START; k < MAX; ++k) {                                     \
+        std::cout << "\top" << std::setw(2) << OPNAMES[k] << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptionsProj[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << (k == 0 ? (batRSS[k] - rssAfterCopy) : (batRSS[k] - batRSS[k - 1])) << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
+    }                                                                          \
+    std::cout << std::flush;                                                   \
+} while (false)
+
+#define COUT_RESULT2(START, MAX)                                               \
+do {                                                                           \
     for (size_t k = START; k < MAX; ++k) { \
-        std::cout << "\top" << std::setw(2) << OPNAMES[k] << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptionsProj[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
-    } \
-    std::cout << std::flush; \
-} while (0)
-#define COUT_RESULT2(START, MAX) \
-do { \
-    for (size_t k = START; k < MAX; ++k) { \
-        std::cout << "\top" << std::setw(2) << k << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptionsProj[k] << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
-    } \
-    std::cout << std::flush; \
-} while (0)
+        std::cout << "\top" << std::setw(2) << k << "\t" << std::setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[k]) << "\t" << std::setw(CONFIG.LEN_SIZES) << batSizes[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptions[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << batConsumptionsProj[k] << "\t" << std::setw(CONFIG.LEN_SIZES) << (k == 0 ? (batRSS[k] - rssAfterLoad) : (batRSS[k] - batRSS[k - 1])) << "\t" << std::setw(CONFIG.LEN_TYPES) << headTypes[k].pretty_name() << "\t" << std::setw(CONFIG.LEN_TYPES) << (hasTwoTypes[k] ? tailTypes[k].pretty_name() : emptyString) << '\n'; \
+    }                                                                          \
+    std::cout << std::flush;                                                   \
+} while (false)
 
-#define CLEAR_SELECT_AN(pair)    \
-do {                             \
-    if (std::get<1>(pair)) {          \
-        delete std::get<1>(pair);     \
-    }                            \
-} while(0)
+/////////////////////
+// CLEAR_SELECT_AN //
+/////////////////////
+#define CLEAR_SELECT_AN(PAIR)                                                  \
+do {                                                                           \
+    if (std::get<1>(PAIR)) {                                                   \
+        DEBUG_PRINT_OP_NAME(<unknown>);                                        \
+        DEBUG_PRINT_VECBOOL_PAIR(PAIR);                                        \
+        delete std::get<1>(PAIR);                                              \
+    }                                                                          \
+} while(false)
 
-#define CLEAR_HASHJOIN_AN(tuple) \
-do {                             \
-    if (std::get<1>(tuple))           \
-        delete std::get<1>(tuple);    \
-    if (std::get<2>(tuple))           \
-        delete std::get<2>(tuple);    \
-    if (std::get<3>(tuple))           \
-        delete std::get<3>(tuple);    \
-    if (std::get<4>(tuple))           \
-        delete std::get<4>(tuple);    \
-} while (0)
+///////////////////////
+// CLEAR_HASHJOIN_AN //
+///////////////////////
+#define CLEAR_HASHJOIN_AN(TUPLE)                                               \
+do {                                                                           \
+    if (std::get<1>(TUPLE) || std::get<2>(TUPLE) || std::get<3>(TUPLE)         \
+        || std::get<4>(TUPLE)) {                                               \
+        DEBUG_PRINT_OP_NAME(<unknown>);                                        \
+    }                                                                          \
+    if (std::get<1>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 1);                                   \
+        delete std::get<1>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<2>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 2);                                   \
+        delete std::get<2>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<3>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 3);                                   \
+        delete std::get<3>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<4>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 4);                                   \
+        delete std::get<4>(TUPLE);                                             \
+    }                                                                          \
+} while (false)
 
-#define CLEAR_CHECKANDDECODE_AN(tuple) \
-do {                                   \
-    if (std::get<1>(tuple))                 \
-        delete std::get<1>(tuple);          \
-    if (std::get<2>(tuple))                 \
-        delete std::get<2>(tuple);          \
-} while (0)
+/////////////////////////////
+// CLEAR_CHECKANDDECODE_AN //
+/////////////////////////////
+#define CLEAR_CHECKANDDECODE_AN(TUPLE)                                         \
+do {                                                                           \
+    if (std::get<1>(TUPLE) || std::get<2>(TUPLE)) {                            \
+        DEBUG_PRINT_OP_NAME(<unknown>);                                        \
+    }                                                                          \
+    if (std::get<1>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 1);                                   \
+        delete std::get<1>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<2>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 2);                                   \
+        delete std::get<2>(TUPLE);                                             \
+    }                                                                          \
+} while (false)
 
-#define CLEAR_GROUPBY_AN(tuple)        \
-do {                                   \
-    if (std::get<2>(tuple))                 \
-        delete std::get<2>(tuple);          \
-    if (std::get<3>(tuple))                 \
-        delete std::get<3>(tuple);          \
-} while (0)
+//////////////////////
+// CLEAR_GROUPBY_AN //
+//////////////////////
+#define CLEAR_GROUPBY_AN(TUPLE)                                                \
+do {                                                                           \
+    if (std::get<2>(TUPLE) || std::get<3>(TUPLE))) {                           \
+        DEBUG_PRINT_OP_NAME(<unknown>);                                        \
+    }                                                                          \
+    if (std::get<2>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 2);                                   \
+        delete std::get<2>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<3>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 3);                                   \
+        delete std::get<3>(TUPLE);                                             \
+    }                                                                          \
+} while (false)
 
-#define CLEAR_GROUPEDSUM_AN(tuple)     \
-do {                                   \
-    if (std::get<5>(tuple))                 \
-        delete std::get<5>(tuple);          \
-    if (std::get<6>(tuple))                 \
-        delete std::get<6>(tuple);          \
-    if (std::get<7>(tuple))                 \
-        delete std::get<7>(tuple);          \
-    if (std::get<8>(tuple))                 \
-        delete std::get<8>(tuple);          \
-    if (std::get<9>(tuple))                 \
-        delete std::get<9>(tuple);          \
-    if (std::get<10>(tuple))                \
-        delete std::get<10>(tuple);         \
-} while (0)
+/////////////////////////
+// CLEAR_GROUPEDSUM_AN //
+/////////////////////////
+#define CLEAR_GROUPEDSUM_AN(TUPLE)                                             \
+do {                                                                           \
+    if (std::get<5>(TUPLE) || std::get<6>(TUPLE) || std::get<7>(TUPLE)         \
+        || std::get<8>(TUPLE) || std::get<9>(TUPLE) || std::get<10>(TUPLE)) {  \
+        DEBUG_PRINT_OP_NAME(<unknown>);                                        \
+    }                                                                          \
+    if (std::get<5>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 5);                                   \
+        delete std::get<5>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<6>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 6);                                   \
+        delete std::get<6>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<7>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 7);                                   \
+        delete std::get<7>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<8>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 8);                                   \
+        delete std::get<8>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<9>(TUPLE)) {                                                  \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 9);                                   \
+        delete std::get<9>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<10>(TUPLE)) {                                                 \
+        DEBUG_PRINT_VECBOOL_TUPLE(TUPLE, 10);                                  \
+        delete std::get<10>(TUPLE);                                            \
+    }                                                                          \
+} while (false)
 
 ///////////////////////////////
 // CMDLINE ARGUMENT PARSING  //
@@ -281,11 +495,11 @@ public:
         std::forward_as_tuple("numruns", alias_list_t
         {"--numruns", "-n"}, 15),
         std::forward_as_tuple("lentimes", alias_list_t
-        {"--lentimes"}, 16),
+        {"--lentimes"}, 15),
         std::forward_as_tuple("lentypes", alias_list_t
         {"--lentypes"}, 14),
         std::forward_as_tuple("lensizes", alias_list_t
-        {"--lensizes"}, 16)
+        {"--lensizes"}, 10)
     },
     {
         std::forward_as_tuple("dbpath", alias_list_t{"--dbpath", "-d"}, ".")
@@ -339,5 +553,90 @@ loadTable (std::string& baseDir, const char* const columnName, const ssbmconf_t 
     tm->endTransaction(t);
     return sw.duration();
 }
+
+template<size_t MODULARITY>
+struct ModularRedundancyVoter {
+
+    template<typename T>
+    static T
+    vote (T (& values)[MODULARITY]) {
+        std::stringstream ss;
+        ss << "Unsupported ModularRedundancyVoter<" << MODULARITY << '>';
+        throw std::runtime_error(ss.str());
+    }
+};
+
+template<>
+struct ModularRedundancyVoter<2> {
+
+    template<typename T>
+    static T
+    vote (T (& values)[2]) {
+        return values[0] == values[1] ? values[0] : static_cast<uint64_t>(-1);
+        ;
+    }
+};
+
+template<>
+struct ModularRedundancyVoter<3> {
+
+    template<typename T>
+    static T
+    vote (T (& values)[3]) {
+        return values[0] == values[1] ? values[0] : (values[1] == values[2] ? values[1] : static_cast<uint64_t>(-1));
+        ;
+    }
+};
+
+template<typename T, size_t MODULARITY, size_t i>
+struct ModularRedundantValueInitializer {
+
+    static
+    void
+    init (T (& values)[MODULARITY], T value) {
+        values[MODULARITY - i] = value;
+        ModularRedundantValueInitializer<T, MODULARITY, i - 1 > ::init(values, value);
+    }
+};
+
+template<typename T, size_t MODULARITY>
+struct ModularRedundantValueInitializer<T, MODULARITY, 1> {
+
+    static
+    void
+    init (T (& values)[MODULARITY], T value) {
+        values[MODULARITY - 1] = value;
+    }
+};
+
+template<typename T, size_t MODULARITY>
+class ModularRedundantValue {
+
+    T values[MODULARITY];
+
+public:
+
+    ModularRedundantValue (T value) {
+        ModularRedundantValueInitializer<T, MODULARITY, MODULARITY>::init(this->values, value);
+    }
+
+    T operator() () {
+        return ModularRedundancyVoter<MODULARITY>::vote(values);
+    }
+
+    ModularRedundantValue<T, MODULARITY> & operator= (T value) {
+        ModularRedundantValueInitializer<T, MODULARITY, MODULARITY>::init(this->values, value);
+        return * this;
+    }
+
+    T & operator[] (const size_t i) {
+        if (i >= MODULARITY) {
+            std::stringstream ss;
+            ss << "[Exception] [ModularRedundantError:operator[]] given index " << i << " is too large! Must be less than " << MODULARITY;
+            throw std::runtime_error(ss.str());
+        }
+        return values[i];
+    }
+};
 
 #endif /* SSBM_HPP */

@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Till Kolditz
+// Copyright (c) 2016-2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,36 @@
 #include <cinttypes>
 #include <utility>
 #include <functional>
+
+template<typename A, typename B, bool>
+struct v2_larger_type_helper {
+
+    typedef A type_t;
+};
+
+template<typename A, typename B>
+struct v2_larger_type_helper<A, B, false > {
+
+    typedef B type_t;
+};
+
+template<typename A, typename B>
+struct v2_larger_type {
+
+    typedef typename v2_larger_type_helper<A, B, (sizeof (A) > sizeof (B))>::type_t type_t;
+
+    constexpr static const bool isFirstLarger = sizeof (A) > sizeof (B);
+    constexpr static const bool isSecondLarger = sizeof (A) < sizeof (B);
+};
+
+template<typename A, typename B>
+struct v2_smaller_type {
+
+    typedef typename v2_larger_type_helper<A, B, (sizeof (A) < sizeof (B))>::type_t type_t;
+
+    constexpr static const bool isFirstSmaller = sizeof (A) < sizeof (B);
+    constexpr static const bool isSecondSmaller = sizeof (A) > sizeof (B);
+};
 
 /* META MACRO intended for generating type names */
 #define MKT(...) VFUNC(MKT, __VA_ARGS__)

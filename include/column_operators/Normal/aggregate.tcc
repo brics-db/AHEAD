@@ -1,22 +1,16 @@
 // Copyright (c) 2016-2017 Till Kolditz
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 // 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /* 
  * File:   aggregate.tcc
@@ -31,6 +25,7 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
+#include <column_operators/SSE.hpp>
 
 namespace v2 {
     namespace bat {
@@ -61,17 +56,43 @@ namespace v2 {
              * @return A single sum of the pair-wise products of the two Bats
              */
             template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-            Result
-            aggregate_mul_sum (BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, Result init = Result (0)) {
+            BAT<v2_void_t, Result>*
+            aggregate_mul_sum (BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t (0)) {
+                typedef typename Result::type_t result_t;
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
-                Result total = init;
+                result_t total = init;
                 for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
-                    total += (static_cast<Result>(iter1->tail()) * static_cast<Result>(iter2->tail()));
+                    total += (static_cast<result_t>(iter1->tail()) * static_cast<result_t>(iter2->tail()));
                 }
                 delete iter2;
                 delete iter1;
-                return total;
+                auto bat = new TempBAT<v2_void_t, Result>;
+                bat->append(total);
+                return bat;
+            }
+
+            /**
+             * Multiplies the tail values of each of the two Bat's and sums everything up.
+             * @param arg1
+             * @param arg2
+             * @return A single sum of the pair-wise products of the two Bats
+             */
+            template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+            BAT<v2_void_t, Result>*
+            aggregate_mul_sum_SSE (BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t (0)) {
+                typedef typename Result::type_t result_t;
+                auto iter1 = arg1->begin();
+                auto iter2 = arg2->begin();
+                result_t total = init;
+                for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
+                    total += (static_cast<result_t>(iter1->tail()) * static_cast<result_t>(iter2->tail()));
+                }
+                delete iter2;
+                delete iter1;
+                auto bat = new TempBAT<v2_void_t, Result>;
+                bat->append(total);
+                return bat;
             }
         }
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Till Kolditz
+// Copyright (c) 2016-2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,57 +24,32 @@
 
 int
 main (int argc, char** argv) {
-    ssbmconf_t CONFIG(argc, argv);
-    std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
-    const size_t NUM_OPS = 24;
-    cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P"};
-    SSBM_REQUIRED_VARIABLES
-    size_t x = 0;
-    StopWatch sw1, sw2;
-    size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
+    SSBM_REQUIRED_VARIABLES("SSBM Query 1.1 Continuous Detection\n===================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
 
-    std::cout << "SSBM Query 1.1 Continuous Detection\n===================================" << std::endl;
-
-    MetaRepositoryManager::init(CONFIG.DB_PATH);
-
-    rssBeforeLoad = getPeakRSS(size_enum_t::KB);
-
-    sw1.start();
-    // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
-    loadTable(CONFIG.DB_PATH, "dateAN", CONFIG);
-    loadTable(CONFIG.DB_PATH, "lineorderAN", CONFIG);
-    // loadTable(CONFIG.DB_PATH, "partAN", CONFIG);
-    // loadTable(CONFIG.DB_PATH, "supplierAN", CONFIG);
-    sw1.stop();
-    std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
-
-    rssAfterLoad = getPeakRSS(size_enum_t::KB);
-
-    if (CONFIG.VERBOSE) {
-        std::cout << "SSBM Q1.1:\n";
-        std::cout << "select sum(lo_revenue), d_year, p_brand\n";
-        std::cout << "  from lineorder, part, supplier, date\n";
-        std::cout << "  where lo_orderdate = d_datekey\n";
-        std::cout << "    and d_year = 1993\n";
-        std::cout << "    and lo_discount between 1 and 3\n";
-        std::cout << "    and lo_quantity < 25;" << std::endl;
-    }
+    SSBM_LOAD("dateAN", "lineorderAN",
+        "SSBM Q1.1:\n"                               \
+        "select sum(lo_revenue), d_year, p_brand\n"  \
+        "  from lineorder, date\n"                   \
+        "  where lo_orderdate = d_datekey\n"         \
+        "    and d_year = 1993\n"                    \
+        "    and lo_discount between 1 and 3\n"      \
+        "    and lo_quantity < 25;");
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDYcb, new resshort_colbat_t("dateAN", "year"));
-    MEASURE_OP(sw1, x, batDDcb, new resint_colbat_t("dateAN", "datekey"));
-    MEASURE_OP(sw1, x, batLQcb, new restiny_colbat_t("lineorderAN", "quantity"));
-    MEASURE_OP(sw1, x, batLDcb, new restiny_colbat_t("lineorderAN", "discount"));
-    MEASURE_OP(sw1, x, batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
-    MEASURE_OP(sw1, x, batLEcb, new resint_colbat_t("lineorderAN", "extendedprice"));
+    MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
+    MEASURE_OP(batLQcb, new restiny_colbat_t("lineorderAN", "quantity"));
+    MEASURE_OP(batLDcb, new restiny_colbat_t("lineorderAN", "discount"));
+    MEASURE_OP(batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
+    MEASURE_OP(batLEcb, new resint_colbat_t("lineorderAN", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(sw1, x, batDYenc, v2::bat::ops::copy(batDYcb));
-    MEASURE_OP(sw1, x, batDDenc, v2::bat::ops::copy(batDDcb));
-    MEASURE_OP(sw1, x, batLQenc, v2::bat::ops::copy(batLQcb));
-    MEASURE_OP(sw1, x, batLDenc, v2::bat::ops::copy(batLDcb));
-    MEASURE_OP(sw1, x, batLOenc, v2::bat::ops::copy(batLOcb));
-    MEASURE_OP(sw1, x, batLEenc, v2::bat::ops::copy(batLEcb));
+    MEASURE_OP(batDYenc, v2::bat::ops::copy(batDYcb));
+    MEASURE_OP(batDDenc, v2::bat::ops::copy(batDDcb));
+    MEASURE_OP(batLQenc, v2::bat::ops::copy(batLQcb));
+    MEASURE_OP(batLDenc, v2::bat::ops::copy(batLDcb));
+    MEASURE_OP(batLOenc, v2::bat::ops::copy(batLOcb));
+    MEASURE_OP(batLEenc, v2::bat::ops::copy(batLEcb));
 
     delete batDYcb;
     delete batDDcb;
@@ -83,93 +58,68 @@ main (int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
 
-    rssAfterCopy = getPeakRSS(size_enum_t::KB);
-
-    if (CONFIG.VERBOSE) {
-        COUT_HEADLINE;
-        COUT_RESULT(0, x);
-        std::cout << std::endl;
-    }
-
-    SSBM_BEFORE_QUERY
+    SSBM_BEFORE_QUERIES;
 
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        sw1.start();
-        x = 0;
+        SSBM_BEFORE_QUERY;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(sw2, x, pair1, v2::bat::ops::selectAN<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
-        delete pair1.second;
-        MEASURE_OP_PAIR(sw2, x, pair2, v2::bat::ops::selectAN(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
-        delete pair2.second;
+        MEASURE_OP_PAIR(pair1, v2::bat::ops::selectAN<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
+        if (pair1.second) delete pair1.second;
+        MEASURE_OP_PAIR(pair2, v2::bat::ops::selectAN(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
+        if (pair2.second) delete pair2.second;
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        delete pair1.first;
-        MEASURE_OP_TUPLE(sw2, x, tuple4, v2::bat::ops::matchjoinAN(bat3, pair2.first)); // join selection
+        if (pair1.first) delete pair1.first;
+        MEASURE_OP_TUPLE(tuple4, v2::bat::ops::matchjoinAN(bat3, pair2.first)); // join selection
         delete bat3;
-        delete pair2.first;
+        if (pair2.first) delete pair2.first;
         CLEAR_HASHJOIN_AN(tuple4);
         auto bat5 = std::get<0>(tuple4)->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP_TUPLE(sw2, x, tuple6, v2::bat::ops::matchjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP_TUPLE(tuple6, v2::bat::ops::matchjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(sw2, x, pair7, (v2::bat::ops::selectAN<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A))); // d_year = 1993
+        MEASURE_OP_PAIR(pair7, (v2::bat::ops::selectAN<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A))); // d_year = 1993
         if (pair7.second) delete pair7.second;
         auto bat8 = pair7.first->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete pair7.first;
-        MEASURE_OP_TUPLE(sw2, x, tuple9, (v2::bat::ops::matchjoinAN(bat8, batDDenc))); // only those d_datekey where d_year...
+        MEASURE_OP_TUPLE(tuple9, (v2::bat::ops::matchjoinAN(bat8, batDDenc))); // only those d_datekey where d_year...
         delete bat8;
         CLEAR_HASHJOIN_AN(tuple9);
 
         // 3) join lineorder and date
         auto batA = std::get<0>(tuple9)->reverse();
         delete std::get<0>(tuple9);
-        MEASURE_OP_TUPLE(sw2, x, tupleB, (v2::bat::ops::hashjoinAN(std::get<0>(tuple6), batA))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
-        delete std::get<0>(tuple6);
+        MEASURE_OP_TUPLE(tupleB, (v2::bat::ops::hashjoinAN(std::get<0>(tuple6), batA))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         delete batA;
+        delete std::get<0>(tuple6);
         CLEAR_HASHJOIN_AN(tupleB);
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = std::get<0>(tupleB)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete std::get<0>(tupleB);
-        MEASURE_OP_TUPLE(sw2, x, tupleD, (v2::bat::ops::matchjoinAN(batC, batLEenc)));
+        MEASURE_OP_TUPLE(tupleD, (v2::bat::ops::matchjoinAN(batC, batLEenc)));
         CLEAR_HASHJOIN_AN(tupleD);
-        MEASURE_OP_TUPLE(sw2, x, tupleE, (v2::bat::ops::matchjoinAN(batC, std::get<0>(tuple4))));
-        delete batC;
+        MEASURE_OP_TUPLE(tupleE, (v2::bat::ops::matchjoinAN(batC, std::get<0>(tuple4))));
         delete std::get<0>(tuple4);
+        delete batC;
         CLEAR_HASHJOIN_AN(tupleE);
 
         // 4) result
-        MEASURE_OP_TUPLE(sw2, x, tupleF, (v2::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
+        MEASURE_OP_TUPLE(tupleF, (v2::bat::ops::aggregate_mul_sumAN_SSE<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
         delete std::get<0>(tupleD);
         delete std::get<0>(tupleE);
         delete std::get<1>(tupleF);
         delete std::get<2>(tupleF);
         auto iter = std::get<0>(tupleF)->begin();
-        auto result = iter->tail();
+        auto result = iter->tail() * std::get<0>(tupleF)->tail.metaData.AN_Ainv;
         delete iter;
-        auto Ainv = std::get<0>(tupleF)->tail.metaData.AN_Ainv;
         delete std::get<0>(tupleF);
 
-        totalTimes[i] = sw1.stop();
-
-        std::cout << "(" << std::setw(2) << i << ")\n\tresult: " << (result * Ainv) << " (encoded: " << result << ")\n\t  time: " << sw1 << " ns.\n";
-        COUT_HEADLINE;
-        COUT_RESULT(0, x, OP_NAMES);
+        SSBM_AFTER_QUERY(i, result);
     }
 
-    rssAfterQueries = getPeakRSS(size_enum_t::KB);
-
-    if (CONFIG.VERBOSE) {
-        std::cout << "Memory statistics (Resident Set size in KB):\n" << std::setw(16) << "before load: " << rssBeforeLoad << "\n" << std::setw(16) << "after load: " << rssAfterLoad << "\n" << std::setw(16) << "after copy: " << rssAfterCopy << "\n" << std::setw(16) << "after queries: " << rssAfterQueries << "\n";
-    }
-
-    std::cout << "TotalTimes:";
-    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        std::cout << '\n' << std::setw(2) << i << '\t' << totalTimes[i];
-    }
-
-    std::cout << "\nMemory:\n" << rssBeforeLoad << '\n' << rssAfterLoad << '\n' << rssAfterCopy << '\n' << rssAfterQueries << std::endl;
+    SSBM_AFTER_QUERIES;
 
     delete batDYenc;
     delete batDDenc;
@@ -178,9 +128,7 @@ main (int argc, char** argv) {
     delete batLOenc;
     delete batLEenc;
 
-    TransactionManager::destroyInstance();
-
-    SSBM_FINALIZE
+    SSBM_FINALIZE;
 
     return 0;
 }

@@ -11,6 +11,8 @@
           <in>miscellaneous.tcc</in>
           <in>select.tcc</in>
         </df>
+        <in>SSE.hpp</in>
+        <in>test.hpp</in>
       </df>
       <df name="column_storage">
         <in>ColumnDescriptor.hpp</in>
@@ -161,6 +163,10 @@
           </incDir>
         </ccTool>
       </folder>
+      <item path="include/column_operators/SSE.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/column_operators/test.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="lib/column_operators/Operators.cpp"
             ex="false"
             tool="1"
@@ -448,6 +454,10 @@
             ex="false"
             tool="3"
             flavor2="0">
+      </item>
+      <item path="include/column_operators/SSE.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/column_operators/test.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/column_storage/ColumnDescriptor.hpp"
             ex="false"

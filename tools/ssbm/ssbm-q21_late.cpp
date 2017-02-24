@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Till Kolditz
+// Copyright (c) 2016-2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,70 +24,44 @@
 
 int
 main (int argc, char** argv) {
-    ssbmconf_t CONFIG(argc, argv);
-    std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);
-    const size_t NUM_OPS = 34;
-    cstr_t OP_NAMES[NUM_OPS] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-    SSBM_REQUIRED_VARIABLES
-    size_t x = 0;
-    StopWatch sw1, sw2;
-    size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Late Detection\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    std::cout << "SSBM Query 2.1 Late Detection\n=============================" << std::endl;
-
-    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
-
-    rssBeforeLoad = getPeakRSS(size_enum_t::KB);
-
-    sw1.start();
-    // loadTable(CONFIG.DB_PATH, "customerAN", CONFIG);
-    loadTable(CONFIG.DB_PATH, "dateAN", CONFIG);
-    loadTable(CONFIG.DB_PATH, "lineorderAN", CONFIG);
-    loadTable(CONFIG.DB_PATH, "partAN", CONFIG);
-    loadTable(CONFIG.DB_PATH, "supplierAN", CONFIG);
-    sw1.stop();
-    std::cout << "Total loading time: " << sw1 << " ns." << std::endl;
-
-    rssAfterLoad = getPeakRSS(size_enum_t::KB);
-
-    // select lo_revenue, d_year, p_brand from lineorder, part, supplier, date where lo_orderdate = d_datekey and lo_partkey = p_partkey and lo_suppkey = s_suppkey and p_category = 'MFGR#12' and s_region = 'AMERICA'
-    if (CONFIG.VERBOSE) {
-        std::cout << "SSBM Q2.1:\n";
-        std::cout << "select sum(lo_revenue), d_year, p_brand\n";
-        std::cout << "  from lineorder, part, supplier, date\n";
-        std::cout << "  where lo_orderdate = d_datekey\n";
-        std::cout << "    and lo_partkey = p_partkey\n";
-        std::cout << "    and lo_suppkey = s_suppkey\n";
-        std::cout << "    and p_category = 'MFGR#12'\n";
-        std::cout << "    and s_region = 'AMERICA'\n";
-        std::cout << "  group by d_year, p_brand;" << std::endl;
-    }
+    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN",
+        "SSBM Q2.1:\n"                               \
+        "select sum(lo_revenue), d_year, p_brand\n"  \
+        "  from lineorder, part, supplier, date\n"   \
+        "  where lo_orderdate = d_datekey\n"         \
+        "    and lo_partkey = p_partkey\n"           \
+        "    and lo_suppkey = s_suppkey\n"           \
+        "    and p_category = 'MFGR#12'\n"           \
+        "    and s_region = 'AMERICA'\n"             \
+        "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(sw1, x, batDDcb, new resint_colbat_t("date", "datekey"));
-    MEASURE_OP(sw1, x, batDYcb, new resshort_colbat_t("date", "year"));
-    MEASURE_OP(sw1, x, batLPcb, new resint_colbat_t("lineorder", "partkey"));
-    MEASURE_OP(sw1, x, batLScb, new resint_colbat_t("lineorder", "suppkey"));
-    MEASURE_OP(sw1, x, batLOcb, new resint_colbat_t("lineorder", "orderdate"));
-    MEASURE_OP(sw1, x, batLRcb, new resint_colbat_t("lineorder", "revenue"));
-    MEASURE_OP(sw1, x, batPPcb, new resint_colbat_t("part", "partkey"));
-    MEASURE_OP(sw1, x, batPCcb, new str_colbat_t("part", "category"));
-    MEASURE_OP(sw1, x, batPBcb, new str_colbat_t("part", "brand"));
-    MEASURE_OP(sw1, x, batSScb, new resint_colbat_t("supplier", "suppkey"));
-    MEASURE_OP(sw1, x, batSRcb, new str_colbat_t("supplier", "region"));
+    MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
+    MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(batLPcb, new resint_colbat_t("lineorderAN", "partkey"));
+    MEASURE_OP(batLScb, new resint_colbat_t("lineorderAN", "suppkey"));
+    MEASURE_OP(batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
+    MEASURE_OP(batLRcb, new resint_colbat_t("lineorderAN", "revenue"));
+    MEASURE_OP(batPPcb, new resint_colbat_t("partAN", "partkey"));
+    MEASURE_OP(batPCcb, new str_colbat_t("partAN", "category"));
+    MEASURE_OP(batPBcb, new str_colbat_t("partAN", "brand"));
+    MEASURE_OP(batSScb, new resint_colbat_t("supplierAN", "suppkey"));
+    MEASURE_OP(batSRcb, new str_colbat_t("supplierAN", "region"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(sw1, x, batDDenc, v2::bat::ops::copy(batDDcb));
-    MEASURE_OP(sw1, x, batDYenc, v2::bat::ops::copy(batDYcb));
-    MEASURE_OP(sw1, x, batLPenc, v2::bat::ops::copy(batLPcb));
-    MEASURE_OP(sw1, x, batLSenc, v2::bat::ops::copy(batLScb));
-    MEASURE_OP(sw1, x, batLOenc, v2::bat::ops::copy(batLOcb));
-    MEASURE_OP(sw1, x, batLRenc, v2::bat::ops::copy(batLRcb));
-    MEASURE_OP(sw1, x, batPPenc, v2::bat::ops::copy(batPPcb));
-    MEASURE_OP(sw1, x, batPC, v2::bat::ops::copy(batPCcb));
-    MEASURE_OP(sw1, x, batPB, v2::bat::ops::copy(batPBcb));
-    MEASURE_OP(sw1, x, batSSenc, v2::bat::ops::copy(batSScb));
-    MEASURE_OP(sw1, x, batSR, v2::bat::ops::copy(batSRcb));
+    MEASURE_OP(batDDenc, v2::bat::ops::copy(batDDcb));
+    MEASURE_OP(batDYenc, v2::bat::ops::copy(batDYcb));
+    MEASURE_OP(batLPenc, v2::bat::ops::copy(batLPcb));
+    MEASURE_OP(batLSenc, v2::bat::ops::copy(batLScb));
+    MEASURE_OP(batLOenc, v2::bat::ops::copy(batLOcb));
+    MEASURE_OP(batLRenc, v2::bat::ops::copy(batLRcb));
+    MEASURE_OP(batPPenc, v2::bat::ops::copy(batPPcb));
+    MEASURE_OP(batPC, v2::bat::ops::copy(batPCcb));
+    MEASURE_OP(batPB, v2::bat::ops::copy(batPBcb));
+    MEASURE_OP(batSSenc, v2::bat::ops::copy(batSScb));
+    MEASURE_OP(batSR, v2::bat::ops::copy(batSRcb));
 
     delete batDDcb;
     delete batDYcb;
@@ -101,91 +75,82 @@ main (int argc, char** argv) {
     delete batSScb;
     delete batSRcb;
 
-    rssAfterCopy = getPeakRSS(size_enum_t::KB);
-
-    if (CONFIG.VERBOSE) {
-        COUT_HEADLINE;
-        COUT_RESULT(0, x);
-        std::cout << std::endl;
-    }
-
-    SSBM_BEFORE_QUERY
+    SSBM_BEFORE_QUERIES;
 
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        sw1.start();
-        x = 0;
+        SSBM_BEFORE_QUERY;
 
         // s_region = 'AMERICA'
-        MEASURE_OP(sw2, x, bat1, v2::bat::ops::select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+        MEASURE_OP(bat1, v2::bat::ops::select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batSSenc->reverse(); // s_suppkey | OID supplier
-        MEASURE_OP(sw2, x, bat4, v2::bat::ops::matchjoin(bat3, bat2)); // s_suppkey | OID supplier
+        MEASURE_OP(bat4, v2::bat::ops::matchjoin(bat3, bat2)); // s_suppkey | OID supplier
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP(sw2, x, bat5, v2::bat::ops::hashjoin(batLSenc, bat4)); // OID lineorder | OID supplier
+        MEASURE_OP(bat5, v2::bat::ops::hashjoin(batLSenc, bat4)); // OID lineorder | OID supplier
         delete bat4;
         // join with LO_PARTKEY to already reduce the join partners
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID Lineorder
         delete bat5;
-        MEASURE_OP(sw2, x, bat7, v2::bat::ops::matchjoin(bat6, batLPenc)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
+        MEASURE_OP(bat7, v2::bat::ops::matchjoin(bat6, batLPenc)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
         // p_category = 'MFGR#12'
-        MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<std::equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
+        MEASURE_OP(bat8, v2::bat::ops::select<std::equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
         // p_brand = 'MFGR#121'
-        // MEASURE_OP(sw2, x, bat8, v2::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
+        // MEASURE_OP(bat8, v2::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         delete bat8;
         auto batA = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP(sw2, x, batB, v2::bat::ops::matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
+        MEASURE_OP(batB, v2::bat::ops::matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
         delete batA;
         delete bat9;
-        MEASURE_OP(sw2, x, batC, v2::bat::ops::hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
+        MEASURE_OP(batC, v2::bat::ops::hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
         delete bat7;
         delete batB;
 
         // join with date now!
         auto batE = batC->mirror_head(); // OID lineorder | OID lineorder  (where ...)
         delete batC;
-        MEASURE_OP(sw2, x, batF, v2::bat::ops::matchjoin(batE, batLOenc)); // OID lineorder | lo_orderdate (where ...)
+        MEASURE_OP(batF, v2::bat::ops::matchjoin(batE, batLOenc)); // OID lineorder | lo_orderdate (where ...)
         delete batE;
         auto batH = batDDenc->reverse(); // d_datekey | OID date
-        MEASURE_OP(sw2, x, batI, v2::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
+        MEASURE_OP(batI, v2::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
         delete batF;
         delete batH;
 
         // now prepare grouped sum and check inputs
         auto batW = batI->mirror_head(); // OID lineorder | OID lineorder
-        MEASURE_OP(sw2, x, batX, v2::bat::ops::matchjoin(batW, batLPenc)); // OID lineorder | lo_partkey
+        MEASURE_OP(batX, v2::bat::ops::matchjoin(batW, batLPenc)); // OID lineorder | lo_partkey
         auto batY = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP(sw2, x, batZ, v2::bat::ops::hashjoin(batX, batY)); // OID lineorder | OID part
+        MEASURE_OP(batZ, v2::bat::ops::hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
-        MEASURE_OP(sw2, x, batA1, v2::bat::ops::hashjoin(batZ, batPB)); // OID lineorder | p_brand
+        MEASURE_OP(batA1, v2::bat::ops::hashjoin(batZ, batPB)); // OID lineorder | p_brand
         delete batZ;
 
-        MEASURE_OP(sw2, x, batA2enc, v2::bat::ops::hashjoin(batI, batDYenc)); // OID lineorder | d_year
+        MEASURE_OP(batA2enc, v2::bat::ops::hashjoin(batI, batDYenc)); // OID lineorder | d_year
         delete batI;
-        MEASURE_OP_TUPLE(sw2, x, tupleA2, v2::bat::ops::checkAndDecodeAN(batA2enc));
+        MEASURE_OP_TUPLE(tupleA2, v2::bat::ops::checkAndDecodeAN(batA2enc));
         CLEAR_CHECKANDDECODE_AN(tupleA2);
         delete batA2enc;
 
-        MEASURE_OP(sw2, x, batA3enc, v2::bat::ops::matchjoin(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
+        MEASURE_OP(batA3enc, v2::bat::ops::matchjoin(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
         delete batW;
-        MEASURE_OP_TUPLE(sw2, x, tupleA3, v2::bat::ops::checkAndDecodeAN(batA3enc));
+        MEASURE_OP_TUPLE(tupleA3, v2::bat::ops::checkAndDecodeAN(batA3enc));
         CLEAR_CHECKANDDECODE_AN(tupleA3);
         delete batA3enc;
 
-        MEASURE_OP_TUPLE(sw2, x, tupleK, v2::bat::ops::groupedSum<v2_bigint_t>(std::get<0>(tupleA3), std::get<0>(tupleA2), batA1));
+        MEASURE_OP_TUPLE(tupleK, v2::bat::ops::groupedSum<v2_bigint_t>(std::get<0>(tupleA3), std::get<0>(tupleA2), batA1));
         delete batA1;
         delete std::get<0>(tupleA2);
         delete std::get<0>(tupleA3);
 
-        totalTimes[i] = sw1.stop();
+        auto szResult = std::get<0>(tupleK)->size();
 
-        std::cout << "(" << std::setw(2) << i << ")\n\tresult-size: " << std::get<0>(tupleK)->size() << "\n\t  time: " << sw1 << " ns.\n";
+        SSBM_AFTER_QUERY(i, szResult);
 
         if (CONFIG.PRINT_RESULT && i == 0) {
             size_t sum = 0;
@@ -218,23 +183,9 @@ main (int argc, char** argv) {
         delete std::get<2>(tupleK);
         delete std::get<3>(tupleK);
         delete std::get<4>(tupleK);
-
-        COUT_HEADLINE;
-        COUT_RESULT(0, x, OP_NAMES);
     }
 
-    rssAfterQueries = getPeakRSS(size_enum_t::KB);
-
-    if (CONFIG.VERBOSE) {
-        std::cout << "Memory statistics (Resident Set size in KB):\n" << std::setw(16) << "before load: " << rssBeforeLoad << "\n" << std::setw(16) << "after load: " << rssAfterLoad << "\n" << std::setw(16) << "after copy: " << rssAfterCopy << "\n" << std::setw(16) << "after queries: " << rssAfterQueries << "\n";
-    }
-
-    std::cout << "TotalTimes:";
-    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
-        std::cout << '\n' << std::setw(2) << i << '\t' << totalTimes[i];
-    }
-
-    std::cout << "\nMemory:\n" << rssBeforeLoad << '\n' << rssAfterLoad << '\n' << rssAfterCopy << '\n' << rssAfterQueries << std::endl;
+    SSBM_AFTER_QUERIES;
 
     delete batDDenc;
     delete batDYenc;
@@ -248,9 +199,7 @@ main (int argc, char** argv) {
     delete batSSenc;
     delete batSR;
 
-    TransactionManager::destroyInstance();
-
-    SSBM_FINALIZE
+    SSBM_FINALIZE;
 
     return 0;
 }

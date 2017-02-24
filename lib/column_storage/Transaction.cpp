@@ -1,22 +1,16 @@
 // Copyright (c) 2016-2017 Till Kolditz
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 // 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /* 
  * File:   Transaction.cpp
@@ -55,15 +49,15 @@ TransactionManager::Transaction& TransactionManager::Transaction::operator= (con
 
 size_t
 TransactionManager::Transaction::load (const char *path, const char* tableName, const char *prefix, size_t size, const char* delim, bool ignoreMoreData) {
-    static const size_t LEN_PATH = 1024;
-    static const size_t LEN_LINE = 1024;
-    static const size_t LEN_VALUE = 256;
+    const size_t LEN_PATH = 1024;
+    const size_t LEN_LINE = 1024;
+    const size_t LEN_VALUE = 256;
 
     if (path == nullptr) {
         throw std::runtime_error("[TransactionManager::load] You must provide a path!");
     }
     size_t pathLen = strnlen(path, LEN_PATH);
-    if (pathLen == 0 || pathLen == LEN_PATH) {
+    if (pathLen == 0 || pathLen > LEN_PATH) {
         throw std::runtime_error("[TransactionManager::load] path is too long (>1024)");
     }
     const char* actDelim = delim == nullptr ? "|" : delim;
@@ -131,14 +125,14 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
         cm->createColumn(ID_BAT_COLIDENT, sizeof (id_t));
     } else {
         // Zurückspulen der Iteratoren
-        close(ID_BAT_COLNAMES);
-        close(ID_BAT_COLTYPES);
-        close(ID_BAT_COLIDENT);
+        this->close(ID_BAT_COLNAMES);
+        this->close(ID_BAT_COLTYPES);
+        this->close(ID_BAT_COLIDENT);
     }
 
-    open(ID_BAT_COLNAMES);
-    open(ID_BAT_COLTYPES);
-    open(ID_BAT_COLIDENT);
+    this->open(ID_BAT_COLNAMES);
+    this->open(ID_BAT_COLTYPES);
+    this->open(ID_BAT_COLIDENT);
 
     // create table
     if (tableName) {
@@ -295,7 +289,7 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
         bun = append(ID_BAT_COLIDENT);
         *static_cast<id_t*>(bun.tail) = columnId;
 
-        open(columnId);
+        this->open(columnId);
         iterators.push_back(this->iterators[columnId]);
 
         // create attribute for specified table
@@ -406,21 +400,21 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
     }
 
     // Spalten schließen
-    close(ID_BAT_COLNAMES);
-    close(ID_BAT_COLTYPES);
-    close(ID_BAT_COLIDENT);
+    this->close(ID_BAT_COLNAMES);
+    this->close(ID_BAT_COLTYPES);
+    this->close(ID_BAT_COLIDENT);
 
-    open(ID_BAT_COLIDENT);
-    bun = get(ID_BAT_COLIDENT, offset);
+    this->open(ID_BAT_COLIDENT);
+    bun = this->get(ID_BAT_COLIDENT, offset);
     while (bun.tail != nullptr) {
-        close(*static_cast<oid_t*>(bun.tail));
+        this->close(*static_cast<oid_t*>(bun.tail));
         bun = next(ID_BAT_COLIDENT);
     }
-    close(ID_BAT_COLIDENT);
+    this->close(ID_BAT_COLIDENT);
 
     // Dateien schließen
-    fclose(valuesFile);
-    fclose(headerFile);
+    std::fclose(valuesFile);
+    std::fclose(headerFile);
     return n;
 }
 

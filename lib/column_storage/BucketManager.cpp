@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <sstream>
+
 #include "column_storage/BucketManager.h"
 
 BucketManager* BucketManager::instance = nullptr;

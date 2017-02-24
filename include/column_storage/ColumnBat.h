@@ -43,6 +43,7 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/ColumnMetaData.hpp>
 #include <column_storage/ColumnManager.h>
