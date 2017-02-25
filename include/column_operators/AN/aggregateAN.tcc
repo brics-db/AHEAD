@@ -28,6 +28,8 @@
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
 #include <column_operators/SSE.hpp>
+#include <column_operators/SSECMP.hpp>
+#include <column_operators/SSEAN.hpp>
 
 namespace v2 {
     namespace bat {

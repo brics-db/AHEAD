@@ -116,7 +116,7 @@ main (int argc, char** argv) {
         delete std::get<0>(tuple4);
 
         // 4) result
-        MEASURE_OP_TUPLE(tupleI, (v2::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleG), std::get<0>(tupleH))));
+        MEASURE_OP_TUPLE(tupleI, (v2::bat::ops::aggregate_mul_sumAN_SSE<v2_resbigint_t>(std::get<0>(tupleG), std::get<0>(tupleH))));
         delete std::get<0>(tupleG);
         delete std::get<0>(tupleH);
         delete std::get<1>(tupleI);

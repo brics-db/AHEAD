@@ -109,14 +109,60 @@ V2_STRUCT_SINGLE_HEAD(NAME, v2_char_t) \
 V2_STRUCT_SINGLE_HEAD(NAME, v2_str_t) \
 V2_STRUCT_SINGLE_HEAD(NAME, v2_fixed_t)
 
+#define V2_SELECT(V2TYPE, TYPE) \
+template BAT<v2_oid_t, V2TYPE>* select<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+template BAT<v2_oid_t, V2TYPE>* select<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+template BAT<v2_oid_t, V2TYPE>* select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+template BAT<v2_oid_t, V2TYPE>* select<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+template BAT<v2_oid_t, V2TYPE>* select<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1);
+
 namespace v2 {
     namespace bat {
         namespace ops {
             namespace Private {
                 V2_STRUCT_SINGLE (copy0)
+
+                template struct Selection1<std::greater<tinyint_t>, v2_void_t, v2_tinyint_t>;
+                template struct Selection1<std::greater_equal<tinyint_t>, v2_void_t, v2_tinyint_t>;
+                template struct Selection1<std::equal_to<tinyint_t>, v2_void_t, v2_tinyint_t>;
+                template struct Selection1<std::less_equal<tinyint_t>, v2_void_t, v2_tinyint_t>;
+                template struct Selection1<std::less<tinyint_t>, v2_void_t, v2_tinyint_t>;
+
+                template struct Selection1<std::greater<shortint_t>, v2_void_t, v2_shortint_t>;
+                template struct Selection1<std::greater_equal<shortint_t>, v2_void_t, v2_shortint_t>;
+                template struct Selection1<std::equal_to<shortint_t>, v2_void_t, v2_shortint_t>;
+                template struct Selection1<std::less_equal<shortint_t>, v2_void_t, v2_shortint_t>;
+                template struct Selection1<std::less<shortint_t>, v2_void_t, v2_shortint_t>;
+
+                template struct Selection1<std::greater<int_t>, v2_void_t, v2_int_t>;
+                template struct Selection1<std::greater_equal<int_t>, v2_void_t, v2_int_t>;
+                template struct Selection1<std::equal_to<int_t>, v2_void_t, v2_int_t>;
+                template struct Selection1<std::less_equal<int_t>, v2_void_t, v2_int_t>;
+                template struct Selection1<std::less<int_t>, v2_void_t, v2_int_t>;
+
+                template struct Selection1<std::greater<bigint_t>, v2_void_t, v2_bigint_t>;
+                template struct Selection1<std::greater_equal<bigint_t>, v2_void_t, v2_bigint_t>;
+                template struct Selection1<std::equal_to<bigint_t>, v2_void_t, v2_bigint_t>;
+                template struct Selection1<std::less_equal<bigint_t>, v2_void_t, v2_bigint_t>;
+                template struct Selection1<std::less<bigint_t>, v2_void_t, v2_bigint_t>;
+
             }
 
             V2_FUNCTION_SINGLE (copy, TempBAT)
+
+            V2_SELECT (v2_tinyint_t, tinyint_t)
+            V2_SELECT (v2_shortint_t, shortint_t)
+            V2_SELECT (v2_int_t, int_t)
+            V2_SELECT (v2_bigint_t, bigint_t)
+            V2_SELECT (v2_str_t, str_t)
         }
     }
 }
+
+#undef V2_SELECT
+#undef V2_FUNCTION_SINGLE_HEAD
+#undef V2_FUNCTION_SINGLE
+#undef V2_CLASS_SINGLE_HEAD
+#undef V2_CLASS_SINGLE
+#undef V2_STRUCT_SINGLE_HEAD
+#undef V2_STRUCT_SINGLE

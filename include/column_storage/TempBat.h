@@ -95,6 +95,20 @@ public:
         this->tail.container->push_back(p.second);
     }
 
+    virtual void
+    overwrite_size (size_t newSize) {
+#ifdef __GNUC__
+        typedef std::_Vector_base<head_t, std::allocator < head_t >> BaseH;
+        BaseH & base = (BaseH &) * this->head.container.get();
+        base._M_impl._M_finish = base._M_impl._M_start + newSize;
+        typedef std::_Vector_base<tail_t, std::allocator < tail_t >> BaseT;
+        BaseT & base2 = (BaseT &) * this->tail.container.get();
+        base2._M_impl._M_finish = base2._M_impl._M_start + newSize;
+#else
+#error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
+#endif
+    }
+
     virtual BAT<Tail, Head>*
     reverse () override {
         return new TempBAT<Tail, Head>(this->tail, this->head);
@@ -183,6 +197,11 @@ public:
     virtual void
     append (__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) override {
         ++count;
+    }
+
+    virtual void
+    overwrite_size (size_t newSize) {
+        count = newSize;
     }
 
     virtual BAT<Tail, Head>*
@@ -277,6 +296,17 @@ public:
         this->head.container->push_back(std::move(h));
     }
 
+    virtual void
+    overwrite_size (size_t newSize) {
+#ifdef __GNUC__
+        typedef std::_Vector_base<head_t, std::allocator < head_t >> BaseH;
+        BaseH & base = (BaseH &) * this->head.container.get();
+        base._M_impl._M_finish = base._M_impl._M_start + newSize;
+#else
+#error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
+#endif
+    }
+
     virtual BAT<Tail, Head>*
     reverse () override {
         return new TempBAT<Tail, Head>(this->tail, this->head);
@@ -369,6 +399,17 @@ public:
     virtual void
     append (tail_t&& t) {
         this->tail.container->push_back(std::move(t));
+    }
+
+    virtual void
+    overwrite_size (size_t newSize) {
+#ifdef __GNUC__
+        typedef std::_Vector_base<tail_t, std::allocator < tail_t >> BaseT;
+        BaseT & base2 = (BaseT &) * this->tail.container.get();
+        base2._M_impl._M_finish = base2._M_impl._M_start + newSize;
+#else
+#error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
+#endif
     }
 
     virtual BAT<Tail, Head>*

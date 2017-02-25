@@ -280,6 +280,12 @@ MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::op
     return *this;
 }
 
+MetaRepositoryManager::TablesIterator& MetaRepositoryManager::TablesIterator::operator+= (oid_t i) {
+    (*pKeyIter) += i;
+    (*pNameIter) += i;
+    return *this;
+}
+
 void
 MetaRepositoryManager::TablesIterator::position (oid_t index) {
     pKeyIter->position(index);

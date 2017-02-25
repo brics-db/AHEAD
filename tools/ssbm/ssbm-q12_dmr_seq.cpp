@@ -116,7 +116,7 @@ main (int argc, char** argv) {
             delete bat4;
 
             // 4) result
-            MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
+            MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(batD, batE, 0));
             delete batD;
             delete batE;
             auto iter = batF->begin();

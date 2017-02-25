@@ -92,6 +92,12 @@ public:
         return *this;
     }
 
+    virtual TempBATIterator& operator+= (oid_t i)override {
+        std::advance(iterHead, i);
+        std::advance(iterTail, i);
+        return *this;
+    }
+
     virtual void
     position (oid_t index) override {
         iterHead = cHead->begin();
@@ -173,6 +179,13 @@ public:
         return *this;
     }
 
+    virtual TempBATIterator& operator+= (oid_t i)override {
+        position_head += i;
+        position_tail += i;
+        pos += i;
+        return *this;
+    }
+
     virtual void
     position (oid_t index) override {
         position_head = seqbase_head + index;
@@ -242,12 +255,18 @@ public:
 
     virtual void
     next () override {
-        iterHead++;
+        std::advance(iterHead, 1);
         ++position_tail;
     }
 
     virtual TempBATIterator& operator++ () override {
         next();
+        return *this;
+    }
+
+    virtual TempBATIterator& operator+= (oid_t i)override {
+        std::advance(iterHead, 1);
+        position_tail += i;
         return *this;
     }
 
@@ -326,6 +345,12 @@ public:
 
     virtual TempBATIterator& operator++ () override {
         next();
+        return *this;
+    }
+
+    virtual TempBATIterator& operator+= (oid_t i)override {
+        position_head += i;
+        std::advance(iterTail, 1);
         return *this;
     }
 

@@ -127,7 +127,7 @@ main (int argc, char** argv) {
             MEASURE_OP(batH, v2::bat::ops::matchjoin(batF, bat4));
             delete batF;
             delete bat4;
-            MEASURE_OP(batI, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batG, batH, 0));
+            MEASURE_OP(batI, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(batG, batH, 0));
             delete batG;
             delete batH;
             auto iter = batI->begin();

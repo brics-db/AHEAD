@@ -138,5 +138,15 @@ typedef TempBAT<v2_void_t, v2_resint_t> resint_tmpbat_t;
 typedef TempBAT<v2_void_t, v2_resoid_t> resoid_tmpbat_t;
 typedef TempBAT<v2_void_t, v2_resstr_t> resstr_tmpbat_t;
 
+namespace v2 {
+
+    template<size_t alignment, typename T>
+    T*
+    align_to (T * const pT) {
+        size_t tmp = reinterpret_cast<size_t>(pT);
+        return pT + (alignment - (tmp & (alignment - 1)));
+    }
+}
+
 #endif /* COLUMNSTORE_H */
 

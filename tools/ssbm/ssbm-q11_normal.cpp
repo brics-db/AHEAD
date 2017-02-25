@@ -63,8 +63,8 @@ main (int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, v2::bat::ops::select<std::less>(batLQ, 25)); // lo_quantity < 25
-        MEASURE_OP(bat2, v2::bat::ops::select(batLD, 1, 3)); // lo_discount between 1 and 3
+        MEASURE_OP(bat1, v2::bat::ops::select_SSE<std::less>(batLQ, 25)); // lo_quantity < 25
+        MEASURE_OP(bat2, v2::bat::ops::select_SSE(batLD, 1, 3)); // lo_discount between 1 and 3
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(bat4, v2::bat::ops::matchjoin(bat3, bat2)); // join selection
@@ -75,7 +75,7 @@ main (int argc, char** argv) {
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(bat7, v2::bat::ops::select<std::equal_to>(batDY, 1993)); // d_year = 1993
+        MEASURE_OP(bat7, v2::bat::ops::select_SSE<std::equal_to>(batDY, 1993)); // d_year = 1993
         auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete bat7;
         MEASURE_OP(bat9, v2::bat::ops::matchjoin(bat8, batDD)); // only those d_datekey where d_year...
@@ -96,7 +96,7 @@ main (int argc, char** argv) {
         delete bat4;
 
         // 4) result
-        MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
+        MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(batD, batE, 0));
         delete batD;
         delete batE;
         auto iter = batF->begin();

@@ -114,7 +114,7 @@ main (int argc, char** argv) {
         MEASURE_OP_TUPLE(tupleJ, v2::bat::ops::checkAndDecodeAN(batH));
         CLEAR_CHECKANDDECODE_AN(tupleJ);
         delete batH;
-        MEASURE_OP(batK, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleI), std::get<0>(tupleJ)));
+        MEASURE_OP(batK, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(std::get<0>(tupleI), std::get<0>(tupleJ)));
         delete std::get<0>(tupleI);
         delete std::get<0>(tupleJ);
         auto iter = batK->begin();

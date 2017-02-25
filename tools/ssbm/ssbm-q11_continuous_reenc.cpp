@@ -106,7 +106,7 @@ main (int argc, char** argv) {
         CLEAR_HASHJOIN_AN(tupleE);
 
         // 4) result
-        MEASURE_OP_TUPLE(tupleF, (v2::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
+        MEASURE_OP_TUPLE(tupleF, (v2::bat::ops::aggregate_mul_sumAN_SSE<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
         delete std::get<0>(tupleD);
         delete std::get<0>(tupleE);
         delete std::get<1>(tupleF);

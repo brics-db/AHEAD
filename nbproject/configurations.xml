@@ -12,7 +12,8 @@
           <in>select.tcc</in>
         </df>
         <in>SSE.hpp</in>
-        <in>test.hpp</in>
+        <in>SSEAN.hpp</in>
+        <in>SSECMP.hpp</in>
       </df>
       <df name="column_storage">
         <in>ColumnDescriptor.hpp</in>
@@ -26,6 +27,7 @@
     <df root="lib" name="1">
       <df name="column_operators">
         <in>Operators.cpp</in>
+        <in>SSE.cpp</in>
       </df>
       <df name="column_storage">
         <in>BucketManager.cpp</in>
@@ -44,6 +46,16 @@
         <in>v2types.cpp</in>
       </df>
     </df>
+    <logicalFolder name="pcm" displayName="pcm" projectFiles="true">
+      <itemPath>pcm/client_bw.h</itemPath>
+      <itemPath>pcm/cpucounters.h</itemPath>
+      <itemPath>pcm/msr.h</itemPath>
+      <itemPath>pcm/mutex.h</itemPath>
+      <itemPath>pcm/pci.h</itemPath>
+      <itemPath>pcm/types.h</itemPath>
+      <itemPath>pcm/utils.h</itemPath>
+      <itemPath>pcm/width_extender.h</itemPath>
+    </logicalFolder>
     <df root="tools" name="2">
       <df name="sample">
         <in>lineorder_size.cpp</in>
@@ -113,6 +125,8 @@
         <element flagsID="3" commonFlags="-march=native -pedantic -O3 -std=gnu++14"/>
       </flagsDictionary>
       <codeAssistance>
+        <excludePattern>/build/
+/eval/</excludePattern>
       </codeAssistance>
       <makefileType>
         <makeTool>
@@ -127,7 +141,6 @@
             <standard>11</standard>
             <incDir>
               <pElem>include</pElem>
-              <pElem>pcm</pElem>
             </incDir>
             <preprocessorList>
               <Elem>NDEBUG</Elem>
@@ -141,12 +154,45 @@
       </makefileType>
       <folder path="1">
         <ccTool>
-          <incDir>
-            <pElem>build/lib</pElem>
-          </incDir>
           <preprocessorList>
             <Elem>RStoreCore_EXPORTS</Elem>
           </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="1/column_operators">
+        <ccTool>
+          <incDir>
+            <pElem>build/lib</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="1/column_storage">
+        <ccTool>
+          <incDir>
+            <pElem>build/lib</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="1/meta_repository">
+        <ccTool>
+          <incDir>
+            <pElem>build/lib</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="1/util">
+        <ccTool>
+          <incDir>
+            <pElem>pcm</pElem>
+            <pElem>build/lib</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <folder path="2">
+        <ccTool>
+          <incDir>
+            <pElem>pcm</pElem>
+          </incDir>
         </ccTool>
       </folder>
       <folder path="2/sample">
@@ -163,16 +209,14 @@
           </incDir>
         </ccTool>
       </folder>
-      <item path="include/column_operators/SSE.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="include/column_operators/test.hpp" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="lib/column_operators/Operators.cpp"
             ex="false"
             tool="1"
             flavor2="11">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="lib/column_operators/SSE.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"
@@ -457,7 +501,12 @@
       </item>
       <item path="include/column_operators/SSE.hpp" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="include/column_operators/test.hpp" ex="false" tool="3" flavor2="0">
+      <item path="include/column_operators/SSEAN.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/column_operators/SSECMP.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="include/column_storage/ColumnDescriptor.hpp"
             ex="false"
@@ -474,6 +523,8 @@
       <item path="include/util/v2types.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lib/column_operators/Operators.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/column_operators/SSE.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="lib/column_storage/BucketManager.cpp"
             ex="false"

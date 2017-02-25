@@ -128,7 +128,7 @@ main (int argc, char** argv) {
         delete std::get<0>(tupleLE);
         delete batF;
         delete bat4;
-        MEASURE_OP(batI, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batG, batH, 0));
+        MEASURE_OP(batI, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(batG, batH, 0));
         delete batG;
         delete batH;
         auto iter = batI->begin();

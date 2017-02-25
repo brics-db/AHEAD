@@ -189,6 +189,8 @@ public:
 
         virtual TablesIterator& operator++ () override;
 
+        virtual TablesIterator& operator+= (oid_t i) override;
+
         virtual void position (oid_t index) override;
 
         virtual bool hasNext () override;

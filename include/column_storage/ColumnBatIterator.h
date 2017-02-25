@@ -117,6 +117,13 @@ public:
         return *this;
     }
 
+    virtual ColumnBatIteratorBase<Head, Tail>& operator+= (oid_t i) override {
+        for (; i; --i) {
+            next();
+        }
+        return *this;
+    }
+
     /** @return true if a next item is available - otherwise false */
     virtual bool
     hasNext () override {
