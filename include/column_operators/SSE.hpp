@@ -142,50 +142,9 @@ namespace v2 {
                     return _mm_shuffle_epi8(a, SHUFFLE_EPI16_TABLE[mask]);
                 }
 
-#define MASK_128_16_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, \
-                0x00, 0x01, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13
-
-#define MASK_128_16_4(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_16_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_16_2(A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x03, 0x02)
-
-#define MASK_128_16_8(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_16_4(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_16_4(A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x05, 0x04)
-
-#define MASK_128_16_16(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_16_8(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_16_8(A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x07, 0x06)
-
-#define MASK_128_16_32(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_16_16(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_16_16(A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x09, 0x8)
-
-#define MASK_128_16_64(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_16_32(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_16_32(A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0B, 0x0A)
-
-#define MASK_128_16_128(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_16_64(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_16_64(A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0D, 0x0C)
-
-#define MASK_128_16_256(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_16_128(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_16_128(A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0F, 0x0E)
-
             private:
-                static constexpr const signed char SHUFFLE_EPI16_TABLE8[256 * 16] = {MASK_128_16_256(static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF))};
-                static constexpr const __m128i * const SHUFFLE_EPI16_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE8);
-
-#undef MASK_128_16_2
-#undef MASK_128_16_4
-#undef MASK_128_16_8
-#undef MASK_128_16_16
-#undef MASK_128_16_32
-#undef MASK_128_16_64
-#undef MASK_128_16_128
-#undef MASK_128_16_256
+                static const signed char SHUFFLE_EPI16_TABLE8[256 * 16];
+                static const __m128i * const SHUFFLE_EPI16_TABLE;
             };
 
             template<>
@@ -249,30 +208,9 @@ namespace v2 {
                     return _mm_shuffle_epi8(a, SHUFFLE_EPI32_TABLE[mask]);
                 }
 
-#define MASK_128_32_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, \
-                0x00, 0x01, 0x02, 0x03, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11
-
-#define MASK_128_32_4(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_32_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_32_2(A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x07, 0x06, 0x05, 0x04)
-
-#define MASK_128_32_8(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_32_4(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_32_4(A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0B, 0x0A, 0x09, 0x08)
-
-#define MASK_128_32_16(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_32_8(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_32_8(A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0F, 0x0E, 0x0D, 0x0C)
-
             private:
-                static constexpr const signed char SHUFFLE_EPI32_TABLE8[16 * 16] = {MASK_128_32_16(static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF))};
-                static constexpr const __m128i * const SHUFFLE_EPI32_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI32_TABLE8);
-
-#undef MASK_128_32_2
-#undef MASK_128_32_4
-#undef MASK_128_32_8
-#undef MASK_128_32_16
+                static const signed char SHUFFLE_EPI32_TABLE8[16 * 16];
+                static const __m128i * const SHUFFLE_EPI32_TABLE
             };
 
             template<>
@@ -334,20 +272,9 @@ namespace v2 {
                     return _mm_shuffle_epi8(a, SHUFFLE_EPI64_TABLE[mask]);
                 }
 
-#define MASK_128_64_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, \
-                0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, A0, A1, A2, A3, A4, A5, A6, A7
-
-#define MASK_128_64_4(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_64_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_64_2(A7, A6, A5, A4, A3, A2, A1, A0, 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08)
-
             private:
-                static constexpr const signed char SHUFFLE_EPI64_TABLE8[4 * 16] = {MASK_128_64_4(static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF))};
-                static constexpr const __m128i * const SHUFFLE_EPI64_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI64_TABLE8);
-
-#undef MASK_128_64_2
-#undef MASK_128_64_4
+                static const signed char SHUFFLE_EPI64_TABLE8[4 * 16];
+                static const __m128i * const SHUFFLE_EPI64_TABLE;
             };
 
             template<typename A, typename B, typename R>
