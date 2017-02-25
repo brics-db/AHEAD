@@ -210,7 +210,7 @@ namespace v2 {
 
             private:
                 static const signed char SHUFFLE_EPI32_TABLE8[16 * 16];
-                static const __m128i * const SHUFFLE_EPI32_TABLE
+                static const __m128i * const SHUFFLE_EPI32_TABLE;
             };
 
             template<>
