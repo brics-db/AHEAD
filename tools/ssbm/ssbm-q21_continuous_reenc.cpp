@@ -22,20 +22,19 @@
 #include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
 
-int
-main (int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Continuous Detection With Reencoding\n===================================================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+int main(int argc, char** argv) {
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Continuous Detection With Reencoding\n===================================================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C",
+            "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN",
-        "SSBM Q2.1:\n"                               \
-        "select sum(lo_revenue), d_year, p_brand\n"  \
-        "  from lineorder, part, supplier, date\n"   \
-        "  where lo_orderdate = d_datekey\n"         \
-        "    and lo_partkey = p_partkey\n"           \
-        "    and lo_suppkey = s_suppkey\n"           \
-        "    and p_category = 'MFGR#12'\n"           \
-        "    and s_region = 'AMERICA'\n"             \
-        "  group by d_year, p_brand;");
+    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.1:\n"
+            "select sum(lo_revenue), d_year, p_brand\n"
+            "  from lineorder, part, supplier, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and lo_partkey = p_partkey\n"
+            "    and lo_suppkey = s_suppkey\n"
+            "    and p_category = 'MFGR#12'\n"
+            "    and s_region = 'AMERICA'\n"
+            "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
@@ -86,18 +85,22 @@ main (int argc, char** argv) {
         auto bat2 = std::get<0>(pair1)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(pair1);
         auto bat3 = batSSenc->reverse(); // s_suppkey | OID supplier
-        MEASURE_OP_TUPLE(tuple4, v2::bat::ops::matchjoinAN(bat3, bat2, std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs), std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs))); // s_suppkey | OID supplier
+        MEASURE_OP_TUPLE(tuple4,
+                v2::bat::ops::matchjoinAN(bat3, bat2, std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs), std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs))); // s_suppkey | OID supplier
         CLEAR_HASHJOIN_AN(tuple4);
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP_TUPLE(tuple5, v2::bat::ops::hashjoinAN(batLSenc, std::get<0>(tuple4), std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
+        MEASURE_OP_TUPLE(tuple5,
+                v2::bat::ops::hashjoinAN(batLSenc, std::get<0>(tuple4), std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resoid_t::As),
+                        std::get<12>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
         CLEAR_HASHJOIN_AN(tuple5);
         delete std::get<0>(tuple4);
         // join with LO_PARTKEY to already reduce the join partners
         auto bat6 = std::get<0>(tuple5)->mirror_head(); // OID lineorder | OID Lineorder
         delete std::get<0>(tuple5);
-        MEASURE_OP_TUPLE(tuple7, v2::bat::ops::matchjoinAN(bat6, batLPenc, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs))); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
+        MEASURE_OP_TUPLE(tuple7,
+                v2::bat::ops::matchjoinAN(bat6, batLPenc, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs))); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         CLEAR_HASHJOIN_AN(tuple7);
         delete bat6;
 
@@ -109,11 +112,14 @@ main (int argc, char** argv) {
         auto bat9 = std::get<0>(pair8)->mirror_head(); // OID part | OID part
         delete std::get<0>(pair8);
         auto batA = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP_TUPLE(tupleB, v2::bat::ops::matchjoinAN(batA, bat9, std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs), std::get<10>(*v2_resoid_t::As), std::get<10>(*v2_resoid_t::Ainvs))); // p_partkey | OID Part where p_category = 'MFGR#12'
+        MEASURE_OP_TUPLE(tupleB,
+                v2::bat::ops::matchjoinAN(batA, bat9, std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs), std::get<10>(*v2_resoid_t::As), std::get<10>(*v2_resoid_t::Ainvs))); // p_partkey | OID Part where p_category = 'MFGR#12'
         CLEAR_HASHJOIN_AN(tupleB);
         delete batA;
         delete bat9;
-        MEASURE_OP_TUPLE(tupleC, v2::bat::ops::hashjoinAN(std::get<0>(tuple7), std::get<0>(tupleB), std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs))); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
+        MEASURE_OP_TUPLE(tupleC,
+                v2::bat::ops::hashjoinAN(std::get<0>(tuple7), std::get<0>(tupleB), std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<8>(*v2_resoid_t::As),
+                        std::get<8>(*v2_resoid_t::Ainvs))); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
         CLEAR_HASHJOIN_AN(tupleC);
         delete std::get<0>(tuple7);
         delete std::get<0>(tupleB);
@@ -121,21 +127,25 @@ main (int argc, char** argv) {
         // join with date now!
         auto batD = std::get<0>(tupleC)->mirror_head(); // OID lineorder | OID lineorder  (where ...)
         delete std::get<0>(tupleC);
-        MEASURE_OP_TUPLE(tupleE, v2::bat::ops::matchjoinAN(batD, batLOenc, std::get<7>(*v2_resoid_t::As), std::get<7>(*v2_resoid_t::Ainvs), std::get<11>(*v2_resint_t::As), std::get<11>(*v2_resint_t::Ainvs))); // OID lineorder | lo_orderdate (where ...)
+        MEASURE_OP_TUPLE(tupleE,
+                v2::bat::ops::matchjoinAN(batD, batLOenc, std::get<7>(*v2_resoid_t::As), std::get<7>(*v2_resoid_t::Ainvs), std::get<11>(*v2_resint_t::As), std::get<11>(*v2_resint_t::Ainvs))); // OID lineorder | lo_orderdate (where ...)
         CLEAR_HASHJOIN_AN(tupleE);
         delete batD;
         auto batF = batDDenc->reverse(); // d_datekey | OID date
-        MEASURE_OP_TUPLE(tupleG, v2::bat::ops::hashjoinAN(std::get<0>(tupleE), batF, std::get<6>(*v2_resoid_t::As), std::get<6>(*v2_resoid_t::Ainvs), std::get<5>(*v2_resoid_t::As), std::get<5>(*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
+        MEASURE_OP_TUPLE(tupleG,
+                v2::bat::ops::hashjoinAN(std::get<0>(tupleE), batF, std::get<6>(*v2_resoid_t::As), std::get<6>(*v2_resoid_t::Ainvs), std::get<5>(*v2_resoid_t::As), std::get<5>(*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
         CLEAR_HASHJOIN_AN(tupleG);
         delete std::get<0>(tupleE);
         delete batF;
 
         // now prepare grouped sum and check inputs
         auto batH = std::get<0>(tupleG)->mirror_head(); // OID lineorder | OID lineorder
-        MEASURE_OP_TUPLE(tupleI, v2::bat::ops::matchjoinAN(batH, batLPenc, std::get<4>(*v2_resoid_t::As), std::get<4>(*v2_resoid_t::Ainvs), std::get<3>(*v2_resoid_t::As), std::get<3>(*v2_resoid_t::Ainvs))); // OID lineorder | lo_partkey
+        MEASURE_OP_TUPLE(tupleI,
+                v2::bat::ops::matchjoinAN(batH, batLPenc, std::get<4>(*v2_resoid_t::As), std::get<4>(*v2_resoid_t::Ainvs), std::get<3>(*v2_resoid_t::As), std::get<3>(*v2_resoid_t::Ainvs))); // OID lineorder | lo_partkey
         CLEAR_HASHJOIN_AN(tupleI);
         auto batK = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP_TUPLE(tupleL, v2::bat::ops::hashjoinAN(std::get<0>(tupleI), batK, std::get<2>(*v2_resoid_t::As), std::get<2>(*v2_resoid_t::Ainvs), std::get<1>(*v2_resoid_t::As), std::get<1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID part
+        MEASURE_OP_TUPLE(tupleL,
+                v2::bat::ops::hashjoinAN(std::get<0>(tupleI), batK, std::get<2>(*v2_resoid_t::As), std::get<2>(*v2_resoid_t::Ainvs), std::get<1>(*v2_resoid_t::As), std::get<1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID part
         CLEAR_HASHJOIN_AN(tupleL);
         delete std::get<0>(tupleI);
         delete batK;
@@ -143,15 +153,20 @@ main (int argc, char** argv) {
         CLEAR_HASHJOIN_AN(tupleM);
         delete std::get<0>(tupleL);
 
-        MEASURE_OP_TUPLE(tupleN, v2::bat::ops::hashjoinAN(std::get<0>(tupleG), batDYenc, std::get<15>(*v2_resoid_t::As), std::get<15>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resshort_t::As), std::get<14>(*v2_resshort_t::Ainvs))); // OID lineorder | d_year
+        MEASURE_OP_TUPLE(tupleN,
+                v2::bat::ops::hashjoinAN(std::get<0>(tupleG), batDYenc, std::get<15>(*v2_resoid_t::As), std::get<15>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resshort_t::As),
+                        std::get<14>(*v2_resshort_t::Ainvs))); // OID lineorder | d_year
         CLEAR_HASHJOIN_AN(tupleN);
         delete std::get<0>(tupleG);
 
-        MEASURE_OP_TUPLE(tupleO, v2::bat::ops::matchjoinAN(batH, batLRenc, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<10>(*v2_resint_t::As), std::get<10>(*v2_resint_t::Ainvs))); // OID lineorder | lo_revenue (where ...)
+        MEASURE_OP_TUPLE(tupleO,
+                v2::bat::ops::matchjoinAN(batH, batLRenc, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<10>(*v2_resint_t::As), std::get<10>(*v2_resint_t::Ainvs))); // OID lineorder | lo_revenue (where ...)
         CLEAR_HASHJOIN_AN(tupleO);
         delete batH;
 
-        MEASURE_OP_TUPLE(tupleP, v2::bat::ops::groupedSumAN<v2_resbigint_t>(std::get<0>(tupleO), std::get<0>(tupleN), std::get<0>(tupleM), std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<13>(*v2_resshort_t::As), std::get<13>(*v2_resshort_t::Ainvs), std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs), 0, 0)); // the last two parameters are ignored anyways, because the third input BAT has v2_str_t tail!
+        MEASURE_OP_TUPLE(tupleP,
+                v2::bat::ops::groupedSumAN<v2_resbigint_t>(std::get<0>(tupleO), std::get<0>(tupleN), std::get<0>(tupleM), std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs),
+                        std::get<13>(*v2_resshort_t::As), std::get<13>(*v2_resshort_t::Ainvs), std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs), 0, 0)); // the last two parameters are ignored anyways, because the third input BAT has v2_str_t tail!
         CLEAR_GROUPEDSUM_AN(tupleP);
         delete std::get<0>(tupleM);
         delete std::get<0>(tupleN);
@@ -169,16 +184,16 @@ main (int argc, char** argv) {
             auto iter3 = std::get<3>(tupleP)->begin();
             auto iter4 = std::get<4>(tupleP)->begin();
             // we need the following typedefs to cast the inverses to the correct length
-            typedef std::remove_pointer < std::remove_reference < decltype(std::get<0>(tupleP))>::type>::type tupleP_0_t;
+            typedef std::remove_pointer<std::remove_reference<decltype(std::get<0>(tupleP))>::type>::type tupleP_0_t;
             typedef typename TypeMap<tupleP_0_t::v2_tail_t>::v2_encoded_t::type_t K0_tail_enc_t;
             typedef typename TypeMap<tupleP_0_t::v2_tail_t>::v2_base_t::type_t K0_tail_unenc_t;
-            typedef std::remove_pointer < std::remove_reference < decltype(std::get<1>(tupleP))>::type>::type tupleP_1_t;
+            typedef std::remove_pointer<std::remove_reference<decltype(std::get<1>(tupleP))>::type>::type tupleP_1_t;
             typedef typename TypeMap<tupleP_1_t::v2_tail_t>::v2_encoded_t::type_t K1_tail_enc_t;
             typedef typename TypeMap<tupleP_1_t::v2_tail_t>::v2_base_t::type_t K1_tail_unenc_t;
-            typedef std::remove_pointer < std::remove_reference < decltype(std::get<2>(tupleP))>::type>::type tupleP_2_t;
+            typedef std::remove_pointer<std::remove_reference<decltype(std::get<2>(tupleP))>::type>::type tupleP_2_t;
             typedef typename TypeMap<tupleP_2_t::v2_tail_t>::v2_encoded_t::type_t K2_tail_enc_t;
             typedef typename TypeMap<tupleP_2_t::v2_tail_t>::v2_base_t::type_t K2_tail_unenc_t;
-            typedef std::remove_pointer < std::remove_reference < decltype(std::get<3>(tupleP))>::type>::type tupleP_3_t;
+            typedef std::remove_pointer<std::remove_reference<decltype(std::get<3>(tupleP))>::type>::type tupleP_3_t;
             typedef typename TypeMap<tupleP_3_t::v2_tail_t>::v2_encoded_t::type_t K3_tail_enc_t;
             typedef typename TypeMap<tupleP_3_t::v2_tail_t>::v2_base_t::type_t K3_tail_unenc_t;
             // OK now std::get the correct inverses

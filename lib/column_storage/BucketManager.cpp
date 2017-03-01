@@ -19,7 +19,7 @@
 BucketManager* BucketManager::instance = nullptr;
 
 BucketManager*
-BucketManager::getInstance () {
+BucketManager::getInstance() {
     if (BucketManager::instance == nullptr) {
         BucketManager::instance = new BucketManager();
     }
@@ -27,60 +27,69 @@ BucketManager::getInstance () {
     return BucketManager::instance;
 }
 
-void
-BucketManager::destroyInstance () {
+void BucketManager::destroyInstance() {
     if (BucketManager::instance) {
         delete BucketManager::instance;
         BucketManager::instance = nullptr;
     }
 }
 
-BucketManager::Chunk::Chunk () : content (nullptr) {
+BucketManager::Chunk::Chunk()
+        : content(nullptr) {
 }
 
-BucketManager::Chunk::Chunk (void* content) : content (content) {
+BucketManager::Chunk::Chunk(void* content)
+        : content(content) {
 }
 
-BucketManager::Chunk::Chunk (const Chunk &copy) : content (copy.content) {
+BucketManager::Chunk::Chunk(const Chunk &copy)
+        : content(copy.content) {
 }
 
-BucketManager::Chunk& BucketManager::Chunk::operator= (const Chunk &copy) {
+BucketManager::Chunk& BucketManager::Chunk::operator=(const Chunk &copy) {
     new (this) Chunk(copy);
     return *this;
 }
 
-BucketManager::Bucket::Bucket () : number (0), version (nullptr), next (nullptr), older (nullptr), newer (nullptr), chunk (nullptr) {
+BucketManager::Bucket::Bucket()
+        : number(0), version(nullptr), next(nullptr), older(nullptr), newer(nullptr), chunk(nullptr) {
 }
 
-BucketManager::Bucket::Bucket (id_t number, version_t *version, Bucket *next, Bucket *older, Bucket* newer, Chunk *chunk) : number (number), version (version), next (next), older (older), newer (newer), chunk (chunk) {
+BucketManager::Bucket::Bucket(id_t number, version_t *version, Bucket *next, Bucket *older, Bucket* newer, Chunk *chunk)
+        : number(number), version(version), next(next), older(older), newer(newer), chunk(chunk) {
 }
 
-BucketManager::Bucket::Bucket (const Bucket &copy) : number (copy.number), version (copy.version), next (copy.next), older (copy.older), newer (copy.newer), chunk (copy.chunk) {
+BucketManager::Bucket::Bucket(const Bucket &copy)
+        : number(copy.number), version(copy.version), next(copy.next), older(copy.older), newer(copy.newer), chunk(copy.chunk) {
 }
 
-BucketManager::Bucket& BucketManager::Bucket::operator= (const Bucket &copy) {
+BucketManager::Bucket& BucketManager::Bucket::operator=(const Bucket &copy) {
     new (this) Bucket(copy);
     return *this;
 }
 
-BucketManager::BucketStream::BucketStream () : head (nullptr), tail (nullptr), index (), size (0) {
+BucketManager::BucketStream::BucketStream()
+        : head(nullptr), tail(nullptr), index(), size(0) {
 }
 
-BucketManager::BucketStream::BucketStream (Bucket *head, Bucket *tail, std::vector<Bucket*> & index, size_t size) : head (head), tail (tail), index (index), size (size) {
+BucketManager::BucketStream::BucketStream(Bucket *head, Bucket *tail, std::vector<Bucket*> & index, size_t size)
+        : head(head), tail(tail), index(index), size(size) {
 }
 
-BucketManager::BucketStream::BucketStream (const BucketStream &copy) : head (copy.head), tail (copy.tail), index (copy.index), size (copy.size) {
+BucketManager::BucketStream::BucketStream(const BucketStream &copy)
+        : head(copy.head), tail(copy.tail), index(copy.index), size(copy.size) {
 }
 
-BucketManager::BucketStream& BucketManager::BucketStream::operator= (const BucketStream &copy) {
+BucketManager::BucketStream& BucketManager::BucketStream::operator=(const BucketStream &copy) {
     new (this) BucketStream(copy);
     return *this;
 }
 
-BucketManager::BucketManager () : streams () {
+BucketManager::BucketManager()
+        : streams() {
 }
 
-BucketManager::~BucketManager () {
+BucketManager::~BucketManager() {
     for (auto mypair : streams) {
         for (auto pBucket : mypair.second.index) {
             delete pBucket;
@@ -91,7 +100,7 @@ BucketManager::~BucketManager () {
 }
 
 BucketManager::BucketIterator*
-BucketManager::openStream (id_t id, version_t *version) {
+BucketManager::openStream(id_t id, version_t *version) {
     if (this->streams.find(id) == this->streams.end()) {
         this->streams[id].head = 0;
         this->streams[id].tail = 0;
@@ -115,7 +124,8 @@ BucketManager::printDebugInformation () {
 }
 #endif
 
-BucketManager::BucketIterator::BucketIterator (BucketManager::BucketStream *stream, version_t *version) : stream (stream), version (version), currentBucket (0), previousBucket (0), log () {
+BucketManager::BucketIterator::BucketIterator(BucketManager::BucketStream *stream, version_t *version)
+        : stream(stream), version(version), currentBucket(0), previousBucket(0), log() {
     if (stream == nullptr || version == nullptr) {
         // Problem : Falsche Parameter
         std::stringstream ss;
@@ -128,19 +138,19 @@ BucketManager::BucketIterator::BucketIterator (BucketManager::BucketStream *stre
     }
 }
 
-BucketManager::BucketIterator::BucketIterator (const BucketIterator & copy) : stream (copy.stream), version (copy.version), currentBucket (copy.currentBucket), previousBucket (copy.previousBucket), log () {
+BucketManager::BucketIterator::BucketIterator(const BucketIterator & copy)
+        : stream(copy.stream), version(copy.version), currentBucket(copy.currentBucket), previousBucket(copy.previousBucket), log() {
 }
 
-BucketManager::BucketIterator::~BucketIterator () {
+BucketManager::BucketIterator::~BucketIterator() {
 }
 
-BucketManager::BucketIterator& BucketManager::BucketIterator::operator= (const BucketIterator& copy) {
+BucketManager::BucketIterator& BucketManager::BucketIterator::operator=(const BucketIterator& copy) {
     new (this) BucketIterator(copy);
     return *this;
 }
 
-size_t
-BucketManager::BucketIterator::countBuckets () {
+size_t BucketManager::BucketIterator::countBuckets() {
     size_t position;
     BucketManager::Bucket *bucket;
 
@@ -150,7 +160,7 @@ BucketManager::BucketIterator::countBuckets () {
         do {
             bucket = this->stream->index[position];
 
-            while (bucket != 0 && *bucket->version > * this->version) {
+            while (bucket != 0 && *bucket->version > *this->version) {
                 bucket = bucket->older;
             }
 
@@ -163,8 +173,7 @@ BucketManager::BucketIterator::countBuckets () {
     return 0;
 }
 
-size_t
-BucketManager::BucketIterator::position () {
+size_t BucketManager::BucketIterator::position() {
     if (this->previousBucket == 0 && this->currentBucket == 0) {
         return 0;
     } else if (this->previousBucket == 0) {
@@ -176,14 +185,13 @@ BucketManager::BucketIterator::position () {
     }
 }
 
-void
-BucketManager::BucketIterator::rewind () {
+void BucketManager::BucketIterator::rewind() {
     this->previousBucket = 0;
     this->currentBucket = 0;
 }
 
 BucketManager::Chunk*
-BucketManager::BucketIterator::next () {
+BucketManager::BucketIterator::next() {
     if (this->previousBucket == 0 && this->currentBucket == 0) {
         this->currentBucket = this->stream->head;
     } else if (this->currentBucket != 0) {
@@ -191,7 +199,7 @@ BucketManager::BucketIterator::next () {
         this->currentBucket = this->currentBucket->next;
     }
 
-    while (this->currentBucket != 0 && *this->currentBucket->version > * this->version) {
+    while (this->currentBucket != 0 && *this->currentBucket->version > *this->version) {
         this->currentBucket = this->currentBucket->older;
     }
 
@@ -204,7 +212,7 @@ BucketManager::BucketIterator::next () {
 }
 
 BucketManager::Chunk*
-BucketManager::BucketIterator::seek (size_t number) {
+BucketManager::BucketIterator::seek(size_t number) {
     if (number < this->stream->size) {
         if (number == 0) {
             this->previousBucket = 0;
@@ -214,7 +222,7 @@ BucketManager::BucketIterator::seek (size_t number) {
         } else {
             this->previousBucket = this->stream->index[number - 1];
 
-            while (this->previousBucket != 0 && *this->previousBucket->version > * this->version) {
+            while (this->previousBucket != 0 && *this->previousBucket->version > *this->version) {
                 this->previousBucket = this->previousBucket->older;
             }
 
@@ -225,7 +233,7 @@ BucketManager::BucketIterator::seek (size_t number) {
             } else {
                 this->currentBucket = this->previousBucket->next;
 
-                while (this->currentBucket != 0 && *this->currentBucket->version > * this->version) {
+                while (this->currentBucket != 0 && *this->currentBucket->version > *this->version) {
                     this->currentBucket = this->currentBucket->older;
                 }
 
@@ -248,7 +256,7 @@ BucketManager::BucketIterator::seek (size_t number) {
 }
 
 BucketManager::Chunk*
-BucketManager::BucketIterator::edit () {
+BucketManager::BucketIterator::edit() {
     BucketManager::Bucket *newBucket;
 
     if (this->currentBucket == 0) {
@@ -299,7 +307,7 @@ BucketManager::BucketIterator::edit () {
 }
 
 BucketManager::Chunk*
-BucketManager::BucketIterator::append () {
+BucketManager::BucketIterator::append() {
     BucketManager::Bucket *newBucket;
 
     newBucket = new BucketManager::Bucket;
@@ -336,8 +344,7 @@ BucketManager::BucketIterator::append () {
     return newBucket->chunk;
 }
 
-void
-BucketManager::BucketIterator::undo () {
+void BucketManager::BucketIterator::undo() {
     while (!this->log.empty()) {
         this->previousBucket = this->log.top();
         this->log.pop();

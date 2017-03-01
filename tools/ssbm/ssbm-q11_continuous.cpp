@@ -22,18 +22,17 @@
 #include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
 
-int
-main (int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.1 Continuous Detection\n===================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
+int main(int argc, char** argv) {
+    SSBM_REQUIRED_VARIABLES("SSBM Query 1.1 Continuous Detection\n===================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
+            "K", "L", "M", "N", "O", "P");
 
-    SSBM_LOAD("dateAN", "lineorderAN",
-        "SSBM Q1.1:\n"                               \
-        "select sum(lo_revenue), d_year, p_brand\n"  \
-        "  from lineorder, date\n"                   \
-        "  where lo_orderdate = d_datekey\n"         \
-        "    and d_year = 1993\n"                    \
-        "    and lo_discount between 1 and 3\n"      \
-        "    and lo_quantity < 25;");
+    SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.1:\n"
+            "select sum(lo_revenue), d_year, p_brand\n"
+            "  from lineorder, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and d_year = 1993\n"
+            "    and lo_discount between 1 and 3\n"
+            "    and lo_quantity < 25;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
@@ -65,14 +64,18 @@ main (int argc, char** argv) {
 
         // 1) select from lineorder
         MEASURE_OP_PAIR(pair1, v2::bat::ops::selectAN<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
-        if (pair1.second) delete pair1.second;
+        if (pair1.second)
+            delete pair1.second;
         MEASURE_OP_PAIR(pair2, v2::bat::ops::selectAN(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
-        if (pair2.second) delete pair2.second;
+        if (pair2.second)
+            delete pair2.second;
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        if (pair1.first) delete pair1.first;
+        if (pair1.first)
+            delete pair1.first;
         MEASURE_OP_TUPLE(tuple4, v2::bat::ops::matchjoinAN(bat3, pair2.first)); // join selection
         delete bat3;
-        if (pair2.first) delete pair2.first;
+        if (pair2.first)
+            delete pair2.first;
         CLEAR_HASHJOIN_AN(tuple4);
         auto bat5 = std::get<0>(tuple4)->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
         MEASURE_OP_TUPLE(tuple6, v2::bat::ops::matchjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
@@ -81,7 +84,8 @@ main (int argc, char** argv) {
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP_PAIR(pair7, (v2::bat::ops::selectAN<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A))); // d_year = 1993
-        if (pair7.second) delete pair7.second;
+        if (pair7.second)
+            delete pair7.second;
         auto bat8 = pair7.first->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete pair7.first;
         MEASURE_OP_TUPLE(tuple9, (v2::bat::ops::matchjoinAN(bat8, batDDenc))); // only those d_datekey where d_year...
@@ -98,15 +102,14 @@ main (int argc, char** argv) {
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = std::get<0>(tupleB)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete std::get<0>(tupleB);
-        MEASURE_OP_TUPLE(tupleD, (v2::bat::ops::matchjoinAN(batC, batLEenc)));
-        CLEAR_HASHJOIN_AN(tupleD);
+        MEASURE_OP_TUPLE(tupleD, (v2::bat::ops::matchjoinAN(batC, batLEenc)));CLEAR_HASHJOIN_AN(tupleD);
         MEASURE_OP_TUPLE(tupleE, (v2::bat::ops::matchjoinAN(batC, std::get<0>(tuple4))));
         delete std::get<0>(tuple4);
         delete batC;
         CLEAR_HASHJOIN_AN(tupleE);
 
         // 4) result
-        MEASURE_OP_TUPLE(tupleF, (v2::bat::ops::aggregate_mul_sumAN_SSE<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
+        MEASURE_OP_TUPLE(tupleF, (v2::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
         delete std::get<0>(tupleD);
         delete std::get<0>(tupleE);
         delete std::get<1>(tupleF);

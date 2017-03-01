@@ -34,7 +34,7 @@ namespace v2 {
 
             template<typename Head, typename Tail>
             BAT<Head, typename TypeMap<Tail>::v2_encoded_t>*
-            encodeAN (BAT<Head, Tail>* arg, typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<ANParametersSelector<Tail>::As->size () - 1 > (*ANParametersSelector<Tail>::As)) {
+            encodeAN(BAT<Head, Tail>* arg, typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<ANParametersSelector<Tail>::As->size() - 1>(*ANParametersSelector<Tail>::As)) {
 
                 typedef typename TypeMap<Tail>::v2_encoded_t enctail_t;
                 typedef typename enctail_t::type_t tail_t;
@@ -44,7 +44,8 @@ namespace v2 {
                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                 static_assert(std::is_base_of<v2_base_t, Tail>::value, "Tail must be a base type");
 
-                auto result = new TempBAT<Head, enctail_t>(cd_head_t(arg->head.metaData), cd_tail_t(ColumnMetaData(sizeof (typename TypeMap<Tail>::v2_encoded_t::type_t), A, ext_euclidean(A, sizeof (tail_t)), enctail_t::UNENC_MAX_U, enctail_t::UNENC_MIN)));
+                auto result = new TempBAT<Head, enctail_t>(cd_head_t(arg->head.metaData),
+                        cd_tail_t(ColumnMetaData(sizeof(typename TypeMap<Tail>::v2_encoded_t::type_t), A, ext_euclidean(A, sizeof(tail_t)), enctail_t::UNENC_MAX_U, enctail_t::UNENC_MIN)));
                 result->reserve(arg->size());
                 auto iter = arg->begin();
                 for (; iter->hasNext(); ++*iter) {
@@ -56,7 +57,7 @@ namespace v2 {
 
             template<typename Head, typename ResTail>
             std::vector<bool>*
-            checkAN (BAT<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+            checkAN(BAT<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
 
                 typedef typename ResTail::type_t res_t;
 
@@ -77,8 +78,7 @@ namespace v2 {
             }
 
             template<typename Head, typename ResTail>
-            std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*>
-            decodeAN (BAT<Head, ResTail>* arg) {
+            std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*> decodeAN(BAT<Head, ResTail>* arg) {
 
                 typedef typename ResTail::type_t restail_t;
                 typedef typename ResTail::v2_unenc_t Tail;
@@ -106,8 +106,7 @@ namespace v2 {
             }
 
             template<typename Head, typename Tail>
-            std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
-            checkAndDecodeAN (BAT<Head, Tail>* arg) {
+            std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*> checkAndDecodeAN(BAT<Head, Tail>* arg) {
 
                 typedef typename Head::type_t head_t;
                 typedef typename Tail::type_t tail_t;
@@ -122,7 +121,7 @@ namespace v2 {
                 tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
                 std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(arg->size()) : nullptr);
                 std::vector<bool> *vec2 = (isTailEncoded ? new std::vector<bool>(arg->size()) : nullptr);
-                auto result = new TempBAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t > ();
+                auto result = new TempBAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>();
                 result->reserve(arg->size());
                 auto iter = arg->begin();
                 for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {

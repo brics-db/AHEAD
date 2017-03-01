@@ -62,7 +62,8 @@ protected:
 public:
 
     /** default constructor */
-    ColumnBatIteratorBase (id_t columnId) : ta (nullptr), bu (), buNext (), mColumnId (columnId), Csize (0), Cconsumption (0), mPosition (-1) {
+    ColumnBatIteratorBase(id_t columnId)
+            : ta(nullptr), bu(), buNext(), mColumnId(columnId), Csize(0), Cconsumption(0), mPosition(-1) {
         TransactionManager* tm = TransactionManager::getInstance();
         if (tm == nullptr) {
             std::stringstream ss;
@@ -80,11 +81,11 @@ public:
         next(); // init to first 
     }
 
-    ColumnBatIteratorBase (const ColumnBatIteratorBase<Head, Tail> &iter) : ta (iter.ta), bu (iter.bu), buNext (iter.buNext), mColumnId (iter.mColumnId), Csize (iter.Csize), Cconsumption (iter.Cconsumption), mPosition (iter.mPosition) {
+    ColumnBatIteratorBase(const ColumnBatIteratorBase<Head, Tail> &iter)
+            : ta(iter.ta), bu(iter.bu), buNext(iter.buNext), mColumnId(iter.mColumnId), Csize(iter.Csize), Cconsumption(iter.Cconsumption), mPosition(iter.mPosition) {
     }
 
-    virtual
-    ~ColumnBatIteratorBase () {
+    virtual ~ColumnBatIteratorBase() {
         if (ta) {
             TransactionManager* tm = TransactionManager::getInstance();
             tm->endTransaction(ta);
@@ -92,32 +93,30 @@ public:
         }
     }
 
-    ColumnBatIteratorBase& operator= (const ColumnBatIteratorBase &copy) {
+    ColumnBatIteratorBase& operator=(const ColumnBatIteratorBase &copy) {
         new (this) ColumnBatIteratorBase(copy);
         return *this;
     }
 
-    virtual void
-    position (oid_t index) override {
+    virtual void position(oid_t index) override {
         bu = ta->get(mColumnId, index);
         mPosition = index;
         buNext = ta->next(mColumnId);
     }
 
     /** iterator next */
-    virtual void
-    next () override {
+    virtual void next() override {
         ++mPosition;
         bu = buNext; // save actual current position
         buNext = ta->next(mColumnId);
     }
 
-    virtual ColumnBatIteratorBase<Head, Tail>& operator++ () override {
+    virtual ColumnBatIteratorBase<Head, Tail>& operator++() override {
         next();
         return *this;
     }
 
-    virtual ColumnBatIteratorBase<Head, Tail>& operator+= (oid_t i) override {
+    virtual ColumnBatIteratorBase<Head, Tail>& operator+=(oid_t i) override {
         for (; i; --i) {
             next();
         }
@@ -125,28 +124,23 @@ public:
     }
 
     /** @return true if a next item is available - otherwise false */
-    virtual bool
-    hasNext () override {
+    virtual bool hasNext() override {
         return mPosition < static_cast<ssize_t>(Csize);
     }
 
-    virtual oid_t
-    head () override {
+    virtual oid_t head() override {
         return oid_t(this->mPosition);
     }
 
-    virtual tail_t
-    tail () override {
+    virtual tail_t tail() override {
         return *static_cast<tail_t*>(bu.tail);
     }
 
-    virtual size_t
-    size () override {
+    virtual size_t size() override {
         return Csize;
     }
 
-    virtual size_t
-    consumption () override {
+    virtual size_t consumption() override {
         return Cconsumption;
     }
 };
@@ -159,8 +153,7 @@ public:
 
     using ColumnBatIteratorBase<Head, Tail>::ColumnBatIteratorBase;
 
-    virtual
-    ~ColumnBatIterator () {
+    virtual ~ColumnBatIterator() {
     }
 };
 
@@ -172,12 +165,10 @@ public:
 
     using ColumnBatIteratorBase<Head, v2_str_t>::ColumnBatIteratorBase;
 
-    virtual
-    ~ColumnBatIterator () {
+    virtual ~ColumnBatIterator() {
     }
 
-    virtual str_t
-    tail () override {
+    virtual str_t tail() override {
         return static_cast<str_t>(this->bu.tail);
     }
 };

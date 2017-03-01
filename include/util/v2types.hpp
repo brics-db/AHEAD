@@ -33,7 +33,7 @@ struct v2_larger_type_helper {
 };
 
 template<typename A, typename B>
-struct v2_larger_type_helper<A, B, false > {
+struct v2_larger_type_helper<A, B, false> {
 
     typedef B type_t;
 };
@@ -41,19 +41,19 @@ struct v2_larger_type_helper<A, B, false > {
 template<typename A, typename B>
 struct v2_larger_type {
 
-    typedef typename v2_larger_type_helper<A, B, (sizeof (A) > sizeof (B))>::type_t type_t;
+    typedef typename v2_larger_type_helper<A, B, (sizeof(A) > sizeof(B))>::type_t type_t;
 
-    constexpr static const bool isFirstLarger = sizeof (A) > sizeof (B);
-    constexpr static const bool isSecondLarger = sizeof (A) < sizeof (B);
+    constexpr static const bool isFirstLarger = sizeof(A) > sizeof(B);
+    constexpr static const bool isSecondLarger = sizeof(A) < sizeof(B);
 };
 
 template<typename A, typename B>
 struct v2_smaller_type {
 
-    typedef typename v2_larger_type_helper<A, B, (sizeof (A) < sizeof (B))>::type_t type_t;
+    typedef typename v2_larger_type_helper<A, B, (sizeof(A) < sizeof(B))>::type_t type_t;
 
-    constexpr static const bool isFirstSmaller = sizeof (A) < sizeof (B);
-    constexpr static const bool isSecondSmaller = sizeof (A) > sizeof (B);
+    constexpr static const bool isFirstSmaller = sizeof(A) < sizeof(B);
+    constexpr static const bool isSecondSmaller = sizeof(A) > sizeof(B);
 };
 
 /* META MACRO intended for generating type names */
@@ -79,13 +79,38 @@ namespace v2 {
     };
 
     template<typename T, typename U>
-    struct larger_type : public larger_type0<T, U, (sizeof (T) >= sizeof (U))> {
+    struct larger_type : public larger_type0<T, U, (sizeof(T) >= sizeof(U))> {
 
         using type_t = typename larger_type0<T, U, (sizeof (T) >= sizeof (U))>::type_t;
 
-        constexpr static const bool areEquallyLarge = sizeof (T) == sizeof (U);
-        constexpr static const bool isFirstLarger = sizeof (T) > sizeof (U);
-        constexpr static const bool isSecondLarger = sizeof (T) < sizeof (U);
+        constexpr static const bool areEquallyLarge = sizeof(T) == sizeof(U);
+        constexpr static const bool isFirstLarger = sizeof(T) > sizeof(U);
+        constexpr static const bool isSecondLarger = sizeof(T) < sizeof(U);
+    };
+
+    template<typename T>
+    struct numeric_limits {
+        static const size_t digits10 = 0;
+    };
+
+    template<>
+    struct numeric_limits<uint8_t> {
+        static const size_t digits10 = 3;
+    };
+
+    template<>
+    struct numeric_limits<uint16_t> {
+        static const size_t digits10 = 5;
+    };
+
+    template<>
+    struct numeric_limits<uint32_t> {
+        static const size_t digits10 = 10;
+    };
+
+    template<>
+    struct numeric_limits<uint64_t> {
+        static const size_t digits10 = 20;
     };
 }
 

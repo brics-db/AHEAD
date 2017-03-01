@@ -28,13 +28,15 @@
 #include <column_storage/TransactionManager.h>
 #include <util/resilience.hpp>
 
-TransactionManager::Transaction::Transaction (bool isUpdater, version_t currentVersion) : botVersion (currentVersion), eotVersion (isUpdater ? (new id_t (std::numeric_limits<id_t>::max ())) : (&this->botVersion)), isUpdater (isUpdater), iterators (), iteratorPositions () {
+TransactionManager::Transaction::Transaction(bool isUpdater, version_t currentVersion)
+        : botVersion(currentVersion), eotVersion(isUpdater ? (new id_t(std::numeric_limits<id_t>::max())) : (&this->botVersion)), isUpdater(isUpdater), iterators(), iteratorPositions() {
 }
 
-TransactionManager::Transaction::Transaction (const Transaction &copy) : Transaction (copy.isUpdater, copy.botVersion) {
+TransactionManager::Transaction::Transaction(const Transaction &copy)
+        : Transaction(copy.isUpdater, copy.botVersion) {
 }
 
-TransactionManager::Transaction::~Transaction () {
+TransactionManager::Transaction::~Transaction() {
     for (auto pIter : iterators) {
         if (pIter) {
             delete pIter;
@@ -42,13 +44,12 @@ TransactionManager::Transaction::~Transaction () {
     }
 }
 
-TransactionManager::Transaction& TransactionManager::Transaction::operator= (const Transaction &copy) {
+TransactionManager::Transaction& TransactionManager::Transaction::operator=(const Transaction &copy) {
     new (this) Transaction(copy);
     return *this;
 }
 
-size_t
-TransactionManager::Transaction::load (const char *path, const char* tableName, const char *prefix, size_t size, const char* delim, bool ignoreMoreData) {
+size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, size_t size, const char* delim, bool ignoreMoreData) {
     const size_t LEN_PATH = 1024;
     const size_t LEN_LINE = 1024;
     const size_t LEN_VALUE = 256;
@@ -120,9 +121,9 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
     auto curColumnIDs = cm->getColumnIDs();
 
     if (curColumnIDs.find(ID_BAT_COLNAMES) == curColumnIDs.end()) {
-        cm->createColumn(ID_BAT_COLNAMES, sizeof (char)*LEN_VALUE);
-        cm->createColumn(ID_BAT_COLTYPES, sizeof (type_t));
-        cm->createColumn(ID_BAT_COLIDENT, sizeof (id_t));
+        cm->createColumn(ID_BAT_COLNAMES, sizeof(char) * LEN_VALUE);
+        cm->createColumn(ID_BAT_COLTYPES, sizeof(type_t));
+        cm->createColumn(ID_BAT_COLIDENT, sizeof(id_t));
     } else {
         // Zurückspulen der Iteratoren
         this->close(ID_BAT_COLNAMES);
@@ -226,19 +227,19 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
 
         if (std::strncmp(buffer, "INTEGER", 7) == 0 || std::strncmp(buffer, "INT", 3) == 0) {
             *static_cast<type_t*>(bun.tail) = type_int;
-            columnWidth = sizeof (int_t);
+            columnWidth = sizeof(int_t);
             std::strncpy(datatype, NAME_INTEGER, LEN_VALUE);
         } else if (std::strncmp(buffer, "TINYINT", 7) == 0) {
             *static_cast<type_t*>(bun.tail) = type_tinyint;
-            columnWidth = sizeof (tinyint_t);
+            columnWidth = sizeof(tinyint_t);
             std::strncpy(datatype, NAME_TINYINT, LEN_VALUE);
         } else if (std::strncmp(buffer, "SHORTINT", 8) == 0) {
             *static_cast<type_t*>(bun.tail) = type_shortint;
-            columnWidth = sizeof (shortint_t);
+            columnWidth = sizeof(shortint_t);
             std::strncpy(datatype, NAME_SHORTINT, LEN_VALUE);
         } else if (std::strncmp(buffer, "LARGEINT", 8) == 0) {
             *static_cast<type_t*>(bun.tail) = type_largeint;
-            columnWidth = sizeof (bigint_t);
+            columnWidth = sizeof(bigint_t);
             std::strncpy(datatype, NAME_LARGEINT, LEN_VALUE);
         } else if (std::strncmp(buffer, "STRING", 6) == 0) {
             *static_cast<type_t*>(bun.tail) = type_string;
@@ -246,31 +247,31 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
             if (bufSlen > 6 && buffer[6] == ':') {
                 maxlen = atoi(&buffer[7]);
             }
-            columnWidth = sizeof (char_t) * maxlen + 1;
+            columnWidth = sizeof(char_t) * maxlen + 1;
             std::strncpy(datatype, NAME_STRING, LEN_VALUE);
         } else if (std::strncmp(buffer, "FIXED", 5) == 0) {
             *static_cast<type_t*>(bun.tail) = type_fixed;
-            columnWidth = sizeof (fixed_t);
+            columnWidth = sizeof(fixed_t);
             std::strncpy(datatype, NAME_FIXED, LEN_VALUE);
         } else if (std::strncmp(buffer, "CHAR", 4) == 0) {
             *static_cast<type_t*>(bun.tail) = type_char;
-            columnWidth = sizeof (char_t);
+            columnWidth = sizeof(char_t);
             std::strncpy(datatype, NAME_CHAR, LEN_VALUE);
         } else if (std::strncmp(buffer, "RESTINY", 7) == 0) {
             *static_cast<type_t*>(bun.tail) = type_restiny;
-            columnWidth = sizeof (restiny_t);
+            columnWidth = sizeof(restiny_t);
             std::strncpy(datatype, NAME_RESTINY, LEN_VALUE);
             cm->createColumn(columnId, ColumnMetaData(columnWidth, std::get<7>(*v2_restiny_t::As), std::get<7>(*v2_restiny_t::Ainvs), v2_restiny_t::UNENC_MAX_U, v2_restiny_t::UNENC_MIN));
             stdCreate = false;
         } else if (std::strncmp(buffer, "RESSHORT", 8) == 0) {
             *static_cast<type_t*>(bun.tail) = type_resshort;
-            columnWidth = sizeof (resshort_t);
+            columnWidth = sizeof(resshort_t);
             std::strncpy(datatype, NAME_RESSHORT, LEN_VALUE);
             cm->createColumn(columnId, ColumnMetaData(columnWidth, std::get<15>(*v2_resshort_t::As), std::get<15>(*v2_resshort_t::Ainvs), v2_resshort_t::UNENC_MAX_U, v2_resshort_t::UNENC_MIN));
             stdCreate = false;
         } else if (std::strncmp(buffer, "RESINT", 6) == 0) {
             *static_cast<type_t*>(bun.tail) = type_resint;
-            columnWidth = sizeof (resint_t);
+            columnWidth = sizeof(resint_t);
             std::strncpy(datatype, NAME_RESINT, LEN_VALUE);
             cm->createColumn(columnId, ColumnMetaData(columnWidth, std::get<15>(*v2_resint_t::As), std::get<15>(*v2_resint_t::Ainvs), v2_resint_t::UNENC_MAX_U, v2_resint_t::UNENC_MIN));
             stdCreate = false;
@@ -418,13 +419,11 @@ TransactionManager::Transaction::load (const char *path, const char* tableName, 
     return n;
 }
 
-std::unordered_set<id_t>
-TransactionManager::Transaction::list () {
+std::unordered_set<id_t> TransactionManager::Transaction::list() {
     return ColumnManager::getInstance()->getColumnIDs();
 }
 
-std::pair<size_t, size_t>
-TransactionManager::Transaction::open (id_t id) {
+std::pair<size_t, size_t> TransactionManager::Transaction::open(id_t id) {
     bool isOK = false;
     if (id >= this->iterators.size()) {
         this->iterators.resize(id + 1);
@@ -458,8 +457,7 @@ TransactionManager::Transaction::open (id_t id) {
     return isOK ? std::make_pair<size_t, size_t>(this->iterators[id]->size(), this->iterators[id]->consumption()) : std::make_pair<size_t, size_t>(0, 0);
 }
 
-void
-TransactionManager::Transaction::close (id_t id) {
+void TransactionManager::Transaction::close(id_t id) {
     if (id >= this->iterators.size() || (id < this->iterators.size() && this->iterators[id] == nullptr)) {
         // Problem : Spalte nicht geoeffnet
     } else {
@@ -467,8 +465,7 @@ TransactionManager::Transaction::close (id_t id) {
     }
 }
 
-TransactionManager::BinaryUnit
-TransactionManager::Transaction::next (id_t id) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::next(id_t id) {
     if (id < this->iterators.size() && this->iterators[id] != nullptr && this->iteratorPositions[id] != -1) {
         const ColumnManager::Record &record = this->iterators[id]->next();
 
@@ -487,8 +484,7 @@ TransactionManager::Transaction::next (id_t id) {
     }
 }
 
-TransactionManager::BinaryUnit
-TransactionManager::Transaction::get (id_t id, oid_t index) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::get(id_t id, oid_t index) {
     if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
         const ColumnManager::Record &record = this->iterators[id]->seek(index);
 
@@ -508,8 +504,7 @@ TransactionManager::Transaction::get (id_t id, oid_t index) {
     }
 }
 
-TransactionManager::BinaryUnit
-TransactionManager::Transaction::edit (id_t id) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::edit(id_t id) {
     if (this->isUpdater) {
         if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->edit();
@@ -533,8 +528,7 @@ TransactionManager::Transaction::edit (id_t id) {
     }
 }
 
-TransactionManager::BinaryUnit
-TransactionManager::Transaction::append (id_t id) {
+TransactionManager::BinaryUnit TransactionManager::Transaction::append(id_t id) {
     if (this->isUpdater) {
         if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->append();
@@ -558,8 +552,7 @@ TransactionManager::Transaction::append (id_t id) {
     }
 }
 
-void
-TransactionManager::Transaction::rollback () {
+void TransactionManager::Transaction::rollback() {
     for (id_t id = 0; id < this->iterators.size(); id++) {
         if (this->iterators[id] != 0) {
             this->iterators[id]->undo();

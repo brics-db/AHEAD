@@ -32,7 +32,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 /***
  * @author Benjamin Schlegel
  */
@@ -66,69 +65,63 @@ private:
 public:
     typedef TempBATIterator<Head, Tail> self_t;
 
-    TempBATIterator (coldesc_head_t& head, coldesc_tail_t & tail) : cHead (head.container), cTail (tail.container), iterHead (cHead->begin ()), iterTail (cTail->begin ()) {
+    TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
+            : cHead(head.container), cTail(tail.container), iterHead(cHead->begin()), iterTail(cTail->begin()) {
     }
 
-    TempBATIterator (const TempBATIterator<Head, Tail> & iter) : cHead (iter.cHead), cTail (iter.cTail), iterHead (iter.iterHead), iterTail (iter.iterTail) {
+    TempBATIterator(const TempBATIterator<Head, Tail> & iter)
+            : cHead(iter.cHead), cTail(iter.cTail), iterHead(iter.iterHead), iterTail(iter.iterTail) {
     }
 
-    virtual
-    ~TempBATIterator () {
+    virtual ~TempBATIterator() {
     }
 
-    TempBATIterator& operator= (const TempBATIterator & copy) {
+    TempBATIterator& operator=(const TempBATIterator & copy) {
         new (this) TempBATIterator(copy);
         return *this;
     }
 
-    virtual void
-    next () override {
+    virtual void next() override {
         iterHead++;
         iterTail++;
     }
 
-    virtual TempBATIterator& operator++ () override {
+    virtual TempBATIterator& operator++() override {
         next();
         return *this;
     }
 
-    virtual TempBATIterator& operator+= (oid_t i)override {
+    virtual TempBATIterator& operator+=(oid_t i) override {
         std::advance(iterHead, i);
         std::advance(iterTail, i);
         return *this;
     }
 
-    virtual void
-    position (oid_t index) override {
+    virtual void position(oid_t index) override {
         iterHead = cHead->begin();
         iterTail = cTail->begin();
         std::advance(iterHead, index);
         std::advance(iterTail, index);
     }
 
-    virtual bool
-    hasNext () override {
+    virtual bool hasNext() override {
         return iterHead != cHead->end();
     }
 
-    virtual head_t
-    head () override {
+    virtual head_t head() override {
         return *iterHead;
     }
 
-    virtual tail_t
-    tail () override {
+    virtual tail_t tail() override {
         return *iterTail;
     }
 
-    virtual size_t
-    size () override {
+    virtual size_t size() override {
         return cHead->size();
     }
 
-    virtual size_t
-    consumption () override {
-        return cHead->capacity() * sizeof (head_t) + cTail->capacity() * sizeof (tail_t);
+    virtual size_t consumption() override {
+        return cHead->capacity() * sizeof(head_t) + cTail->capacity() * sizeof(tail_t);
     }
 };
 
@@ -152,68 +145,62 @@ private:
 public:
     typedef TempBATIterator<v2_void_t, v2_void_t> self_t;
 
-    TempBATIterator (coldesc_head_t & head, coldesc_tail_t & tail, oid_t count) : seqbase_head (head.metaData.seqbase), position_head (seqbase_head), seqbase_tail (tail.metaData.seqbase), position_tail (seqbase_tail), count (count), pos (0) {
+    TempBATIterator(coldesc_head_t & head, coldesc_tail_t & tail, oid_t count)
+            : seqbase_head(head.metaData.seqbase), position_head(seqbase_head), seqbase_tail(tail.metaData.seqbase), position_tail(seqbase_tail), count(count), pos(0) {
     }
 
-    TempBATIterator (const TempBATIterator<v2_void_t, v2_void_t> & iter) : seqbase_head (iter.seqbase_head), position_head (iter.position_head), seqbase_tail (iter.seqbase_tail), position_tail (iter.position_tail), count (iter.count), pos (iter.pos) {
+    TempBATIterator(const TempBATIterator<v2_void_t, v2_void_t> & iter)
+            : seqbase_head(iter.seqbase_head), position_head(iter.position_head), seqbase_tail(iter.seqbase_tail), position_tail(iter.position_tail), count(iter.count), pos(iter.pos) {
     }
 
-    virtual
-    ~TempBATIterator () {
+    virtual ~TempBATIterator() {
     }
 
-    TempBATIterator& operator= (const TempBATIterator & copy) {
+    TempBATIterator& operator=(const TempBATIterator & copy) {
         new (this) TempBATIterator(copy);
         return *this;
     }
 
-    virtual void
-    next () override {
+    virtual void next() override {
         ++position_head;
         ++position_tail;
         ++pos;
     }
 
-    virtual TempBATIterator& operator++ () override {
+    virtual TempBATIterator& operator++() override {
         next();
         return *this;
     }
 
-    virtual TempBATIterator& operator+= (oid_t i)override {
+    virtual TempBATIterator& operator+=(oid_t i) override {
         position_head += i;
         position_tail += i;
         pos += i;
         return *this;
     }
 
-    virtual void
-    position (oid_t index) override {
+    virtual void position(oid_t index) override {
         position_head = seqbase_head + index;
         position_tail = seqbase_tail + index;
     }
 
-    virtual bool
-    hasNext () override {
+    virtual bool hasNext() override {
         return pos < count;
     }
 
-    virtual head_t
-    head () override {
+    virtual head_t head() override {
         return position_head;
     }
 
-    virtual tail_t
-    tail () override {
+    virtual tail_t tail() override {
         return position_tail;
     }
 
-    virtual size_t
-    size () override {
+    virtual size_t size() override {
         return 0;
     }
 
-    virtual size_t
-    consumption () override {
+    virtual size_t consumption() override {
         return 0;
     }
 };
@@ -238,68 +225,62 @@ private:
 public:
     typedef TempBATIterator<Head, v2_void_t> self_t;
 
-    TempBATIterator (coldesc_head_t& head, coldesc_tail_t & tail) : cHead (head.container), iterHead (cHead->begin ()), seqbase (tail.metaData.seqbase), position_tail (seqbase) {
+    TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
+            : cHead(head.container), iterHead(cHead->begin()), seqbase(tail.metaData.seqbase), position_tail(seqbase) {
     }
 
-    TempBATIterator (const TempBATIterator<Head, v2_void_t> & iter) : cHead (iter.cHead), iterHead (iter.iterHead), seqbase (iter.seqbase), position_tail (iter.position_tail) {
+    TempBATIterator(const TempBATIterator<Head, v2_void_t> & iter)
+            : cHead(iter.cHead), iterHead(iter.iterHead), seqbase(iter.seqbase), position_tail(iter.position_tail) {
     }
 
-    virtual
-    ~TempBATIterator () {
+    virtual ~TempBATIterator() {
     }
 
-    TempBATIterator& operator= (const TempBATIterator & copy) {
+    TempBATIterator& operator=(const TempBATIterator & copy) {
         new (this) TempBATIterator(copy);
         return *this;
     }
 
-    virtual void
-    next () override {
+    virtual void next() override {
         std::advance(iterHead, 1);
         ++position_tail;
     }
 
-    virtual TempBATIterator& operator++ () override {
+    virtual TempBATIterator& operator++() override {
         next();
         return *this;
     }
 
-    virtual TempBATIterator& operator+= (oid_t i)override {
-        std::advance(iterHead, 1);
+    virtual TempBATIterator& operator+=(oid_t i) override {
+        std::advance(iterHead, i);
         position_tail += i;
         return *this;
     }
 
-    virtual void
-    position (oid_t index) override {
+    virtual void position(oid_t index) override {
         iterHead = cHead->begin();
         std::advance(iterHead, index);
         position_tail = seqbase + index;
     }
 
-    virtual bool
-    hasNext () override {
+    virtual bool hasNext() override {
         return iterHead != cHead->end();
     }
 
-    virtual head_t
-    head () override {
+    virtual head_t head() override {
         return *iterHead;
     }
 
-    virtual tail_t
-    tail () override {
+    virtual tail_t tail() override {
         return position_tail;
     }
 
-    virtual size_t
-    size () override {
+    virtual size_t size() override {
         return cHead->size();
     }
 
-    virtual size_t
-    consumption () override {
-        return cHead->capacity() * sizeof (head_t);
+    virtual size_t consumption() override {
+        return cHead->capacity() * sizeof(head_t);
     }
 };
 
@@ -322,68 +303,62 @@ private:
 public:
     typedef TempBATIterator<v2_void_t, Tail> self_t;
 
-    TempBATIterator (coldesc_head_t& head, coldesc_tail_t & tail) : cTail (tail.container), iterTail (cTail->begin ()), seqbase (head.metaData.seqbase), position_head (seqbase) {
+    TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
+            : cTail(tail.container), iterTail(cTail->begin()), seqbase(head.metaData.seqbase), position_head(seqbase) {
     }
 
-    TempBATIterator (const TempBATIterator<v2_void_t, Tail> & iter) : cTail (iter.cTail), iterTail (iter.iterTail), seqbase (iter.seqbase), position_head (iter.position_head) {
+    TempBATIterator(const TempBATIterator<v2_void_t, Tail> & iter)
+            : cTail(iter.cTail), iterTail(iter.iterTail), seqbase(iter.seqbase), position_head(iter.position_head) {
     }
 
-    virtual
-    ~TempBATIterator () {
+    virtual ~TempBATIterator() {
     }
 
-    TempBATIterator& operator= (const TempBATIterator & copy) {
+    TempBATIterator& operator=(const TempBATIterator & copy) {
         new (this) TempBATIterator(copy);
         return *this;
     }
 
-    virtual void
-    next () override {
+    virtual void next() override {
         iterTail++;
         ++position_head;
     }
 
-    virtual TempBATIterator& operator++ () override {
+    virtual TempBATIterator& operator++() override {
         next();
         return *this;
     }
 
-    virtual TempBATIterator& operator+= (oid_t i)override {
+    virtual TempBATIterator& operator+=(oid_t i) override {
         position_head += i;
-        std::advance(iterTail, 1);
+        std::advance(iterTail, i);
         return *this;
     }
 
-    virtual void
-    position (oid_t index) override {
+    virtual void position(oid_t index) override {
         iterTail = cTail->begin();
         std::advance(iterTail, index);
         position_head = seqbase + index;
     }
 
-    virtual bool
-    hasNext () override {
+    virtual bool hasNext() override {
         return iterTail != cTail->end();
     }
 
-    virtual head_t
-    head () override {
+    virtual head_t head() override {
         return position_head;
     }
 
-    virtual tail_t
-    tail () override {
+    virtual tail_t tail() override {
         return *iterTail;
     }
 
-    virtual size_t
-    size () override {
+    virtual size_t size() override {
         return cTail->size();
     }
 
-    virtual size_t
-    consumption () override {
-        return cTail->capacity() * sizeof (tail_t);
+    virtual size_t consumption() override {
+        return cTail->capacity() * sizeof(tail_t);
     }
 };
 

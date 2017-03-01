@@ -22,18 +22,17 @@
 #include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
 
-int
-main (int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.3 Early Detection\n==============================", 30, "-6", "-5", "-4", "-3", "-2", "-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
+int main(int argc, char** argv) {
+    SSBM_REQUIRED_VARIABLES("SSBM Query 1.3 Early Detection\n==============================", 30, "-6", "-5", "-4", "-3", "-2", "-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D",
+            "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
 
-    SSBM_LOAD("dateAN", "lineorderAN",
-        "SSBM Q1.3:\n"                                             \
-        "select sum(lo_extendedprice * lo_discount) as revenue\n"  \
-        "  from lineorder, date\n"                                 \
-        "  where lo_orderdate = d_datekey\n"                       \
-        "    and d_year = 1997\n"                                  \
-        "    and lo_discount between 5 and 7\n"                    \
-        "    and lo_quantity between 26 and 35;");
+    SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.3:\n"
+            "select sum(lo_extendedprice * lo_discount) as revenue\n"
+            "  from lineorder, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and d_year = 1997\n"
+            "    and lo_discount between 5 and 7\n"
+            "    and lo_quantity between 26 and 35;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
@@ -67,20 +66,13 @@ main (int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // 0) Eager Check
-        MEASURE_OP_TUPLE(tupleDY, v2::bat::ops::checkAndDecodeAN(batDYenc));
-        CLEAR_CHECKANDDECODE_AN(tupleDY);
-        MEASURE_OP_TUPLE(tupleDD, v2::bat::ops::checkAndDecodeAN(batDDenc));
-        CLEAR_CHECKANDDECODE_AN(tupleDD);
-        MEASURE_OP_TUPLE(tupleLQ, v2::bat::ops::checkAndDecodeAN(batLQenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLQ);
-        MEASURE_OP_TUPLE(tupleLD, v2::bat::ops::checkAndDecodeAN(batLDenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLD);
-        MEASURE_OP_TUPLE(tupleLO, v2::bat::ops::checkAndDecodeAN(batLOenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLO);
-        MEASURE_OP_TUPLE(tupleLE, v2::bat::ops::checkAndDecodeAN(batLEenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLE);
-        MEASURE_OP_TUPLE(tupleDW, v2::bat::ops::checkAndDecodeAN(batDWenc));
-        CLEAR_CHECKANDDECODE_AN(tupleDW);
+        MEASURE_OP_TUPLE(tupleDY, v2::bat::ops::checkAndDecodeAN(batDYenc));CLEAR_CHECKANDDECODE_AN(tupleDY);
+        MEASURE_OP_TUPLE(tupleDD, v2::bat::ops::checkAndDecodeAN(batDDenc));CLEAR_CHECKANDDECODE_AN(tupleDD);
+        MEASURE_OP_TUPLE(tupleLQ, v2::bat::ops::checkAndDecodeAN(batLQenc));CLEAR_CHECKANDDECODE_AN(tupleLQ);
+        MEASURE_OP_TUPLE(tupleLD, v2::bat::ops::checkAndDecodeAN(batLDenc));CLEAR_CHECKANDDECODE_AN(tupleLD);
+        MEASURE_OP_TUPLE(tupleLO, v2::bat::ops::checkAndDecodeAN(batLOenc));CLEAR_CHECKANDDECODE_AN(tupleLO);
+        MEASURE_OP_TUPLE(tupleLE, v2::bat::ops::checkAndDecodeAN(batLEenc));CLEAR_CHECKANDDECODE_AN(tupleLE);
+        MEASURE_OP_TUPLE(tupleDW, v2::bat::ops::checkAndDecodeAN(batDWenc));CLEAR_CHECKANDDECODE_AN(tupleDW);
 
         // 1) select from lineorder
         MEASURE_OP(bat1, v2::bat::ops::select(std::get<0>(tupleLQ), 26, 35)); // lo_quantity between 26 and 35
@@ -128,7 +120,7 @@ main (int argc, char** argv) {
         delete std::get<0>(tupleLE);
         delete batF;
         delete bat4;
-        MEASURE_OP(batI, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(batG, batH, 0));
+        MEASURE_OP(batI, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batG, batH, 0));
         delete batG;
         delete batH;
         auto iter = batI->begin();

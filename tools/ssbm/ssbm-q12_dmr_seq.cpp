@@ -21,20 +21,19 @@
 
 #include "ssbm.hpp"
 
-int
-main (int argc, char** argv) {
+int main(int argc, char** argv) {
     const size_t MODULARITY = 2;
 
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.2 DMR Sequential\n=============================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
+    SSBM_REQUIRED_VARIABLES("SSBM Query 1.2 DMR Sequential\n=============================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
+            "N", "O", "P");
 
-    SSBM_LOAD("date", "lineorder",
-        "SSBM Q1.2:\n"                                             \
-        "select sum(lo_extendedprice * lo_discount) as revenue\n"  \
-        "  from lineorder, date\n"                                 \
-        "  where lo_orderdate = d_datekey\n"                       \
-        "    and d_yearmonthnum = 199401\n"                        \
-        "    and lo_discount between 4 and 6\n"                    \
-        "    and lo_quantity between 26 and 35;");
+    SSBM_LOAD("date", "lineorder", "SSBM Q1.2:\n"
+            "select sum(lo_extendedprice * lo_discount) as revenue\n"
+            "  from lineorder, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and d_yearmonthnum = 199401\n"
+            "    and lo_discount between 4 and 6\n"
+            "    and lo_quantity between 26 and 35;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDYcb, new int_colbat_t("date", "yearmonthnum"));
@@ -116,7 +115,7 @@ main (int argc, char** argv) {
             delete bat4;
 
             // 4) result
-            MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(batD, batE, 0));
+            MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
             delete batD;
             delete batE;
             auto iter = batF->begin();

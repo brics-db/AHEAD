@@ -50,21 +50,20 @@ public:
     using head_t = typename BAT<Head, Tail>::head_t;
     using tail_t = typename BAT<Head, Tail>::tail_t;
 
-    virtual
-    ~BATIterator () {
+    virtual ~BATIterator() {
     }
 
-    virtual void next () = 0;
-    virtual BATIterator& operator++ () = 0;
-    virtual BATIterator& operator+= (oid_t i) = 0;
-    virtual void position (oid_t index) = 0;
-    virtual bool hasNext () = 0;
+    virtual void next() = 0;
+    virtual BATIterator& operator++() = 0;
+    virtual BATIterator& operator+=(oid_t i) = 0;
+    virtual void position(oid_t index) = 0;
+    virtual bool hasNext() = 0;
 
-    virtual head_t head () = 0;
-    virtual tail_t tail () = 0;
+    virtual head_t head() = 0;
+    virtual tail_t tail() = 0;
 
-    virtual size_t size () = 0;
-    virtual size_t consumption () = 0;
+    virtual size_t size() = 0;
+    virtual size_t consumption() = 0;
 };
 
 #endif

@@ -22,18 +22,17 @@
 #include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
 
-int
-main (int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.3 Continuous Detection\n===================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
+int main(int argc, char** argv) {
+    SSBM_REQUIRED_VARIABLES("SSBM Query 1.3 Continuous Detection\n===================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
+            "K", "L", "M", "N", "O", "P");
 
-    SSBM_LOAD("dateAN", "lineorderAN",
-        "SSBM Q1.3:\n"                                             \
-        "select sum(lo_extendedprice * lo_discount) as revenue\n"  \
-        "  from lineorder, date\n"                                 \
-        "  where lo_orderdate = d_datekey\n"                       \
-        "    and d_year = 1997\n"                                  \
-        "    and lo_discount between 5 and 7\n"                    \
-        "    and lo_quantity between 26 and 35;");
+    SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.3:\n"
+            "select sum(lo_extendedprice * lo_discount) as revenue\n"
+            "  from lineorder, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and d_year = 1997\n"
+            "    and lo_discount between 5 and 7\n"
+            "    and lo_quantity between 26 and 35;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
@@ -108,15 +107,13 @@ main (int argc, char** argv) {
         delete batD;
         // batE has in the Head the positions from lineorder and in the Tail the positions from date
         auto batF = std::get<0>(tupleE)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
-        MEASURE_OP_TUPLE(tupleG, v2::bat::ops::matchjoinAN(batF, batLEenc));
-        CLEAR_HASHJOIN_AN(tupleG);
-        MEASURE_OP_TUPLE(tupleH, v2::bat::ops::matchjoinAN(batF, std::get<0>(tuple4)));
-        CLEAR_HASHJOIN_AN(tupleH);
+        MEASURE_OP_TUPLE(tupleG, v2::bat::ops::matchjoinAN(batF, batLEenc));CLEAR_HASHJOIN_AN(tupleG);
+        MEASURE_OP_TUPLE(tupleH, v2::bat::ops::matchjoinAN(batF, std::get<0>(tuple4)));CLEAR_HASHJOIN_AN(tupleH);
         delete batF;
         delete std::get<0>(tuple4);
 
         // 4) result
-        MEASURE_OP_TUPLE(tupleI, (v2::bat::ops::aggregate_mul_sumAN_SSE<v2_resbigint_t>(std::get<0>(tupleG), std::get<0>(tupleH))));
+        MEASURE_OP_TUPLE(tupleI, (v2::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleG), std::get<0>(tupleH))));
         delete std::get<0>(tupleG);
         delete std::get<0>(tupleH);
         delete std::get<1>(tupleI);

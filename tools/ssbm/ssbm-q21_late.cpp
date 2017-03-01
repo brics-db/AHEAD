@@ -22,20 +22,19 @@
 #include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
 
-int
-main (int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Late Detection\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+int main(int argc, char** argv) {
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Late Detection\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN",
-        "SSBM Q2.1:\n"                               \
-        "select sum(lo_revenue), d_year, p_brand\n"  \
-        "  from lineorder, part, supplier, date\n"   \
-        "  where lo_orderdate = d_datekey\n"         \
-        "    and lo_partkey = p_partkey\n"           \
-        "    and lo_suppkey = s_suppkey\n"           \
-        "    and p_category = 'MFGR#12'\n"           \
-        "    and s_region = 'AMERICA'\n"             \
-        "  group by d_year, p_brand;");
+    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.1:\n"
+            "select sum(lo_revenue), d_year, p_brand\n"
+            "  from lineorder, part, supplier, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and lo_partkey = p_partkey\n"
+            "    and lo_suppkey = s_suppkey\n"
+            "    and p_category = 'MFGR#12'\n"
+            "    and s_region = 'AMERICA'\n"
+            "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
@@ -133,14 +132,12 @@ main (int argc, char** argv) {
 
         MEASURE_OP(batA2enc, v2::bat::ops::hashjoin(batI, batDYenc)); // OID lineorder | d_year
         delete batI;
-        MEASURE_OP_TUPLE(tupleA2, v2::bat::ops::checkAndDecodeAN(batA2enc));
-        CLEAR_CHECKANDDECODE_AN(tupleA2);
+        MEASURE_OP_TUPLE(tupleA2, v2::bat::ops::checkAndDecodeAN(batA2enc));CLEAR_CHECKANDDECODE_AN(tupleA2);
         delete batA2enc;
 
         MEASURE_OP(batA3enc, v2::bat::ops::matchjoin(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
         delete batW;
-        MEASURE_OP_TUPLE(tupleA3, v2::bat::ops::checkAndDecodeAN(batA3enc));
-        CLEAR_CHECKANDDECODE_AN(tupleA3);
+        MEASURE_OP_TUPLE(tupleA3, v2::bat::ops::checkAndDecodeAN(batA3enc));CLEAR_CHECKANDDECODE_AN(tupleA3);
         delete batA3enc;
 
         MEASURE_OP_TUPLE(tupleK, v2::bat::ops::groupedSum<v2_bigint_t>(std::get<0>(tupleA3), std::get<0>(tupleA2), batA1));

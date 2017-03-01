@@ -57,15 +57,15 @@ ENDIF(LIBPCM)
 ### SAMPLES & TOOLS ###
 #######################
 
-MACRO( add_algorithm arg_name arg_path )
+MACRO( add_algorithm arg_name arg_path target_name )
     FILE(GLOB SOURCE_FILES
         "${arg_path}/${arg_name}.cpp")
-    ADD_EXECUTABLE(${arg_name} ${SOURCE_FILES})
-    SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD 14)
-    SET_PROPERTY(TARGET ${arg_name} PROPERTY CXX_STANDARD_REQUIRED ON)
-	TARGET_INCLUDE_DIRECTORIES(${arg_name} PUBLIC "${PCMDIR}")
-    TARGET_LINK_LIBRARIES(${arg_name} ${LIBPCM} RStoreCore)
-    MESSAGE(STATUS "Add executable ${arg_name}")
+    ADD_EXECUTABLE(${target_name} ${SOURCE_FILES})
+    SET_PROPERTY(TARGET ${target_name} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED ON)
+	TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC "${PCMDIR}")
+    TARGET_LINK_LIBRARIES(${target_name} ${LIBPCM} RStoreCore)
+    MESSAGE(STATUS "Add executable ${target_name}")
 ENDMACRO( add_algorithm )
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
@@ -75,13 +75,6 @@ MESSAGE(STATUS "link directory: ${LIBRARY_OUTPUT_PATH}")
 #add_algorithm(lineorder_size     "sample")
 #add_algorithm(test_hashjoin      "sample")
 #add_algorithm(test_group         "sample")
-
-MACRO(add_ssbm arg_queries)
-    STRING(REPLACE " " ";" QUERIES "${arg_queries}")
-    FOREACH(Q ${QUERIES})
-        add_algorithm(${Q} "ssbm")
-    ENDFOREACH(Q QUERIES)
-ENDMACRO(add_ssbm)
 
 MACRO(append_target_property arg_target arg_property arg_setting)
 	GET_TARGET_PROPERTY(TEMP ${arg_target} ${arg_property})
@@ -103,7 +96,23 @@ MACRO(enable_openmp arg_queries)
     ENDFOREACH(Q QUERIES)
 ENDMACRO(enable_openmp)
 
+MACRO(add_ssbm arg_queries)
+    STRING(REPLACE " " ";" QUERIES "${arg_queries}")
+    FOREACH(Q ${QUERIES})
+        add_algorithm(${Q} "ssbm" ${Q})
+    ENDFOREACH(Q QUERIES)
+ENDMACRO(add_ssbm)
+
+MACRO(add_ssbm_SSE arg_queries)
+    STRING(REPLACE " " ";" QUERIES "${arg_queries}")
+    FOREACH(Q ${QUERIES})
+        add_algorithm(${Q} "ssbm" "${Q}_SSE")
+        TARGET_COMPILE_DEFINITIONS("${Q}_SSE" PRIVATE "FORCE_SSE")
+    ENDFOREACH(Q QUERIES)
+ENDMACRO(add_ssbm_SSE)
+
 add_ssbm("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_dmr_mt ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_dmr_mt ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_dmr_mt ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_dmr_mt ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
+add_ssbm_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_dmr_mt ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_dmr_mt ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_dmr_mt ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_dmr_mt ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
 
 ##############
 ### OPENMP ###
@@ -111,4 +120,5 @@ add_ssbm("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_dmr_mt ssbm-q11_early ssbm-q
 FIND_PACKAGE(OpenMP)
 IF(OPENMP_FOUND)
 	enable_openmp("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
+	enable_openmp("ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE ssbm-q21_dmr_mt_SSE")
 ENDIF(OPENMP_FOUND)

@@ -16,8 +16,7 @@
 
 using namespace std;
 
-int
-main (int argc, char ** argv) {
+int main(int argc, char ** argv) {
     ssbmconf_t CONFIG(argc, argv);
 
     boost::filesystem::path p(CONFIG.DB_PATH);

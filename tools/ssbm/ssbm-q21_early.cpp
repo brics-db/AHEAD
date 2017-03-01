@@ -22,20 +22,19 @@
 #include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
 
-int
-main (int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Early Detection\n==============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+int main(int argc, char** argv) {
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Early Detection\n==============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L",
+            "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN",
-        "SSBM Q2.1:\n"                               \
-        "select sum(lo_revenue), d_year, p_brand\n"  \
-        "  from lineorder, part, supplier, date\n"   \
-        "  where lo_orderdate = d_datekey\n"         \
-        "    and lo_partkey = p_partkey\n"           \
-        "    and lo_suppkey = s_suppkey\n"           \
-        "    and p_category = 'MFGR#12'\n"           \
-        "    and s_region = 'AMERICA'\n"             \
-        "  group by d_year, p_brand;");
+    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.1:\n"
+            "select sum(lo_revenue), d_year, p_brand\n"
+            "  from lineorder, part, supplier, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and lo_partkey = p_partkey\n"
+            "    and lo_suppkey = s_suppkey\n"
+            "    and p_category = 'MFGR#12'\n"
+            "    and s_region = 'AMERICA'\n"
+            "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
@@ -81,22 +80,14 @@ main (int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // 0) Eager Check
-        MEASURE_OP_TUPLE(tupleDD, v2::bat::ops::checkAndDecodeAN(batDDenc));
-        CLEAR_CHECKANDDECODE_AN(tupleDD);
-        MEASURE_OP_TUPLE(tupleDY, v2::bat::ops::checkAndDecodeAN(batDYenc));
-        CLEAR_CHECKANDDECODE_AN(tupleDY);
-        MEASURE_OP_TUPLE(tupleLP, v2::bat::ops::checkAndDecodeAN(batLPenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLP);
-        MEASURE_OP_TUPLE(tupleLS, v2::bat::ops::checkAndDecodeAN(batLSenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLS);
-        MEASURE_OP_TUPLE(tupleLO, v2::bat::ops::checkAndDecodeAN(batLOenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLO);
-        MEASURE_OP_TUPLE(tupleLR, v2::bat::ops::checkAndDecodeAN(batLRenc));
-        CLEAR_CHECKANDDECODE_AN(tupleLR);
-        MEASURE_OP_TUPLE(tuplePP, v2::bat::ops::checkAndDecodeAN(batPPenc));
-        CLEAR_CHECKANDDECODE_AN(tuplePP);
-        MEASURE_OP_TUPLE(tupleSS, v2::bat::ops::checkAndDecodeAN(batSSenc));
-        CLEAR_CHECKANDDECODE_AN(tupleSS);
+        MEASURE_OP_TUPLE(tupleDD, v2::bat::ops::checkAndDecodeAN(batDDenc));CLEAR_CHECKANDDECODE_AN(tupleDD);
+        MEASURE_OP_TUPLE(tupleDY, v2::bat::ops::checkAndDecodeAN(batDYenc));CLEAR_CHECKANDDECODE_AN(tupleDY);
+        MEASURE_OP_TUPLE(tupleLP, v2::bat::ops::checkAndDecodeAN(batLPenc));CLEAR_CHECKANDDECODE_AN(tupleLP);
+        MEASURE_OP_TUPLE(tupleLS, v2::bat::ops::checkAndDecodeAN(batLSenc));CLEAR_CHECKANDDECODE_AN(tupleLS);
+        MEASURE_OP_TUPLE(tupleLO, v2::bat::ops::checkAndDecodeAN(batLOenc));CLEAR_CHECKANDDECODE_AN(tupleLO);
+        MEASURE_OP_TUPLE(tupleLR, v2::bat::ops::checkAndDecodeAN(batLRenc));CLEAR_CHECKANDDECODE_AN(tupleLR);
+        MEASURE_OP_TUPLE(tuplePP, v2::bat::ops::checkAndDecodeAN(batPPenc));CLEAR_CHECKANDDECODE_AN(tuplePP);
+        MEASURE_OP_TUPLE(tupleSS, v2::bat::ops::checkAndDecodeAN(batSSenc));CLEAR_CHECKANDDECODE_AN(tupleSS);
 
         // s_region = 'AMERICA'
         MEASURE_OP(bat1, v2::bat::ops::select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region

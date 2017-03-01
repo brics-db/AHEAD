@@ -80,11 +80,11 @@ public:
 
         void *content;
 
-        Chunk ();
-        Chunk (void* content);
-        Chunk (const Chunk &);
+        Chunk();
+        Chunk(void* content);
+        Chunk(const Chunk &);
 
-        Chunk& operator= (const Chunk &);
+        Chunk& operator=(const Chunk &);
     };
 
     /**
@@ -97,11 +97,11 @@ public:
         Bucket *next, *older, *newer;
         Chunk *chunk;
 
-        Bucket ();
-        Bucket (id_t number, version_t *version, Bucket *next, Bucket *older, Bucket* newer, Chunk *chunk);
-        Bucket (const Bucket &);
+        Bucket();
+        Bucket(id_t number, version_t *version, Bucket *next, Bucket *older, Bucket* newer, Chunk *chunk);
+        Bucket(const Bucket &);
 
-        Bucket& operator= (const Bucket &);
+        Bucket& operator=(const Bucket &);
     };
 
     /**
@@ -113,11 +113,11 @@ public:
         std::vector<Bucket*> index;
         size_t size;
 
-        BucketStream ();
-        BucketStream (Bucket *head, Bucket *tail, std::vector<Bucket*> & index, size_t size);
-        BucketStream (const BucketStream &);
+        BucketStream();
+        BucketStream(Bucket *head, Bucket *tail, std::vector<Bucket*> & index, size_t size);
+        BucketStream(const BucketStream &);
 
-        BucketStream& operator= (const BucketStream &);
+        BucketStream& operator=(const BucketStream &);
     };
 
     /**
@@ -137,7 +137,7 @@ public:
          *
          * Die Funktion gibt die Anzahl der sichtbaren Buckets innerhalb des Bucket-Streams zur�ck.
          */
-        size_t countBuckets ();
+        size_t countBuckets();
         /**
          * @author Julian Hollender
          *
@@ -145,14 +145,14 @@ public:
          *
          * Die Funktion gibt die Position des Buckets innerhalb des Bucket-Streams zur�ck, welcher beim n�chsten Aufruf der Funktion next() zur�ckgegeben wird. Falls das Ende des Bucket-Streams erreicht wurde, wird die Anzahl der sichtbaren Buckets innerhalb des Bucket-Streams zur�ckgegeben. Hierbei ist zu beachten, dass die Nummerierung der Positionen innerhalb eines Bucket-Streams bei 0 beginnt.
          */
-        size_t position ();
+        size_t position();
 
         /**
          * @author Julian Hollender
          *
          * Die Funktion setzt den Iterator in seine Ausgangsposition zur�ck, wodurch beim n�chsten Aufruf der Funktion next() wieder der Bucket an erster Position im Bucket-Stream zur�ckgegeben wird. M�gliche �nderungen an der Datenbasis werden nicht r�ckg�ngig gemacht.
          */
-        void rewind ();
+        void rewind();
         /**
          * @author Julian Hollender
          *
@@ -160,7 +160,7 @@ public:
          *
          * Die Funktion gibt einen Zeiger auf den Inhalt des n�chsten Buckets innerhalb des Bucket-Streams zur�ck. Falls keine weiteren Buckets vorhanden sein sollten, wird ein NULL-Zeiger zur�ckgegeben. Um die Datenintegrit�t zu erhalten, darf der Inhalt des Buckets nicht ver�ndert werden.
          */
-        Chunk* next ();
+        Chunk* next();
         /**
          * @author Julian Hollender
          *
@@ -170,7 +170,7 @@ public:
          *
          * Die Funktion gibt einen Zeiger auf den Inhalt des Buckets an der �bergebenen Position zur�ck. Hierbei ist zu beachten, dass die Nummerierung der Positionen innerhalb eines Bucket-Streams bei 0 beginnt. Falls zur �bergebenen Position kein entsprechender Bucket gefunden wurde, wird ein NULL-Zeiger zur�ckgegeben. Um die Datenintegrit�t zu erhalten, darf der Inhalt des Buckets nicht ver�ndert werden.
          */
-        Chunk* seek (size_t number);
+        Chunk* seek(size_t number);
 
         /**
          * @author Julian Hollender
@@ -179,7 +179,7 @@ public:
          *
          * Die Funktion liefert einen Zeiger auf den Inhalt des Buckets an der aktuellen Position zur�ck, dessen Inhalt ge�ndert werden darf. Hierbei wird der Zeiger f�r die Version des Buckets auf die Version des Iterators gesetzt. Ein erneuter Aufruf der Funktion w�hrend der Lebenszeit des Iterator-Objektes an der gleichen Position im Bucket-Stream liefert einen Zeiger auf die gleiche Speicherposition zur�ck.
          */
-        Chunk* edit ();
+        Chunk* edit();
         /**
          * @author Julian Hollender
          *
@@ -187,14 +187,14 @@ public:
          *
          * Die Funktion liefert einen Zeiger auf den Inhalt eines Buckets, der an das Ende des Bucket-Streams angeh�ngt wurde. Hierbei wird der Zeiger f�r die Version des Buckets auf die Version des Iterators gesetzt. Nach dem Aufruf steht der Iterator auf dem neu angeh�ngten Bucket. Ein erneutes Aufrufen der Funktion edit() w�rde also einen Zeiger auf den gleiche Speicherbereich liefern.
          */
-        Chunk* append ();
+        Chunk* append();
 
         /**
          * @author Julian Hollender
          *
          * Die Funktion nimmt alle bisher durchgef�hrten �nderungen des Iterators zur�ck und setzt anschlie�end den Iterator in seine Ausgangsposition zur�ck, wodurch beim n�chsten Aufruf der Funktion next() wieder der Bucket an erster Position im Bucket-Stream zur�ckgegeben wird.
          */
-        void undo ();
+        void undo();
 
 #ifdef DEBUG
         static void printBucket (Bucket *bucket);
@@ -214,11 +214,11 @@ public:
          */
         std::stack<Bucket*> log;
 
-        BucketIterator (BucketStream *stream, version_t *version);
-        BucketIterator (const BucketIterator &copy);
-        virtual ~BucketIterator ();
+        BucketIterator(BucketStream *stream, version_t *version);
+        BucketIterator(const BucketIterator &copy);
+        virtual ~BucketIterator();
 
-        BucketIterator& operator= (const BucketIterator& copy);
+        BucketIterator& operator=(const BucketIterator& copy);
 
         friend class ColumnManager;
     };
@@ -230,7 +230,7 @@ public:
      *
      * Die Funktion liefert einen Zeiger auf das einzig existierende Objekt der Klasse. Falls noch kein Objekt der Klasse existiert, wird ein Objekt erzeugt und anschlie�end ein Zeiger auf das Objekt zur�ckgegeben.
      */
-    static BucketManager* getInstance ();
+    static BucketManager* getInstance();
 
     /**
      * @author Julian Hollender
@@ -241,7 +241,7 @@ public:
      *
      * Die Funktion erzeugt ein Objekt der Klasse BucketIterator zum Bearbeiten eines BucketStreams mit der Identifikationsnummer id. Hierbei sind nur die aktuellsten Buckets, deren Versionsnummer kleiner oder gleich dem Inhalt des Zeigers version ist, sichtbar. Bei jeder �nderung am Datenbestand durch den erzeugten BucketIterator, wird der Zeiger version in die Verwaltungsstrukturen des BucketStreams kopiert. Daher darf der Speicher, auf den der Zeiger version zeigt, nach �nderungen an der Datenbasis nicht mehr freigegeben werden. Falls ein BucketStream mit der �bergebenen Identifikationsnummer bisher nicht existiert, wird ein leerer BucketStream angelegt. Es ist darauf zu achten, dass zu einem festen Zeitpunkt maximal einen Iterator der �nderung durchgef�hrt hat oder �nderungen durchf�hren wird pro BucketStream gibt.
      */
-    BucketIterator* openStream (id_t id, version_t *version);
+    BucketIterator* openStream(id_t id, version_t *version);
 
 #ifdef DEBUG
     void printDebugInformation ();
@@ -250,13 +250,13 @@ public:
 private:
     static BucketManager *instance;
 
-    static void destroyInstance ();
+    static void destroyInstance();
 
     std::map<id_t, BucketStream> streams;
 
-    BucketManager ();
-    BucketManager (const BucketManager &copy);
-    virtual ~BucketManager ();
+    BucketManager();
+    BucketManager(const BucketManager &copy);
+    virtual ~BucketManager();
 };
 
 #endif

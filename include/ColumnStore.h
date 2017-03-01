@@ -85,7 +85,6 @@
 /***********************************************************/
 
 // Fast-Forward Declarations
-
 // column_storage
 class BucketManager;
 class ColumnManager;
@@ -142,7 +141,7 @@ namespace v2 {
 
     template<size_t alignment, typename T>
     T*
-    align_to (T * const pT) {
+    align_to(T * const pT) {
         size_t tmp = reinterpret_cast<size_t>(pT);
         return pT + (alignment - (tmp & (alignment - 1)));
     }

@@ -37,11 +37,8 @@ namespace v2 {
                 template<typename H1, typename T1, typename H2, typename T2>
                 struct Matchjoin {
 
-                    BAT<typename H1::v2_select_t, typename T2::v2_select_t>* operator() (
-                        BAT<H1, T1> *arg1,
-                        BAT<H2, T2> *arg2
-                        ) {
-                        auto result = skeletonJoin<typename H1::v2_select_t, typename T2::v2_select_t > (arg1, arg2);
+                    BAT<typename H1::v2_select_t, typename T2::v2_select_t>* operator()(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2) {
+                        auto result = skeletonJoin<typename H1::v2_select_t, typename T2::v2_select_t>(arg1, arg2);
                         result->reserve(arg1->size() < arg2->size() ? arg1->size() : arg2->size());
                         auto iter1 = arg1->begin();
                         auto iter2 = arg2->begin();
@@ -65,13 +62,10 @@ namespace v2 {
                 };
 
                 template<typename H1, typename T2>
-                struct Matchjoin <H1, v2_void_t, v2_void_t, T2> {
+                struct Matchjoin<H1, v2_void_t, v2_void_t, T2> {
 
-                    BAT<typename H1::v2_select_t, typename T2::v2_select_t>* operator() (
-                        BAT<H1, v2_void_t> *arg1,
-                        BAT<v2_void_t, T2> *arg2
-                        ) {
-                        auto result = skeletonJoin<typename H1::v2_select_t, typename T2::v2_select_t > (arg1, arg2);
+                    BAT<typename H1::v2_select_t, typename T2::v2_select_t>* operator()(BAT<H1, v2_void_t> *arg1, BAT<v2_void_t, T2> *arg2) {
+                        auto result = skeletonJoin<typename H1::v2_select_t, typename T2::v2_select_t>(arg1, arg2);
                         result->reserve(arg1->size() < arg2->size() ? arg1->size() : arg2->size());
                         auto iter1 = arg1->begin();
                         auto iter2 = arg2->begin();
@@ -96,10 +90,7 @@ namespace v2 {
 
             template<typename H1, typename T1, typename H2, typename T2>
             BAT<typename H1::v2_select_t, typename T2::v2_select_t>*
-            matchjoin (
-                       BAT<H1, T1> *arg1,
-                       BAT<H2, T2> *arg2
-                       ) {
+            matchjoin(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2) {
                 auto impl = Private::Matchjoin<H1, T1, H2, T2>();
                 return impl(arg1, arg2);
             }

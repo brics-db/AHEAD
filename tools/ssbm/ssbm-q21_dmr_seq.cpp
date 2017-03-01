@@ -21,22 +21,21 @@
 
 #include "ssbm.hpp"
 
-int
-main (int argc, char** argv) {
+int main(int argc, char** argv) {
     const size_t MODULARITY = 2;
 
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 DMR Sequential\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 DMR Sequential\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    SSBM_LOAD("date", "lineorder", "part", "supplier",
-        "SSBM Q2.1:\n"                               \
-        "select sum(lo_revenue), d_year, p_brand\n"  \
-        "  from lineorder, part, supplier, date\n"   \
-        "  where lo_orderdate = d_datekey\n"         \
-        "    and lo_partkey = p_partkey\n"           \
-        "    and lo_suppkey = s_suppkey\n"           \
-        "    and p_category = 'MFGR#12'\n"           \
-        "    and s_region = 'AMERICA'\n"             \
-        "  group by d_year, p_brand;");
+    SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.1:\n"
+            "select sum(lo_revenue), d_year, p_brand\n"
+            "  from lineorder, part, supplier, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and lo_partkey = p_partkey\n"
+            "    and lo_suppkey = s_suppkey\n"
+            "    and p_category = 'MFGR#12'\n"
+            "    and s_region = 'AMERICA'\n"
+            "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDDcb, new int_colbat_t("date", "datekey"));
@@ -106,10 +105,7 @@ main (int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_shortint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> result_tuple_t;
-        result_tuple_t results[MODULARITY] = {
-            {nullptr, nullptr, nullptr, nullptr, nullptr},
-            {nullptr, nullptr, nullptr, nullptr, nullptr}
-        };
+        result_tuple_t results[MODULARITY] = { {nullptr, nullptr, nullptr, nullptr, nullptr}, {nullptr, nullptr, nullptr, nullptr, nullptr}};
 
         for (size_t k = 0; k < MODULARITY; ++k) {
             // s_region = 'AMERICA'

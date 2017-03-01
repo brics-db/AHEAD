@@ -37,8 +37,7 @@ const size_t NUM_RUNS = 10;
 string emptyString;
 
 template<typename Tail>
-void
-runTable (const char* strTable, const char* strTableAN, const char* strColumn) {
+void runTable(const char* strTable, const char* strTableAN, const char* strColumn) {
     typedef typename TypeMap<Tail>::v2_base_t v2_base_t;
     typedef typename TypeMap<Tail>::v2_encoded_t v2_encoded_t;
 
@@ -49,9 +48,11 @@ runTable (const char* strTable, const char* strTableAN, const char* strColumn) {
 
     cout << "\n#runTable(" << strTable << '.' << strColumn << ")";
 
-    cout << "\nname\t" << setw(CONFIG.LEN_TIMES) << "time [ns]" << '\t' << setw(CONFIG.LEN_SIZES) << "size [#]" << '\t' << setw(CONFIG.LEN_SIZES) << "consum [B]" << '\t' << setw(CONFIG.LEN_TYPES) << "type head" << '\t' << setw(CONFIG.LEN_TYPES) << "type tail";
+    cout << "\nname\t" << setw(CONFIG.LEN_TIMES) << "time [ns]" << '\t' << setw(CONFIG.LEN_SIZES) << "size [#]" << '\t' << setw(CONFIG.LEN_SIZES) << "consum [B]" << '\t' << setw(CONFIG.LEN_TYPES)
+            << "type head" << '\t' << setw(CONFIG.LEN_TYPES) << "type tail";
     for (size_t i = 0; i < x; ++i) {
-        cout << "\nop" << setw(2) << i << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[i]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[i] << "\t" << setw(CONFIG.LEN_SIZES) << batConsumptions[i] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
+        cout << "\nop" << setw(2) << i << "\t" << setw(CONFIG.LEN_TIMES) << hrc_duration(opTimes[i]) << "\t" << setw(CONFIG.LEN_SIZES) << batSizes[i] << "\t" << setw(CONFIG.LEN_SIZES)
+                << batConsumptions[i] << "\t" << setw(CONFIG.LEN_TYPES) << headTypes[i].pretty_name() << "\t" << setw(CONFIG.LEN_TYPES) << (hasTwoTypes[i] ? tailTypes[i].pretty_name() : emptyString);
     }
     cout << "\nnum\tcopy-" << TypeMap<v2_encoded_t>::TYPENAME << "\tcheck\tdecode\tcheck+decode\tcopy-" << TypeMap<v2_base_t>::TYPENAME << endl;
 
@@ -79,15 +80,15 @@ runTable (const char* strTable, const char* strTableAN, const char* strColumn) {
 
         sw1.start();
         auto tuple3 = v2::bat::ops::checkAndDecodeAN(batTcAN);
-        if (get<1>(tuple3))
+        if (get < 1 > (tuple3))
             delete get<1>(tuple3);
-        if (get<2>(tuple3))
+        if (get < 2 > (tuple3))
             delete get<2>(tuple3);
         sw1.stop();
         cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << flush;
 
         sw1.start();
-        auto result4 = v2::bat::ops::copy(get<0>(tuple3));
+        auto result4 = v2::bat::ops::copy(get < 0 > (tuple3));
         sw1.stop();
         cout << '\t' << setw(CONFIG.LEN_TIMES) << sw1.duration() << endl;
         delete result4;
@@ -99,8 +100,7 @@ runTable (const char* strTable, const char* strTableAN, const char* strColumn) {
 }
 
 template<typename Tail>
-void
-runTable2 (const char* strTable, const char* strTableAN, const char* strColumn) {
+void runTable2(const char* strTable, const char* strTableAN, const char* strColumn) {
     typedef typename TypeMap<Tail>::v2_base_t v2_base_t;
     typedef typename TypeMap<Tail>::v2_encoded_t v2_encoded_t;
 
@@ -172,8 +172,7 @@ runTable2 (const char* strTable, const char* strTableAN, const char* strColumn) 
     delete batBc;
 }
 
-int
-main (int argc, char** argv) {
+int main(int argc, char** argv) {
     CONFIG.init(argc, argv);
 
     cout << "lineorder_size\n==============" << endl;

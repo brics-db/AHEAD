@@ -32,7 +32,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 /***
  * @author Benjamin Schlegel
  * 
@@ -59,50 +58,47 @@ public:
     using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
 
     /** default constructor */
-    TempBAT () : BAT<Head, Tail>() {
+    TempBAT()
+            : BAT<Head, Tail>() {
     }
 
-    TempBAT (coldesc_head_t head, coldesc_tail_t tail) : BAT<Head, Tail>(std::move (head), std::move (tail)) {
+    TempBAT(coldesc_head_t head, coldesc_tail_t tail)
+            : BAT<Head, Tail>(std::move(head), std::move(tail)) {
     }
 
-    virtual
-    ~TempBAT () {
+    virtual ~TempBAT() {
     }
 
-    virtual void
-    reserve (size_t n) {
+    virtual void reserve(size_t n) {
         this->head.container->reserve(n);
         this->tail.container->reserve(n);
     }
 
     /** returns an iterator pointing at the start of the column */
     virtual TempBATIterator<Head, Tail> *
-    begin () override {
+    begin() override {
         return new TempBATIterator<Head, Tail>(this->head, this->tail);
     }
 
     /** append an item */
-    virtual void
-    append (std::pair<head_t, tail_t>& p) override {
+    virtual void append(std::pair<head_t, tail_t>& p) override {
         this->head.container->push_back(p.first);
         this->tail.container->push_back(p.second);
     }
 
     /** append an item */
-    virtual void
-    append (std::pair<head_t, tail_t>&& p) override {
+    virtual void append(std::pair<head_t, tail_t>&& p) override {
         this->head.container->push_back(p.first);
         this->tail.container->push_back(p.second);
     }
 
-    virtual void
-    overwrite_size (size_t newSize) {
+    virtual void overwrite_size(size_t newSize) {
 #ifdef __GNUC__
-        typedef std::_Vector_base<head_t, std::allocator < head_t >> BaseH;
-        BaseH & base = (BaseH &) * this->head.container.get();
+        typedef std::_Vector_base<head_t, std::allocator<head_t>> BaseH;
+        BaseH & base = (BaseH &) *this->head.container.get();
         base._M_impl._M_finish = base._M_impl._M_start + newSize;
-        typedef std::_Vector_base<tail_t, std::allocator < tail_t >> BaseT;
-        BaseT & base2 = (BaseT &) * this->tail.container.get();
+        typedef std::_Vector_base<tail_t, std::allocator<tail_t>> BaseT;
+        BaseT & base2 = (BaseT &) *this->tail.container.get();
         base2._M_impl._M_finish = base2._M_impl._M_start + newSize;
 #else
 #error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
@@ -110,37 +106,34 @@ public:
     }
 
     virtual BAT<Tail, Head>*
-    reverse () override {
+    reverse() override {
         return new TempBAT<Tail, Head>(this->tail, this->head);
     }
 
     virtual BAT<Head, Head>*
-    mirror_head () override {
+    mirror_head() override {
         return new TempBAT<Head, Head>(this->head, this->head);
     }
 
     virtual BAT<Tail, Tail>*
-    mirror_tail () override {
+    mirror_tail() override {
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned
-    size () override {
+    virtual unsigned size() override {
         return this->head.container->size();
     }
 
-    virtual size_t
-    consumption () override {
-        return size() * (sizeof (head_t) + sizeof (tail_t));
+    virtual size_t consumption() override {
+        return size() * (sizeof(head_t) + sizeof(tail_t));
     }
 
-    virtual size_t
-    consumptionProjected () override {
+    virtual size_t consumptionProjected() override {
         size_t szHead = BITS_SIZEOF(typename TypeMap<Head>::v2_base_t::type_t);
         if (std::is_base_of<v2_anencoded_t, Head>::value) {
             szHead += BITS_SIZEOF(this->head.metaData.AN_A) - BITS_CLZ(this->head.metaData.AN_A);
         }
-        size_t szTail = sizeof (typename TypeMap<Tail>::v2_base_t::type_t) * BITS_PER_BYTE;
+        size_t szTail = sizeof(typename TypeMap<Tail>::v2_base_t::type_t) * BITS_PER_BYTE;
         if (std::is_base_of<v2_anencoded_t, Tail>::value) {
             szTail += BITS_SIZEOF(this->tail.metaData.AN_A) - BITS_CLZ(this->tail.metaData.AN_A);
         }
@@ -163,74 +156,69 @@ public:
     oid_t count;
 
     /** default constructor */
-    TempBAT () : BAT<v2_void_t, v2_void_t>(), count (0) {
+    TempBAT()
+            : BAT<v2_void_t, v2_void_t>(), count(0) {
     }
 
-    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<Head, Tail>(head, tail), count (0) {
+    TempBAT(coldesc_head_t& head, coldesc_tail_t& tail)
+            : BAT<Head, Tail>(head, tail), count(0) {
     }
 
-    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<Head, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)), count (0) {
+    TempBAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
+            : BAT<Head, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)), count(0) {
     }
 
-    virtual
-    ~TempBAT () {
+    virtual ~TempBAT() {
     }
 
-    virtual void
-    reserve (size_t n) {
-        (void)n;
+    virtual void reserve(size_t n) {
+        (void) n;
     }
 
     /** returns an iterator pointing at the start of the column */
     virtual TempBATIterator<Head, Tail> *
-    begin () override {
+    begin() override {
         return new TempBATIterator<Head, Tail>(this->head, this->tail, count);
     }
 
     /** append an item */
-    virtual void
-    append (__attribute__ ((unused)) std::pair<head_t, tail_t>& p) override {
+    virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>& p) override {
         ++count;
     }
 
     /** append an item */
-    virtual void
-    append (__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) override {
+    virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) override {
         ++count;
     }
 
-    virtual void
-    overwrite_size (size_t newSize) {
+    virtual void overwrite_size(size_t newSize) {
         count = newSize;
     }
 
     virtual BAT<Tail, Head>*
-    reverse () override {
+    reverse() override {
         return new TempBAT<Tail, Head>(this->tail, this->head);
     }
 
     virtual BAT<Head, Head>*
-    mirror_head () override {
+    mirror_head() override {
         return new TempBAT<Head, Head>(this->head, this->head);
     }
 
     virtual BAT<Tail, Tail>*
-    mirror_tail () override {
+    mirror_tail() override {
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned
-    size () override {
+    virtual unsigned size() override {
         return count;
     }
 
-    virtual size_t
-    consumption () override {
+    virtual size_t consumption() override {
         return 0;
     }
 
-    virtual size_t
-    consumptionProjected () override {
+    virtual size_t consumptionProjected() override {
         return 0;
     }
 };
@@ -248,59 +236,54 @@ public:
     using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
 
     /** default constructor */
-    TempBAT () {
+    TempBAT() {
     }
 
-    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<Head, v2_void_t>(head, tail) {
+    TempBAT(coldesc_head_t& head, coldesc_tail_t& tail)
+            : BAT<Head, v2_void_t>(head, tail) {
     }
 
-    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<Head, v2_void_t>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
+    TempBAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
+            : BAT<Head, v2_void_t>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
     }
 
-    virtual
-    ~TempBAT () {
+    virtual ~TempBAT() {
     }
 
-    virtual void
-    reserve (size_t n) {
+    virtual void reserve(size_t n) {
         this->head.container->reserve(n);
     }
 
     /** returns an iterator pointing at the start of the column */
     virtual TempBATIterator<Head, v2_void_t> *
-    begin () override {
+    begin() override {
         return new TempBATIterator<Head, v2_void_t>(this->head, this->tail);
     }
 
     /** append an item */
-    virtual void
-    append (std::pair<head_t, tail_t>& p) override {
+    virtual void append(std::pair<head_t, tail_t>& p) override {
         if (this->head.container)
             this->head.container->push_back(p.first);
     }
 
     /** append an item */
-    virtual void
-    append (std::pair<head_t, tail_t>&& p) override {
+    virtual void append(std::pair<head_t, tail_t>&& p) override {
         if (this->head.container)
             this->head.container->push_back(std::move(p.first));
     }
 
-    virtual void
-    append (head_t& h) override {
+    virtual void append(head_t& h) override {
         this->head.container->push_back(h);
     }
 
-    virtual void
-    append (head_t&& h) override {
+    virtual void append(head_t&& h) override {
         this->head.container->push_back(std::move(h));
     }
 
-    virtual void
-    overwrite_size (size_t newSize) {
+    virtual void overwrite_size(size_t newSize) {
 #ifdef __GNUC__
-        typedef std::_Vector_base<head_t, std::allocator < head_t >> BaseH;
-        BaseH & base = (BaseH &) * this->head.container.get();
+        typedef std::_Vector_base<head_t, std::allocator<head_t>> BaseH;
+        BaseH & base = (BaseH &) *this->head.container.get();
         base._M_impl._M_finish = base._M_impl._M_start + newSize;
 #else
 #error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
@@ -308,32 +291,29 @@ public:
     }
 
     virtual BAT<Tail, Head>*
-    reverse () override {
+    reverse() override {
         return new TempBAT<Tail, Head>(this->tail, this->head);
     }
 
     virtual BAT<Head, Head>*
-    mirror_head () override {
+    mirror_head() override {
         return new TempBAT<Head, Head>(this->head, this->head);
     }
 
     virtual BAT<Tail, Tail>*
-    mirror_tail () override {
+    mirror_tail() override {
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned
-    size () override {
+    virtual unsigned size() override {
         return this->head.container->size();
     }
 
-    virtual size_t
-    consumption () override {
-        return size() * sizeof (head_t);
+    virtual size_t consumption() override {
+        return size() * sizeof(head_t);
     }
 
-    virtual size_t
-    consumptionProjected () override {
+    virtual size_t consumptionProjected() override {
         size_t szHead = BITS_SIZEOF(typename TypeMap<Head>::v2_base_t::type_t);
         if (std::is_base_of<v2_anencoded_t, Head>::value) {
             szHead += BITS_SIZEOF(this->head.metaData.AN_A) - BITS_CLZ(this->head.metaData.AN_A);
@@ -355,57 +335,53 @@ public:
     using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
 
     /** default constructor */
-    TempBAT () : BAT<v2_void_t, Tail>() {
+    TempBAT()
+            : BAT<v2_void_t, Tail>() {
     }
 
-    TempBAT (coldesc_head_t& head, coldesc_tail_t& tail) : BAT<v2_void_t, Tail>(head, tail) {
+    TempBAT(coldesc_head_t& head, coldesc_tail_t& tail)
+            : BAT<v2_void_t, Tail>(head, tail) {
     }
 
-    TempBAT (coldesc_head_t&& head, coldesc_tail_t&& tail) : BAT<v2_void_t, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
+    TempBAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
+            : BAT<v2_void_t, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
     }
 
-    virtual
-    ~TempBAT () {
+    virtual ~TempBAT() {
     }
 
-    virtual void
-    reserve (size_t n) {
+    virtual void reserve(size_t n) {
         this->tail.container->reserve(n);
     }
 
     /** returns an iterator pointing at the start of the column */
     virtual TempBATIterator<v2_void_t, Tail> *
-    begin () override {
+    begin() override {
         return new TempBATIterator<v2_void_t, Tail>(this->head, this->tail);
     }
 
     /** append an item */
-    virtual void
-    append (std::pair<head_t, tail_t>& p) override {
+    virtual void append(std::pair<head_t, tail_t>& p) override {
         this->tail.container->push_back(p.second);
     }
 
     /** append an item */
-    virtual void
-    append (std::pair<head_t, tail_t>&& p) override {
+    virtual void append(std::pair<head_t, tail_t>&& p) override {
         this->tail.container->push_back(std::move(p.second));
     }
 
-    virtual void
-    append (tail_t& t) {
+    virtual void append(tail_t& t) {
         this->tail.container->push_back(t);
     }
 
-    virtual void
-    append (tail_t&& t) {
+    virtual void append(tail_t&& t) {
         this->tail.container->push_back(std::move(t));
     }
 
-    virtual void
-    overwrite_size (size_t newSize) {
+    virtual void overwrite_size(size_t newSize) {
 #ifdef __GNUC__
-        typedef std::_Vector_base<tail_t, std::allocator < tail_t >> BaseT;
-        BaseT & base2 = (BaseT &) * this->tail.container.get();
+        typedef std::_Vector_base<tail_t, std::allocator<tail_t>> BaseT;
+        BaseT & base2 = (BaseT &) *this->tail.container.get();
         base2._M_impl._M_finish = base2._M_impl._M_start + newSize;
 #else
 #error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
@@ -413,32 +389,29 @@ public:
     }
 
     virtual BAT<Tail, Head>*
-    reverse () override {
+    reverse() override {
         return new TempBAT<Tail, v2_void_t>(this->tail, this->head);
     }
 
     virtual BAT<Head, Head>*
-    mirror_head () override {
+    mirror_head() override {
         return new TempBAT<v2_void_t, v2_void_t>(this->head, this->head);
     }
 
     virtual BAT<Tail, Tail>*
-    mirror_tail () override {
+    mirror_tail() override {
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned
-    size () override {
+    virtual unsigned size() override {
         return this->tail.container->size();
     }
 
-    virtual size_t
-    consumption () override {
-        return size() * sizeof (tail_t);
+    virtual size_t consumption() override {
+        return size() * sizeof(tail_t);
     }
 
-    virtual size_t
-    consumptionProjected () override {
+    virtual size_t consumptionProjected() override {
         size_t szTail = BITS_SIZEOF(typename TypeMap<Tail>::v2_base_t::type_t);
         if (std::is_base_of<v2_anencoded_t, Tail>::value) {
             szTail += BITS_SIZEOF(this->tail.metaData.AN_A) - BITS_CLZ(this->tail.metaData.AN_A);

@@ -21,18 +21,16 @@
 
 #include "ssbm.hpp"
 
-int
-main (int argc, char** argv) {
+int main(int argc, char** argv) {
     SSBM_REQUIRED_VARIABLES("SSBM Query 1.1 Normal\n=====================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
 
-    SSBM_LOAD("date", "lineorder",
-        "SSBM Q1.1:\n"                               \
-        "select sum(lo_revenue), d_year, p_brand\n"  \
-        "  from lineorder, part, supplier, date\n"   \
-        "  where lo_orderdate = d_datekey\n"         \
-        "    and d_year = 1993\n"                    \
-        "    and lo_discount between 1 and 3\n"      \
-        "    and lo_quantity < 25;");
+    SSBM_LOAD("date", "lineorder", "SSBM Q1.1:\n"
+            "select sum(lo_revenue), d_year, p_brand\n"
+            "  from lineorder, part, supplier, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and d_year = 1993\n"
+            "    and lo_discount between 1 and 3\n"
+            "    and lo_quantity < 25;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDYcb, new shortint_colbat_t("date", "year"));
@@ -63,11 +61,12 @@ main (int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, v2::bat::ops::select_SSE<std::less>(batLQ, 25)); // lo_quantity < 25
-        MEASURE_OP(bat2, v2::bat::ops::select_SSE(batLD, 1, 3)); // lo_discount between 1 and 3
+        MEASURE_OP(bat1, v2::bat::ops::select<std::less>(batLQ, 25)); // lo_quantity < 25
+        MEASURE_OP(bat2, v2::bat::ops::select(batLD, 1, 3)); // lo_discount between 1 and 3
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(bat4, v2::bat::ops::matchjoin(bat3, bat2)); // join selection
+        PRINT_BAT(printBat(bat4, "ssbm-q11_normal_bat4_seq.out"));
         delete bat3;
         delete bat2;
         auto bat5 = bat4->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
@@ -75,7 +74,7 @@ main (int argc, char** argv) {
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(bat7, v2::bat::ops::select_SSE<std::equal_to>(batDY, 1993)); // d_year = 1993
+        MEASURE_OP(bat7, v2::bat::ops::select<std::equal_to>(batDY, 1993)); // d_year = 1993
         auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete bat7;
         MEASURE_OP(bat9, v2::bat::ops::matchjoin(bat8, batDD)); // only those d_datekey where d_year...
@@ -96,7 +95,7 @@ main (int argc, char** argv) {
         delete bat4;
 
         // 4) result
-        MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(batD, batE, 0));
+        MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
         delete batD;
         delete batE;
         auto iter = batF->begin();

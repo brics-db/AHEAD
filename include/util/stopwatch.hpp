@@ -31,17 +31,17 @@ private:
     time_point startNS, stopNS;
     rep totalNS;
 
-    StopWatch (time_point startNS, time_point stopNS, rep totalNS);
+    StopWatch(time_point startNS, time_point stopNS, rep totalNS);
 
 public:
-    StopWatch ();
+    StopWatch();
 
-    void start ();
-    void resume ();
-    rep stop ();
-    rep duration ();
+    void start();
+    void resume();
+    rep stop();
+    rep duration();
 
-    friend StopWatch operator+ (StopWatch lhs, const StopWatch & rhs) {
+    friend StopWatch operator+(StopWatch lhs, const StopWatch & rhs) {
         return StopWatch(lhs.startNS, time_point(high_resolution_clock::duration(lhs.stopNS.time_since_epoch().count() + rhs.totalNS)), lhs.totalNS + rhs.totalNS);
     }
 };
@@ -50,11 +50,10 @@ typedef struct hrc_duration {
 
     StopWatch::rep dura;
 
-    hrc_duration (StopWatch::rep dura);
+    hrc_duration(StopWatch::rep dura);
 } hrc_duration;
 
-std::ostream& operator<< (std::ostream& stream, hrc_duration hrcd);
-std::ostream& operator<< (std::ostream& stream, StopWatch sw);
-
+std::ostream& operator<<(std::ostream& stream, hrc_duration hrcd);
+std::ostream& operator<<(std::ostream& stream, StopWatch sw);
 
 #endif // STOPWATCH_HPP__

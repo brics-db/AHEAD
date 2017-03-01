@@ -38,7 +38,7 @@ namespace v2 {
 
                 struct eqstr {
 
-                    bool operator() (str_t s1, str_t s2) const {
+                    bool operator()(str_t s1, str_t s2) const {
                         if (s1 == nullptr) {
                             return s2 == nullptr;
                         }
@@ -55,7 +55,7 @@ namespace v2 {
                  */
                 struct hashstr {
 
-                    size_t operator() (str_t const &s) const {
+                    size_t operator()(str_t const &s) const {
                         size_t len = std::strlen(s);
                         size_t hash(0), multiplier(1);
                         for (int i = len - 1; i >= 0; --i) {
@@ -70,7 +70,7 @@ namespace v2 {
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
             TempBAT<TargetHead, TargetTail>*
-            skeleton (BAT<Head, Tail>* arg) {
+            skeleton(BAT<Head, Tail>* arg) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
@@ -79,7 +79,7 @@ namespace v2 {
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
             TempBAT<TargetHead, TargetTail>*
-            skeletonHead (BAT<Head, Tail>* arg) {
+            skeletonHead(BAT<Head, Tail>* arg) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
@@ -88,7 +88,7 @@ namespace v2 {
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
             TempBAT<TargetHead, TargetTail>*
-            skeletonTail (BAT<Head, Tail>* arg) {
+            skeletonTail(BAT<Head, Tail>* arg) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
@@ -97,7 +97,7 @@ namespace v2 {
 
             template<typename TargetHead, typename TargetTail, typename Head1, typename Tail1, typename Head2, typename Tail2>
             TempBAT<TargetHead, TargetTail>*
-            skeletonJoin (BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2) {
+            skeletonJoin(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
@@ -112,7 +112,7 @@ namespace v2 {
                     typedef typename Head::v2_copy_t CHead;
                     typedef typename Tail::v2_copy_t CTail;
 
-                    TempBAT<CHead, CTail> * operator() (BAT<Head, Tail> * arg) {
+                    TempBAT<CHead, CTail> * operator()(BAT<Head, Tail> * arg) {
                         auto result = skeleton<CHead, CTail>(arg);
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
@@ -129,7 +129,7 @@ namespace v2 {
 
                     typedef typename Tail::v2_copy_t CTail;
 
-                    TempBAT<v2_void_t, CTail> * operator() (BAT<v2_void_t, Tail> * arg) {
+                    TempBAT<v2_void_t, CTail> * operator()(BAT<v2_void_t, Tail> * arg) {
                         auto result = skeleton<v2_void_t, CTail>(arg);
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
@@ -145,8 +145,8 @@ namespace v2 {
 
             template<typename Head, typename Tail>
             TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
-            copy (BAT<Head, Tail>* arg) {
-                return Private::copy0<typename Head::v2_copy_t, typename Tail::v2_copy_t > ()(arg);
+            copy(BAT<Head, Tail>* arg) {
+                return Private::copy0<typename Head::v2_copy_t, typename Tail::v2_copy_t>()(arg);
             }
         }
     }

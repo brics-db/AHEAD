@@ -22,18 +22,17 @@
 #include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
 
-int
-main (int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.2 Late Detection\n=============================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
+int main(int argc, char** argv) {
+    SSBM_REQUIRED_VARIABLES("SSBM Query 1.2 Late Detection\n=============================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
+            "N", "O", "P");
 
-    SSBM_LOAD("dateAN", "lineorderAN",
-        "SSBM Q1.2:\n"                                             \
-        "select sum(lo_extendedprice * lo_discount) as revenue\n"  \
-        "  from lineorder, date\n"                                 \
-        "  where lo_orderdate = d_datekey\n"                       \
-        "    and d_yearmonthnum = 199401\n"                        \
-        "    and lo_discount between 4 and 6\n"                    \
-        "    and lo_quantity between 26 and 35;");
+    SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.2:\n"
+            "select sum(lo_extendedprice * lo_discount) as revenue\n"
+            "  from lineorder, date\n"
+            "  where lo_orderdate = d_datekey\n"
+            "    and d_yearmonthnum = 199401\n"
+            "    and lo_discount between 4 and 6\n"
+            "    and lo_quantity between 26 and 35;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batDYcb, new resint_colbat_t("dateAN", "yearmonthnum"));
@@ -100,13 +99,11 @@ main (int argc, char** argv) {
         delete bat4;
 
         // 4) lazy decode and result
-        MEASURE_OP_TUPLE(tupleF, v2::bat::ops::checkAndDecodeAN(batD));
-        CLEAR_CHECKANDDECODE_AN(tupleF);
+        MEASURE_OP_TUPLE(tupleF, v2::bat::ops::checkAndDecodeAN(batD));CLEAR_CHECKANDDECODE_AN(tupleF);
         delete batD;
-        MEASURE_OP_TUPLE(tupleG, v2::bat::ops::checkAndDecodeAN(batE));
-        CLEAR_CHECKANDDECODE_AN(tupleG);
+        MEASURE_OP_TUPLE(tupleG, v2::bat::ops::checkAndDecodeAN(batE));CLEAR_CHECKANDDECODE_AN(tupleG);
         delete batE;
-        MEASURE_OP(batH, v2::bat::ops::aggregate_mul_sum_SSE<v2_bigint_t>(std::get<0>(tupleF), std::get<0>(tupleG)));
+        MEASURE_OP(batH, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleF), std::get<0>(tupleG)));
         delete std::get<0>(tupleF);
         delete std::get<0>(tupleG);
         auto iter = batH->begin();

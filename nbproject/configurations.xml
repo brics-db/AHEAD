@@ -126,7 +126,9 @@
       </flagsDictionary>
       <codeAssistance>
         <excludePattern>/build/
-/eval/</excludePattern>
+/eval/
+/lib/column_operators/SSE.cpp
+/lib/column_operators/createshufflemaskarrays</excludePattern>
       </codeAssistance>
       <makefileType>
         <makeTool>

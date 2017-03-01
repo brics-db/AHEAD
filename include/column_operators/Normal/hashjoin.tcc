@@ -36,23 +36,19 @@ namespace v2 {
 
             template<typename H1, typename T1, typename H2, typename T2>
             BAT<typename H1::v2_select_t, typename T2::v2_select_t>*
-            hashjoin (
-                      BAT<H1, T1> *arg1,
-                      BAT<H2, T2> *arg2,
-                      hash_side_t side = hash_side_t::right
-                      ) {
+            hashjoin(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, hash_side_t side = hash_side_t::right) {
                 typedef typename H1::type_t h1_t;
                 typedef typename T1::type_t t1_t;
                 typedef typename H2::type_t h2_t;
                 typedef typename T2::type_t t2_t;
-                auto result = skeletonJoin<typename H1::v2_select_t, typename T2::v2_select_t > (arg1, arg2);
+                auto result = skeletonJoin<typename H1::v2_select_t, typename T2::v2_select_t>(arg1, arg2);
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 if (iter1->hasNext() && iter2->hasNext()) {
                     typedef typename v2::larger_type<t1_t, h2_t>::type_t larger_t;
                     if (side == hash_side_t::left) {
                         const larger_t t1max = static_cast<larger_t>(std::numeric_limits<t1_t>::max());
-                        google::dense_hash_map<t1_t, std::vector < h1_t >> hashMap(arg1->size());
+                        google::dense_hash_map<t1_t, std::vector<h1_t>> hashMap(arg1->size());
                         hashMap.set_empty_key(T1::dhm_emptykey);
                         for (; iter1->hasNext(); ++*iter1) {
                             hashMap[iter1->tail()].push_back(iter1->head());

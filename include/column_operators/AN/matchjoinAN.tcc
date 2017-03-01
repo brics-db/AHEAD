@@ -52,7 +52,7 @@ namespace v2 {
                     typedef typename TypeMap<T>::v2_encoded_t::v2_select_t v2_select_t;
                 };
 
-                template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencode = false >
+                template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencode = false>
                 struct MatchjoinAN {
 
                     typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
@@ -71,15 +71,12 @@ namespace v2 {
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
                     typedef typename v2::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-                    operator() (
-                        BAT<Head1, Tail1>* arg1,
-                        BAT<Head2, Tail2>* arg2,
-                        h1enc_t AH1R = 1, // for reencode
-                        h1enc_t AH1InvR = 1, // for reencode
-                        t2enc_t AT2R = 1, // for reencode
-                        h1enc_t AT2InvR = 1 // for reencode
-                        ) {
+                    std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,
+                            BAT<Head2, Tail2>* arg2, h1enc_t AH1R = 1, // for reencode
+                            h1enc_t AH1InvR = 1, // for reencode
+                            t2enc_t AT2R = 1, // for reencode
+                            h1enc_t AT2InvR = 1 // for reencode
+                            ) {
                         const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
                         const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
@@ -99,7 +96,9 @@ namespace v2 {
                         if (reencode) {
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
-                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)), bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
+                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(
+                                    bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
+                                    bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
                         } else {
                             bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
                         }
@@ -174,15 +173,12 @@ namespace v2 {
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
                     typedef typename v2::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-                    operator() (
-                        BAT<Head1, v2_void_t>* arg1,
-                        BAT<v2_void_t, Tail2>* arg2,
-                        h1enc_t AH1R = 1, // for reencode
-                        h1enc_t AH1InvR = 1, // for reencode
-                        t2enc_t AT2R = 1, // for reencode
-                        h1enc_t AT2InvR = 1 // for reencode
-                        ) {
+                    std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, v2_void_t>* arg1,
+                            BAT<v2_void_t, Tail2>* arg2, h1enc_t AH1R = 1, // for reencode
+                            h1enc_t AH1InvR = 1, // for reencode
+                            t2enc_t AT2R = 1, // for reencode
+                            h1enc_t AT2InvR = 1 // for reencode
+                            ) {
                         const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
                         const h1enc_t AH1Inv = isHead1Encoded ? arg1->head.metaData.AN_Ainv : 1;
@@ -196,7 +192,9 @@ namespace v2 {
                         if (reencode) {
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
-                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)), bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
+                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(
+                                    bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
+                                    bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
                         } else {
                             bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
                         }
@@ -245,37 +243,23 @@ namespace v2 {
             }
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<TempBAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            matchjoinAN (
-                         BAT<H1, T1> *arg1,
-                         BAT<H2, T2> *arg2
-                         ) {
+            std::tuple<TempBAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> matchjoinAN(BAT<H1, T1> *arg1,
+                    BAT<H2, T2> *arg2) {
                 auto impl = MatchjoinAN::MatchjoinAN<H1, T1, H2, T2, false>();
                 return impl(arg1, arg2);
             }
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<TempBAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            matchjoinAN (
-                         BAT<H1, T1> *arg1,
-                         BAT<H2, T2> *arg2,
-                         typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc,
-                         typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc
-                         ) {
+            std::tuple<TempBAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> matchjoinAN(BAT<H1, T1> *arg1,
+                    BAT<H2, T2> *arg2, typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc) {
                 auto impl = MatchjoinAN::MatchjoinAN<H1, T1, H2, T2, true>();
                 return impl(arg1, arg2, AH1reenc, AH1InvReenc);
             }
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<TempBAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            matchjoinAN (
-                         BAT<H1, T1> *arg1,
-                         BAT<H2, T2> *arg2,
-                         typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc,
-                         typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc,
-                         typename TypeMap<T1>::v2_encoded_t::type_t AT2Reenc,
-                         typename TypeMap<T1>::v2_encoded_t::type_t AT2InvReenc
-                         ) {
+            std::tuple<TempBAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> matchjoinAN(BAT<H1, T1> *arg1,
+                    BAT<H2, T2> *arg2, typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc, typename TypeMap<T1>::v2_encoded_t::type_t AT2Reenc,
+                    typename TypeMap<T1>::v2_encoded_t::type_t AT2InvReenc) {
                 auto impl = MatchjoinAN::MatchjoinAN<H1, T1, H2, T2, true>();
                 return impl(arg1, arg2, AH1reenc, AH1InvReenc, AT2Reenc, AT2InvReenc);
             }

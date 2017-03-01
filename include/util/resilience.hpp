@@ -44,9 +44,11 @@ struct ANParameters {
     static constexpr const std::array<uint16_t, 16> Atiny = {1, 3, 7, 13, 29, 59, 115, 233, 233, 233, 233, 233, 233, 233, 233, 233}; //, 487, 857, 1939, 3813, 7463, 13963, 27247, 55831};
     static constexpr const std::array<restiny_t, 16> AtinyInv = {0x0001, 0xaaab, 0x6db7, 0x4ec5, 0xc235, 0xd8f3, 0xa4bb, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759};
     static constexpr const std::array<uint16_t, 16> Ashort = {1, 3, 7, 13, 29, 61, 119, 233, 463, 947, 1939, 3349, 7785, 14781, 28183, 63877};
-    static constexpr const std::array<resshort_t, 16> AshortInv = {0x00000001, 0xaaaaaaab, 0xb6db6db7, 0xc4ec4ec5, 0x4f72c235, 0xc10c9715, 0x46fdd947, 0x1fdcd759, 0xab67652f, 0xff30637b, 0xbc452e9b, 0x21b5da3d, 0x392f51d9, 0x1abdc995, 0xab2da9a7, 0xd142174d};
+    static constexpr const std::array<resshort_t, 16> AshortInv = {0x00000001, 0xaaaaaaab, 0xb6db6db7, 0xc4ec4ec5, 0x4f72c235, 0xc10c9715, 0x46fdd947, 0x1fdcd759, 0xab67652f, 0xff30637b, 0xbc452e9b,
+            0x21b5da3d, 0x392f51d9, 0x1abdc995, 0xab2da9a7, 0xd142174d};
     static constexpr const std::array<uint16_t, 16> Aint = {1, 3, 7, 15, 21, 55, 125, 225, 445, 881, 2029, 3565, 7947, 16041, 28691, 64311};
-    static constexpr const std::array<resint_t, 16> AintInv = {1, 0xAAAAAAAAAAAAAAAB, 0x6DB6DB6DB6DB6DB7, 0xEEEEEEEEEEEEEEEF, 0xCF3CF3CF3CF3CF3D, 0x6FB586FB586FB587, 0x1CAC083126E978D5, 0xFEDCBA987654321, 0x64194FF6CBA64195, 0xC87FDACE4F9E5D91, 0x49AEFF9F19DD6DE5, 0xBF4CC39BC11857E5, 0xFDD779BC079A34A3, 0xC94EE2C7649F4599, 0xBC4B7C5655ECDA1B, 0xAA86FFFEFB1FAA87};
+    static constexpr const std::array<resint_t, 16> AintInv = {1, 0xAAAAAAAAAAAAAAAB, 0x6DB6DB6DB6DB6DB7, 0xEEEEEEEEEEEEEEEF, 0xCF3CF3CF3CF3CF3D, 0x6FB586FB586FB587, 0x1CAC083126E978D5,
+            0xFEDCBA987654321, 0x64194FF6CBA64195, 0xC87FDACE4F9E5D91, 0x49AEFF9F19DD6DE5, 0xBF4CC39BC11857E5, 0xFDD779BC079A34A3, 0xC94EE2C7649F4599, 0xBC4B7C5655ECDA1B, 0xAA86FFFEFB1FAA87};
 };
 
 struct v2_anencoded_t {
@@ -338,9 +340,9 @@ struct ANParametersSelector0<V2Type, true> {
 
     typedef typename V2Type::type_t type_t;
 
-    static constexpr const type_t UNENC_MIN = std::numeric_limits<std::make_signed<type_t>>::min ();
-    static constexpr const type_t UNENC_MAX = std::numeric_limits<std::make_signed<type_t>>::max ();
-    static constexpr const type_t UNENC_MAX_U = std::numeric_limits<std::make_unsigned<type_t>>::max ();
+    static constexpr const type_t UNENC_MIN = std::numeric_limits<std::make_signed<type_t>>::min();
+    static constexpr const type_t UNENC_MAX = std::numeric_limits<std::make_signed<type_t>>::max();
+    static constexpr const type_t UNENC_MAX_U = std::numeric_limits<std::make_unsigned<type_t>>::max();
 
     static constexpr const std::array<uint16_t, 16> * As = nullptr;
     static constexpr const std::array<type_t, 16> * Ainvs = nullptr;
@@ -361,8 +363,7 @@ struct ANParametersSelector {
 };
 
 template<typename T>
-T
-ext_euclidean (T b0, size_t codewidth) {
+T ext_euclidean(T b0, size_t codewidth) {
     T a0(1);
     a0 <<= codewidth;
     T a[16], b[16], q[16], r[16], s[16], t[16]; // 16 values is enough for 16-bit A's
