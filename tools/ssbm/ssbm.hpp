@@ -261,9 +261,9 @@ PCM::ErrorCode pcmStatus = PCM::UnknownError;                                  \
 ///////////////
 #define PCM_PRINT(attr, proc, state1, state2, state3)                          \
 ;do {                                                                          \
-    std::cout << std::setw(CONFIG.LEN_SIZES) << attr << '\t';                  \
-    std::cout << std::setw(CONFIG.LEN_SIZES) << proc(state1, state2) << '\t';  \
-    std::cout << std::setw(CONFIG.LEN_SIZES) << proc(state2, state3) << '\n';  \
+    std::cout << std::setw(CONFIG.LEN_PCM) << attr << '\t';                    \
+    std::cout << std::setw(CONFIG.LEN_PCM) << proc(state1, state2) << '\t';    \
+    std::cout << std::setw(CONFIG.LEN_PCM) << proc(state2, state3) << '\n';    \
 } while (false)
 
 ///////////////////
@@ -275,9 +275,9 @@ PCM::ErrorCode pcmStatus = PCM::UnknownError;                                  \
     if (pcmStatus == PCM::Success) {                                                   \
         m->getAllCounterStates(sysstate2, sktstate2, cstate2);                         \
         std::cout << "PCM:\n";                                                         \
-        std::cout << std::setw(CONFIG.LEN_SIZES) << "Attribute" << '\t';               \
-        std::cout << std::setw(CONFIG.LEN_SIZES) << "init" << '\t';                    \
-        std::cout << std::setw(CONFIG.LEN_SIZES) << "query" << '\n';                   \
+        std::cout << std::setw(CONFIG.LEN_PCM) << "Attribute" << '\t';                 \
+        std::cout << std::setw(CONFIG.LEN_PCM) << "init" << '\t';                      \
+        std::cout << std::setw(CONFIG.LEN_PCM) << "query" << '\n';                     \
         PCM_PRINT("IPC", getIPC, sysstate1, sysstate2, sysstate3);                     \
         PCM_PRINT("MC Read", getBytesReadFromMC, sysstate1, sysstate2, sysstate3);     \
         PCM_PRINT("MC written", getBytesWrittenToMC, sysstate1, sysstate2, sysstate3); \
@@ -511,6 +511,7 @@ struct ssbmconf_t {
     size_t LEN_TIMES;
     size_t LEN_TYPES;
     size_t LEN_SIZES;
+    size_t LEN_PCM;
     std::string DB_PATH;
     bool VERBOSE;
     bool PRINT_RESULT;
@@ -520,14 +521,21 @@ private:
 
 public:
 
-    ssbmconf_t()
-            : NUM_RUNS(0), LEN_TIMES(0), LEN_TYPES(0), LEN_SIZES(0), DB_PATH(), VERBOSE(false), PRINT_RESULT(0),
-                    parser(
-                            {std::forward_as_tuple("numruns", alias_list_t {"--numruns", "-n"}, 15), std::forward_as_tuple("lentimes", alias_list_t {"--lentimes"}, 15), std::forward_as_tuple(
-                                    "lentypes", alias_list_t {"--lentypes"}, 14), std::forward_as_tuple("lensizes", alias_list_t {"--lensizes"}, 10)}, {std::forward_as_tuple("dbpath", alias_list_t {
-                                    "--dbpath", "-d"}, ".")}, {
+    ssbmconf_t () : NUM_RUNS (0), LEN_TIMES (0), LEN_TYPES (0), LEN_SIZES (0), LEN_PCM (0), DB_PATH (), VERBOSE (false), PRINT_RESULT (0), parser ({
+        std::forward_as_tuple("numruns", alias_list_t{"--numruns", "-n"}, 15),
+        std::forward_as_tuple("lentimes", alias_list_t{"--lentimes"}, 16),
+        std::forward_as_tuple("lentypes", alias_list_t{"--lentypes"}, 14),
+        std::forward_as_tuple("lensizes", alias_list_t{"--lensizes"}, 16),
+        std::forward_as_tuple("lenpcm", alias_list_t{"--lenpcm"}, 16)
+    },
+    {
+        std::forward_as_tuple("dbpath", alias_list_t{"--dbpath", "-d"}, ".")
+    },
+    {
 
-                            std::forward_as_tuple("verbose", alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple("printresult", alias_list_t {"--print-result", "-p"}, false)}) {
+        std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, false),
+        std::forward_as_tuple("printresult", alias_list_t{"--print-result", "-p"}, false)
+    }) {
 #ifdef DEBUG
         std::cout << "ssbmconf_t()" << std::endl;
 #endif
@@ -550,6 +558,7 @@ public:
         LEN_TIMES = parser.get_uint("lentimes");
         LEN_TYPES = parser.get_uint("lentypes");
         LEN_SIZES = parser.get_uint("lensizes");
+        LEN_PCM = parser.get_uint("lenpcm");
         DB_PATH = parser.get_str("dbpath");
         VERBOSE = parser.get_bool("verbose");
         PRINT_RESULT = parser.get_bool("printresult");
@@ -651,3 +660,4 @@ public:
 };
 
 #endif /* SSBM_HPP */
+
