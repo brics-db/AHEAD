@@ -99,8 +99,8 @@ ENDMACRO(enable_openmp)
 MACRO(add_ssbm arg_queries)
     STRING(REPLACE " " ";" QUERIES "${arg_queries}")
     FOREACH(Q ${QUERIES})
-        add_algorithm(${Q} "ssbm" ${Q})
-        TARGET_COMPILE_OPTIONS(${Q} PUBLIC "-fno-tree-vectorize")
+        add_algorithm(${Q} "ssbm" "${Q}_seq")
+        TARGET_COMPILE_OPTIONS("${Q}_seq" PUBLIC "-fno-tree-vectorize")
     ENDFOREACH(Q QUERIES)
 ENDMACRO(add_ssbm)
 
@@ -120,6 +120,7 @@ add_ssbm_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_dmr_mt ssbm-q11_early ss
 ##############
 FIND_PACKAGE(OpenMP)
 IF(OPENMP_FOUND)
-	enable_openmp("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
+	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q21_dmr_mt_seq")
 	enable_openmp("ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE ssbm-q21_dmr_mt_SSE")
 ENDIF(OPENMP_FOUND)
+
