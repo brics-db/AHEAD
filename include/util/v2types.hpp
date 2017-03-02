@@ -48,12 +48,14 @@ struct v2_larger_type {
 };
 
 template<typename A, typename B>
-struct v2_smaller_type {
+struct v2_smaller_type : public v2_larger_type<B, A> {
 
-    typedef typename v2_larger_type_helper<A, B, (sizeof(A) < sizeof(B))>::type_t type_t;
+    using type_t = typename v2_larger_type<B, A>::type_t;
 
-    constexpr static const bool isFirstSmaller = sizeof(A) < sizeof(B);
-    constexpr static const bool isSecondSmaller = sizeof(A) > sizeof(B);
+    // constexpr static const bool isFirstSmaller = sizeof(A) < sizeof(B);
+    // constexpr static const bool isSecondSmaller = sizeof(A) > sizeof(B);
+    constexpr static const bool isFirstSmaller = v2_larger_type<B, A>::isFirstLarger;
+    constexpr static const bool isSecondSmaller = v2_larger_type<B, A>::isSecondLarger;
 };
 
 /* META MACRO intended for generating type names */
@@ -119,6 +121,7 @@ enum type_t {
     type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
 };
 
+typedef void empty_t;
 typedef uint8_t tinyint_t;
 typedef uint16_t shortint_t;
 typedef uint32_t int_t;
@@ -134,7 +137,17 @@ typedef uint32_t version_t;
 // enforce real different types. The typedef's above result in type-clashes!
 
 struct v2_base_t {
+};
 
+struct v2_empty_t : public v2_base_t {
+
+    typedef empty_t type_t;
+    typedef v2_empty_t v2_unenc_t;
+    typedef v2_empty_t v2_copy_t;
+    typedef v2_empty_t v2_select_t;
+    typedef v2_empty_t v2_compare_t;
+
+    // we do not define dhm_emptykey and dhm_deletedkey to get compile-time errorsif we use this type unintendedly
 };
 
 struct v2_tinyint_t : public v2_base_t {

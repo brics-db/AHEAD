@@ -49,11 +49,16 @@ namespace v2 {
                     return _mm_set_epi8(v0 + 15, v0 + 14, v0 + 13, v0 + 12, v0 + 11, v0 + 10, v0 + 9, v0 + 8, v0 + 7, v0 + 6, v0 + 5, v0 + 4, v0 + 3, v0 + 2, v0 + 1, v0);
                 }
 
-                static inline __m128i min(__m128i & a, __m128i & b) {
+                static inline __m128i set_inc(uint8_t v0, uint16_t inc) {
+                    return _mm_set_epi8(v0 + 15 * inc, v0 + 14 * inc, v0 + 13 * inc, v0 + 12 * inc, v0 + 11 * inc, v0 + 10 * inc, v0 + 9 * inc, v0 + 8 * inc, v0 + 7 * inc, v0 + 6 * inc, v0 + 5 * inc,
+                            v0 + 4 * inc, v0 + 3 * inc, v0 + 2 * inc, v0 + inc, v0);
+                }
+
+                static inline __m128i min(__m128i a, __m128i b) {
                     return _mm_min_epu8(a, b);
                 }
 
-                static inline __m128i max(__m128i & a, __m128i & b) {
+                static inline __m128i max(__m128i a, __m128i b) {
                     return _mm_max_epu8(a, b);
                 }
 
@@ -61,21 +66,21 @@ namespace v2 {
                     return _mm_add_epi8(a, b);
                 }
 
-                static inline __m128i mullo(__m128i & a, __m128i & b) {
+                static inline __m128i mullo(__m128i a, __m128i b) {
                     auto mm1 = _mm_shuffle_epi8(_mm_mullo_epi16(_mm_cvtepi8_epi16(a), _mm_cvtepi8_epi16(b)), _mm_set_epi64x(0xFFFFFFFFFFFFFFFFull, 0x0D0C090805040100ull));
                     auto mm2 = _mm_shuffle_epi8(_mm_mullo_epi16(_mm_cvtepi8_epi16(_mm_srli_si128(a, 8)), _mm_cvtepi8_epi16(_mm_srli_si128(b, 8))),
                             _mm_set_epi64x(0x0D0C090805040100ull, 0xFFFFFFFFFFFFFFFFull));
                     return _mm_and_si128(mm1, mm2);
                 }
 
-                static inline uint8_t sum(__m128i & a) {
+                static inline uint8_t sum(__m128i a) {
                     auto mm = _mm_add_epi8(a, _mm_srli_si128(a, 8));
                     mm = _mm_add_epi8(mm, _mm_srli_si128(mm, 4));
                     mm = _mm_add_epi8(mm, _mm_srli_si128(mm, 2));
                     return static_cast<uint16_t>(_mm_extract_epi8(mm, 0));
                 }
 
-                static inline __m128i pack_right(__m128i & a, uint16_t mask) {
+                static inline __m128i pack_right(__m128i a, uint16_t mask) {
                     return _mm_shuffle_epi8(a, SHUFFLE_EPI8_TABLE[mask]);
                 }
 
@@ -99,11 +104,15 @@ namespace v2 {
                     return _mm_set_epi16(v0 + 7, v0 + 6, v0 + 5, v0 + 4, v0 + 3, v0 + 2, v0 + 1, v0);
                 }
 
-                static inline __m128i min(__m128i & a, __m128i & b) {
+                static inline __m128i set_inc(uint16_t v0, uint16_t inc) {
+                    return _mm_set_epi16(v0 + 7 * inc, v0 + 6 * inc, v0 + 5 * inc, v0 + 4 * inc, v0 + 3 * inc, v0 + 2 * inc, v0 + inc, v0);
+                }
+
+                static inline __m128i min(__m128i a, __m128i b) {
                     return _mm_min_epu16(a, b);
                 }
 
-                static inline __m128i max(__m128i & a, __m128i & b) {
+                static inline __m128i max(__m128i a, __m128i b) {
                     return _mm_max_epu16(a, b);
                 }
 
@@ -111,18 +120,18 @@ namespace v2 {
                     return _mm_add_epi16(a, b);
                 }
 
-                static inline __m128i mullo(__m128i & a, __m128i & b) {
+                static inline __m128i mullo(__m128i a, __m128i b) {
                     return _mm_mullo_epi16(a, b);
                 }
 
-                static inline uint16_t sum(__m128i & a) {
+                static inline uint16_t sum(__m128i a) {
                     auto mm = _mm_add_epi16(a, _mm_srli_si128(a, 8));
                     mm = _mm_add_epi16(mm, _mm_srli_si128(mm, 4));
                     mm = _mm_add_epi16(mm, _mm_srli_si128(mm, 2));
                     return static_cast<uint16_t>(_mm_extract_epi16(mm, 0));
                 }
 
-                static inline __m128i pack_right(__m128i & a, uint8_t mask) {
+                static inline __m128i pack_right(__m128i a, uint8_t mask) {
                     return _mm_shuffle_epi8(a, SHUFFLE_EPI16_TABLE[mask]);
                 }
 
@@ -146,11 +155,15 @@ namespace v2 {
                     return _mm_set_epi32(v0 + 3, v0 + 2, v0 + 1, v0);
                 }
 
-                static inline __m128i min(__m128i & a, __m128i & b) {
+                static inline __m128i set_inc(uint32_t v0, uint32_t inc) {
+                    return _mm_set_epi32(v0 + 3 * inc, v0 + 2 * inc, v0 + inc, v0);
+                }
+
+                static inline __m128i min(__m128i a, __m128i b) {
                     return _mm_min_epu32(a, b);
                 }
 
-                static inline __m128i max(__m128i & a, __m128i & b) {
+                static inline __m128i max(__m128i a, __m128i b) {
                     return _mm_max_epu32(a, b);
                 }
 
@@ -158,26 +171,26 @@ namespace v2 {
                     return _mm_add_epi32(a, b);
                 }
 
-                static inline __m128i mullo(__m128i & a, __m128i & b) {
+                static inline __m128i mullo(__m128i a, __m128i b) {
                     return _mm_mullo_epi32(a, b);
                 }
 
-                static inline __m128i geq(__m128i & a, __m128i & b) {
+                static inline __m128i geq(__m128i a, __m128i b) {
                     auto mm = max(a, b);
                     return _mm_cmpeq_epi32(a, mm);
                 }
 
-                static inline uint8_t geq_mask(__m128i & a, __m128i & b) {
+                static inline uint8_t geq_mask(__m128i a, __m128i b) {
                     return static_cast<uint8_t>(_mm_movemask_ps(_mm_castsi128_ps(geq(a, b))));
                 }
 
-                static inline uint32_t sum(__m128i & a) {
+                static inline uint32_t sum(__m128i a) {
                     auto mm = _mm_add_epi32(a, _mm_srli_si128(a, 8));
                     mm = _mm_add_epi32(mm, _mm_srli_si128(mm, 4));
                     return static_cast<uint32_t>(_mm_extract_epi32(mm, 0));
                 }
 
-                static inline __m128i pack_right(__m128i & a, uint8_t mask) {
+                static inline __m128i pack_right(__m128i a, uint8_t mask) {
                     return _mm_shuffle_epi8(a, SHUFFLE_EPI32_TABLE[mask]);
                 }
 
@@ -201,12 +214,16 @@ namespace v2 {
                     return _mm_set_epi64x(v0 + 1, v0);
                 }
 
-                static inline __m128i min(__m128i & a, __m128i & b) {
+                static inline __m128i set_inc(uint64_t v0, uint64_t inc) {
+                    return _mm_set_epi64x(v0 + inc, v0);
+                }
+
+                static inline __m128i min(__m128i a, __m128i b) {
                     return _mm_set_epi64x(std::min(static_cast<uint64_t>(_mm_extract_epi64(a, 1)), static_cast<uint64_t>(_mm_extract_epi64(b, 1))),
                             std::min(static_cast<uint64_t>(_mm_extract_epi64(a, 0)), static_cast<uint64_t>(_mm_extract_epi64(b, 0))));
                 }
 
-                static inline __m128i max(__m128i & a, __m128i & b) {
+                static inline __m128i max(__m128i a, __m128i b) {
                     return _mm_set_epi64x(std::max(static_cast<uint64_t>(_mm_extract_epi64(a, 1)), static_cast<uint64_t>(_mm_extract_epi64(b, 1))),
                             std::max(static_cast<uint64_t>(_mm_extract_epi64(a, 0)), static_cast<uint64_t>(_mm_extract_epi64(b, 0))));
                 }
@@ -215,24 +232,24 @@ namespace v2 {
                     return _mm_add_epi64(a, b);
                 }
 
-                static inline __m128i mullo(__m128i & a, __m128i & b) {
+                static inline __m128i mullo(__m128i a, __m128i b) {
                     return _mm_set_epi64x(_mm_extract_epi64(a, 1) * _mm_extract_epi64(b, 1), _mm_extract_epi64(a, 0) * _mm_extract_epi64(b, 0));
                 }
 
-                static inline __m128i geq(__m128i & a, __m128i & b) {
+                static inline __m128i geq(__m128i a, __m128i b) {
                     auto mm = max(a, b);
                     return _mm_cmpeq_epi64(a, mm);
                 }
 
-                static inline uint8_t geq_mask(__m128i & a, __m128i & b) {
+                static inline uint8_t geq_mask(__m128i a, __m128i b) {
                     return static_cast<uint8_t>(_mm_movemask_pd(_mm_castsi128_pd(geq(a, b))));
                 }
 
-                static inline uint64_t sum(__m128i & a) {
+                static inline uint64_t sum(__m128i a) {
                     return static_cast<uint64_t>(_mm_extract_epi64(a, 0)) + static_cast<uint64_t>(_mm_extract_epi64(a, 1));
                 }
 
-                static inline __m128i pack_right(__m128i & a, uint8_t mask) {
+                static inline __m128i pack_right(__m128i a, uint8_t mask) {
                     return _mm_shuffle_epi8(a, SHUFFLE_EPI64_TABLE[mask]);
                 }
 
@@ -247,7 +264,7 @@ namespace v2 {
             template<>
             struct v2_mm128_mul_add<uint16_t, uint16_t, uint16_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
+                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
                     incA = incB = 1;
                     return v2_mm128<uint16_t>::mullo(a, b);
                 }
@@ -256,7 +273,7 @@ namespace v2 {
             template<>
             struct v2_mm128_mul_add<uint16_t, uint16_t, uint32_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
+                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
                     incA = incB = 1;
                     auto mm = _mm_mullo_epi32(_mm_cvtepi16_epi32(a), _mm_cvtepi16_epi32(b));
                     mm = _mm_add_epi32(mm, _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(a, 8)), _mm_cvtepi16_epi32(_mm_srli_si128(b, 8))));
@@ -270,7 +287,7 @@ namespace v2 {
                 inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
                     incA = 1;
                     incB = 2;
-                    auto mm = _mm_mullo_epi32(_mm_cvtepi16_epi32(a), *((&b) + 1));
+                    auto mm = _mm_mullo_epi32(_mm_cvtepi16_epi32(a), _mm_lddqu_si128((&b) + 1));
                     mm = _mm_add_epi32(mm, _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(a, 8)), b));
                     return mm;
                 }
@@ -279,7 +296,7 @@ namespace v2 {
             template<>
             struct v2_mm128_mul_add<uint32_t, uint16_t, uint32_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
+                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
                     return v2_mm128_mul_add<uint16_t, uint32_t, uint32_t>()(b, a, incB, incA);
                 }
             };
@@ -290,7 +307,7 @@ namespace v2 {
                 inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
                     incA = 1;
                     incB = 2;
-                    auto mm = _mm_mul_epi32(_mm_cvtepi16_epi32(a), *((&b) + 1));
+                    auto mm = _mm_mul_epi32(_mm_cvtepi16_epi32(a), _mm_lddqu_si128((&b) + 1));
                     mm = _mm_add_epi64(mm, _mm_mul_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(a, 8)), b));
                     return mm;
                 }
@@ -299,7 +316,7 @@ namespace v2 {
             template<>
             struct v2_mm128_mul_add<uint32_t, uint16_t, uint64_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
+                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
                     return v2_mm128_mul_add<uint16_t, uint32_t, uint64_t>()(b, a, incB, incA);
                 }
             };
@@ -310,18 +327,13 @@ namespace v2 {
                 inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
                     incA = 1;
                     incB = 4;
-                    auto r0 = static_cast<uint64_t>(_mm_extract_epi16(a, 0)) * _mm_extract_epi64(b, 0);
-                    auto r1 = static_cast<uint64_t>(_mm_extract_epi16(a, 1)) * _mm_extract_epi64(b, 1);
-                    auto mm = _mm_lddqu_si128((&b) + 1);
-                    r0 += static_cast<uint64_t>(_mm_extract_epi16(a, 2)) * _mm_extract_epi64(mm, 0);
-                    r1 += static_cast<uint64_t>(_mm_extract_epi16(a, 3)) * _mm_extract_epi64(mm, 1);
-                    mm = _mm_lddqu_si128((&b) + 2);
-                    r0 += static_cast<uint64_t>(_mm_extract_epi16(a, 4)) * _mm_extract_epi64(mm, 0);
-                    r1 += static_cast<uint64_t>(_mm_extract_epi16(a, 5)) * _mm_extract_epi64(mm, 1);
-                    mm = _mm_lddqu_si128((&b) + 3);
-                    r0 += static_cast<uint64_t>(_mm_extract_epi16(a, 6)) * _mm_extract_epi64(mm, 0);
-                    r1 += static_cast<uint64_t>(_mm_extract_epi16(a, 7)) * _mm_extract_epi64(mm, 1);
-                    return _mm_set_epi64x(r1, r0);
+
+                    auto mm = _mm_mullo_epi64(_mm_cvtepu16_epi64(a), b);
+                    mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(a, 4)), _mm_lddqu_si128((&b) + 1)));
+                    mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(a, 8)), _mm_lddqu_si128((&b) + 2)));
+                    mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(a, 12)), _mm_lddqu_si128((&b) + 3)));
+
+                    return mm;
                 }
             };
 
@@ -340,24 +352,28 @@ namespace v2 {
                     incA = 4;
                     incB = 1;
 
-                    auto b32 = _mm_cvtepu8_epi32(b);
-                    auto mm = _mm_mul_epu32(a, b32);
-                    mm = _mm_add_epi32(mm, _mm_mul_epu32(_mm_srli_si128(a, 4), _mm_srli_si128(b32, 4)));
+                    /*
+                     auto mm = _mm_mullo_epi64(_mm_cvtepu32_epi64(a), _mm_cvtepu8_epi64(b));
+                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 2))));
+                     auto a1 = _mm_lddqu_si128((&a) + 1);
+                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(a1), _mm_cvtepu32_epi64(_mm_srli_si128(a, 4))));
+                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a1, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 6))));
+                     auto a2 = _mm_lddqu_si128((&a) + 2);
+                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(a2), _mm_cvtepu32_epi64(_mm_srli_si128(a, 8))));
+                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a2, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 10))));
+                     auto a3 = _mm_lddqu_si128((&a) + 3);
+                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(a3), _mm_cvtepu32_epi64(_mm_srli_si128(a, 12))));
+                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a3, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 14))));
+                     */
 
-                    auto a2 = _mm_lddqu_si128((&a) + 1);
-                    b32 = _mm_cvtepu8_epi32(_mm_srli_si128(b, 4));
-                    mm = _mm_add_epi32(mm, _mm_mul_epu32(a2, b32));
-                    mm = _mm_add_epi32(mm, _mm_mul_epu32(_mm_srli_si128(a2, 4), _mm_srli_si128(b32, 4)));
-
-                    a2 = _mm_lddqu_si128((&a) + 2);
-                    b32 = _mm_cvtepu8_epi32(_mm_srli_si128(b, 8));
-                    mm = _mm_add_epi32(mm, _mm_mul_epu32(a2, b32));
-                    mm = _mm_add_epi32(mm, _mm_mul_epu32(_mm_srli_si128(a2, 4), _mm_srli_si128(b32, 4)));
-
-                    a2 = _mm_lddqu_si128((&a) + 3);
-                    b32 = _mm_cvtepu8_epi32(_mm_srli_si128(b, 12));
-                    mm = _mm_add_epi32(mm, _mm_mul_epu32(a2, b32));
-                    mm = _mm_add_epi32(mm, _mm_mul_epu32(_mm_srli_si128(a2, 4), _mm_srli_si128(b32, 4)));
+                    auto pA = reinterpret_cast<uint32_t*>(&a);
+                    auto pB = reinterpret_cast<uint8_t*>(&b);
+                    uint64_t r1 = 0, r2 = 0;
+                    for (size_t i = 0; i < 16; i += 2) {
+                        r1 += static_cast<uint64_t>(pA[i]) * static_cast<uint64_t>(pB[i]);
+                        r2 += static_cast<uint64_t>(pA[i + 1]) * static_cast<uint64_t>(pB[i + 1]);
+                    }
+                    __m128i mm = _mm_set_epi64x(r1, r2);
 
                     return mm;
                 }
@@ -366,7 +382,7 @@ namespace v2 {
             template<>
             struct v2_mm128_mul_add<uint32_t, uint32_t, uint32_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
+                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
                     incA = incB = 1;
                     return v2_mm128<uint32_t>::mullo(a, b);
                 }
@@ -375,7 +391,7 @@ namespace v2 {
             template<>
             struct v2_mm128_mul_add<uint32_t, uint32_t, uint64_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
+                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
                     incA = incB = 1;
                     auto mm = _mm_mul_epu32(a, b);
                     return _mm_add_epi32(mm, _mm_mul_epu32(_mm_srli_si128(a, 8), _mm_srli_si128(b, 8)));
@@ -385,7 +401,7 @@ namespace v2 {
             template<>
             struct v2_mm128_mul_add<uint64_t, uint64_t, uint64_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
+                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
                     incA = incB = 1;
                     return v2_mm128<uint64_t>::mullo(a, b);
                 }
@@ -397,7 +413,7 @@ namespace v2 {
             template<size_t firstA, size_t firstB>
             struct v2_mm128_mullo<uint16_t, firstA, uint64_t, firstB, uint64_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b) {
+                inline __m128i operator()(__m128i a, __m128i b) {
                     auto r0 = static_cast<uint64_t>(_mm_extract_epi16(a, firstA)) * _mm_extract_epi64(b, firstB);
                     auto r1 = static_cast<uint64_t>(_mm_extract_epi16(a, firstA + 1)) * _mm_extract_epi64(b, firstB + 1);
                     return _mm_set_epi64x(r1, r0);
@@ -407,7 +423,7 @@ namespace v2 {
             template<size_t firstA, size_t firstB>
             struct v2_mm128_mullo<uint64_t, firstA, uint16_t, firstB, uint64_t> {
 
-                inline __m128i operator()(__m128i & a, __m128i & b) {
+                inline __m128i operator()(__m128i a, __m128i b) {
                     return v2_mm128_mullo<uint16_t, firstB, uint64_t, firstA, uint64_t>()(b, a);
                 }
             };

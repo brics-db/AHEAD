@@ -34,7 +34,7 @@ namespace v2 {
 
             namespace Private {
 
-                inline uint8_t v2_mm128_compact_mask_uint16_t(uint16_t & mask) {
+                inline uint8_t v2_mm128_compact_mask_uint16_t(uint16_t && mask) {
                     mask = mask & 0x5555;
                     mask = ((mask >> 1) | mask) & 0x3333;
                     mask = ((mask >> 2) | mask) & 0x0F0F;
@@ -42,18 +42,6 @@ namespace v2 {
                     return static_cast<uint8_t>(mask);
                 }
 
-                inline uint8_t v2_mm128_compact_mask_uint32_t(uint16_t & mask) {
-                    mask = mask & 0x1111;
-                    mask = ((mask >> 3) | mask) & 0x0303;
-                    mask = ((mask >> 6) | mask) & 0x000F;
-                    return static_cast<uint8_t>(mask);
-                }
-
-                inline uint8_t v2_mm128_compact_mask_uint64_t(uint16_t & mask) {
-                    mask = mask & 0x0101;
-                    mask = ((mask >> 7) | mask) & 0x0003;
-                    return static_cast<uint8_t>(mask);
-                }
             }
 
             template<typename T, template<typename > class Op>
@@ -62,159 +50,160 @@ namespace v2 {
             template<>
             struct v2_mm128_cmp<uint8_t, std::greater> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmplt_epi8(b, a);
                 }
 
-                static inline uint16_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return mask;
+                static inline uint16_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint8_t, std::greater_equal> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     auto mm = v2_mm128<uint8_t>::max(a, b);
                     return _mm_cmpeq_epi8(a, mm);
                 }
 
-                static inline uint16_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return mask;
+                static inline uint16_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint8_t, std::less> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmplt_epi8(a, b);
                 }
 
-                static inline uint16_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return mask;
+                static inline uint16_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint8_t, std::less_equal> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     auto mm = v2_mm128<uint8_t>::min(a, b);
                     return _mm_cmpeq_epi8(a, mm);
                 }
 
-                static inline uint16_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return mask;
+                static inline uint16_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint8_t, std::equal_to> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmpeq_epi8(a, b);
                 }
 
-                static inline uint16_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return mask;
+                static inline uint16_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint16_t, std::greater> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmplt_epi16(b, a);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return Private::v2_mm128_compact_mask_uint16_t(mask);
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint16_t, std::greater_equal> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     auto mm = v2_mm128<uint16_t>::max(a, b);
                     return _mm_cmpeq_epi16(a, mm);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return Private::v2_mm128_compact_mask_uint16_t(mask);
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint16_t, std::less> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmplt_epi16(a, b);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return Private::v2_mm128_compact_mask_uint16_t(mask);
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint16_t, std::less_equal> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     auto mm = v2_mm128<uint16_t>::min(a, b);
                     return _mm_cmpeq_epi16(a, mm);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return Private::v2_mm128_compact_mask_uint16_t(mask);
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint16_t, std::equal_to> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmpeq_epi16(a, b);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return Private::v2_mm128_compact_mask_uint16_t(mask);
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint32_t, std::equal_to> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmpeq_epi32(a, b);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return Private::v2_mm128_compact_mask_uint32_t(mask);
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint32_t, std::greater_equal> {
+
+                static inline __m128i cmp(__m128i a, __m128i b) {
+                    return _mm_cmpeq_epi32(a, v2_mm128<uint32_t>::max(a, b));
+                }
+
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
                 }
             };
 
             template<>
             struct v2_mm128_cmp<uint64_t, std::greater_equal> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     auto mm = v2_mm128<uint64_t>::max(a, b);
                     return _mm_cmpeq_epi64(a, mm);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
                     return static_cast<uint8_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };
@@ -222,13 +211,12 @@ namespace v2 {
             template<>
             struct v2_mm128_cmp<uint64_t, std::equal_to> {
 
-                static inline __m128i cmp(__m128i & a, __m128i & b) {
+                static inline __m128i cmp(__m128i a, __m128i b) {
                     return _mm_cmpeq_epi64(a, b);
                 }
 
-                static inline uint8_t cmp_mask(__m128i & a, __m128i & b) {
-                    auto mask = static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b)));
-                    return Private::v2_mm128_compact_mask_uint64_t(mask);
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };
         }

@@ -60,17 +60,19 @@ private:
     std::shared_ptr<container_head_t> cHead;
     std::shared_ptr<container_tail_t> cTail;
     iterator_head_t iterHead;
+    iterator_head_t iterHeadEnd;
     iterator_tail_t iterTail;
+    iterator_tail_t iterTailEnd;
 
 public:
     typedef TempBATIterator<Head, Tail> self_t;
 
     TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
-            : cHead(head.container), cTail(tail.container), iterHead(cHead->begin()), iterTail(cTail->begin()) {
+            : cHead(head.container), cTail(tail.container), iterHead(cHead->begin()), iterHeadEnd(cHead->end()), iterTail(cTail->begin()), iterTailEnd(cTail->end()) {
     }
 
     TempBATIterator(const TempBATIterator<Head, Tail> & iter)
-            : cHead(iter.cHead), cTail(iter.cTail), iterHead(iter.iterHead), iterTail(iter.iterTail) {
+            : cHead(iter.cHead), cTail(iter.cTail), iterHead(iter.iterHead), iterHeadEnd(iter.iterHeadEnd), iterTail(iter.iterTail), iterTailEnd(iter.iterTailEnd) {
     }
 
     virtual ~TempBATIterator() {
@@ -105,7 +107,7 @@ public:
     }
 
     virtual bool hasNext() override {
-        return iterHead != cHead->end();
+        return (iterHead != iterHeadEnd) & (iterTail != iterTailEnd);
     }
 
     virtual head_t head() override {
@@ -219,6 +221,7 @@ private:
 
     std::shared_ptr<container_head_t> cHead;
     iterator_head_t iterHead;
+    iterator_head_t iterHeadEnd;
     oid_t seqbase;
     oid_t position_tail;
 
@@ -226,11 +229,11 @@ public:
     typedef TempBATIterator<Head, v2_void_t> self_t;
 
     TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
-            : cHead(head.container), iterHead(cHead->begin()), seqbase(tail.metaData.seqbase), position_tail(seqbase) {
+            : cHead(head.container), iterHead(cHead->begin()), iterHeadEnd(cHead->end()), seqbase(tail.metaData.seqbase), position_tail(seqbase) {
     }
 
     TempBATIterator(const TempBATIterator<Head, v2_void_t> & iter)
-            : cHead(iter.cHead), iterHead(iter.iterHead), seqbase(iter.seqbase), position_tail(iter.position_tail) {
+            : cHead(iter.cHead), iterHead(iter.iterHead), iterHeadEnd(iter.iterHeadEnd), seqbase(iter.seqbase), position_tail(iter.position_tail) {
     }
 
     virtual ~TempBATIterator() {
@@ -264,7 +267,7 @@ public:
     }
 
     virtual bool hasNext() override {
-        return iterHead != cHead->end();
+        return iterHead != iterHeadEnd;
     }
 
     virtual head_t head() override {
@@ -297,6 +300,7 @@ private:
 
     std::shared_ptr<container_tail_t> cTail;
     iterator_tail_t iterTail;
+    iterator_tail_t iterTailEnd;
     oid_t seqbase;
     oid_t position_head;
 
@@ -304,11 +308,11 @@ public:
     typedef TempBATIterator<v2_void_t, Tail> self_t;
 
     TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
-            : cTail(tail.container), iterTail(cTail->begin()), seqbase(head.metaData.seqbase), position_head(seqbase) {
+            : cTail(tail.container), iterTail(cTail->begin()), iterTailEnd(cTail->end()), seqbase(head.metaData.seqbase), position_head(seqbase) {
     }
 
     TempBATIterator(const TempBATIterator<v2_void_t, Tail> & iter)
-            : cTail(iter.cTail), iterTail(iter.iterTail), seqbase(iter.seqbase), position_head(iter.position_head) {
+            : cTail(iter.cTail), iterTail(iter.iterTail), iterTailEnd(iter.iterTailEnd), seqbase(iter.seqbase), position_head(iter.position_head) {
     }
 
     virtual ~TempBATIterator() {
@@ -342,7 +346,7 @@ public:
     }
 
     virtual bool hasNext() override {
-        return iterTail != cTail->end();
+        return iterTail != iterTailEnd;
     }
 
     virtual head_t head() override {

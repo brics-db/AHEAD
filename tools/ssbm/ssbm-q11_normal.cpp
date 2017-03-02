@@ -66,7 +66,6 @@ int main(int argc, char** argv) {
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(bat4, v2::bat::ops::matchjoin(bat3, bat2)); // join selection
-        PRINT_BAT(printBat(bat4, "ssbm-q11_normal_bat4_seq.out"));
         delete bat3;
         delete bat2;
         auto bat5 = bat4->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)

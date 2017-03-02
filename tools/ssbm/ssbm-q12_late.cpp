@@ -99,9 +99,11 @@ int main(int argc, char** argv) {
         delete bat4;
 
         // 4) lazy decode and result
-        MEASURE_OP_TUPLE(tupleF, v2::bat::ops::checkAndDecodeAN(batD));CLEAR_CHECKANDDECODE_AN(tupleF);
+        MEASURE_OP_TUPLE(tupleF, v2::bat::ops::checkAndDecodeAN(batD));
+        CLEAR_CHECKANDDECODE_AN(tupleF);
         delete batD;
-        MEASURE_OP_TUPLE(tupleG, v2::bat::ops::checkAndDecodeAN(batE));CLEAR_CHECKANDDECODE_AN(tupleG);
+        MEASURE_OP_TUPLE(tupleG, v2::bat::ops::checkAndDecodeAN(batE));
+        CLEAR_CHECKANDDECODE_AN(tupleG);
         delete batE;
         MEASURE_OP(batH, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleF), std::get<0>(tupleG)));
         delete std::get<0>(tupleF);

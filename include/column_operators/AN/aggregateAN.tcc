@@ -80,54 +80,54 @@ namespace v2 {
                 auto mmAT2inv = v2_mm128<t2enc_t>::set1(AT2inv);
                 auto mmDMax2 = v2_mm128<t2enc_t>::set1(AT2unencMaxU + 1);
                 size_t i = 0;
-                for (; pmmT1 <= (pmmT1End - 1) && pmmT2 <= (pmmT2End - 1); i += (sizeof(__m128i) / sizeof (typename v2_smaller_type<t1enc_t, t2enc_t>::type_t))) {
-                    __m128i mmDec1, mmDec2;
+                __m128i mmDec1 = _mm_set1_epi64x(0ull), mmDec2 = _mm_set1_epi64x(0ull);
+                for (; pmmT1 <= (pmmT1End - 1) && pmmT2 <= (pmmT2End - 1); ) {
                     if (v2_larger_type<tail1_t, tail2_t>::isFirstLarger) {
                         constexpr const size_t factor = sizeof (tail1_t) / sizeof (tail2_t);
                         constexpr const size_t steps = sizeof (__m128i) / sizeof (tail1_t);
                         static_assert(factor <= 4, "factor must be of size 4, but is larger");
                         if (isTail2Encoded) {
-                            v2_mm128_AN_detect<tail2_t>(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
+                            v2_mm128_AN<tail2_t>::detect(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
                         } else {
                             mmDec2 = *pmmT2++;
                         }
                         if (isTail1Encoded) {
-                            v2_mm128_AN_detect<tail1_t>(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
+                            v2_mm128_AN<tail1_t>::detect(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
                         } else {
                             mmDec1 = *pmmT1++;
                         }
                         auto mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 0 * steps, result_t>()(mmDec1, mmDec2);
                         mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
+                        i += steps;
                         if (factor > 1) {
                             if (isTail1Encoded) {
-                                v2_mm128_AN_detect<tail1_t>(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
+                                v2_mm128_AN<tail1_t>::detect(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
                             } else {
                                 mmDec1 = *pmmT1++;
                             }
                             auto mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 1 * steps, result_t>()(mmDec1, mmDec2);
                             mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
-                        } else {
-                            std::stringstream ss;
-                            ss << '[' << __FILE__ << ':' << __LINE__ << " (" << __func__ << ")] The second tail type is not at least double the size of the first tail type -- as it is expected to be!";
-                            throw std::runtime_error(ss.str());
+                            i += steps;
                         }
                         if (factor > 2) {
                             if (isTail1Encoded) {
-                                v2_mm128_AN_detect<tail1_t>(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
+                                v2_mm128_AN<tail1_t>::detect(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
                             } else {
                                 mmDec1 = *pmmT1++;
                             }
                             auto mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 2 * steps, result_t>()(mmDec1, mmDec2);
                             mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
+                            i += steps;
                         }
                         if (factor > 3) {
                             if (isTail1Encoded) {
-                                v2_mm128_AN_detect<tail1_t>(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
+                                v2_mm128_AN<tail1_t>::detect(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
                             } else {
                                 mmDec1 = *pmmT1++;
                             }
                             auto mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 3 * steps, result_t>()(mmDec1, mmDec2);
                             mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
+                            i += steps;
                         }
                     } else {
                         // either the second is larger, or both have the same width
@@ -137,43 +137,47 @@ namespace v2 {
                         constexpr const size_t steps = sizeof (__m128i) / sizeof (tail2_t);
                         static_assert(factor <= 4, "factor must be of size 4, but is larger");
                         if (isTail1Encoded) {
-                            v2_mm128_AN_detect<tail1_t>(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
+                            v2_mm128_AN<tail1_t>::detect(mmDec1, *pmmT1++, mmAT1inv, mmDMax1, vec1, i);
                         } else {
                             mmDec1 = *pmmT1++;
                         }
                         if (isTail2Encoded) {
-                            v2_mm128_AN_detect<tail2_t>(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
+                            v2_mm128_AN<tail2_t>::detect(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
                         } else {
                             mmDec2 = *pmmT2++;
                         }
                         auto mmTemp = v2_mm128_mullo<tail1_t, 0 * steps, tail2_t, 0, result_t>()(mmDec1, mmDec2);
                         mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
+                        i += steps;
                         if (factor > 1) {
                             if (isTail2Encoded) {
-                                v2_mm128_AN_detect<tail2_t>(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
+                                v2_mm128_AN<tail2_t>::detect(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
                             } else {
                                 mmDec2 = *pmmT2++;
                             }
                             auto mmTemp = v2_mm128_mullo<tail1_t, 1 * steps, tail2_t, 0, result_t>()(mmDec1, mmDec2);
                             mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
+                            i += steps;
                         }
                         if (factor > 2) {
                             if (isTail2Encoded) {
-                                v2_mm128_AN_detect<tail2_t>(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
+                                v2_mm128_AN<tail2_t>::detect(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
                             } else {
                                 mmDec2 = *pmmT2++;
                             }
                             auto mmTemp = v2_mm128_mullo<tail1_t, 2 * steps, tail2_t, 0, result_t>()(mmDec1, mmDec2);
                             mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
+                            i += steps;
                         }
                         if (factor > 3) {
                             if (isTail2Encoded) {
-                                v2_mm128_AN_detect<tail2_t>(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
+                                v2_mm128_AN<tail2_t>::detect(mmDec2, *pmmT2++, mmAT2inv, mmDMax2, vec2, i);
                             } else {
                                 mmDec2 = *pmmT2++;
                             }
                             auto mmTemp = v2_mm128_mullo<tail1_t, 3 * steps, tail2_t, 0, result_t>()(mmDec1, mmDec2);
                             mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
+                            i += steps;
                         }
                     }
                 }
