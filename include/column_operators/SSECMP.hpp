@@ -196,10 +196,83 @@ namespace v2 {
             };
 
             template<>
+            struct v2_mm128_cmp<uint32_t, std::greater> {
+
+                static inline __m128i cmp(__m128i a, __m128i b) {
+                    return _mm_cmpgt_epi32(a, b);
+                }
+
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint32_t, std::less_equal> {
+
+                static inline __m128i cmp(__m128i a, __m128i b) {
+                    return _mm_cmpeq_epi32(a, v2_mm128<uint32_t>::min(a, b));
+                }
+
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint32_t, std::less> {
+
+                static inline __m128i cmp(__m128i a, __m128i b) {
+                    return _mm_cmpgt_epi32(a, b);
+                }
+
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint64_t, std::greater> {
+
+                static inline __m128i cmp(__m128i a, __m128i b) {
+                    return _mm_cmpgt_epi64(a, b);
+                }
+
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
+                }
+            };
+
+            template<>
             struct v2_mm128_cmp<uint64_t, std::greater_equal> {
 
                 static inline __m128i cmp(__m128i a, __m128i b) {
                     auto mm = v2_mm128<uint64_t>::max(a, b);
+                    return _mm_cmpeq_epi64(a, mm);
+                }
+
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint64_t, std::less> {
+
+                static inline __m128i cmp(__m128i a, __m128i b) {
+                    return _mm_cmpgt_epi64(b, a);
+                }
+
+                static inline uint8_t cmp_mask(__m128i a, __m128i b) {
+                    return static_cast<uint8_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint64_t, std::less_equal> {
+
+                static inline __m128i cmp(__m128i a, __m128i b) {
+                    auto mm = v2_mm128<uint64_t>::min(a, b);
                     return _mm_cmpeq_epi64(a, mm);
                 }
 

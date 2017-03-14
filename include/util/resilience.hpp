@@ -370,7 +370,8 @@ T ext_euclidean(T b0, size_t codewidth) {
     uint8_t aI = 1, bI = 1, qI = 0, rI = 0, sI = 1, tI = 1;
     a[0] = a0;
     b[0] = b0;
-    s[0] = t[0] = T(0);
+    s[0] = 0;
+    t[0] = 0;
     ssize_t i = 0;
     do {
         q[qI++] = a[i] / b[i];

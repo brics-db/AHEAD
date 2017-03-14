@@ -31,6 +31,7 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
+#include <column_operators/Normal/miscellaneous.tcc>
 
 namespace v2 {
     namespace bat {
@@ -87,14 +88,14 @@ namespace v2 {
                         auto iter = bat->begin();
                         size_t nextGID = 0;
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
-                            auto h = isHeadEncoded ? (iter->head() * HAInv) : iter->head();
+                            head_t h = isHeadEncoded ? static_cast<head_t>(iter->head() * HAInv) : iter->head();
                             if (isHeadEncoded && (h > HUnencMaxU)) {
                                 (*vec1)[i] = true;
                             }
                             if (reencode) {
                                 h *= AHR;
                             }
-                            auto t1 = isTailEncoded ? (iter->tail() * TAInv) : iter->tail();
+                            tail_t t1 = isTailEncoded ? static_cast<tail_t>(iter->tail() * TAInv) : iter->tail();
                             if (isTailEncoded && (t1 > TUnencMaxU)) {
                                 (*vec2)[i] = true;
                             }
@@ -103,7 +104,7 @@ namespace v2 {
                             // idx is the void value of mapGIDtoTail, which starts at zero
                             auto iterDict = dictionary.find(t2);
                             if (iterDict == dictionary.end()) {
-                                batGIDtoTail->append(isTailEncoded ? (reencode ? (t1 * ATR) : (t1 * TA)) : (reencode ? (t1 * ATR) : t1));
+                                batGIDtoTail->append(reencode ? (t1 * ATR) : isTailEncoded ? (t1 * TA) : t1);
                                 batHeadtoGID->append(std::make_pair(h, nextGID * AOID));
                                 dictionary[t2] = nextGID;
                                 ++nextGID;
@@ -160,7 +161,7 @@ namespace v2 {
                         auto iter = bat->begin();
                         size_t nextGID = 0;
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
-                            auto h = isHeadEncoded ? (iter->head() * HAInv) : iter->head();
+                            head_t h = isHeadEncoded ? static_cast<head_t>(iter->head() * HAInv) : iter->head();
                             if (isHeadEncoded && (h > HUnencMaxU)) {
                                 (*vec1)[i] = true;
                             }
@@ -262,10 +263,12 @@ namespace v2 {
                             typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)) {
                         static_assert(std::is_base_of<v2_anencoded_t, V2Result>::value, "V2Result is not derived from v2_anencoded_t!");
 
-                        typename Head1::type_t H1AInv = bat1->head.metaData.AN_Ainv;
-                        typename Head1::type_t H1UnencMaxU = bat1->head.metaData.AN_unencMaxU;
-                        typename Tail1::type_t T1AInv = bat1->tail.metaData.AN_Ainv;
-                        typename Tail1::type_t T1UnencMaxU = bat1->tail.metaData.AN_unencMaxU;
+                        typedef typename Head1::type_t head1_t;
+                        typedef typename Tail1::type_t tail1_t;
+                        head1_t H1AInv = bat1->head.metaData.AN_Ainv;
+                        head1_t H1UnencMaxU = bat1->head.metaData.AN_unencMaxU;
+                        tail1_t T1AInv = bat1->tail.metaData.AN_Ainv;
+                        tail1_t T1UnencMaxU = bat1->tail.metaData.AN_unencMaxU;
 
 #ifdef DEBUG
                         StopWatch sw;
@@ -339,10 +342,10 @@ namespace v2 {
                             // g2SecondIter->position(g2FirstIter->tail());
                             // std::cerr << std::setw(9) << g2SecondIter->tail() << " |\n";
 #endif
-                            if (isHead1Encoded && ((iter1->head() * H1AInv) > H1UnencMaxU)) {
+                            if (isHead1Encoded && (static_cast<head1_t>(iter1->head() * H1AInv) > H1UnencMaxU)) {
                                 (*vec1)[i] = true;
                             }
-                            auto curTail = isTail1Encoded ? (iter1->tail() * T1AInv) : iter1->tail();
+                            auto curTail = isTail1Encoded ? static_cast<tail1_t>(iter1->tail() * T1AInv) : iter1->tail();
                             if (isTail1Encoded && (curTail > T1UnencMaxU)) {
                                 (*vec2)[i] = true;
                             }

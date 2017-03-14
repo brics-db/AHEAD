@@ -40,7 +40,6 @@
 
 #include <ColumnStore.h>
 
-#include <column_operators/Normal/miscellaneous.tcc>
 #include <column_operators/Normal/select.tcc>
 #include <column_operators/Normal/hashjoin.tcc>
 #include <column_operators/Normal/matchjoin.tcc>

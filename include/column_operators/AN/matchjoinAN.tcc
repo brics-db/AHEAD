@@ -32,6 +32,7 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
+#include <column_operators/Normal/miscellaneous.tcc>
 
 using boost::multiprecision::uint128_t;
 
@@ -55,6 +56,10 @@ namespace v2 {
                 template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencode = false>
                 struct MatchjoinAN {
 
+                    typedef typename Head1::type_t head1_t;
+                    typedef typename Tail1::type_t tail1_t;
+                    typedef typename Head2::type_t head2_t;
+                    typedef typename Tail2::type_t tail2_t;
                     typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
                     typedef typename ReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
@@ -111,16 +116,16 @@ namespace v2 {
                         size_t pos1 = 0;
                         size_t pos2 = 0;
                         while (iter1->hasNext() && iter2->hasNext()) {
-                            auto h2 = isHead2Encoded ? (iter2->head() * AH2Inv) : iter2->head();
+                            head2_t h2 = isHead2Encoded ? static_cast<head2_t>(iter2->head() * AH2Inv) : iter2->head();
                             if (isHead2Encoded && (h2 > AH2UnencMaxU)) {
                                 (*vec3)[pos2] = true;
                             }
                             if (isTail2Encoded && ((iter2->tail() * AT2Inv) > AT2UnencMaxU)) {
                                 (*vec4)[pos2] = true;
                             }
-                            auto t1 = isTail1Encoded ? (iter1->tail() * AT1Inv) : iter1->tail();
+                            tail1_t t1 = isTail1Encoded ? static_cast<tail1_t>(iter1->tail() * AT1Inv) : iter1->tail();
                             for (; iter1->hasNext() && t1 < h2; ++*iter1, ++pos1, t1 = isTail1Encoded ? (iter1->tail() * AT1Inv) : iter1->tail()) {
-                                if (isHead1Encoded && ((iter1->head() * AH1Inv) > AH1UnencMaxU)) {
+                                if (isHead1Encoded && (static_cast<head1_t>(iter1->head() * AH1Inv) > AH1UnencMaxU)) {
                                     (*vec1)[pos1] = true;
                                 }
                                 if (isTail1Encoded && (t1 > AT1UnencMaxU)) {
@@ -131,7 +136,7 @@ namespace v2 {
                                 if (isHead2Encoded && (h2 > AH2UnencMaxU)) {
                                     (*vec3)[pos2] = true;
                                 }
-                                if (isTail2Encoded && ((iter2->tail() * AT2Inv) > AT2UnencMaxU)) {
+                                if (isTail2Encoded && (static_cast<tail2_t>(iter2->tail() * AT2Inv) > AT2UnencMaxU)) {
                                     (*vec4)[pos2] = true;
                                 }
                             }
@@ -157,6 +162,8 @@ namespace v2 {
                 template<typename Head1, typename Tail2, bool reencode>
                 struct MatchjoinAN<Head1, v2_void_t, v2_void_t, Tail2, reencode> {
 
+                    typedef typename Head1::type_t head1_t;
+                    typedef typename Tail2::type_t tail2_t;
                     typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
                     typedef typename ReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
@@ -208,22 +215,22 @@ namespace v2 {
                         if (iter1->hasNext() && iter2->hasNext()) {
                             if (arg1->tail.metaData.seqbase < arg2->head.metaData.seqbase) {
                                 for (auto x = arg2->head.metaData.seqbase; iter1->hasNext() && iter2->hasNext() && iter1->tail() < x; ++*iter1, ++pos1) {
-                                    if (isHead1Encoded && ((iter1->head() * AH1Inv) > AH1UnencMaxU)) {
+                                    if (isHead1Encoded && (static_cast<head1_t>(iter1->head() * AH1Inv) > AH1UnencMaxU)) {
                                         (*vec1)[pos1] = true;
                                     }
                                 }
                             } else if (arg1->tail.metaData.seqbase > arg2->head.metaData.seqbase) {
                                 for (auto x = arg1->tail.metaData.seqbase; iter1->hasNext() && iter2->hasNext() && iter2->head() < x; ++*iter2, ++pos2) {
-                                    if (isTail2Encoded && ((iter2->tail() * AT2Inv) > AT2UnencMaxU)) {
+                                    if (isTail2Encoded && (static_cast<tail2_t>(iter2->tail() * AT2Inv) > AT2UnencMaxU)) {
                                         (*vec4)[pos2] = true;
                                     }
                                 }
                             }
                             for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2, ++pos1, ++pos2) {
-                                if (isHead1Encoded && ((iter1->head() * AH1Inv) > AH1UnencMaxU)) {
+                                if (isHead1Encoded && (static_cast<head1_t>(iter1->head() * AH1Inv) > AH1UnencMaxU)) {
                                     (*vec1)[pos1] = true;
                                 }
-                                if (isTail2Encoded && ((iter2->tail() * AT2Inv) > AT2UnencMaxU)) {
+                                if (isTail2Encoded && (static_cast<tail2_t>(iter2->tail() * AT2Inv) > AT2UnencMaxU)) {
                                     (*vec4)[pos2] = true;
                                 }
                                 if (reencode) {

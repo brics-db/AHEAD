@@ -32,6 +32,7 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
+#include <column_operators/Normal/miscellaneous.tcc>
 
 using boost::multiprecision::uint128_t;
 
@@ -275,7 +276,7 @@ namespace v2 {
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // probe
-                                    auto h2 = isHead2Encoded ? (iter2->head() * AH2Inv) : iter2->head();
+                                    h2enc_t h2 = isHead2Encoded ? static_cast<h2enc_t>(iter2->head() * AH2Inv) : iter2->head();
                                     auto t2 = iter2->tail();
                                     if (isHead2Encoded && h2 > AH2UnencMaxU) {
                                         (*vec3)[pos] = true;
@@ -298,9 +299,9 @@ namespace v2 {
                                 google::dense_hash_map<h2unenc_t, std::vector<str_t> > hashMap(arg2->size());
                                 hashMap.set_empty_key(Head2::dhm_emptykey);
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // build
-                                    auto h2 = isHead2Encoded ? (iter2->head() * AH2Inv) : iter2->head();
+                                    h2enc_t h2 = isHead2Encoded ? static_cast<h2enc_t>(iter2->head() * AH2Inv) : iter2->head();
                                     auto t2 = iter2->tail();
-                                    if (isHead2Encoded && h2 > AH2UnencMaxU) {
+                                    if (isHead2Encoded && static_cast<h2enc_t>(h2) > AH2UnencMaxU) {
                                         (*vec3)[pos] = true;
                                     }
                                     if (isHead2Encoded) {
@@ -312,8 +313,8 @@ namespace v2 {
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // probe
-                                    auto h1 = isHead1Encoded ? (iter1->head() * AH1Inv) : iter1->head();
-                                    auto t1 = isTail1Encoded ? (iter1->tail() * AT1Inv) : iter1->tail();
+                                    h1enc_t h1 = isHead1Encoded ? static_cast<h1enc_t>(iter1->head() * AH1Inv) : iter1->head();
+                                    t1enc_t t1 = isTail1Encoded ? static_cast<t1enc_t>(iter1->tail() * AT1Inv) : iter1->tail();
                                     if (isHead1Encoded && h1 > AH1UnencMaxU) {
                                         (*vec1)[pos] = true;
                                     }
@@ -426,10 +427,10 @@ namespace v2 {
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // build
                                     auto h1 = iter1->head();
                                     auto t1 = iter1->tail();
-                                    if (isHead1Encoded && (h1 * AH1Inv) > AH1UnencMaxU) {
+                                    if (isHead1Encoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
                                         (*vec1)[pos] = true;
                                     }
-                                    if (isTail1Encoded && (t1 * AT1Inv) > AT1UnencMaxU) {
+                                    if (isTail1Encoded && static_cast<t1enc_t>(t1 * AT1Inv) > AT1UnencMaxU) {
                                         (*vec2)[pos] = true;
                                     }
                                     // the above checking for the probe factor requires that we convert here to the A we need for probing
@@ -440,10 +441,10 @@ namespace v2 {
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // probe
                                     auto h2 = iter2->head();
                                     auto t2 = iter2->tail();
-                                    if (isHead2Encoded && (h2 * AH2Inv) > AH2UnencMaxU) {
+                                    if (isHead2Encoded && static_cast<h2enc_t>(h2 * AH2Inv) > AH2UnencMaxU) {
                                         (*vec3)[pos] = true;
                                     }
-                                    if (isTail2Encoded && (t2 * AT2Inv) > AT2UnencMaxU) {
+                                    if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2Inv) > AT2UnencMaxU) {
                                         (*vec4)[pos] = true;
                                     }
                                     auto mapIter = hashMap.find(static_cast<hash_t>(h2));
@@ -488,10 +489,10 @@ namespace v2 {
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // build
                                     auto h = iter2->head();
                                     auto t = iter2->tail();
-                                    if (isHead2Encoded && (h * AH2Inv) > AH2UnencMaxU) {
+                                    if (isHead2Encoded && static_cast<h2enc_t>(h * AH2Inv) > AH2UnencMaxU) {
                                         (*vec3)[pos] = true;
                                     }
-                                    if (isTail2Encoded && (t * AT2Inv) > AT2UnencMaxU) {
+                                    if (isTail2Encoded && static_cast<t2enc_t>(t * AT2Inv) > AT2UnencMaxU) {
                                         (*vec4)[pos] = true;
                                     }
                                     // the above checking for the probe factor requires that we convert here to the A we need for probing
@@ -506,10 +507,10 @@ namespace v2 {
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // probe
                                     auto h = iter1->head();
                                     auto t = iter1->tail();
-                                    if (isHead1Encoded && (h * AH1Inv) > AH1UnencMaxU) {
+                                    if (isHead1Encoded && static_cast<h1enc_t>(h * AH1Inv) > AH1UnencMaxU) {
                                         (*vec1)[pos] = true;
                                     }
-                                    if (isTail1Encoded && (t * AT1Inv) > AT1UnencMaxU) {
+                                    if (isTail1Encoded && static_cast<t1enc_t>(t * AT1Inv) > AT1UnencMaxU) {
                                         (*vec2)[pos] = true;
                                     }
                                     h2unenc_t t1 = static_cast<h2unenc_t>(isTail1Encoded ? (t * AT1Inv) : t);

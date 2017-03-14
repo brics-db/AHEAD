@@ -27,6 +27,7 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
+#include <column_operators/Normal/miscellaneous.tcc>
 
 namespace v2 {
     namespace bat {
@@ -67,7 +68,7 @@ namespace v2 {
                         Op<tail_select_t> op;
                         for (size_t pos = 0; iter->hasNext(); ++*iter, ++pos) {
                             auto t = iter->tail();
-                            if ((t * ATailInv) > TailUnencMaxU) {
+                            if (static_cast<tail_t>(t * ATailInv) > TailUnencMaxU) {
                                 (*result.second)[pos] = true;
                             }
                             if (op(t, threshold)) {
@@ -151,7 +152,7 @@ namespace v2 {
                         Op2<tail_select_t> op2;
                         for (size_t pos = 0; iter->hasNext(); ++*iter, ++pos) {
                             auto t = iter->tail();
-                            if ((t * ATailInv) > TailUnencMaxU) {
+                            if (static_cast<tail_t>(t * ATailInv) > TailUnencMaxU) {
                                 (*result.second)[pos] = true;
                             }
                             if (op1(t, threshold1) && op2(t, threshold2)) {

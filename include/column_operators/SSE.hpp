@@ -352,20 +352,6 @@ namespace v2 {
                     incA = 4;
                     incB = 1;
 
-                    /*
-                     auto mm = _mm_mullo_epi64(_mm_cvtepu32_epi64(a), _mm_cvtepu8_epi64(b));
-                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 2))));
-                     auto a1 = _mm_lddqu_si128((&a) + 1);
-                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(a1), _mm_cvtepu32_epi64(_mm_srli_si128(a, 4))));
-                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a1, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 6))));
-                     auto a2 = _mm_lddqu_si128((&a) + 2);
-                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(a2), _mm_cvtepu32_epi64(_mm_srli_si128(a, 8))));
-                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a2, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 10))));
-                     auto a3 = _mm_lddqu_si128((&a) + 3);
-                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(a3), _mm_cvtepu32_epi64(_mm_srli_si128(a, 12))));
-                     mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu32_epi64(_mm_srli_si128(a3, 8)), _mm_cvtepu32_epi64(_mm_srli_si128(a, 14))));
-                     */
-
                     auto pA = reinterpret_cast<uint32_t*>(&a);
                     auto pB = reinterpret_cast<uint8_t*>(&b);
                     uint64_t r1 = 0, r2 = 0;

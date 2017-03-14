@@ -29,6 +29,7 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
+#include <column_operators/Normal/miscellaneous.tcc>
 
 namespace v2 {
     namespace bat {

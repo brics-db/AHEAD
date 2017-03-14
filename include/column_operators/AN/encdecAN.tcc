@@ -27,6 +27,7 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
+#include <column_operators/Normal/miscellaneous.tcc>
 
 namespace v2 {
     namespace bat {
@@ -69,7 +70,7 @@ namespace v2 {
                 auto result = new std::vector<bool>(arg->size());
                 auto iter = arg->begin();
                 for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
-                    if ((iter->tail() * aInv) <= unEncMaxU) {
+                    if (static_cast<res_t>(iter->tail() * aInv) > unEncMaxU) {
                         (*result)[i] = true;
                     }
                 }
@@ -95,7 +96,7 @@ namespace v2 {
                 auto iter = arg->begin();
                 size_t pos = 0;
                 for (; iter->hasNext(); ++*iter, ++pos) {
-                    auto t = iter->tail() * Ainv;
+                    auto t = static_cast<restail_t>(iter->tail() * Ainv);
                     result->append(std::make_pair(iter->head(), static_cast<tail_t>(t)));
                     if (t > unencMaxU) {
                         (*vec)[pos] = true;
@@ -126,8 +127,8 @@ namespace v2 {
                 auto iter = arg->begin();
                 for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
                     if (isHeadEncoded & isTailEncoded) {
-                        auto decH = iter->head() * hAinv;
-                        auto decT = iter->tail() * tAinv;
+                        auto decH = static_cast<head_t>(iter->head() * hAinv);
+                        auto decT = static_cast<tail_t>(iter->tail() * tAinv);
                         if (decH > hUnencMaxU) {
                             (*vec1)[i] = true;
                         }
@@ -136,13 +137,13 @@ namespace v2 {
                         }
                         result->append(std::make_pair(static_cast<typename Tail::v2_unenc_t::type_t>(decH), static_cast<typename Tail::v2_unenc_t::type_t>(decT)));
                     } else if (isHeadEncoded) {
-                        auto decH = iter->head() * hAinv;
+                        auto decH = static_cast<head_t>(iter->head() * hAinv);
                         if (decH > hUnencMaxU) {
                             (*vec1)[i] = true;
                         }
                         result->append(std::make_pair(static_cast<typename Tail::v2_unenc_t::type_t>(decH), iter->tail()));
                     } else {
-                        auto decT = iter->tail() * tAinv;
+                        auto decT = static_cast<tail_t>(iter->tail() * tAinv);
                         if (decT > tUnencMaxU) {
                             (*vec2)[i] = true;
                         }
