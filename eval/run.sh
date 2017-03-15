@@ -29,7 +29,17 @@ BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
 IMPLEMENTED=(11 12 13 21)
 VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
-
+ARCHITECTURE=("_seq")
+cat /proc/cpuinfo | grep sse4_2 &>/dev/null
+HAS_SSE42=$?
+if [[ ${HAS_SSE42} -eq 0 ]]; then ARCHITECTURE+=("_SSE"); fi
+#cat /proc/cpuinfo | grep avx2 &>/dev/null
+#HAS_AVX2=$?
+#if [[ ${HAS_AVX2} -eq 0 ]]; then ARCHITECTURE+="_AVX2"; fi
+## For the following, keep in mind that AVX-512 has several sub-sets and not all of them may be available
+#cat /proc/cpuinfo | grep avx512 &>/dev/null
+#HAS_AVX512=$?
+#if [[ ${HAS_AVX512} -eq 0 ]]; then ARCHITECTURE+="_AVX512"; fi
 
 # distinct warmup and test phases
 ARGS=("$@")
@@ -76,6 +86,7 @@ if [[ $# -ne 0 ]] ; then
             ;;
         *)
             echo "UNKNOWN Phase"
+            exit 1
             ;;
     esac
 else
@@ -294,26 +305,28 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
         mkdir -p ${PATH_EVALDATA}
     fi
 
-    for NUM in "${IMPLEMENTED[@]}"; do
-        BASE2=${BASE}${NUM}
-        for var in "${VARIANTS[@]}"; do
-            type="${BASE2}${var}"
-            PATH_BINARY=${PATH_BUILD}/${type}
-            if [[ -e ${PATH_BINARY} ]]; then
-                EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
-                EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
-                EVAL_FILETIME="${PATH_EVALDATA}/${type}.time"
-                rm -f ${EVAL_FILEOUT} ${EVAL_FILEERR} ${EVAL_FILETIME}
-                echo -n " * ${type}:"
-                for sf in ${BENCHMARK_SCALEFACTORS[*]}; do
-                    echo -n " sf${sf}"
-                    echo "Scale Factor ${sf} ===========================" >>${EVAL_FILETIME}
-                    /usr/bin/time -v -o ${EVAL_FILETIME} -a $corenum ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${sf} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
-                done
-                echo " done."
-            else
-                echo " * Skipping missing binary \"${type}\"."
-            fi
+    for ARCH in "${ARCHITECTURE[@]}"; do
+        for NUM in "${IMPLEMENTED[@]}"; do
+            BASE2=${BASE}${NUM}
+            for VAR in "${VARIANTS[@]}"; do
+                type="${BASE2}${VAR}${ARCH}"
+                PATH_BINARY=${PATH_BUILD}/${type}
+                if [[ -e ${PATH_BINARY} ]]; then
+                    EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
+                    EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
+                    EVAL_FILETIME="${PATH_EVALDATA}/${type}.time"
+                    rm -f ${EVAL_FILEOUT} ${EVAL_FILEERR} ${EVAL_FILETIME}
+                    echo -n " * ${type}:"
+                    for SF in ${BENCHMARK_SCALEFACTORS[*]}; do
+                        echo -n " sf${SF}"
+                        echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
+                        /usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${SF} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                    done
+                    echo " done."
+                else
+                    echo " * Skipping missing binary \"${type}\"."
+                fi
+            done
         done
     done
 else
@@ -333,166 +346,177 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         mkdir -p ${PATH_EVALOUT}
     fi
 
-    # Prepare File for a single complete normalized overhead graph across all scale factors
-    EVAL_NORMALIZEDALLDATAFILE=${PATH_EVALOUT}/norm.all.data
-    EVAL_NORMALIZEDALLPLOTFILE=${PATH_EVALOUT}/norm.all.m
-    EVAL_NORMALIZEDALLPDFFILE=${PATH_EVALOUT}/norm.all.pdf
-    if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
-        rm -f ${EVAL_NORMALIZEDALLDATAFILE}
-        echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE}
-        for var in "${VARIANTS[@]}"; do
-            echo -n " ${var}" >>${EVAL_NORMALIZEDALLDATAFILE}
-        done
-        echo "" >>${EVAL_NORMALIZEDALLDATAFILE}
-    fi
-
-    for NUM in "${IMPLEMENTED[@]}"; do
-        BASE2=${BASE}${NUM}
-        EVAL_TEMPFILE=${PATH_EVALDATA}/${BASE2}.tmp
-        EVAL_DATAFILE=${PATH_EVALOUT}/${BASE2}.data
-        EVAL_NORMALIZEDTEMPFILE=${PATH_EVALDATA}/${BASE2}.norm.tmp
-        EVAL_NORMALIZEDDATAFILE=${PATH_EVALOUT}/${BASE2}.norm.data
-
+    for ARCH in "${ARCHITECTURE[@]}"; do
+        # Prepare File for a single complete normalized overhead graph across all scale factors
+        EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
+        EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLDATAFILE}"
+        EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
+        EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPLOTFILE}"
+        EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
+        EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
         if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
-            echo " * Preparing data for ${BASE2}"
-
-            rm -f ${EVAL_TEMPFILE}
-            rm -f ${EVAL_DATAFILE}
-            echo -n "SF " >${EVAL_TEMPFILE}
-            echo "${BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE}
-
+            echo " * ${ARCH:1}"
+            rm -f ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+            echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
             for var in "${VARIANTS[@]}"; do
-                type="${BASE2}${var}"
-                EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
-                EVAL_FILERESULTS="${PATH_EVALDATA}/${type}.results"
-                EVAL_FILESUMMARY="${PATH_EVALDATA}/${type}.summary"
-                EVAL_FILEBESTRUNS="${PATH_EVALDATA}/${type}.bestruns"
-                grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS}
-                grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" >${EVAL_FILESUMMARY}
-                count=0
-                sfidx=0
-                sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
-
-                rm -f ${EVAL_FILEBESTRUNS}
-                echo -n "${type}" >>${EVAL_TEMPFILE}
-
-                for i in $(awk '{print $2;}' ${EVAL_FILESUMMARY}); do
-                    array+=($i)
-                    ((count++))
-                    if [[ ${count} -eq ${BENCHMARK_NUMRUNS} ]]; then
-                        # a batch of ${BENCHMARK_NUMRUNS} runs, i.e. all runs of a scale factor
-                        # 1) compute the best runs (i.e. remove outliers)
-                        bestruns=$(printf "%s\n" "${array[@]}" | sort -n | head -n ${BENCHMARK_NUMBEST} | tr '\n' ' ')
-                        echo "SF ${sf}: ${bestruns[@]}" >>${EVAL_FILEBESTRUNS}
-                        # 2) compute the arithmetic mean
-                        total=0
-                        IFS=', ' read -r -a array <<< "$bestruns"
-                        for k in "${array[@]}"; do
-                            total=$(echo "$total + $k" | bc)
-                        done
-                        arithmean=$(echo "scale=0; ${total} / ${BENCHMARK_NUMBEST}" | bc)
-                        # 3) append to file
-                        echo -n " ${arithmean}" >>${EVAL_TEMPFILE}
-                        count=0
-                        unset array
-                        array=()
-                        ((sfidx++))
-                        sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
-                    fi
-                done
-                echo "" >>${EVAL_TEMPFILE}
+                echo -n " ${var}" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
             done
-
-            # transpose original data
-            awktranspose ${EVAL_TEMPFILE} ${EVAL_DATAFILE}
-            if [[ ${BASEREPLACE1} ]]; then
-                sed -i -e ${BASEREPLACE1} ${EVAL_DATAFILE}
-                sed -i -e ${BASEREPLACE2} ${EVAL_DATAFILE}
-            fi
-
-            # prepare awk statement to normalize all columns and output them to the normalized temp file
-            # 2016-11-04: normalize to "normal" (unencoded) base variant
-            sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
-            arg="FNR==NR {if (FNR==2) { "
-            for sf in ${sfIdxs}; do # number of scale factors
-                column=$(echo "${sf}+1" | bc)
-                #arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
-                arg+="norm${sf}=\$${column};"
-            done
-            arg+="};next} FNR==1 {print \$1"
-            for sf in ${sfIdxs}; do
-                column=$(echo "${sf}+1" | bc)
-                arg+=",\$${column}"
-            done
-            arg+=";next} {print \$1"
-            for sf in ${sfIdxs}; do # number of scale factors
-                column=$(echo "${sf}+1" | bc)
-                arg+=",\$${column}/norm${sf}"
-            done
-            arg+="}"
-            # EVAL_TEMPFILE already contains the average (arithmetic mean) of the best X of Y runs
-            # (see BENCHMARK_NUMRUNS and BENCHMARK_NUMBEST)
-            awk "${arg}" ${EVAL_TEMPFILE} ${EVAL_TEMPFILE} >${EVAL_NORMALIZEDTEMPFILE}
-
-            # transpose normalized data
-            awktranspose ${EVAL_NORMALIZEDTEMPFILE} ${EVAL_NORMALIZEDDATAFILE}
-            if [[ ${BASEREPLACE1} ]]; then
-                sed -i -e ${BASEREPLACE1} ${EVAL_NORMALIZEDDATAFILE}
-                sed -i -e ${BASEREPLACE2} ${EVAL_NORMALIZEDDATAFILE}
-				tr <${EVAL_NORMALIZEDDATAFILE} -d '\000' >${EVAL_NORMALIZEDDATAFILE}.tmp
-				mv ${EVAL_NORMALIZEDDATAFILE}.tmp ${EVAL_NORMALIZEDDATAFILE}
-            fi
-
-			# Append current Query name to normalized overall temp file
-            echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE}
-			echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE}
-			#prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
-            sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
-			varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
-            arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
-            for sf in ${sfIdxs}; do
-                column=$(echo "${sf}+1" | bc)
-                arg+="\$${column}+"
-            done
-			arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
-			awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE} ${EVAL_NORMALIZEDTEMPFILE} >>${EVAL_NORMALIZEDALLDATAFILE}
-			echo "" >>${EVAL_NORMALIZEDALLDATAFILE}
-			sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE}
-			tr <${EVAL_NORMALIZEDALLDATAFILE} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE}.tmp
-			mv ${EVAL_NORMALIZEDALLDATAFILE}.tmp ${EVAL_NORMALIZEDALLDATAFILE}
+            echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
         fi
 
-        echo " * Plotting ${BASE2}"
-        pushd ${PATH_EVALOUT}
-        #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
-        gnuplotcode ${BASE2}.m ${BASE2}.pdf ${BASE2}.data \
-            "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
+        for NUM in "${IMPLEMENTED[@]}"; do
+            BASE2="${BASE}${NUM}"
+            BASE3="${BASE2}${ARCH}"
+            EVAL_TEMPFILE="${BASE3}.tmp"
+            EVAL_TEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_TEMPFILE}"
+            EVAL_DATAFILE="${BASE3}.data"
+            EVAL_DATAFILE_PATH="${PATH_EVALOUT}/${EVAL_DATAFILE}"
+            EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
+            EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_NORMALIZEDTEMPFILE}"
+            EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
+            EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDDATAFILE}"
 
-        gnuplotcode ${BASE2}.norm.m ${BASE2}.norm.pdf ${BASE2}.norm.data \
-            "set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
+            if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
+                echo "   * Preparing data for ${BASE3}"
 
-        gnuplotlegend ${BASE2}.legend.m ${BASE2}.legend.pdf ${BASE2}.xlabel.pdf ${BASE2}.data
+                rm -f ${EVAL_TEMPFILE_PATH}
+                rm -f ${EVAL_DATAFILE_PATH}
+                echo -n "SF " >${EVAL_TEMPFILE_PATH}
+                echo "${BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE_PATH}
 
-        gnuplot ${BASE2}.m
-        gnuplot ${BASE2}.norm.m
-        gnuplot ${BASE2}.legend.m
+                for VAR in "${VARIANTS[@]}"; do
+                    type="${BASE2}${VAR}${ARCH}"
+                    EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
+                    EVAL_FILERESULTS="${PATH_EVALDATA}/${type}.results"
+                    EVAL_FILESUMMARY="${PATH_EVALDATA}/${type}.summary"
+                    EVAL_FILEBESTRUNS="${PATH_EVALDATA}/${type}.bestruns"
+                    grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS}
+                    grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" >${EVAL_FILESUMMARY}
+                    count=0
+                    sfidx=0
+                    sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
 
-        popd
+                    rm -f ${EVAL_FILEBESTRUNS}
+                    echo -n "${type}" >>${EVAL_TEMPFILE_PATH}
+
+                    for i in $(awk '{print $2;}' ${EVAL_FILESUMMARY}); do
+                        array+=($i)
+                        ((count++))
+                        if [[ ${count} -eq ${BENCHMARK_NUMRUNS} ]]; then
+                            # a batch of ${BENCHMARK_NUMRUNS} runs, i.e. all runs of a scale factor
+                            # 1) compute the best runs (i.e. remove outliers)
+                            bestruns=$(printf "%s\n" "${array[@]}" | sort -n | head -n ${BENCHMARK_NUMBEST} | tr '\n' ' ')
+                            echo "SF ${sf}: ${bestruns[@]}" >>${EVAL_FILEBESTRUNS}
+                            # 2) compute the arithmetic mean
+                            total=0
+                            IFS=', ' read -r -a array <<< "$bestruns"
+                            for k in "${array[@]}"; do
+                                total=$(echo "$total + $k" | bc)
+                            done
+                            arithmean=$(echo "scale=0; ${total} / ${BENCHMARK_NUMBEST}" | bc)
+                            # 3) append to file
+                            echo -n " ${arithmean}" >>${EVAL_TEMPFILE_PATH}
+                            count=0
+                            unset array
+                            array=()
+                            ((sfidx++))
+                            sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
+                        fi
+                    done
+                    echo "" >>${EVAL_TEMPFILE_PATH}
+                done
+
+                # transpose original data
+                awktranspose ${EVAL_TEMPFILE_PATH} ${EVAL_DATAFILE_PATH}
+                if [[ ${BASEREPLACE1} ]]; then
+                    sed -i -e ${BASEREPLACE1} ${EVAL_DATAFILE_PATH}
+                    sed -i -e ${BASEREPLACE2} ${EVAL_DATAFILE_PATH}
+                fi
+
+                # prepare awk statement to normalize all columns and output them to the normalized temp file
+                # 2016-11-04: normalize to "normal" (unencoded) base variant
+                sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
+                arg="FNR==NR {if (FNR==2) { "
+                for sf in ${sfIdxs}; do # number of scale factors
+                    column=$(echo "${sf}+1" | bc)
+                    #arg+="max${sf}=(\$${column}+0>max${sf})?\$${column}:max${sf};"
+                    arg+="norm${sf}=\$${column};"
+                done
+                arg+="};next} FNR==1 {print \$1"
+                for sf in ${sfIdxs}; do
+                    column=$(echo "${sf}+1" | bc)
+                    arg+=",\$${column}"
+                done
+                arg+=";next} {print \$1"
+                for sf in ${sfIdxs}; do # number of scale factors
+                    column=$(echo "${sf}+1" | bc)
+                    arg+=",\$${column}/norm${sf}"
+                done
+                arg+="}"
+                # EVAL_TEMPFILE_PATH already contains the average (arithmetic mean) of the best X of Y runs
+                # (see BENCHMARK_NUMRUNS and BENCHMARK_NUMBEST)
+                awk "${arg}" ${EVAL_TEMPFILE_PATH} ${EVAL_TEMPFILE_PATH} >${EVAL_NORMALIZEDTEMPFILE_PATH}
+
+                # transpose normalized data
+                awktranspose ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDDATAFILE_PATH}
+                if [[ ${BASEREPLACE1} ]]; then
+                    sed -i -e ${BASEREPLACE1} ${EVAL_NORMALIZEDDATAFILE_PATH}
+                    sed -i -e ${BASEREPLACE2} ${EVAL_NORMALIZEDDATAFILE_PATH}
+                    tr <${EVAL_NORMALIZEDDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDDATAFILE_PATH}.tmp
+                    mv ${EVAL_NORMALIZEDDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDDATAFILE_PATH}
+                fi
+
+                # Append current Query name to normalized overall temp file
+                echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                #prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
+                sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
+                varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
+                arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
+                for sf in ${sfIdxs}; do
+                    column=$(echo "${sf}+1" | bc)
+                    arg+="\$${column}+"
+                done
+                arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
+                awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDTEMPFILE_PATH} >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                # remove <zero>-bytes
+                tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
+                mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+            fi
+
+            echo "   * Plotting ${BASE3}"
+            pushd ${PATH_EVALOUT}
+            #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
+            gnuplotcode ${BASE3}.m ${BASE3}.pdf ${EVAL_DATAFILE} \
+                "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
+
+            gnuplotcode ${BASE3}-norm.m ${BASE3}-norm.pdf ${EVAL_NORMALIZEDDATAFILE} \
+                "set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
+
+            gnuplotlegend ${BASE3}-legend.m ${BASE3}-legend.pdf ${BASE3}-xlabel.pdf ${BASE3}.data
+
+            gnuplot ${BASE3}.m
+            gnuplot ${BASE3}-norm.m
+            gnuplot ${BASE3}-legend.m
+            popd
+        done
+
+        echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
+        ALLPDFINFILES=
+        for NUM in "${IMPLEMENTED[@]}"; do
+            BASE3=${BASE}${NUM}${ARCH}
+            ALLPDFINFILES+=" ${PATH_EVALOUT}/${BASE3}.pdf ${PATH_EVALOUT}/${BASE3}-norm.pdf"
+        done
+        ALLPDFOUTFILE=${PATH_EVALOUT}/ssbm-all${ARCH}.pdf
+        gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
+        # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
+
+        gnuplotcode  ${EVAL_NORMALIZEDALLPLOTFILE_PATH} ${EVAL_NORMALIZEDALLPDFFILE_PATH} ${EVAL_NORMALIZEDALLDATAFILE_PATH} \
+            "set yrange [0.9:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
+        gnuplot ${EVAL_NORMALIZEDALLPLOTFILE_PATH}
     done
-
-    echo " * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
-    ALLPDFINFILES=
-    for NUM in "${IMPLEMENTED[@]}"; do
-        BASE2=${BASE}${NUM}
-        ALLPDFINFILES+=" ${PATH_EVALOUT}/${BASE2}.pdf ${PATH_EVALOUT}/${BASE2}.norm.pdf"
-    done
-    ALLPDFOUTFILE=${PATH_EVALOUT}/${BASE}.pdf
-    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
-    # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
-
-    gnuplotcode  ${EVAL_NORMALIZEDALLPLOTFILE} ${EVAL_NORMALIZEDALLPDFFILE} ${EVAL_NORMALIZEDALLDATAFILE} \
-        "set yrange [0.9:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
-    gnuplot ${EVAL_NORMALIZEDALLPLOTFILE}
 else
     echo "Skipping evaluation."
 fi
@@ -501,30 +525,33 @@ fi
 if [[ ${DO_VERIFY} -ne 0 ]]; then
     date
     echo "Verifying:"
-    for NUM in "${IMPLEMENTED[@]}"; do
-        echo -n " * Q${NUM}:"
-        BASE2="${BASE}${NUM}"
-        NUMVARS="${#VARIANTS[@]}"
-        baseline1="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}.results"
-        baseline1Tmp="${baseline1}.tmp"
-        baseline2="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}.err"
-        awk '{print $1,$2}' "${baseline1}" >"${baseline1Tmp}"
-        for i in $(seq 1 $(echo "$NUMVARS-1"|bc)); do
-            echo -n " ${VARIANTS[$i]:1}="
-            other1="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}.results"
-            other1Tmp="${other1}.tmp"
-            awk '{print $1,$2}' "${other1}" >"${other1Tmp}" # filters out e.g. the encoded value for the continuous encoding variants
-            other2="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}.err"
-            RES1=$(diff "${baseline1Tmp}" "${other1Tmp}" | wc -l)
-            RES2=$(diff "${baseline2}" "${other2}" | wc -l)
-            if [[ "${RES1}" -eq 0 ]] && [[ "${RES2}" -eq 0 ]]; then
-                echo -n "OK";
-            else
-                echo -n "BAD";
-                if [[ "${RES2}" -eq 0 ]]; then echo -n "(result)"; else echo -n "(err)"; fi
-            fi
+    for ARCH in "${ARCHITECTURE[@]}"; do
+        echo " * ${ARCH}"
+        for NUM in "${IMPLEMENTED[@]}"; do
+            echo -n "   * Q${NUM}:"
+            BASE2="${BASE}${NUM}"
+            NUMVARS="${#VARIANTS[@]}"
+            baseline1="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}${ARCH}.results"
+            baseline1Tmp="${baseline1}.tmp"
+            baseline2="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}${ARCH}.err"
+            awk '{print $1,$2}' "${baseline1}" >"${baseline1Tmp}"
+            for i in $(seq 1 $(echo "$NUMVARS-1"|bc)); do
+                echo -n " ${VARIANTS[$i]:1}="
+                other1="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}${ARCH}.results"
+                other1Tmp="${other1}.tmp"
+                awk '{print $1,$2}' "${other1}" >"${other1Tmp}" # filters out e.g. the encoded value for the continuous encoding variants
+                other2="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}${ARCH}.err"
+                RES1=$(diff "${baseline1Tmp}" "${other1Tmp}" | wc -l)
+                RES2=$(diff "${baseline2}" "${other2}" | wc -l)
+                if [[ "${RES1}" -eq 0 ]] && [[ "${RES2}" -eq 0 ]]; then
+                    echo -n "OK";
+                else
+                    echo -n "BAD";
+                    if [[ "${RES2}" -eq 0 ]]; then echo -n "(result)"; else echo -n "(err)"; fi
+                fi
+            done
+            echo ""
         done
-        echo ""
     done
 else
     echo "Skipping verification."
