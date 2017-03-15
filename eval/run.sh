@@ -104,7 +104,7 @@ if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 # Process specific constants
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
-if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
+if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=15; fi # like above
 if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=10; fi
 declare -p BENCHMARK_SCALEFACTORS 2>/dev/null
 ret=$?
