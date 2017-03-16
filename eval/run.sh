@@ -182,11 +182,11 @@ set style line 7 lc rgb "#e51e10"
 $(for var in "${@:4}"; do echo $var; done)
 plot '${3}' using 2:xtic(1) title col fillstyle pattern 0 border ls 1 lw 1 dt 1, \\
          '' using 3:xtic(1) title col fillstyle pattern 2 border ls 2 lw 1 dt 1, \\
-#         '' using 4:xtic(1) title col fillstyle pattern 6 border ls 3 lw 1 dt 1, \\
          '' using 5:xtic(1) title col fillstyle pattern 3 border ls 4 lw 1 dt 1, \\
          '' using 6:xtic(1) title col fillstyle pattern 7 border ls 5 lw 1 dt 1, \\
          '' using 7:xtic(1) title col fillstyle pattern 1 border ls 6 lw 1 dt 1, \\
          '' using 8:xtic(1) title col fillstyle pattern 4 border ls 7 lw 1 dt 1
+#         '' using 4:xtic(1) title col fillstyle pattern 6 border ls 3 lw 1 dt 1, \\
 EOM
 }
 
@@ -194,7 +194,7 @@ gnuplotlegend () {
         # Write GNUplot code to file
         cat >$1 << EOM
 #!/usr/bin/env gnuplot
-set term pdf enhanced color fontscale 0.44 size 3.25in,0.4in
+set term pdf enhanced color fontscale 0.44 size 3.25in,0.3in
 set output '${2}'
 set datafile separator '\t'
 set style data histogram
@@ -224,11 +224,11 @@ set style line 7 lc rgb "#e51e10"
 $(for var in "${@:5}"; do echo $var; done)
 plot '${4}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 t "Unencoded", \\
          '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 t "DMR", \\
-#         '' using 4:xtic(1) fillstyle pattern 6 border ls 3 lw 1 dt 1 t "DMR MT", \\
          '' using 5:xtic(1) fillstyle pattern 3 border ls 4 lw 1 dt 1 t "Early", \\
          '' using 6:xtic(1) fillstyle pattern 7 border ls 5 lw 1 dt 1 t "Late", \\
          '' using 7:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 t "Continuous", \\
          '' using 8:xtic(1) fillstyle pattern 4 border ls 7 lw 1 dt 1 t "Reencoding"
+#         '' using 4:xtic(1) fillstyle pattern 6 border ls 3 lw 1 dt 1 t "DMR MT", \\
 
 set term pdf enhanced monochrome fontscale 0.44 size 0.2in,1.25in
 set output '${3}'
