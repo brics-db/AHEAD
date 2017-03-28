@@ -22,11 +22,11 @@
 #ifndef OPERATORSAN_TCC
 #define OPERATORSAN_TCC
 
-#include "AN/encdecAN.tcc"
 #include "AN/selectAN.tcc"
 #include "AN/hashjoinAN.tcc"
 #include "AN/matchjoinAN.tcc"
 #include "AN/aggregateAN.tcc"
+#include "AN/encdecAN.tcc"
 #include "AN/groupbyAN.tcc"
 
 #endif /* OPERATORSAN_TCC */

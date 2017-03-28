@@ -38,17 +38,19 @@ namespace v2 {
 
                 template<template<typename > class Op, typename Head, typename Tail>
                 struct Selection1 {
+                };
+
+                template<template<typename > class Op, typename Tail>
+                struct Selection1<Op, v2_void_t, Tail> {
 
                     typedef typename Tail::type_t tail_t;
-                    typedef typename Head::v2_select_t v2_head_select_t;
+                    typedef typename v2_void_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
-                    typedef BAT<v2_head_select_t, v2_tail_select_t> bat_t;
+                    typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                    static bat_t*
-                    filter(BAT<v2_void_t, Tail>* arg, tail_t && th) {
-                        static_assert(std::is_base_of<v2_void_t, Head>::value, "Head is not v2_void_t!");
+                    static result_t* filter(BAT<v2_void_t, Tail>* arg, tail_t && th) {
                         auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                         result->reserve(arg->size());
                         auto mmThreshold = v2_mm128<tail_t>::set1(th);
@@ -130,16 +132,15 @@ namespace v2 {
                     }
                 };
 
-                template<template<typename > class Op, typename Head>
-                struct Selection1<Op, Head, v2_str_t> {
+                template<template<typename > class Op>
+                struct Selection1<Op, v2_void_t, v2_str_t> {
 
-                    typedef typename Head::v2_select_t head_select_t;
-                    typedef v2_str_t tail_select_t;
-                    typedef BAT<head_select_t, tail_select_t> bat_t;
+                    typedef typename v2_void_t::v2_select_t v2_head_select_t;
+                    typedef typename v2_str_t::v2_select_t v2_tail_select_t;
+                    typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                    static bat_t*
-                    filter(BAT<Head, v2_str_t>* arg, str_t && threshold) {
-                        auto result = skeleton<head_select_t, tail_select_t>(arg);
+                    static result_t* filter(BAT<v2_void_t, v2_str_t>* arg, str_t && threshold) {
+                        auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                         result->reserve(arg->size());
                         auto iter = arg->begin();
                         Op<int> op;
@@ -155,16 +156,19 @@ namespace v2 {
 
                 template<template<typename > class Op1, template<typename > class Op2, typename Head, typename Tail>
                 struct Selection2 {
+                };
+
+                template<template<typename > class Op1, template<typename > class Op2, typename Tail>
+                struct Selection2<Op1, Op2, v2_void_t, Tail> {
 
                     typedef typename Tail::type_t tail_t;
-                    typedef typename Head::v2_select_t v2_head_select_t;
+                    typedef typename v2_void_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
-                    typedef BAT<v2_head_select_t, v2_tail_select_t> bat_t;
+                    typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                    static bat_t*
-                    filter(BAT<v2_void_t, Tail>* arg, tail_t && th1, tail_t && th2) {
+                    static result_t* filter(BAT<v2_void_t, Tail>* arg, tail_t && th1, tail_t && th2) {
                         auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                         result->reserve(arg->size());
                         auto mmThreshold1 = v2_mm128<tail_t>::set1(th1);
@@ -248,16 +252,17 @@ namespace v2 {
                     }
                 };
 
-                template<template<typename > class Op1, template<typename > class Op2, typename Head>
-                struct Selection2<Op1, Op2, Head, v2_str_t> {
+                template<template<typename > class Op1, template<typename > class Op2>
+                struct Selection2<Op1, Op2, v2_void_t, v2_str_t> {
 
-                    typedef typename Head::v2_select_t head_select_t;
-                    typedef v2_str_t tail_select_t;
-                    typedef BAT<head_select_t, tail_select_t> bat_t;
+                    typedef typename v2_void_t::v2_select_t v2_head_select_t;
+                    typedef typename v2_head_select_t::type_t head_select_t;
+                    typedef typename v2_str_t::v2_select_t v2_tail_select_t;
+                    typedef typename v2_tail_select_t::type_t tail_select_t;
+                    typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                    static bat_t*
-                    filter(BAT<Head, v2_str_t>* arg, tail_select_t && th1, tail_select_t && th2) {
-                        auto result = skeleton<head_select_t, tail_select_t>(arg);
+                    static result_t* filter(BAT<v2_void_t, v2_str_t>* arg, tail_select_t && th1, tail_select_t && th2) {
+                        auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                         result->reserve(arg->size());
                         auto iter = arg->begin();
                         Op1<int> op1;

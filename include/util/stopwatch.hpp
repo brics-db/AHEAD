@@ -19,13 +19,11 @@
 #include <iomanip>
 #include <chrono>
 
-using namespace std::chrono;
-
 class StopWatch {
 
 public:
-    typedef typename high_resolution_clock::time_point time_point;
-    typedef typename high_resolution_clock::rep rep;
+    typedef typename std::chrono::high_resolution_clock::time_point time_point;
+    typedef typename std::chrono::high_resolution_clock::rep rep;
 
 private:
     time_point startNS, stopNS;
@@ -42,7 +40,7 @@ public:
     rep duration();
 
     friend StopWatch operator+(StopWatch lhs, const StopWatch & rhs) {
-        return StopWatch(lhs.startNS, time_point(high_resolution_clock::duration(lhs.stopNS.time_since_epoch().count() + rhs.totalNS)), lhs.totalNS + rhs.totalNS);
+        return StopWatch(lhs.startNS, time_point(std::chrono::high_resolution_clock::duration(lhs.stopNS.time_since_epoch().count() + rhs.totalNS)), lhs.totalNS + rhs.totalNS);
     }
 };
 

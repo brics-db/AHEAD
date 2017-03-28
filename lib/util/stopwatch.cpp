@@ -14,12 +14,9 @@
 
 #include "util/stopwatch.hpp"
 
-using namespace std;
-using namespace std::chrono;
-
 const bool OUTPUT_INSERT_DOT = true;
 
-StopWatch::StopWatch () : startNS (), stopNS (), totalNS (duration_cast<nanoseconds>(stopNS - startNS).count ()) {
+StopWatch::StopWatch () : startNS (), stopNS (), totalNS (std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count ()) {
 }
 
 StopWatch::StopWatch (time_point startNS, time_point stopNS, rep totalNS) : startNS (startNS), stopNS (stopNS), totalNS (totalNS) {
@@ -28,18 +25,18 @@ StopWatch::StopWatch (time_point startNS, time_point stopNS, rep totalNS) : star
 void
 StopWatch::start () {
     totalNS = 0;
-    startNS = high_resolution_clock::now();
+    startNS = std::chrono::high_resolution_clock::now();
 }
 
 void
 StopWatch::resume () {
-    startNS = high_resolution_clock::now();
+    startNS = std::chrono::high_resolution_clock::now();
 }
 
 StopWatch::rep
 StopWatch::stop () {
-    stopNS = high_resolution_clock::now();
-    totalNS += duration_cast<nanoseconds>(stopNS - startNS).count();
+    stopNS = std::chrono::high_resolution_clock::now();
+    totalNS += std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count();
     return duration();
 }
 
@@ -52,22 +49,22 @@ hrc_duration::hrc_duration (StopWatch::rep dura)
         : dura (dura) {
 }
 
-ostream& operator<< (ostream& stream, hrc_duration hrcd) {
-    high_resolution_clock::rep dura = hrcd.dura;
-    stringstream ss;
+std::ostream& operator<< (std::ostream& stream, hrc_duration hrcd) {
+    std::chrono::high_resolution_clock::rep dura = hrcd.dura;
+    std::stringstream ss;
     if (OUTPUT_INSERT_DOT) {
         size_t max = 1000;
         while (dura / max > 0) {
             max *= 1000;
         }
         max /= 1000;
-        ss << setfill('0') << (dura / max);
+        ss << std::setfill('0') << (dura / max);
         while (max > 1) {
             dura %= max;
             max /= 1000;
-            ss << '.' << setw(3) << (dura / max);
+            ss << '.' << std::setw(3) << (dura / max);
         }
-        ss << flush;
+        ss << std::flush;
         stream << ss.str();
     } else {
         stream << dura;
@@ -75,6 +72,6 @@ ostream& operator<< (ostream& stream, hrc_duration hrcd) {
     return stream;
 }
 
-ostream& operator<< (ostream& stream, StopWatch sw) {
+std::ostream& operator<< (std::ostream& stream, StopWatch sw) {
     return stream << hrc_duration(sw.duration());
 }

@@ -30,7 +30,7 @@ namespace v2 {
     namespace bat {
         namespace ops {
 
-            template<typename A>
+            template<typename T>
             struct v2_mm128;
 
             template<>
@@ -258,161 +258,233 @@ namespace v2 {
                 static const __m128i * const SHUFFLE_EPI64_TABLE;
             };
 
-            template<typename A, typename B, typename R>
-            struct v2_mm128_mul_add;
+            namespace Private {
+                template<typename A, typename B, typename R>
+                struct V2_mm128_mul_add;
 
-            template<>
-            struct v2_mm128_mul_add<uint16_t, uint16_t, uint16_t> {
+                template<>
+                struct V2_mm128_mul_add<uint16_t, uint16_t, uint16_t> {
 
-                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
-                    incA = incB = 1;
-                    return v2_mm128<uint16_t>::mullo(a, b);
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint16_t, uint16_t, uint32_t> {
-
-                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
-                    incA = incB = 1;
-                    auto mm = _mm_mullo_epi32(_mm_cvtepi16_epi32(a), _mm_cvtepi16_epi32(b));
-                    mm = _mm_add_epi32(mm, _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(a, 8)), _mm_cvtepi16_epi32(_mm_srli_si128(b, 8))));
-                    return mm;
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint16_t, uint32_t, uint32_t> {
-
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
-                    incA = 1;
-                    incB = 2;
-                    auto mm = _mm_mullo_epi32(_mm_cvtepi16_epi32(a), _mm_lddqu_si128((&b) + 1));
-                    mm = _mm_add_epi32(mm, _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(a, 8)), b));
-                    return mm;
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint32_t, uint16_t, uint32_t> {
-
-                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
-                    return v2_mm128_mul_add<uint16_t, uint32_t, uint32_t>()(b, a, incB, incA);
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint16_t, uint32_t, uint64_t> {
-
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
-                    incA = 1;
-                    incB = 2;
-                    auto mm = _mm_mul_epi32(_mm_cvtepi16_epi32(a), _mm_lddqu_si128((&b) + 1));
-                    mm = _mm_add_epi64(mm, _mm_mul_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(a, 8)), b));
-                    return mm;
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint32_t, uint16_t, uint64_t> {
-
-                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
-                    return v2_mm128_mul_add<uint16_t, uint32_t, uint64_t>()(b, a, incB, incA);
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint16_t, uint64_t, uint64_t> {
-
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
-                    incA = 1;
-                    incB = 4;
-
-                    auto mm = _mm_mullo_epi64(_mm_cvtepu16_epi64(a), b);
-                    mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(a, 4)), _mm_lddqu_si128((&b) + 1)));
-                    mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(a, 8)), _mm_lddqu_si128((&b) + 2)));
-                    mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(a, 12)), _mm_lddqu_si128((&b) + 3)));
-
-                    return mm;
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint64_t, uint16_t, uint64_t> {
-
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
-                    return v2_mm128_mul_add<uint16_t, uint64_t, uint64_t>()(b, a, incB, incA);
-                }
-            };
-
-            template<>
-            struct v2_mm128_mul_add<uint32_t, uint8_t, uint64_t> {
-
-                inline __m128i operator()(__m128i & a, __m128i & b, size_t & incA, size_t & incB) {
-                    incA = 4;
-                    incB = 1;
-
-                    auto pA = reinterpret_cast<uint32_t*>(&a);
-                    auto pB = reinterpret_cast<uint8_t*>(&b);
-                    uint64_t r1 = 0, r2 = 0;
-                    for (size_t i = 0; i < 16; i += 2) {
-                        r1 += static_cast<uint64_t>(pA[i]) * static_cast<uint64_t>(pB[i]);
-                        r2 += static_cast<uint64_t>(pA[i + 1]) * static_cast<uint64_t>(pB[i + 1]);
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = incB = 1;
+                        return v2_mm128<uint16_t>::mullo(_mm_lddqu_si128(a), _mm_lddqu_si128(b));
                     }
-                    __m128i mm = _mm_set_epi64x(r1, r2);
+                };
 
-                    return mm;
-                }
-            };
+                template<>
+                struct V2_mm128_mul_add<uint16_t, uint16_t, uint32_t> {
 
-            template<>
-            struct v2_mm128_mul_add<uint32_t, uint32_t, uint32_t> {
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = incB = 1;
+                        auto mm = _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_lddqu_si128(a)), _mm_cvtepi16_epi32(_mm_lddqu_si128(b)));
+                        mm = _mm_add_epi32(mm, _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(_mm_lddqu_si128(a), 8)), _mm_cvtepi16_epi32(_mm_srli_si128(_mm_lddqu_si128(b), 8))));
+                        return mm;
+                    }
+                };
 
-                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
-                    incA = incB = 1;
-                    return v2_mm128<uint32_t>::mullo(a, b);
-                }
-            };
+                template<>
+                struct V2_mm128_mul_add<uint16_t, uint32_t, uint32_t> {
 
-            template<>
-            struct v2_mm128_mul_add<uint32_t, uint32_t, uint64_t> {
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = 1;
+                        incB = 2;
+                        auto mm = _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_lddqu_si128(a)), _mm_lddqu_si128(b + 1));
+                        mm = _mm_add_epi32(mm, _mm_mullo_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(_mm_lddqu_si128(a), 8)), _mm_lddqu_si128(b)));
+                        return mm;
+                    }
+                };
 
-                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
-                    incA = incB = 1;
-                    auto mm = _mm_mul_epu32(a, b);
-                    return _mm_add_epi32(mm, _mm_mul_epu32(_mm_srli_si128(a, 8), _mm_srli_si128(b, 8)));
-                }
-            };
+                template<>
+                struct V2_mm128_mul_add<uint32_t, uint16_t, uint32_t> {
 
-            template<>
-            struct v2_mm128_mul_add<uint64_t, uint64_t, uint64_t> {
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        return V2_mm128_mul_add<uint16_t, uint32_t, uint32_t>::doIt(b, a, incB, incA);
+                    }
+                };
 
-                inline __m128i operator()(__m128i a, __m128i b, size_t & incA, size_t & incB) {
-                    incA = incB = 1;
-                    return v2_mm128<uint64_t>::mullo(a, b);
-                }
-            };
+                template<>
+                struct V2_mm128_mul_add<uint16_t, uint32_t, uint64_t> {
 
-            template<typename A, size_t firstA, typename B, size_t firstB, typename R>
-            struct v2_mm128_mullo;
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = 1;
+                        incB = 2;
+                        auto mm = _mm_mul_epi32(_mm_cvtepi16_epi32(_mm_lddqu_si128(a)), _mm_lddqu_si128(b + 1));
+                        mm = _mm_add_epi64(mm, _mm_mul_epi32(_mm_cvtepi16_epi32(_mm_srli_si128(_mm_lddqu_si128(a), 8)), _mm_lddqu_si128(b)));
+                        return mm;
+                    }
+                };
 
-            template<size_t firstA, size_t firstB>
-            struct v2_mm128_mullo<uint16_t, firstA, uint64_t, firstB, uint64_t> {
+                template<>
+                struct V2_mm128_mul_add<uint32_t, uint16_t, uint64_t> {
 
-                inline __m128i operator()(__m128i a, __m128i b) {
-                    auto r0 = static_cast<uint64_t>(_mm_extract_epi16(a, firstA)) * _mm_extract_epi64(b, firstB);
-                    auto r1 = static_cast<uint64_t>(_mm_extract_epi16(a, firstA + 1)) * _mm_extract_epi64(b, firstB + 1);
-                    return _mm_set_epi64x(r1, r0);
-                }
-            };
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        return V2_mm128_mul_add<uint16_t, uint32_t, uint64_t>::doIt(b, a, incB, incA);
+                    }
+                };
 
-            template<size_t firstA, size_t firstB>
-            struct v2_mm128_mullo<uint64_t, firstA, uint16_t, firstB, uint64_t> {
+                template<>
+                struct V2_mm128_mul_add<uint16_t, uint64_t, uint64_t> {
 
-                inline __m128i operator()(__m128i a, __m128i b) {
-                    return v2_mm128_mullo<uint16_t, firstB, uint64_t, firstA, uint64_t>()(b, a);
-                }
-            };
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = 1;
+                        incB = 4;
+
+                        auto mm = _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_lddqu_si128(a)), _mm_lddqu_si128(b));
+                        mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(_mm_lddqu_si128(a), 4)), _mm_lddqu_si128(b + 1)));
+                        mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(_mm_lddqu_si128(a), 8)), _mm_lddqu_si128(b + 2)));
+                        mm = _mm_add_epi64(mm, _mm_mullo_epi64(_mm_cvtepu16_epi64(_mm_srli_si128(_mm_lddqu_si128(a), 12)), _mm_lddqu_si128(b + 3)));
+
+                        return mm;
+                    }
+                };
+
+                template<>
+                struct V2_mm128_mul_add<uint64_t, uint16_t, uint64_t> {
+
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        return V2_mm128_mul_add<uint16_t, uint64_t, uint64_t>::doIt(b, a, incB, incA);
+                    }
+                };
+
+                template<>
+                struct V2_mm128_mul_add<uint32_t, uint8_t, uint64_t> {
+
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = 4;
+                        incB = 1;
+
+                        auto pA = reinterpret_cast<uint32_t*>(a);
+                        auto pB = reinterpret_cast<uint8_t*>(b);
+                        uint64_t r1 = 0, r2 = 0;
+                        for (size_t i = 0; i < 16; i += 2) {
+                            r1 += static_cast<uint64_t>(pA[i]) * static_cast<uint64_t>(pB[i]);
+                            r2 += static_cast<uint64_t>(pA[i + 1]) * static_cast<uint64_t>(pB[i + 1]);
+                        }
+                        __m128i mm = _mm_set_epi64x(r1, r2);
+
+                        return mm;
+                    }
+                };
+
+                template<>
+                struct V2_mm128_mul_add<uint32_t, uint32_t, uint32_t> {
+
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = incB = 1;
+                        return v2_mm128<uint32_t>::mullo(_mm_lddqu_si128(a), _mm_lddqu_si128(b));
+                    }
+                };
+
+                template<>
+                struct V2_mm128_mul_add<uint32_t, uint32_t, uint64_t> {
+
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = incB = 1;
+                        auto mm = _mm_mul_epu32(*a, *b);
+                        return _mm_add_epi32(mm, _mm_mul_epu32(_mm_srli_si128(_mm_lddqu_si128(a), 8), _mm_srli_si128(_mm_lddqu_si128(b), 8)));
+                    }
+                };
+
+                template<>
+                struct V2_mm128_mul_add<uint64_t, uint64_t, uint64_t> {
+
+                    static inline __m128i doIt(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                        incA = incB = 1;
+                        return v2_mm128<uint64_t>::mullo(_mm_lddqu_si128(a), _mm_lddqu_si128(b));
+                    }
+                };
+            }
+
+            template<typename A, typename B, typename R>
+            inline __m128i v2_mm128_mul_add(__m128i * a, __m128i * b, size_t & incA, size_t & incB) {
+                return Private::V2_mm128_mul_add<A, B, R>::doIt(a, b, incA, incB);
+            }
+
+            namespace Private {
+                template<typename TA, size_t firstA, typename TB, size_t firstB, typename R>
+                struct V2_mm128_mullo;
+
+                template<size_t firstA, size_t firstB>
+                struct V2_mm128_mullo<uint16_t, firstA, uint64_t, firstB, uint64_t> {
+
+                    static inline __m128i doIt(__m128i & a, __m128i & b) {
+                        auto r0 = static_cast<uint64_t>(_mm_extract_epi16(a, firstA)) * _mm_extract_epi64(b, firstB);
+                        auto r1 = static_cast<uint64_t>(_mm_extract_epi16(a, firstA + 1)) * _mm_extract_epi64(b, firstB + 1);
+                        return _mm_set_epi64x(r1, r0);
+                    }
+                };
+
+                template<size_t firstA, size_t firstB>
+                struct V2_mm128_mullo<uint64_t, firstA, uint16_t, firstB, uint64_t> {
+
+                    static inline __m128i doIt(__m128i & a, __m128i & b) {
+                        return V2_mm128_mullo<uint16_t, firstB, uint64_t, firstA, uint64_t>::doIt(b, a);
+                    }
+                };
+            }
+
+            template<typename TA, size_t firstA, typename TB, size_t firstB, typename R>
+            inline __m128i v2_mm128_mullo(__m128i & a, __m128i & b) {
+                return Private::V2_mm128_mullo<TA, firstA, TB, firstB, R>::doIt(a, b);
+            }
+
+            namespace Private {
+                template<typename T, typename R>
+                struct V2_mm128_cvt;
+
+                template<>
+                struct V2_mm128_cvt<uint16_t, uint8_t> {
+
+                    static inline __m128i doIt(__m128i & mm) {
+                        return _mm_shuffle_epi8(mm, _mm_set_epi64x(0xFFFFFFFFFFFFFFFF, 0x0E0C0A0806040200));
+                    }
+                };
+
+                template<>
+                struct V2_mm128_cvt<uint16_t, uint16_t> {
+
+                    static inline __m128i doIt(__m128i & mm) {
+                        return mm;
+                    }
+                };
+
+                template<>
+                struct V2_mm128_cvt<uint32_t, uint16_t> {
+
+                    static inline __m128i doIt(__m128i & mm) {
+                        return _mm_shuffle_epi8(mm, _mm_set_epi64x(0xFFFFFFFFFFFFFFFF, 0x0D0C090805040100));
+                    }
+                };
+
+                template<>
+                struct V2_mm128_cvt<uint32_t, uint32_t> {
+
+                    static inline __m128i doIt(__m128i & mm) {
+                        return mm;
+                    }
+                };
+
+                template<>
+                struct V2_mm128_cvt<uint64_t, uint32_t> {
+
+                    static inline __m128i doIt(__m128i & mm) {
+                        return _mm_shuffle_epi8(mm, _mm_set_epi64x(0xFFFFFFFFFFFFFFFF, 0x0B0A090803020100));
+                    }
+                };
+
+                template<>
+                struct V2_mm128_cvt<uint64_t, uint64_t> {
+
+                    static inline __m128i doIt(__m128i & mm) {
+                        return mm;
+                    }
+                };
+            }
+
+            template<typename T, typename R>
+            inline __m128i v2_mm128_cvt(__m128i & mm) {
+                return Private::V2_mm128_cvt<T, R>::doIt(mm);
+            }
 
         }
     }

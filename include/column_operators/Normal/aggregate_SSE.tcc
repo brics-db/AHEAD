@@ -73,8 +73,8 @@ namespace v2 {
                 auto pmmT2End = reinterpret_cast<__m128i *>(pT2End);
                 auto mmTotal = v2_mm128<result_t>::set1(0);
                 size_t inc1 = 0, inc2 = 0;
-                for (; pmmT1 <= (pmmT1End - 1) && pmmT2 <= (pmmT2End - 1); pmmT1 += inc1, pmmT2 += inc2) {
-                    mmTotal = v2_mm128<result_t>::add(mmTotal, v2_mm128_mul_add<tail1_t, tail2_t, result_t>()(*pmmT1, *pmmT2, inc1, inc2));
+                for (; (pmmT1 <= (pmmT1End - 1)) && (pmmT2 <= (pmmT2End - 1)); pmmT1 += inc1, pmmT2 += inc2) {
+                    mmTotal = v2_mm128<result_t>::add(mmTotal, v2_mm128_mul_add<tail1_t, tail2_t, result_t>(pmmT1, pmmT2, inc1, inc2));
                 }
                 result_t total = init + v2_mm128<result_t>::sum(mmTotal);
                 pT1 = reinterpret_cast<tail1_t*>(pmmT1);

@@ -117,7 +117,7 @@ namespace v2 {
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
                         for (; iter->hasNext(); ++*iter) {
-                            result->append(std::make_pair(std::move(iter->head()), std::move(iter->tail())));
+                            result->append(std::make_pair(iter->head(), iter->tail()));
                         }
                         delete iter;
                         return result;
@@ -134,7 +134,7 @@ namespace v2 {
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
                         for (; iter->hasNext(); ++*iter) {
-                            result->append(std::move(iter->tail()));
+                            result->append(iter->tail());
                         }
                         delete iter;
                         return result;

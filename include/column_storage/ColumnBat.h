@@ -114,7 +114,7 @@ public:
         return nullptr;
     }
 
-    virtual unsigned size() override {
+    virtual oid_t size() override {
         auto iter = begin();
         unsigned size = iter->size();
         delete iter;

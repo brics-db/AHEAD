@@ -88,7 +88,7 @@ struct BAT {
     virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
     /** size of column, obtained through the iterator */
-    virtual unsigned size() = 0;
+    virtual oid_t size() = 0;
 
     /** Compute the actual memory consumption of the BAT */
     virtual size_t consumption() = 0;

@@ -36,22 +36,25 @@ namespace v2 {
 
                 template<template<typename > class Op, typename Head, typename Tail, bool reencode>
                 struct SelectionAN1 {
+                };
 
+                template<template<typename > class Op, typename Tail, bool reencode>
+                struct SelectionAN1<Op, v2_void_t, Tail, reencode> {
+
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename Tail::type_t tail_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
+                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, Tail>* arg, typename Tail::type_t&& threshold, tail_select_t ATR = 1, // for reencoding
-                            tail_select_t ATInvR = 1 // for reencoding
-                            ) {
-                        // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
+                    static result_t filter(BAT<Head, Tail>* arg, typename Tail::type_t&& threshold, tail_select_t ATR = 1, tail_select_t ATInvR = 1) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                         static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
 
-                        // always encode head (will usually be a conversion from void -> oid)
+                        // always encode head (void -> resoid)
                         const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                         const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                         const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
@@ -83,22 +86,20 @@ namespace v2 {
                     }
                 };
 
-                template<template<typename > class Op, typename Head>
-                struct SelectionAN1<Op, Head, v2_str_t, false> {
+                template<template<typename > class Op>
+                struct SelectionAN1<Op, v2_void_t, v2_str_t, false> {
 
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename v2_str_t::v2_select_t v2_tail_select_t;
+                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, v2_str_t> * arg, str_t && threshold, __attribute__ ((unused)) str_t ATR =
-                            nullptr, // cuurently only to match the signature
-                            __attribute__ ((unused)) str_t ATInvR = nullptr // cuurently only to match the signature
-                            ) {
-                        // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
+                    static result_t filter(BAT<Head, v2_str_t> * arg, str_t && threshold, __attribute__ ((unused)) str_t ATR = nullptr, __attribute__ ((unused)) str_t ATInvR = nullptr) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
-                        // always encode head (will usually be a conversion from void -> oid)
+                        // always encode head (void -> resoid)
                         const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                         const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                         auto result = std::make_pair(v2::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);
@@ -119,22 +120,25 @@ namespace v2 {
 
                 template<template<typename > class Op1, template<typename > class Op2, typename Head, typename Tail, bool reencode>
                 struct SelectionAN2 {
+                };
 
+                template<template<typename > class Op1, template<typename > class Op2, typename Tail, bool reencode>
+                struct SelectionAN2<Op1, Op2, v2_void_t, Tail, reencode> {
+
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename Tail::type_t tail_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
+                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, Tail> * arg, tail_t && threshold1, tail_t && threshold2, tail_select_t ATR = 1, // for reencoding
-                            tail_select_t ATInvR = 1 // for reencoding
-                            ) {
-                        // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
+                    static result_t filter(BAT<Head, Tail> * arg, tail_t && threshold1, tail_t && threshold2, tail_select_t ATR = 1, tail_select_t ATInvR = 1) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                         static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
 
-                        // always encode head (will usually be a conversion from void -> oid)
+                        // always encode head (void -> resoid)
                         const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                         const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                         const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
@@ -167,21 +171,20 @@ namespace v2 {
                     }
                 };
 
-                template<template<typename > class Op1, template<typename > class Op2, typename Head>
-                struct SelectionAN2<Op1, Op2, Head, v2_str_t, false> {
+                template<template<typename > class Op1, template<typename > class Op2>
+                struct SelectionAN2<Op1, Op2, v2_void_t, v2_str_t, false> {
 
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef v2_str_t v2_tail_select_t;
+                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, v2_str_t> * arg, str_t&& threshold1, str_t&& threshold2, str_t ATR = nullptr, // cuurently only to match the signature
-                            str_t ATInvR = nullptr // cuurently only to match the signature
-                            ) {
-                        // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
+                    static result_t filter(BAT<Head, v2_str_t> * arg, str_t&& threshold1, str_t&& threshold2, str_t ATR = nullptr, str_t ATInvR = nullptr) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
-                        // always encode head (will usually be a conversion from void -> oid)
+                        // always encode head (void -> resoid)
                         const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                         const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                         auto result = std::make_pair(v2::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);

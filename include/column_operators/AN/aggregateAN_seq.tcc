@@ -76,20 +76,35 @@ namespace v2 {
                     AT2InvR = reinterpret_cast<result_t*>(&temp)[0]; // at most 64 bits. ATTENTION: this code is backend dependent!!!
                 }
                 const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
+                const result_t ATempResultTest = AT1InvR * AT2InvR;
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 for (size_t i = 0; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2, ++i) {
-                    t1enc_t t1 = iter1->tail();
-                    t2enc_t t2 = iter2->tail();
+                    auto t1 = iter1->tail();
+                    auto t2 = iter2->tail();
                     if (isTail1Encoded && static_cast<t1enc_t>(t1 * AT1inv) > AT1unencMaxU) {
                         (*vec1)[i] = true;
                     }
                     if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2inv) > AT2unencMaxU) {
                         (*vec2)[i] = true;
                     }
-                    total += static_cast<result_t>(t1) * static_cast<result_t>(t2);
+                    if (isTail1Encoded || isTail2Encoded) {
+                        result_t dTemp = static_cast<result_t>(t1) * static_cast<result_t>(t2);
+                        // try 3 times to get a valid result
+                        for (size_t i = 0; (static_cast<result_t>(dTemp * ATempResultTest) > static_cast<result_t>(Result::UNENC_MAX_U)) && (i < 3); ++i) {
+                            dTemp = static_cast<result_t>(t1) * static_cast<result_t>(t2);
+                        }
+                        result_t cTemp = dTemp * AResultEncode;
+                        result_t totalTemp = total + cTemp;
+                        // try 3 times to get a valid result
+                        for (size_t i = 0; (static_cast<result_t>(totalTemp * RAInv) > static_cast<result_t>(Result::UNENC_MAX_U)) && (i < 3); ++i) {
+                            totalTemp = total + cTemp;
+                        }
+                        total = totalTemp;
+                    } else {
+                        total += static_cast<result_t>(t1) * static_cast<result_t>(t2);
+                    }
                 }
-                total *= AResultEncode;
 
                 delete iter2;
                 delete iter1;

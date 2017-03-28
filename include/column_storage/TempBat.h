@@ -120,7 +120,7 @@ public:
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned size() override {
+    virtual oid_t size() override {
         return this->head.container->size();
     }
 
@@ -210,7 +210,7 @@ public:
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned size() override {
+    virtual oid_t size() override {
         return count;
     }
 
@@ -305,7 +305,7 @@ public:
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned size() override {
+    virtual oid_t size() override {
         return this->head.container->size();
     }
 
@@ -403,7 +403,7 @@ public:
         return new TempBAT<Tail, Tail>(this->tail, this->tail);
     }
 
-    virtual unsigned size() override {
+    virtual oid_t size() override {
         return this->tail.container->size();
     }
 

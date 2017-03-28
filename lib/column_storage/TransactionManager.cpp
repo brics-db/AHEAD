@@ -14,8 +14,6 @@
 
 #include "column_storage/TransactionManager.h"
 
-using namespace std;
-
 TransactionManager* TransactionManager::instance = 0;
 
 const id_t TransactionManager::Transaction::ID_BAT_COLNAMES = 0;

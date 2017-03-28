@@ -27,7 +27,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 
 #include <ColumnStore.h>
-#include <util/resilience.hpp>
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
 #include <column_operators/SSE.hpp>
@@ -53,11 +52,11 @@ namespace v2 {
                     }
                     __m128i mmTemp;
                     if (v2_larger_type<tail1_t, tail2_t>::isFirstLarger) {
-                        mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, (maxFactor - factor) * increment, result_t>()(*pmmT1++, *pmmT2);
+                        mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, (maxFactor - factor) * increment, result_t>(*pmmT1++, *pmmT2);
                     } else if (v2_larger_type<tail1_t, tail2_t>::isSecondLarger) {
-                        mmTemp = v2_mm128_mullo<tail1_t, (maxFactor - factor) * increment, tail2_t, 0, result_t>()(*pmmT1, *pmmT2++);
+                        mmTemp = v2_mm128_mullo<tail1_t, (maxFactor - factor) * increment, tail2_t, 0, result_t>(*pmmT1, *pmmT2++);
                     } else {
-                        mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 0, result_t>()(*pmmT1, *pmmT2);
+                        mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 0, result_t>(*pmmT1, *pmmT2);
                     }
                     mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
                     i += increment;

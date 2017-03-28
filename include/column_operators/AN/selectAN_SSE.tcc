@@ -39,15 +39,22 @@ namespace v2 {
 
                 template<template<typename > class Op, typename Head, typename Tail, bool reencode>
                 struct SelectionAN1 {
+                };
 
+                template<template<typename > class Op, typename Tail, bool reencode>
+                struct SelectionAN1<Op, v2_void_t, Tail, reencode> {
+
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename Tail::type_t tail_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
+                    typedef typename v2_mm128_cmp<tail_t, Op>::mask_t tail_mask_t;
+                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, Tail>* arg, typename Tail::type_t&& th, tail_select_t ATR = 1, // for reencoding
+                    static result_t filter(BAT<Head, Tail>* arg, typename Tail::type_t&& th, tail_select_t ATR = 1, // for reencoding
                             tail_select_t ATInvR = 1 // for reencoding
                             ) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
@@ -85,9 +92,13 @@ namespace v2 {
                         auto mmOID = v2_mm128<head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
                         auto mmInc = v2_mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead);
 
+                        constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
+                        constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
+
                         size_t pos = 0;
                         for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                             auto mm = _mm_lddqu_si128(pmmT);
+                            // TODO FIRST CHECK, THEN COMPARE!!!
                             // comparison on encoded values
                             auto mask = v2_mm128_cmp<tail_t, Op>::cmp_mask(mm, mmThreshold);
                             if (mask) {
@@ -95,8 +106,7 @@ namespace v2 {
 
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
-                                    constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << headsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
                                         size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
@@ -109,7 +119,7 @@ namespace v2 {
                                         maskTmp >>= headsPerMM128;
                                     }
                                     v2_mm128_AN<tail_t>::detect(mm, mmATInv, mmDMax, result.second, pos);
-                                    pos += sizeof(__m128i) / sizeof(tail_t);
+                                    pos += tailsPerMM128;
                                     if (reencode) {
                                         mm = v2_mm128<tail_t>::mullo(mm, mmATReenc);
                                     }
@@ -117,8 +127,7 @@ namespace v2 {
                                     pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + nMaskOnes);
                                 } else {
                                     constexpr const size_t factor = sizeof(tail_select_t) / sizeof(head_select_t);
-                                    constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << tailsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << tailsPerMM128) - 1);
                                     auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, mask);
                                     _mm_storeu_si128(pmmRH, mmOIDs);
                                     pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nMaskOnes);
@@ -128,7 +137,7 @@ namespace v2 {
                                         size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
                                         if (nToAdd) {
                                             v2_mm128_AN<tail_t>::detect(mm, mmATInv, mmDMax, result.second, pos);
-                                            pos += sizeof(__m128i) / sizeof(tail_t);
+                                            pos += tailsPerMM128;
                                             if (reencode) {
                                                 mm = v2_mm128<tail_t>::mullo(mm, mmATReenc);
                                             }
@@ -170,18 +179,17 @@ namespace v2 {
                     }
                 };
 
-                template<template<typename > class Op, typename Head>
-                struct SelectionAN1<Op, Head, v2_str_t, false> {
+                template<template<typename > class Op>
+                struct SelectionAN1<Op, v2_void_t, v2_str_t, false> {
 
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename v2_str_t::v2_select_t v2_tail_select_t;
+                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, v2_str_t> * arg, str_t && threshold, __attribute__ ((unused)) str_t ATR =
-                            nullptr, // cuurently only to match the signature
-                            __attribute__ ((unused)) str_t ATInvR = nullptr // cuurently only to match the signature
-                            ) {
+                    static result_t filter(BAT<Head, v2_str_t> * arg, str_t && threshold, __attribute__ ((unused)) str_t ATR = nullptr, __attribute__ ((unused)) str_t ATInvR = nullptr) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
@@ -206,15 +214,21 @@ namespace v2 {
 
                 template<template<typename > class Op1, template<typename > class Op2, typename Head, typename Tail, bool reencode>
                 struct SelectionAN2 {
+                };
 
+                template<template<typename > class Op1, template<typename > class Op2, typename Tail, bool reencode>
+                struct SelectionAN2<Op1, Op2, v2_void_t, Tail, reencode> {
+
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename Tail::type_t tail_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
+                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, Tail> * arg, tail_t && th1, tail_t && th2, tail_select_t ATR = 1, // for reencoding
+                    static result_t filter(BAT<Head, Tail> * arg, tail_t && th1, tail_t && th2, tail_select_t ATR = 1, // for reencoding
                             tail_select_t ATInvR = 1 // for reencoding
                             ) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
@@ -340,9 +354,10 @@ namespace v2 {
                     }
                 };
 
-                template<template<typename > class Op1, template<typename > class Op2, typename Head>
-                struct SelectionAN2<Op1, Op2, Head, v2_str_t, false> {
+                template<template<typename > class Op1, template<typename > class Op2>
+                struct SelectionAN2<Op1, Op2, v2_void_t, v2_str_t, false> {
 
+                    typedef v2_void_t Head;
                     typedef typename Head::type_t head_t;
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
