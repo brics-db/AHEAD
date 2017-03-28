@@ -104,7 +104,7 @@ if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 # Process specific constants
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
-if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=15; fi # like above
+if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
 if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=10; fi
 declare -p BENCHMARK_SCALEFACTORS 2>/dev/null
 ret=$?
@@ -265,8 +265,9 @@ fi
 # Compile
 if [[ ${DO_COMPILE} -ne 0 ]]; then
     date
+    echo "Compiling:"
     if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
-        echo "Recreating build dir \"${PATH_BUILD}\"."
+        echo " * Recreating build dir \"${PATH_BUILD}\"."
         rm -Rf ${PATH_BUILD}
         mkdir -p ${PATH_BUILD}
         pushd ${PATH_BUILD}
@@ -274,22 +275,25 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
         if [[ -e ${cxx} ]]; then
             export CXX=$cxx
         else
-            echo "This benchmark requires G++-6. You may modify variable CXX_COMPILER at the top of the script."
+            echo " ! This benchmark requires G++-6. You may modify variable CXX_COMPILER at the top of the script."
             exit 1
         fi
+        echo " * Running cmake (Build Type = ${CMAKE_BUILD_TYPE}"
         cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         exitcode=$?
         if [[ ${exitcode} -ne 0 ]]; then
+            echo "    ! Error! Exitcode = ${exitcode}"
             exit ${exitcode};
         fi
     else
         pushd ${PATH_BUILD}
     fi
-    echo "Compiling."
+    echo " * Running make (-j${numcpus})"
     /bin/bash -c "make -j${numcpus}"
     exitcode=$?
     popd
     if [[ ${exitcode} -ne 0 ]]; then
+        echo "    ! Error! Exitcode = ${exitcode}"
         exit ${exitcode};
     fi
 else
