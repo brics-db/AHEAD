@@ -79,7 +79,7 @@ namespace v2 {
                         auto mmATReenc = v2_mm128<tail_select_t>::set1(Areenc);
                         auto mmDMax = v2_mm128<tail_select_t>::set1(TailUnencMaxU);
                         auto mmThreshold = v2_mm128<tail_t>::set1(th);
-                        oid_t szTail = arg->tail.container->size();
+                        auto szTail = arg->tail.container->size();
                         auto pT = arg->tail.container->data();
                         auto pTEnd = pT + szTail;
                         auto pmmT = reinterpret_cast<__m128i *>(pT);
@@ -254,7 +254,7 @@ namespace v2 {
                         auto mmDMax = v2_mm128<tail_select_t>::set1(TailUnencMaxU);
                         auto mmThreshold1 = v2_mm128<tail_t>::set1(th1);
                         auto mmThreshold2 = v2_mm128<tail_t>::set1(th2);
-                        oid_t szTail = arg->tail.container->size();
+                        auto szTail = arg->tail.container->size();
                         auto pT = arg->tail.container->data();
                         auto pTEnd = pT + szTail;
                         auto pmmT = reinterpret_cast<__m128i *>(pT);

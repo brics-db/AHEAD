@@ -90,73 +90,6 @@
 #define MASK_64_08L MASK_64L_8_256(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)
 #define MASK_64_08H MASK_64H_8_256(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)
 
-#define MASK_128_8_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, \
-                0x00, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14
-
-#define MASK_128_8_4(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_2(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_2(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x01)
-
-#define MASK_128_8_8(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_4(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_4(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x02)
-
-#define MASK_128_8_16(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_8(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_8(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x03)
-
-#define MASK_128_8_32(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_16(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_16(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x04)
-
-#define MASK_128_8_64(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_32(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_32(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x05)
-
-#define MASK_128_8_128(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_64(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_64(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x06)
-
-#define MASK_128_8_256(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_128(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_128(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x07)
-
-#define MASK_128_8_512(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_256(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_256(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x08)
-
-#define MASK_128_8_1024(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_512(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_512(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x09)
-
-#define MASK_128_8_2048(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_1024(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_1024(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0A)
-
-#define MASK_128_8_4096(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_2048(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_2048(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0B)
-
-#define MASK_128_8_8192(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_4096(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_4096(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0C)
-
-#define MASK_128_8_16384(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_8192(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_8192(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0D)
-
-#define MASK_128_8_32768(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_16384(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_16384(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0E)
-
-#define MASK_128_8_65536(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0) \
-                MASK_128_8_32768(A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0), \
-                MASK_128_8_32768(A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1, A0, 0x0F)
-
-//#define MASK_128_8 MASK_128_8_65536(static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF), static_cast<int8_t>(0xFF))
-#define MASK_128_08 MASK_128_8_65536(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)
-
 #define MASK_128_16_2(A7, A6, A5, A4, A3, A2, A1, A0) \
                 A0, A1, A2, A3, A4, A5, A6, A7, \
                 0x0100u, A0, A1, A2, A3, A4, A5, A6
@@ -252,17 +185,11 @@ int main() {
 namespace v2 {\n\
     namespace bat {\n\
         namespace ops {\n\n";
-    std::string mask08 = TOSTRING(MASK_128_08);
     std::string mask08L = TOSTRING(MASK_64_08L);
     std::string mask08H = TOSTRING(MASK_64_08H);
     std::string mask16 = TOSTRING(MASK_128_16);
     std::string mask32 = TOSTRING(MASK_128_32);
     std::string mask64 = TOSTRING(MASK_128_64);
-    std::cout << "            const uint8_t SHUFFLE_EPI08_TABLE[65536 * 16] = {";
-    for (size_t i = 0; i < mask08.size(); i += 96) {
-        std::cout << "\n                " << mask08.substr(i, 96);
-    }
-    std::cout << "\n            };\n\n";
     std::cout << "            const uint8_t SHUFFLE_EPI08_TABLE_L[256 * 8] = {";
     for (size_t i = 0; i < mask08L.size(); i += 48) {
         std::cout << "\n                " << mask08L.substr(i, 48);
@@ -288,7 +215,6 @@ namespace v2 {\n\
         std::cout << "\n                " << mask64.substr(i, 46);
     }
     std::cout << "\n            };\n\n";
-    std::cout << "            const __m128i * const v2_mm128<uint8_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI08_TABLE);\n";
     std::cout << "            const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_L = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_L);\n";
     std::cout << "            const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_H = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_H);\n";
     std::cout << "            const __m128i * const v2_mm128<uint16_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE);\n";

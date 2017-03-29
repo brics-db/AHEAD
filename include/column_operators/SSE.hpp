@@ -85,16 +85,10 @@ namespace v2 {
                     uint64_t shuffleMaskL = SHUFFLE_TABLE_L[static_cast<uint8_t>(mask)];
                     int clzb = __builtin_clzll(~shuffleMaskL); // number of unmatched bytes (if a value matches, the leading bits are zero and the inversion makes it ones, so only full bytes are counted)
                     uint64_t shuffleMaskH = SHUFFLE_TABLE_H[static_cast<uint8_t>(mask >> 8)];
-                    // if (clzb) { // any non-matching values (bytes)?
-                        return _mm_shuffle_epi8(a, _mm_set_epi64x(((shuffleMaskH >> clzb) | (ALL_ONES << (64 - clzb))), shuffleMaskL & ((shuffleMaskH << (64 - clzb)) | (ALL_ONES >> clzb))));
-                    // } else {
-                    //     return _mm_shuffle_epi8(a, _mm_set_epi64x(shuffleMaskH, shuffleMaskL));
-                    // }
-                    // return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
+                    return _mm_shuffle_epi8(a, _mm_set_epi64x(((shuffleMaskH >> clzb) | (ALL_ONES << (64 - clzb))), shuffleMaskL & ((shuffleMaskH << (64 - clzb)) | (ALL_ONES >> clzb))));
                 }
 
             private:
-                static const __m128i * const SHUFFLE_TABLE;
                 static const uint64_t * const SHUFFLE_TABLE_L;
                 static const uint64_t * const SHUFFLE_TABLE_H;
             };

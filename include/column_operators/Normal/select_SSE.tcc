@@ -54,7 +54,7 @@ namespace v2 {
                         auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                         result->reserve(arg->size());
                         auto mmThreshold = v2_mm128<tail_t>::set1(th);
-                        oid_t szTail = arg->tail.container->size();
+                        auto szTail = arg->tail.container->size();
                         auto pT = arg->tail.container->data();
                         auto pTEnd = pT + szTail;
                         auto pmmT = reinterpret_cast<__m128i *>(pT);
@@ -63,8 +63,8 @@ namespace v2 {
                         auto pmmRH = reinterpret_cast<__m128i *>(pRH);
                         auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                         auto pmmRT = reinterpret_cast<__m128i *>(pRT);
-                        __m128i mmOID = v2_mm128<head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
-                        __m128i mmInc = v2_mm128<head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t));
+                        auto mmOID = v2_mm128<head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
+                        auto mmInc = v2_mm128<head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t));
                         for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                             auto mm = _mm_lddqu_si128(pmmT);
                             auto mask = v2_mm128_cmp<tail_t, Op>::cmp_mask(mm, mmThreshold);
@@ -173,7 +173,7 @@ namespace v2 {
                         result->reserve(arg->size());
                         auto mmThreshold1 = v2_mm128<tail_t>::set1(th1);
                         auto mmThreshold2 = v2_mm128<tail_t>::set1(th2);
-                        oid_t szTail = arg->tail.container->size();
+                        auto szTail = arg->tail.container->size();
                         auto pT = arg->tail.container->data();
                         auto pTEnd = pT + szTail;
                         auto pmmT = reinterpret_cast<__m128i *>(pT);
@@ -239,8 +239,8 @@ namespace v2 {
                         result->overwrite_size(reinterpret_cast<decltype(pRT)>(pmmRT) - pRT); // "register" the number of values we added
                         auto iter = arg->begin();
                         *iter += (reinterpret_cast<decltype(pT)>(pmmT) - pT);
-                        Op1<typename Tail::v2_compare_t::type_t> op1;
-                        Op2<typename Tail::v2_compare_t::type_t> op2;
+                        Op1<tail_t> op1;
+                        Op2<tail_t> op2;
                         for (; iter->hasNext(); ++*iter) {
                             auto t = iter->tail();
                             if (op1(t, th1) & op2(t, th2)) {
