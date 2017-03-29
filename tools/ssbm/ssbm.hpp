@@ -113,11 +113,8 @@ void printBat(BAT<Head, Tail> *bat, const char* filename, const char* message = 
 /////////////////////////////
 // SSBM_REQUIRED_VARIABLES //
 /////////////////////////////
-#define SSBM_REQUIRED_VARIABLES(Headline, OpsNum, ...)                         \
-ssbmconf_t CONFIG(argc, argv);                                                 \
-std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);                       \
+#define RUNTABLE_REQUIRED_VARIABLES(OpsNum)                                    \
 const size_t NUM_OPS = OpsNum;                                                 \
-cstr_t OP_NAMES[NUM_OPS] = {__VA_ARGS__};                                      \
 size_t I = 0;                                                                  \
 StopWatch sw1, sw2;                                                            \
 StopWatch::rep opTimes[NUM_OPS] = {0};                                         \
@@ -129,6 +126,16 @@ bool hasTwoTypes[NUM_OPS] = {false};                                           \
 boost::typeindex::type_index headTypes[NUM_OPS];                               \
 boost::typeindex::type_index tailTypes[NUM_OPS];                               \
 std::string emptyString;                                                       \
+;do {                                                                          \
+} while (false)
+
+
+
+#define SSBM_REQUIRED_VARIABLES(Headline, OpsNum, ...)                         \
+ssbmconf_t CONFIG(argc, argv);                                                 \
+std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);                       \
+RUNTABLE_REQUIRED_VARIABLES(OpsNum);                                           \
+cstr_t OP_NAMES[NUM_OPS] = {__VA_ARGS__};                                      \
 size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;             \
 std::vector<CoreCounterState> cstate1, cstate2, cstate3;                       \
 std::vector<SocketCounterState> sktstate1, sktstate2, sktstate3;               \
@@ -273,7 +280,7 @@ PCM::ErrorCode pcmStatus = PCM::UnknownError;                                  \
 ;do {                                                                                  \
     TransactionManager::destroyInstance();                                             \
     if (pcmStatus == PCM::Success) {                                                   \
-        m->getAllCounterStates(sysstate2, sktstate2, cstate2);                         \
+        m->getAllCounterStates(sysstate3, sktstate3, cstate3);                         \
         std::cout << "PCM:\n";                                                         \
         std::cout << std::setw(CONFIG.LEN_PCM) << "Attribute" << '\t';                 \
         std::cout << std::setw(CONFIG.LEN_PCM) << "init" << '\t';                      \
@@ -281,8 +288,10 @@ PCM::ErrorCode pcmStatus = PCM::UnknownError;                                  \
         PCM_PRINT("IPC", getIPC, sysstate1, sysstate2, sysstate3);                     \
         PCM_PRINT("MC Read", getBytesReadFromMC, sysstate1, sysstate2, sysstate3);     \
         PCM_PRINT("MC written", getBytesWrittenToMC, sysstate1, sysstate2, sysstate3); \
-        PCM_PRINT("Joules", getConsumedEnergy, sysstate1, sysstate2, sysstate3);       \
-        PCM_PRINT("PCM", getConsumedJoules, sysstate1, sysstate2, sysstate3);          \
+        PCM_PRINT("Energy", getConsumedEnergy, sysstate1, sysstate2, sysstate3);       \
+        PCM_PRINT("Joules", getConsumedJoules, sysstate1, sysstate2, sysstate3);       \
+        PCM_PRINT("L2-Miss Cycle Loss", getCyclesLostDueL2CacheMisses, sysstate1, sysstate2, sysstate3);       \
+        PCM_PRINT("L3-Miss Cycle Loss", getCyclesLostDueL3CacheMisses, sysstate1, sysstate2, sysstate3);       \
     }                                                                                  \
 } while (false)
 
