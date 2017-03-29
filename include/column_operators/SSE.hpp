@@ -81,12 +81,22 @@ namespace v2 {
                 }
 
                 static inline __m128i pack_right(__m128i a, uint16_t mask) {
-                    return _mm_shuffle_epi8(a, SHUFFLE_EPI8_TABLE[mask]);
+                    static const uint64_t ALL_ONES = 0xFFFFFFFFFFFFFFFFull;
+                    uint64_t shuffleMaskL = SHUFFLE_TABLE_L[static_cast<uint8_t>(mask)];
+                    int clzb = __builtin_clzll(~shuffleMaskL); // number of unmatched bytes (if a value matches, the leading bits are zero and the inversion makes it ones, so only full bytes are counted)
+                    uint64_t shuffleMaskH = SHUFFLE_TABLE_H[static_cast<uint8_t>(mask >> 8)];
+                    // if (clzb) { // any non-matching values (bytes)?
+                        return _mm_shuffle_epi8(a, _mm_set_epi64x(((shuffleMaskH >> clzb) | (ALL_ONES << (64 - clzb))), shuffleMaskL & ((shuffleMaskH << (64 - clzb)) | (ALL_ONES >> clzb))));
+                    // } else {
+                    //     return _mm_shuffle_epi8(a, _mm_set_epi64x(shuffleMaskH, shuffleMaskL));
+                    // }
+                    // return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
                 }
 
             private:
-                static const signed char SHUFFLE_EPI8_TABLE8[65536 * 16];
-                static const __m128i * const SHUFFLE_EPI8_TABLE;
+                static const __m128i * const SHUFFLE_TABLE;
+                static const uint64_t * const SHUFFLE_TABLE_L;
+                static const uint64_t * const SHUFFLE_TABLE_H;
             };
 
             template<>
@@ -132,12 +142,11 @@ namespace v2 {
                 }
 
                 static inline __m128i pack_right(__m128i a, uint8_t mask) {
-                    return _mm_shuffle_epi8(a, SHUFFLE_EPI16_TABLE[mask]);
+                    return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
                 }
 
             private:
-                static const signed char SHUFFLE_EPI16_TABLE8[256 * 16];
-                static const __m128i * const SHUFFLE_EPI16_TABLE;
+                static const __m128i * const SHUFFLE_TABLE;
             };
 
             template<>
@@ -191,12 +200,11 @@ namespace v2 {
                 }
 
                 static inline __m128i pack_right(__m128i a, uint8_t mask) {
-                    return _mm_shuffle_epi8(a, SHUFFLE_EPI32_TABLE[mask]);
+                    return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
                 }
 
             private:
-                static const signed char SHUFFLE_EPI32_TABLE8[16 * 16];
-                static const __m128i * const SHUFFLE_EPI32_TABLE;
+                static const __m128i * const SHUFFLE_TABLE;
             };
 
             template<>
@@ -250,12 +258,11 @@ namespace v2 {
                 }
 
                 static inline __m128i pack_right(__m128i a, uint8_t mask) {
-                    return _mm_shuffle_epi8(a, SHUFFLE_EPI64_TABLE[mask]);
+                    return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
                 }
 
             private:
-                static const signed char SHUFFLE_EPI64_TABLE8[4 * 16];
-                static const __m128i * const SHUFFLE_EPI64_TABLE;
+                static const __m128i * const SHUFFLE_TABLE;
             };
 
             namespace Private {

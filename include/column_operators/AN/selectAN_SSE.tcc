@@ -102,14 +102,14 @@ namespace v2 {
                             // comparison on encoded values
                             auto mask = v2_mm128_cmp<tail_t, Op>::cmp_mask(mm, mmThreshold);
                             if (mask) {
-                                size_t nMaskOnes = __builtin_popcount(mask);
+                                size_t nMaskOnes = __builtin_popcountll(mask);
 
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                     tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, maskTmp & maskMask);
                                             _mm_storeu_si128(pmmRH, mmOIDs);
@@ -134,7 +134,7 @@ namespace v2 {
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             v2_mm128_AN<tail_t>::detect(mm, mmATInv, mmDMax, result.second, pos);
                                             pos += tailsPerMM128;
@@ -273,7 +273,7 @@ namespace v2 {
                             // comparison on encoded values
                             auto mask = v2_mm128_cmp<tail_t, Op1>::cmp_mask(mm, mmThreshold1) & v2_mm128_cmp<tail_t, Op2>::cmp_mask(mm, mmThreshold2);
                             if (mask) {
-                                size_t nMaskOnes = __builtin_popcount(mask);
+                                size_t nMaskOnes = __builtin_popcountll(mask);
 
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
@@ -281,7 +281,7 @@ namespace v2 {
                                     decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, maskTmp & maskMask);
                                             _mm_storeu_si128(pmmRH, mmOIDs);
@@ -307,7 +307,7 @@ namespace v2 {
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             v2_mm128_AN<tail_t>::detect(mm, mmATInv, mmDMax, result.second, pos);
                                             pos += sizeof(__m128i) / sizeof(tail_t);

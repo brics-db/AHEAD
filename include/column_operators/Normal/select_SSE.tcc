@@ -69,7 +69,7 @@ namespace v2 {
                             auto mm = _mm_lddqu_si128(pmmT);
                             auto mask = v2_mm128_cmp<tail_t, Op>::cmp_mask(mm, mmThreshold);
                             if (mask) {
-                                size_t nMaskOnes = __builtin_popcount(mask);
+                                size_t nMaskOnes = __builtin_popcountll(mask);
 
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
@@ -77,7 +77,7 @@ namespace v2 {
                                     decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, maskTmp & maskMask);
                                             _mm_storeu_si128(pmmRH, mmOIDs);
@@ -98,7 +98,7 @@ namespace v2 {
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             _mm_storeu_si128(pmmRT, v2_mm128<tail_t>::pack_right(mm, maskTmp & maskMask));
                                             pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + nToAdd);
@@ -188,7 +188,7 @@ namespace v2 {
                             auto mm = _mm_lddqu_si128(pmmT);
                             auto mask = v2_mm128_cmp<tail_t, Op1>::cmp_mask(mm, mmThreshold1) & v2_mm128_cmp<tail_t, Op2>::cmp_mask(mm, mmThreshold2);
                             if (mask) {
-                                size_t nMaskOnes = __builtin_popcount(mask);
+                                size_t nMaskOnes = __builtin_popcountll(mask);
 
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
@@ -196,7 +196,7 @@ namespace v2 {
                                     decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, maskTmp & maskMask);
                                             _mm_storeu_si128(pmmRH, mmOIDs);
@@ -217,7 +217,7 @@ namespace v2 {
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
-                                        size_t nToAdd = __builtin_popcount(maskTmp & maskMask);
+                                        size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
                                         if (nToAdd) {
                                             _mm_storeu_si128(pmmRT, v2_mm128<tail_t>::pack_right(mm, maskTmp & maskMask));
                                             pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + nToAdd);

@@ -88,6 +88,7 @@ namespace v2 {
                     if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2inv) > AT2unencMaxU) {
                         (*vec2)[i] = true;
                     }
+#ifdef AN_TEST_ARITH
                     if (isTail1Encoded || isTail2Encoded) {
                         result_t dTemp = static_cast<result_t>(t1) * static_cast<result_t>(t2);
                         // try 3 times to get a valid result
@@ -105,6 +106,11 @@ namespace v2 {
                         total += static_cast<result_t>(t1) * static_cast<result_t>(t2);
                     }
                 }
+#else
+                    total += static_cast<result_t>(t1) * static_cast<result_t>(t2);
+                }
+                total *= AResultEncode;
+#endif
 
                 delete iter2;
                 delete iter1;
