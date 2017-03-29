@@ -557,6 +557,28 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
             echo ""
         done
     done
+
+    for q in "${IMPLEMENTED[@]}"; do
+    	for t in "${VARIANTS[@]:1}"; do
+    		for s in "${ARCHITECTURE[@]}"; do 
+    			rm -f ./grep.out
+    			diff ${BASE}${q}_normal_${s}.out ${BASE}${q}_${t}_${s}.out | grep result >./grep.out
+    			if [[ -s ./grep.out ]]; then
+    				echo "Q${q} ${t} ${s} (OUT):"
+    				cat ./grep.out
+    				echo "-------------------------------"
+    			fi
+    			rm -f ./grep.out
+    			diff ${BASE}${q}_normal_${s}.err ${BASE}${q}_${t}_${s}.err | grep result >./grep.out
+    			if [[ -s ./grep.out ]]; then
+    				echo "Q${q} ${t} ${s} (ERR):"
+    				cat ./grep.out
+    				echo "-------------------------------"
+    			fi
+    			rm -f ./grep.out
+    		done
+    	done
+    done
 else
     echo "Skipping verification."
 fi
