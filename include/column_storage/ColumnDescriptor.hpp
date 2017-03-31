@@ -34,116 +34,120 @@
 #include <utility>
 #include <ColumnStore.h>
 
-template<typename V2Type>
-struct ColumnDescriptorContainerType {
+namespace v2 {
 
-    typedef typename V2Type::type_t type_t;
-    typedef std::vector<type_t> container_t;
-};
+    template<typename V2Type>
+    struct ColumnDescriptorContainerType {
 
-template<>
-struct ColumnDescriptorContainerType<v2_void_t> {
+        typedef typename V2Type::type_t type_t;
+        typedef std::vector<type_t> container_t;
+    };
 
-    typedef void container_t;
-};
+    template<>
+    struct ColumnDescriptorContainerType<v2_void_t> {
 
-template<typename V2Type, typename Container>
-class ColumnDescriptor {
+        typedef void container_t;
+    };
 
-public:
-    typedef V2Type v2_type_t;
-    typedef Container container_t;
-    typedef typename V2Type::type_t type_t;
+    template<typename V2Type, typename Container>
+    class ColumnDescriptor {
 
-    std::shared_ptr<container_t> container;
+    public:
+        typedef V2Type v2_type_t;
+        typedef Container container_t;
+        typedef typename V2Type::type_t type_t;
 
-    ColumnMetaData metaData;
+        std::shared_ptr<container_t> container;
 
-    ColumnDescriptor()
-            : container(new Container), metaData(sizeof(typename V2Type::type_t)) {
-    }
+        ColumnMetaData metaData;
 
-    ColumnDescriptor(const ColumnDescriptor<V2Type, Container> & cd)
-            : container(cd.container), metaData(std::move(cd.metaData)) {
-    }
+        ColumnDescriptor()
+                : container(new Container), metaData(sizeof(typename V2Type::type_t)) {
+        }
 
-    ColumnDescriptor(ColumnDescriptor<V2Type, Container> && cd)
-            : container(cd.container), metaData(std::move(cd.metaData)) {
-    }
+        ColumnDescriptor(const ColumnDescriptor<V2Type, Container> & cd)
+                : container(cd.container), metaData(std::move(cd.metaData)) {
+        }
 
-    ColumnDescriptor(ColumnMetaData metaData)
-            : container(new Container), metaData(std::move(metaData)) {
-    }
+        ColumnDescriptor(ColumnDescriptor<V2Type, Container> && cd)
+                : container(cd.container), metaData(std::move(cd.metaData)) {
+        }
 
-    virtual ~ColumnDescriptor() {
-    }
+        ColumnDescriptor(ColumnMetaData metaData)
+                : container(new Container), metaData(std::move(metaData)) {
+        }
 
-    ColumnDescriptor<V2Type, Container> & operator=(const ColumnDescriptor<V2Type, Container> &) = default;
-};
+        virtual ~ColumnDescriptor() {
+        }
 
-template<>
-class ColumnDescriptor<v2_void_t, void> {
+        ColumnDescriptor<V2Type, Container> & operator=(const ColumnDescriptor<V2Type, Container> &) = default;
+    };
 
-public:
-    typedef v2_void_t v2_type_t;
-    typedef v2_void_t::type_t type_t;
+    template<>
+    class ColumnDescriptor<v2_void_t, void> {
 
-    ColumnMetaData metaData;
+    public:
+        typedef v2_void_t v2_type_t;
+        typedef v2_void_t::type_t type_t;
 
-    ColumnDescriptor()
-            : metaData() {
-        static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
-    }
+        ColumnMetaData metaData;
 
-    ColumnDescriptor(oid_t seqbase)
-            : metaData(seqbase) {
-        static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
-    }
+        ColumnDescriptor()
+                : metaData() {
+            static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
+        }
 
-    ColumnDescriptor(ColumnMetaData metaData)
-            : metaData(std::move(metaData)) {
-    }
+        ColumnDescriptor(oid_t seqbase)
+                : metaData(seqbase) {
+            static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
+        }
 
-    ColumnDescriptor(const ColumnDescriptor<v2_void_t, void> & cd) = default;
+        ColumnDescriptor(ColumnMetaData metaData)
+                : metaData(std::move(metaData)) {
+        }
 
-    ColumnDescriptor(ColumnDescriptor<v2_void_t, void> && cd) = default;
+        ColumnDescriptor(const ColumnDescriptor<v2_void_t, void> & cd) = default;
 
-    virtual ~ColumnDescriptor() {
-    }
+        ColumnDescriptor(ColumnDescriptor<v2_void_t, void> && cd) = default;
 
-    ColumnDescriptor<v2_void_t, void> & operator=(const ColumnDescriptor<v2_void_t, void> &) = default;
-};
+        virtual ~ColumnDescriptor() {
+        }
 
-template<typename V2Type>
-class ColumnDescriptor<V2Type, void> {
+        ColumnDescriptor<v2_void_t, void> & operator=(const ColumnDescriptor<v2_void_t, void> &) = default;
+    };
 
-public:
-    typedef V2Type v2_type_t;
-    typedef typename V2Type::type_t type_t;
-    typedef ColumnMetaData metadata_t;
+    template<typename V2Type>
+    class ColumnDescriptor<V2Type, void> {
 
-    metadata_t metaData;
+    public:
+        typedef V2Type v2_type_t;
+        typedef typename V2Type::type_t type_t;
+        typedef ColumnMetaData metadata_t;
 
-    ColumnDescriptor()
-            : metaData() {
-    }
+        metadata_t metaData;
 
-    ColumnDescriptor(metadata_t & metaData)
-            : metaData(metaData) {
-    }
+        ColumnDescriptor()
+                : metaData() {
+        }
 
-    ColumnDescriptor(const ColumnDescriptor<V2Type, void> & cd)
-            : metaData(std::move(cd.metaData)) {
-    }
+        ColumnDescriptor(metadata_t & metaData)
+                : metaData(metaData) {
+        }
 
-    ColumnDescriptor(ColumnDescriptor<V2Type, void> && cd)
-            : metaData(std::move(cd.metaData)) {
-    }
+        ColumnDescriptor(const ColumnDescriptor<V2Type, void> & cd)
+                : metaData(std::move(cd.metaData)) {
+        }
 
-    virtual ~ColumnDescriptor() {
-    }
+        ColumnDescriptor(ColumnDescriptor<V2Type, void> && cd)
+                : metaData(std::move(cd.metaData)) {
+        }
 
-    ColumnDescriptor<v2_void_t, void> & operator=(const ColumnDescriptor<V2Type, void> &) = default;
-};
+        virtual ~ColumnDescriptor() {
+        }
+
+        ColumnDescriptor<v2_void_t, void> & operator=(const ColumnDescriptor<V2Type, void> &) = default;
+    };
+
+}
 
 #endif /* COLUMNDESCRIPTOR_HPP */

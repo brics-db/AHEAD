@@ -24,21 +24,16 @@
 
 #include <type_traits>
 
-#include <boost/multiprecision/cpp_int.hpp>
-
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/SSE.hpp>
 #include <column_operators/SSECMP.hpp>
 #include <column_operators/SSEAN.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
+#include <util/v2typeconversion.hpp>
 
 namespace v2 {
     namespace bat {
         namespace ops {
-
-            using uint128_t = boost::multiprecision::uint128_t;
 
             template<typename tail1_t, typename tail2_t, typename result_t, bool isTail1Encoded, bool isTail2Encoded, size_t increment, size_t maxFactor, size_t factor>
             struct partial_aggregate_mul_sumAN {
@@ -51,12 +46,12 @@ namespace v2 {
                         v2_mm128_AN<tail2_t>::detect(*pmmT2, mmAT2inv, mmDMax2, vec2, i);
                     }
                     __m128i mmTemp;
-                    if (v2_larger_type<tail1_t, tail2_t>::isFirstLarger) {
+                    if (larger_type<tail1_t, tail2_t>::isFirstLarger) {
                         mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, (maxFactor - factor) * increment, result_t>(*pmmT1++, *pmmT2);
-                    } else if (v2_larger_type<tail1_t, tail2_t>::isSecondLarger) {
+                    } else if (larger_type<tail1_t, tail2_t>::isSecondLarger) {
                         mmTemp = v2_mm128_mullo<tail1_t, (maxFactor - factor) * increment, tail2_t, 0, result_t>(*pmmT1, *pmmT2++);
                     } else {
-                        mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 0, result_t>(*pmmT1, *pmmT2);
+                        mmTemp = v2_mm128_mullo<tail1_t, 0, tail2_t, 0, result_t>(*pmmT1, *pmmT2); // we need not increment, as there is essentially no recursion and the advancing is done below
                     }
                     mmTotal = v2_mm128<result_t>::add(mmTotal, mmTemp);
                     i += increment;
@@ -80,9 +75,9 @@ namespace v2 {
                     (void) mmDMax2;
                     (void) vec2;
                     (void) i;
-                    if (v2_larger_type<tail1_t, tail2_t>::isFirstLarger) {
+                    if (larger_type<tail1_t, tail2_t>::isFirstLarger) {
                         pmmT2++;
-                    } else if (v2_larger_type<tail1_t, tail2_t>::isSecondLarger) {
+                    } else if (larger_type<tail1_t, tail2_t>::isSecondLarger) {
                         pmmT1++;
                     } else {
                         pmmT1++;
@@ -142,17 +137,17 @@ namespace v2 {
                 result_t AT2InvR(1);
                 if (isTail1Encoded) {
                     uint128_t temp = ext_euclidean(AT1_ui128, codeWidth);
-                    AT1InvR = reinterpret_cast<result_t*>(&temp)[0]; // at most 64 bits. ATTENTION: this code is backend dependent!!!
+                    AT1InvR = v2convert<result_t>(temp);
                 }
                 if (isTail2Encoded) {
                     uint128_t temp = ext_euclidean(AT2_ui128, codeWidth);
-                    AT2InvR = reinterpret_cast<result_t*>(&temp)[0]; // at most 64 bits. ATTENTION: this code is backend dependent!!!
+                    AT2InvR = v2convert<result_t>(temp);
                 }
                 const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
                 // const result_t AResultEncode = RA;
                 size_t i = 0;
                 for (; pmmT1 <= (pmmT1End - 1) && pmmT2 <= (pmmT2End - 1);) {
-                    if (v2_larger_type<tail1_t, tail2_t>::isFirstLarger) {
+                    if (larger_type<tail1_t, tail2_t>::isFirstLarger) {
                         constexpr const size_t factor = sizeof(tail1_t) / sizeof(tail2_t);
                         constexpr const size_t increment = sizeof(__m128i) / sizeof (tail1_t);
                         partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, isTail1Encoded, isTail2Encoded, increment, factor, factor>::doIt(mmTotal, pmmT1, mmAT1inv, mmDMax1, vec1, pmmT2,

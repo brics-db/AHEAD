@@ -51,6 +51,8 @@
 #include <column_storage/TransactionManager.h>
 #include <column_operators/Operators.hpp>
 
+using namespace v2;
+
 // define
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
 namespace boost {
@@ -72,11 +74,11 @@ void printBat(BAT<Head, Tail> *bat, const char* filename, const char* message = 
         fout << '\n';
     }
     oid_t i = 0;
-    constexpr const size_t wOID = v2::numeric_limits<oid_t>::digits10;
-    constexpr const bool isHeadLT16 = v2::larger_type<head_t, uint16_t>::isSecondLarger;
-    constexpr const size_t wHead = isHeadLT16 ? v2::numeric_limits<uint16_t>::digits10 : v2::numeric_limits<head_t>::digits10;
-    constexpr const bool isTailLT16 = v2::larger_type<tail_t, uint16_t>::isSecondLarger;
-    constexpr const size_t wTail = isTailLT16 ? v2::numeric_limits<uint16_t>::digits10 : v2::numeric_limits<tail_t>::digits10;
+    constexpr const size_t wOID = numeric_limits<oid_t>::digits10;
+    constexpr const bool isHeadLT16 = larger_type<head_t, uint16_t>::isSecondLarger;
+    constexpr const size_t wHead = isHeadLT16 ? numeric_limits<uint16_t>::digits10 : numeric_limits<head_t>::digits10;
+    constexpr const bool isTailLT16 = larger_type<tail_t, uint16_t>::isSecondLarger;
+    constexpr const size_t wTail = isTailLT16 ? numeric_limits<uint16_t>::digits10 : numeric_limits<tail_t>::digits10;
     auto iter = bat->begin();
     fout << std::right;
     fout << std::setw(wOID) << "void";
@@ -128,8 +130,6 @@ boost::typeindex::type_index tailTypes[NUM_OPS];                               \
 std::string emptyString;                                                       \
 ;do {                                                                          \
 } while (false)
-
-
 
 #define SSBM_REQUIRED_VARIABLES(Headline, OpsNum, ...)                         \
 ssbmconf_t CONFIG(argc, argv);                                                 \
@@ -374,7 +374,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 ///////////////////
 #define COUT_HEADLINE                                                          \
 ;do {                                                                          \
-    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "proj [B]" << "\t" << std::setw(CONFIG.LEN_SIZES) << " RSS Δ [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail" << "\n"; \
+    std::cout << "\tname\t" << std::setw(CONFIG.LEN_TIMES) << "time [ns]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "size [#]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "consum [B]" << "\t" << std::setw(CONFIG.LEN_SIZES) << "proj [B]" << "\t " << std::setw(CONFIG.LEN_SIZES) << " RSS Δ [B]" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type head" << "\t" << std::setw(CONFIG.LEN_TYPES) << "type tail" << "\n"; \
 } while (false)
 
 /////////////////
@@ -530,21 +530,14 @@ private:
 
 public:
 
-    ssbmconf_t () : NUM_RUNS (0), LEN_TIMES (0), LEN_TYPES (0), LEN_SIZES (0), LEN_PCM (0), DB_PATH (), VERBOSE (false), PRINT_RESULT (0), parser ({
-        std::forward_as_tuple("numruns", alias_list_t{"--numruns", "-n"}, 15),
-        std::forward_as_tuple("lentimes", alias_list_t{"--lentimes"}, 16),
-        std::forward_as_tuple("lentypes", alias_list_t{"--lentypes"}, 14),
-        std::forward_as_tuple("lensizes", alias_list_t{"--lensizes"}, 16),
-        std::forward_as_tuple("lenpcm", alias_list_t{"--lenpcm"}, 16)
-    },
-    {
-        std::forward_as_tuple("dbpath", alias_list_t{"--dbpath", "-d"}, ".")
-    },
-    {
+    ssbmconf_t()
+            : NUM_RUNS(0), LEN_TIMES(0), LEN_TYPES(0), LEN_SIZES(0), LEN_PCM(0), DB_PATH(), VERBOSE(false), PRINT_RESULT(0),
+                    parser(
+                            {std::forward_as_tuple("numruns", alias_list_t {"--numruns", "-n"}, 15), std::forward_as_tuple("lentimes", alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(
+                                    "lentypes", alias_list_t {"--lentypes"}, 14), std::forward_as_tuple("lensizes", alias_list_t {"--lensizes"}, 16), std::forward_as_tuple("lenpcm", alias_list_t {
+                                    "--lenpcm"}, 16)}, {std::forward_as_tuple("dbpath", alias_list_t {"--dbpath", "-d"}, ".")}, {
 
-        std::forward_as_tuple("verbose", alias_list_t{"--verbose", "-v"}, false),
-        std::forward_as_tuple("printresult", alias_list_t{"--print-result", "-p"}, false)
-    }) {
+                            std::forward_as_tuple("verbose", alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple("printresult", alias_list_t {"--print-result", "-p"}, false)}) {
 #ifdef DEBUG
         std::cout << "ssbmconf_t()" << std::endl;
 #endif

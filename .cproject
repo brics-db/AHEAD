@@ -9,8 +9,6 @@
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="de.marw.cdt.cmake.core.CMakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -18,7 +16,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1473675188.613188" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.617321542" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.target.gnu.platform.base.623800827" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder buildPath="${workspace_loc:/v2/build}/" id="de.marw.cdt.cmake.core.genscriptbuilder.793315237" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="CMake Builder (portable)" stopOnErr="false" superClass="de.marw.cdt.cmake.core.genscriptbuilder"/>
+							<builder buildPath="${workspace_loc:/v2/build}/" id="de.marw.cdt.cmake.core.genscriptbuilder.793315237" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="CMake Builder (portable)" stopOnErr="false"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1918991890" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.2062550863" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1606138563" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -41,7 +39,7 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lib"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="tools"/>
+						<entry excluding="include" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="tools"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

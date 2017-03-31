@@ -24,9 +24,7 @@
 
 #include <type_traits>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
 
 namespace v2 {
@@ -48,7 +46,7 @@ namespace v2 {
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
-                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
+                    typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
                     static result_t filter(BAT<Head, Tail>* arg, typename Tail::type_t&& threshold, tail_select_t ATR = 1, tail_select_t ATInvR = 1) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -94,7 +92,7 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename v2_str_t::v2_select_t v2_tail_select_t;
-                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
+                    typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
                     static result_t filter(BAT<Head, v2_str_t> * arg, str_t && threshold, __attribute__ ((unused)) str_t ATR = nullptr, __attribute__ ((unused)) str_t ATInvR = nullptr) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -132,7 +130,7 @@ namespace v2 {
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
-                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
+                    typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
                     static result_t filter(BAT<Head, Tail> * arg, tail_t && threshold1, tail_t && threshold2, tail_select_t ATR = 1, tail_select_t ATInvR = 1) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -179,7 +177,7 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef v2_str_t v2_tail_select_t;
-                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
+                    typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
                     static result_t filter(BAT<Head, v2_str_t> * arg, str_t&& threshold1, str_t&& threshold2, str_t ATR = nullptr, str_t ATInvR = nullptr) {
                         static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");

@@ -24,9 +24,7 @@
 
 #include <type_traits>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 
 #ifdef FORCE_SSE
 #include "selectAN_SSE.tcc"
@@ -39,26 +37,25 @@ namespace v2 {
         namespace ops {
 
             template<template<typename > class Op, typename Head, typename Tail>
-            std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(TempBAT<Head, Tail>* arg,
-                    typename Tail::type_t&& threshold) {
+            std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(BAT<Head, Tail>* arg, typename Tail::type_t&& threshold) {
                 return Private::SelectionAN1<Op, Head, Tail, false>::filter(arg, std::forward<typename Tail::type_t>(threshold));
             }
 
             template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
-            std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(TempBAT<Head, Tail>* arg,
-                    typename Tail::type_t&& threshold1, typename Tail::type_t&& threshold2) {
+            std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(BAT<Head, Tail>* arg, typename Tail::type_t&& threshold1,
+                    typename Tail::type_t&& threshold2) {
                 return Private::SelectionAN2<Op1, Op2, Head, Tail, false>::filter(arg, std::forward<typename Tail::type_t>(threshold1), std::forward<typename Tail::type_t>(threshold2));
             }
 
             template<template<typename > class Op, typename Head, typename Tail>
-            std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(TempBAT<Head, Tail>* arg,
-                    typename Tail::type_t && threshold, typename Tail::v2_select_t::type_t ATR, typename Tail::v2_select_t::type_t ATInvR) {
+            std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(BAT<Head, Tail>* arg, typename Tail::type_t && threshold,
+                    typename Tail::v2_select_t::type_t ATR, typename Tail::v2_select_t::type_t ATInvR) {
                 return Private::SelectionAN1<Op, Head, Tail, true>::filter(arg, std::forward<typename Tail::type_t>(threshold), ATR, ATInvR);
             }
 
             template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
-            std::pair<TempBAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(TempBAT<Head, Tail>* arg,
-                    typename Tail::type_t&& threshold1, typename Tail::type_t&& threshold2, typename Tail::v2_select_t::type_t ATR, typename Tail::v2_select_t::type_t ATInvR) {
+            std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, std::vector<bool>*> selectAN(BAT<Head, Tail>* arg, typename Tail::type_t&& threshold1,
+                    typename Tail::type_t&& threshold2, typename Tail::v2_select_t::type_t ATR, typename Tail::v2_select_t::type_t ATInvR) {
                 return Private::SelectionAN2<Op1, Op2, Head, Tail, true>::filter(arg, std::forward<typename Tail::type_t>(threshold1), std::forward<typename Tail::type_t>(threshold2), ATR, ATInvR);
             }
 

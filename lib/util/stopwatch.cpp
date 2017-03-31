@@ -12,66 +12,68 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/stopwatch.hpp"
+#include <util/stopwatch.hpp>
 
-const bool OUTPUT_INSERT_DOT = true;
+namespace v2 {
 
-StopWatch::StopWatch () : startNS (), stopNS (), totalNS (std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count ()) {
-}
+    const bool OUTPUT_INSERT_DOT = true;
 
-StopWatch::StopWatch (time_point startNS, time_point stopNS, rep totalNS) : startNS (startNS), stopNS (stopNS), totalNS (totalNS) {
-}
-
-void
-StopWatch::start () {
-    totalNS = 0;
-    startNS = std::chrono::high_resolution_clock::now();
-}
-
-void
-StopWatch::resume () {
-    startNS = std::chrono::high_resolution_clock::now();
-}
-
-StopWatch::rep
-StopWatch::stop () {
-    stopNS = std::chrono::high_resolution_clock::now();
-    totalNS += std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count();
-    return duration();
-}
-
-StopWatch::rep
-StopWatch::duration () {
-    return totalNS;
-}
-
-hrc_duration::hrc_duration (StopWatch::rep dura)
-        : dura (dura) {
-}
-
-std::ostream& operator<< (std::ostream& stream, hrc_duration hrcd) {
-    std::chrono::high_resolution_clock::rep dura = hrcd.dura;
-    std::stringstream ss;
-    if (OUTPUT_INSERT_DOT) {
-        size_t max = 1000;
-        while (dura / max > 0) {
-            max *= 1000;
-        }
-        max /= 1000;
-        ss << std::setfill('0') << (dura / max);
-        while (max > 1) {
-            dura %= max;
-            max /= 1000;
-            ss << '.' << std::setw(3) << (dura / max);
-        }
-        ss << std::flush;
-        stream << ss.str();
-    } else {
-        stream << dura;
+    StopWatch::StopWatch()
+            : startNS(), stopNS(), totalNS(std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count()) {
     }
-    return stream;
-}
 
-std::ostream& operator<< (std::ostream& stream, StopWatch sw) {
-    return stream << hrc_duration(sw.duration());
+    StopWatch::StopWatch(time_point startNS, time_point stopNS, rep totalNS)
+            : startNS(startNS), stopNS(stopNS), totalNS(totalNS) {
+    }
+
+    void StopWatch::start() {
+        totalNS = 0;
+        startNS = std::chrono::high_resolution_clock::now();
+    }
+
+    void StopWatch::resume() {
+        startNS = std::chrono::high_resolution_clock::now();
+    }
+
+    StopWatch::rep StopWatch::stop() {
+        stopNS = std::chrono::high_resolution_clock::now();
+        totalNS += std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count();
+        return duration();
+    }
+
+    StopWatch::rep StopWatch::duration() {
+        return totalNS;
+    }
+
+    hrc_duration::hrc_duration(StopWatch::rep dura)
+            : dura(dura) {
+    }
+
+    std::ostream& operator<<(std::ostream& stream, hrc_duration hrcd) {
+        std::chrono::high_resolution_clock::rep dura = hrcd.dura;
+        std::stringstream ss;
+        if (OUTPUT_INSERT_DOT) {
+            size_t max = 1000;
+            while (dura / max > 0) {
+                max *= 1000;
+            }
+            max /= 1000;
+            ss << std::setfill('0') << (dura / max);
+            while (max > 1) {
+                dura %= max;
+                max /= 1000;
+                ss << '.' << std::setw(3) << (dura / max);
+            }
+            ss << std::flush;
+            stream << ss.str();
+        } else {
+            stream << dura;
+        }
+        return stream;
+    }
+
+    std::ostream& operator<<(std::ostream& stream, StopWatch sw) {
+        return stream << hrc_duration(sw.duration());
+    }
+
 }

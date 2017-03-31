@@ -24,9 +24,7 @@
 
 #include <type_traits>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/SSE.hpp>
 #include <column_operators/SSECMP.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
@@ -48,6 +46,7 @@ namespace v2 {
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
+                    typedef typename v2_mm128_cmp<tail_t, Op>::mask_t tail_mask_t;
                     typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
                     static result_t* filter(BAT<v2_void_t, Tail>* arg, tail_t && th) {
@@ -65,6 +64,10 @@ namespace v2 {
                         auto pmmRT = reinterpret_cast<__m128i *>(pRT);
                         auto mmOID = v2_mm128<head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
                         auto mmInc = v2_mm128<head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t));
+
+                        constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
+                        constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
+
                         for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                             auto mm = _mm_lddqu_si128(pmmT);
                             auto mask = v2_mm128_cmp<tail_t, Op>::cmp_mask(mm, mmThreshold);
@@ -73,8 +76,7 @@ namespace v2 {
 
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
-                                    constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << headsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
                                         size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
@@ -90,8 +92,7 @@ namespace v2 {
                                     pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + nMaskOnes);
                                 } else {
                                     constexpr const size_t factor = sizeof(tail_select_t) / sizeof(head_select_t);
-                                    constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << tailsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << tailsPerMM128) - 1);
                                     auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, mask);
                                     _mm_storeu_si128(pmmRH, mmOIDs);
                                     pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nMaskOnes);
@@ -166,6 +167,7 @@ namespace v2 {
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
+                    typedef typename v2_mm128_cmp<tail_t, Op1>::mask_t tail_mask_t;
                     typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
                     static result_t* filter(BAT<v2_void_t, Tail>* arg, tail_t && th1, tail_t && th2) {
@@ -193,7 +195,7 @@ namespace v2 {
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                     constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << headsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
                                         size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
@@ -210,7 +212,7 @@ namespace v2 {
                                 } else {
                                     constexpr const size_t factor = sizeof(tail_select_t) / sizeof(head_select_t);
                                     constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << tailsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << tailsPerMM128) - 1);
                                     auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, mask);
                                     _mm_storeu_si128(pmmRH, mmOIDs);
                                     pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nMaskOnes);
@@ -248,6 +250,7 @@ namespace v2 {
                             }
                         }
                         delete iter;
+
                         return result;
                     }
                 };

@@ -22,9 +22,8 @@
 #ifndef MISCELLANEOUS_TCC
 #define MISCELLANEOUS_TCC
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+
+#include <column_storage/Storage.hpp>
 
 typedef enum {
 

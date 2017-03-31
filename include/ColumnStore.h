@@ -27,30 +27,32 @@
 #include <util/v2types.hpp>
 #include <util/resilience.hpp>
 
+namespace v2 {
+
 #define BITS_PER_BYTE 8
 #define BITS_SIZEOF(x) (sizeof(x) * BITS_PER_BYTE)
 #define BITS_TO_BYTES(x) (((x) + (BITS_PER_BYTE - 1)) / BITS_PER_BYTE)
-// the following macro takes into account the actual data width of "x", since we call clzll which converts it always into an unsigned long long
+    // the following macro takes into account the actual data width of "x", since we call clzll which converts it always into an unsigned long long
 #define BITS_CLZ(x) (__builtin_clzll(x) - ((sizeof(unsigned long long) * BITS_PER_BYTE) - (sizeof(x) * BITS_PER_BYTE)))
 
 #define TOSTRING0(str) #str
 #define TOSTRING(str) TOSTRING0(str)
 
-/*
- * Concatenate preprocessor tokens A and B without expanding macro definitions
- * (however, if invoked from a macro, macro arguments are expanded).
- */
+    /*
+     * Concatenate preprocessor tokens A and B without expanding macro definitions
+     * (however, if invoked from a macro, macro arguments are expanded).
+     */
 #define CONCAT0(A, B) A ## B
 
-/*
- * Concatenate preprocessor tokens A and B after macro-expanding them.
- */
+    /*
+     * Concatenate preprocessor tokens A and B after macro-expanding them.
+     */
 #define CONCAT(A, B) CONCAT0(A, B)
 
-/***********************************************************/
-/* Definition of meta-macro for variable-length macros     */
-/***********************************************************/
-// get number of arguments with __NARG__
+    /***********************************************************/
+    /* Definition of meta-macro for variable-length macros     */
+    /***********************************************************/
+    // get number of arguments with __NARG__
 #define __NARG__(...)  __NARG_I_(__VA_ARGS__,__RSEQ_N())
 #define __NARG_I_(...) __ARG_N(__VA_ARGS__)
 #define __ARG_N( \
@@ -70,74 +72,72 @@
      19,18,17,16,15,14,13,12,11,10, \
      9,8,7,6,5,4,3,2,1,0
 
-// general definition for any function name
+    // general definition for any function name
 #define _VFUNC_(name, n) name##n
 #define _VFUNC(name, n) _VFUNC_(name, n)
 #define VFUNC(func, ...) _VFUNC(func, __NARG__(__VA_ARGS__)) (__VA_ARGS__)
 
-// Example definition for FOO
-// #define FOO(...) VFUNC(FOO, __VA_ARGS__)
-// #define FOO2(x, y) ((x) + (y))
-// #define FOO3(x, y, z) ((x) + (y) + (z))
-// it also works with C functions:
-// int FOO4(int a, int b, int c, int d) { return a + b + c + d; }
+    // Example definition for FOO
+    // #define FOO(...) VFUNC(FOO, __VA_ARGS__)
+    // #define FOO2(x, y) ((x) + (y))
+    // #define FOO3(x, y, z) ((x) + (y) + (z))
+    // it also works with C functions:
+    // int FOO4(int a, int b, int c, int d) { return a + b + c + d; }
 
-/***********************************************************/
+    /***********************************************************/
 
-// Fast-Forward Declarations
-// column_storage
-class BucketManager;
-class ColumnManager;
-class TransactionManager;
-template<typename Head, typename Tail>
-class BAT;
-template<typename Tail>
-class ColumnBAT;
-template<class Head, class Tail>
-class TempBAT;
+    // Fast-Forward Declarations
+    // column_storage
+    class BucketManager;
+    class ColumnManager;
+    class TransactionManager;
+    template<typename Head, typename Tail>
+    class BAT;
+    template<typename Tail>
+    class ColumnBAT;
+    template<class Head, class Tail>
+    class TempBAT;
 
-// meta_repository
-class MetaRepositoryManager;
+    // meta_repository
+    class MetaRepositoryManager;
 
-// Fast-Forward declare Bat, ColumnBAT, TempBat types
-typedef ColumnBAT<v2_tinyint_t> tinyint_colbat_t;
-typedef ColumnBAT<v2_shortint_t> shortint_colbat_t;
-typedef ColumnBAT<v2_int_t> int_colbat_t;
-typedef ColumnBAT<v2_bigint_t> bigint_colbat_t;
-typedef ColumnBAT<v2_char_t> char_colbat_t;
-typedef ColumnBAT<v2_str_t> str_colbat_t;
-typedef ColumnBAT<v2_fixed_t> fixed_colbat_t;
-typedef ColumnBAT<v2_oid_t> oid_colbat_t;
-typedef ColumnBAT<v2_id_t> id_colbat_t;
-typedef ColumnBAT<v2_version_t> version_colbat_t;
-typedef ColumnBAT<v2_size_t> size_colbat_t;
+    // Fast-Forward declare Bat, ColumnBAT, TempBat types
+    typedef ColumnBAT<v2_tinyint_t> tinyint_colbat_t;
+    typedef ColumnBAT<v2_shortint_t> shortint_colbat_t;
+    typedef ColumnBAT<v2_int_t> int_colbat_t;
+    typedef ColumnBAT<v2_bigint_t> bigint_colbat_t;
+    typedef ColumnBAT<v2_char_t> char_colbat_t;
+    typedef ColumnBAT<v2_str_t> str_colbat_t;
+    typedef ColumnBAT<v2_fixed_t> fixed_colbat_t;
+    typedef ColumnBAT<v2_oid_t> oid_colbat_t;
+    typedef ColumnBAT<v2_id_t> id_colbat_t;
+    typedef ColumnBAT<v2_version_t> version_colbat_t;
+    typedef ColumnBAT<v2_size_t> size_colbat_t;
 
-typedef TempBAT<v2_void_t, v2_tinyint_t> tinyint_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_shortint_t> shortint_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_int_t> int_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_bigint_t> bigint_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_char_t> char_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_str_t> str_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_fixed_t> fixed_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_oid_t> oid_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_id_t> id_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_version_t> version_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_size_t> size_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_tinyint_t> tinyint_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_shortint_t> shortint_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_int_t> int_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_bigint_t> bigint_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_char_t> char_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_str_t> str_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_fixed_t> fixed_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_oid_t> oid_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_id_t> id_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_version_t> version_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_size_t> size_tmpbat_t;
 
-// Fast-Forward declare ColumnBAT, TempBat types
-typedef ColumnBAT<v2_restiny_t> restiny_colbat_t;
-typedef ColumnBAT<v2_resshort_t> resshort_colbat_t;
-typedef ColumnBAT<v2_resint_t> resint_colbat_t;
-typedef ColumnBAT<v2_resoid_t> resoid_colbat_t;
-typedef ColumnBAT<v2_resstr_t> resstr_colbat_t;
+    // Fast-Forward declare ColumnBAT, TempBat types
+    typedef ColumnBAT<v2_restiny_t> restiny_colbat_t;
+    typedef ColumnBAT<v2_resshort_t> resshort_colbat_t;
+    typedef ColumnBAT<v2_resint_t> resint_colbat_t;
+    typedef ColumnBAT<v2_resoid_t> resoid_colbat_t;
+    typedef ColumnBAT<v2_resstr_t> resstr_colbat_t;
 
-typedef TempBAT<v2_void_t, v2_restiny_t> restiny_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_resshort_t> resshort_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_resint_t> resint_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_resoid_t> resoid_tmpbat_t;
-typedef TempBAT<v2_void_t, v2_resstr_t> resstr_tmpbat_t;
-
-namespace v2 {
+    typedef TempBAT<v2_void_t, v2_restiny_t> restiny_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_resshort_t> resshort_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_resint_t> resint_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_resoid_t> resoid_tmpbat_t;
+    typedef TempBAT<v2_void_t, v2_resstr_t> resstr_tmpbat_t;
 
     template<size_t alignment, typename T>
     T*

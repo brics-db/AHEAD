@@ -29,9 +29,7 @@
 
 #include <google/dense_hash_map>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
 
 using boost::multiprecision::uint128_t;

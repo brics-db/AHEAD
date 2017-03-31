@@ -38,144 +38,66 @@
 #ifndef OPERATORS_H
 #define OPERATORS_H
 
-#include <ColumnStore.h>
-
+#include <column_storage/Storage.hpp>
+#include <column_operators/Normal/miscellaneous.tcc>
 #include <column_operators/Normal/select.tcc>
 #include <column_operators/Normal/hashjoin.tcc>
 #include <column_operators/Normal/matchjoin.tcc>
 #include <column_operators/Normal/aggregate.tcc>
 #include <column_operators/Normal/groupby.tcc>
 
-#define V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, HEAD) \
-extern template RETURN<HEAD, v2_oid_t> * NAME<HEAD, v2_oid_t>(BAT<HEAD, v2_oid_t> * arg); \
-extern template RETURN<HEAD, v2_id_t> * NAME<HEAD, v2_id_t>(BAT<HEAD, v2_id_t> * arg); \
-extern template RETURN<HEAD, v2_size_t> * NAME<HEAD, v2_size_t>(BAT<HEAD, v2_size_t> * arg); \
-extern template RETURN<HEAD, v2_tinyint_t> * NAME<HEAD, v2_tinyint_t>(BAT<HEAD, v2_tinyint_t> * arg); \
-extern template RETURN<HEAD, v2_shortint_t> * NAME<HEAD, v2_shortint_t>(BAT<HEAD, v2_shortint_t> * arg); \
-extern template RETURN<HEAD, v2_int_t> * NAME<HEAD, v2_int_t>(BAT<HEAD, v2_int_t> * arg); \
-extern template RETURN<HEAD, v2_bigint_t> * NAME<HEAD, v2_bigint_t>(BAT<HEAD, v2_bigint_t> * arg); \
-extern template RETURN<HEAD, v2_char_t> * NAME<HEAD, v2_char_t>(BAT<HEAD, v2_char_t> * arg); \
-extern template RETURN<HEAD, v2_str_t> * NAME<HEAD, v2_str_t>(BAT<HEAD, v2_str_t> * arg); \
-extern template RETURN<HEAD, v2_fixed_t> * NAME<HEAD, v2_fixed_t>(BAT<HEAD, v2_fixed_t> * arg);
-
-#define V2_FUNCTION_SINGLE(NAME, RETURN) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_oid_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_void_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_id_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_size_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_tinyint_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_shortint_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_int_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_bigint_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_char_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_str_t) \
-V2_FUNCTION_SINGLE_HEAD(NAME, RETURN, v2_fixed_t)
-
-#define V2_CLASS_SINGLE_HEAD(NAME, HEAD) \
-extern template class NAME <HEAD, v2_oid_t>; \
-extern template class NAME <HEAD, v2_id_t>; \
-extern template class NAME <HEAD, v2_size_t>; \
-extern template class NAME <HEAD, v2_tinyint_t>; \
-extern template class NAME <HEAD, v2_shortint_t>; \
-extern template class NAME <HEAD, v2_int_t>; \
-extern template class NAME <HEAD, v2_bigint_t>; \
-extern template class NAME <HEAD, v2_char_t>; \
-extern template class NAME <HEAD, v2_str_t>; \
-extern template class NAME <HEAD, v2_fixed_t>;
-
-#define V2_CLASS_SINGLE(NAME) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_oid_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_void_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_id_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_size_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_tinyint_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_shortint_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_int_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_bigint_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_char_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_str_t) \
-V2_CLASS_SINGLE_HEAD(NAME, v2_fixed_t)
-
-#define V2_STRUCT_SINGLE_HEAD(NAME, HEAD) \
-extern template struct NAME <HEAD, v2_oid_t>; \
-extern template struct NAME <HEAD, v2_id_t>; \
-extern template struct NAME <HEAD, v2_size_t>; \
-extern template struct NAME <HEAD, v2_tinyint_t>; \
-extern template struct NAME <HEAD, v2_shortint_t>; \
-extern template struct NAME <HEAD, v2_int_t>; \
-extern template struct NAME <HEAD, v2_bigint_t>; \
-extern template struct NAME <HEAD, v2_char_t>; \
-extern template struct NAME <HEAD, v2_str_t>; \
-extern template struct NAME <HEAD, v2_fixed_t>;
-
-#define V2_STRUCT_SINGLE(NAME) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_oid_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_void_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_id_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_size_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_tinyint_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_shortint_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_int_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_bigint_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_char_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_str_t) \
-V2_STRUCT_SINGLE_HEAD(NAME, v2_fixed_t)
-
-#define V2_SELECT(V2TYPE, TYPE) \
-extern template BAT<v2_oid_t, V2TYPE>* select<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
-extern template BAT<v2_oid_t, V2TYPE>* select<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
-extern template BAT<v2_oid_t, V2TYPE>* select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
-extern template BAT<v2_oid_t, V2TYPE>* select<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
-extern template BAT<v2_oid_t, V2TYPE>* select<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1);
-
-#define V2_SELECT1(TAIL) \
-extern template struct Selection1<std::greater, v2_void_t, TAIL>; \
-extern template struct Selection1<std::greater_equal, v2_void_t, TAIL>; \
-extern template struct Selection1<std::equal_to, v2_void_t, TAIL>; \
-extern template struct Selection1<std::less_equal, v2_void_t, TAIL>; \
-extern template struct Selection1<std::less, v2_void_t, TAIL>;
-
-#define V2_SELECT2(TAIL) \
-extern template struct Selection2<std::greater, std::less, v2_void_t, TAIL>; \
-extern template struct Selection2<std::greater, std::less_equal, v2_void_t, TAIL>; \
-extern template struct Selection2<std::greater_equal, std::less, v2_void_t, TAIL>; \
-extern template struct Selection2<std::greater_equal, std::less_equal, v2_void_t, TAIL>;
-
 namespace v2 {
     namespace bat {
         namespace ops {
 
-            namespace Private {
-                V2_STRUCT_SINGLE(copy0)
-                V2_SELECT1(v2_tinyint_t)
-                V2_SELECT2(v2_tinyint_t)
-                V2_SELECT1(v2_shortint_t)
-                V2_SELECT2(v2_shortint_t)
-                V2_SELECT1(v2_int_t)
-                V2_SELECT2(v2_int_t)
-                V2_SELECT1(v2_bigint_t)
-                V2_SELECT2(v2_bigint_t)
-            }
+            extern template TempBAT<v2_void_t, v2_oid_t>* copy(BAT<v2_void_t, v2_oid_t>* arg);
+            extern template TempBAT<v2_void_t, v2_id_t>* copy(BAT<v2_void_t, v2_id_t>* arg);
+            extern template TempBAT<v2_void_t, v2_size_t>* copy(BAT<v2_void_t, v2_size_t>* arg);
+            extern template TempBAT<v2_void_t, v2_tinyint_t>* copy(BAT<v2_void_t, v2_tinyint_t>* arg);
+            extern template TempBAT<v2_void_t, v2_shortint_t>* copy(BAT<v2_void_t, v2_shortint_t>* arg);
+            extern template TempBAT<v2_void_t, v2_int_t>* copy(BAT<v2_void_t, v2_int_t>* arg);
+            extern template TempBAT<v2_void_t, v2_bigint_t>* copy(BAT<v2_void_t, v2_bigint_t>* arg);
+            extern template TempBAT<v2_void_t, v2_str_t>* copy(BAT<v2_void_t, v2_str_t>* arg);
 
-            V2_FUNCTION_SINGLE(copy, TempBAT)
+#define V2_SELECT2_SUB(SELECT, V2TYPE, V2SELECTTYPE, TYPE) \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::greater, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1, TYPE && th2); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::greater_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1, TYPE && th2); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1, TYPE && th2); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::less_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1, TYPE && th2); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::less, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1, TYPE && th2);
 
-            V2_SELECT(v2_tinyint_t, tinyint_t)
-            V2_SELECT(v2_shortint_t, shortint_t)
-            V2_SELECT(v2_int_t, int_t)
-            V2_SELECT(v2_bigint_t, bigint_t)
-            V2_SELECT(v2_str_t, str_t)
+#define V2_SELECT2(V2TYPE, V2SELECTTYPE, TYPE) \
+V2_SELECT2_SUB(std::greater, V2TYPE, V2SELECTTYPE, TYPE) \
+V2_SELECT2_SUB(std::greater_equal, V2TYPE, V2SELECTTYPE, TYPE) \
+V2_SELECT2_SUB(std::equal_to, V2TYPE, V2SELECTTYPE, TYPE) \
+V2_SELECT2_SUB(std::less_equal, V2TYPE, V2SELECTTYPE, TYPE) \
+V2_SELECT2_SUB(std::less, V2TYPE, V2SELECTTYPE, TYPE)
+
+#define V2_SELECT(V2TYPE, V2SELECTTYPE, TYPE) \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template BAT<v2_oid_t, V2SELECTTYPE>* select<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+V2_SELECT2(V2TYPE, V2SELECTTYPE, TYPE)
+
+            V2_SELECT(v2_tinyint_t, v2_tinyint_t, tinyint_t)
+            V2_SELECT(v2_shortint_t, v2_shortint_t, shortint_t)
+            V2_SELECT(v2_int_t, v2_int_t, int_t)
+            V2_SELECT(v2_bigint_t, v2_bigint_t, bigint_t)
+            V2_SELECT(v2_str_t, v2_str_t, str_t)
+            V2_SELECT(v2_restiny_t, v2_restiny_t, restiny_t)
+            V2_SELECT(v2_resshort_t, v2_resshort_t, resshort_t)
+            V2_SELECT(v2_resint_t, v2_resint_t, resint_t)
+            V2_SELECT(v2_resbigint_t, v2_resbigint_t, resbigint_t)
+            V2_SELECT(v2_resstr_t, v2_resstr_t, str_t)
+
+#undef V2_SELECT
+#undef V2_SELECT2
+#undef V2_SELECT2_SUB
+
         }
     }
 }
-
-#undef V2_SELECT2
-#undef V2_SELECT1
-#undef V2_SELECT
-#undef V2_FUNCTION_SINGLE_HEAD
-#undef V2_FUNCTION_SINGLE
-#undef V2_CLASS_SINGLE_HEAD
-#undef V2_CLASS_SINGLE
-#undef V2_STRUCT_SINGLE_HEAD
-#undef V2_STRUCT_SINGLE
 
 #endif

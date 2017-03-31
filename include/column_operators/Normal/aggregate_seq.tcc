@@ -22,9 +22,7 @@
 #ifndef AGGREGATE_SEQ_TCC
 #define AGGREGATE_SEQ_TCC
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/SSE.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
 

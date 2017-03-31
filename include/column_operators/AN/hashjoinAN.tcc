@@ -25,16 +25,11 @@
 #include <limits>
 #include <type_traits>
 
-#include <boost/multiprecision/cpp_int.hpp>
-
 #include <google/dense_hash_map>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
-
-using boost::multiprecision::uint128_t;
+#include <util/v2typeconversion.hpp>
 
 namespace v2 {
     namespace bat {
@@ -411,13 +406,7 @@ namespace v2 {
                                 if (needConvert || isTail1Smaller) {
                                     // we need to convert (e.g. different A's or Tail1 is smaller type than Head2 --> recompute the inverse for larger ring)
                                     auto newAinv = ext_euclidean(uint128_t(AT1), sizeof(hash_t) * 8);
-                                    Ainv = 0;
-                                    // OK, let's convert it from that super long representation into our shorter one
-                                    const unsigned limb_num = newAinv.backend().size(); // number of limbs
-                                    const unsigned limb_bits = sizeof(boost::multiprecision::limb_type) * CHAR_BIT; // size of limb in bits
-                                    for (unsigned i = 0; i < limb_num && ((i * limb_bits) < (sizeof(Ainv) * 8)); ++i) {
-                                        Ainv |= (newAinv.backend().limbs()[i]) << (i * limb_bits);
-                                    }
+                                    Ainv = v2convert<hash_t>(newAinv);
                                 } else {
                                     Ainv = AT1Inv;
                                 }
@@ -469,13 +458,7 @@ namespace v2 {
                                     // we need to convert (e.g. different A's or Tail1 is smaller type than Head2 --> recompute the inverse for larger ring)
                                     // TODO auto newAinv = ext_euclidean(uint128_t(AH2), sizeof (hash_t) * 8);
                                     auto newAinv = ext_euclidean(uint128_t(AT1), sizeof(h2enc_t) * 8);
-                                    Ainv = 0;
-                                    // OK, let's convert it from that super long representation into our shorter one
-                                    const unsigned limb_num = newAinv.backend().size(); // number of limbs
-                                    const unsigned limb_bits = sizeof(boost::multiprecision::limb_type) * CHAR_BIT; // size of limb in bits
-                                    for (unsigned i = 0; i < limb_num && ((i * limb_bits) < (sizeof(Ainv) * 8)); ++i) {
-                                        Ainv |= (newAinv.backend().limbs()[i]) << (i * limb_bits);
-                                    }
+                                    Ainv = v2convert<hash_t>(newAinv);
                                 } else {
                                     // TODO Ainv = AH2Inv;
                                     Ainv = AT1Inv;

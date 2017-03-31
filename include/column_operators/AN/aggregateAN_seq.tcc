@@ -24,10 +24,9 @@
 
 #include <type_traits>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
+#include <util/v2typeconversion.hpp>
 
 namespace v2 {
     namespace bat {
@@ -69,11 +68,11 @@ namespace v2 {
                 result_t AT2InvR(1);
                 if (isTail1Encoded) {
                     uint128_t temp = ext_euclidean(AT1_ui128, codeWidth);
-                    AT1InvR = reinterpret_cast<result_t*>(&temp)[0]; // at most 64 bits. ATTENTION: this code is backend dependent!!!
+                    AT1InvR = v2convert<result_t>(temp);
                 }
                 if (isTail2Encoded) {
                     uint128_t temp = ext_euclidean(AT2_ui128, codeWidth);
-                    AT2InvR = reinterpret_cast<result_t*>(&temp)[0]; // at most 64 bits. ATTENTION: this code is backend dependent!!!
+                    AT2InvR = v2convert<result_t>(temp);
                 }
                 const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
                 const result_t ATempResultTest = AT1InvR * AT2InvR;

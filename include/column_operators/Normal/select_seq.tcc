@@ -24,9 +24,7 @@
 
 #include <type_traits>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/SSE.hpp>
 #include <column_operators/SSECMP.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>

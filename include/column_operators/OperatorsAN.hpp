@@ -22,11 +22,43 @@
 #ifndef OPERATORSAN_TCC
 #define OPERATORSAN_TCC
 
-#include "AN/selectAN.tcc"
-#include "AN/hashjoinAN.tcc"
-#include "AN/matchjoinAN.tcc"
-#include "AN/aggregateAN.tcc"
-#include "AN/encdecAN.tcc"
-#include "AN/groupbyAN.tcc"
+
+#include <column_storage/Storage.hpp>
+#include <column_operators/Normal/miscellaneous.tcc>
+#include <column_operators/AN/selectAN.tcc>
+#include <column_operators/AN/hashjoinAN.tcc>
+#include <column_operators/AN/matchjoinAN.tcc>
+#include <column_operators/AN/aggregateAN.tcc>
+#include <column_operators/AN/encdecAN.tcc>
+#include <column_operators/AN/groupbyAN.tcc>
+
+namespace v2 {
+    namespace bat {
+        namespace ops {
+
+            extern template TempBAT<v2_void_t, v2_restiny_t>* copy(BAT<v2_void_t, v2_restiny_t>* arg);
+            extern template TempBAT<v2_void_t, v2_resshort_t>* copy(BAT<v2_void_t, v2_resshort_t>* arg);
+            extern template TempBAT<v2_void_t, v2_resint_t>* copy(BAT<v2_void_t, v2_resint_t>* arg);
+            extern template TempBAT<v2_void_t, v2_resbigint_t>* copy(BAT<v2_void_t, v2_resbigint_t>* arg);
+            extern template TempBAT<v2_void_t, v2_resstr_t>* copy(BAT<v2_void_t, v2_resstr_t>* arg);
+
+#define V2_SELECT(V2TYPE, V2SELECTTYPE, TYPE) \
+extern template std::pair<BAT<v2_resoid_t, V2SELECTTYPE>*, std::vector<bool>*> selectAN<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template std::pair<BAT<v2_resoid_t, V2SELECTTYPE>*, std::vector<bool>*> selectAN<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template std::pair<BAT<v2_resoid_t, V2SELECTTYPE>*, std::vector<bool>*> selectAN<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template std::pair<BAT<v2_resoid_t, V2SELECTTYPE>*, std::vector<bool>*> selectAN<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1); \
+extern template std::pair<BAT<v2_resoid_t, V2SELECTTYPE>*, std::vector<bool>*> selectAN<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, TYPE && th1);
+
+            V2_SELECT(v2_restiny_t, v2_restiny_t, restiny_t)
+            V2_SELECT(v2_resshort_t, v2_resshort_t, resshort_t)
+            V2_SELECT(v2_resint_t, v2_resint_t, resint_t)
+            V2_SELECT(v2_resbigint_t, v2_resbigint_t, resbigint_t)
+            V2_SELECT(v2_resstr_t, v2_resstr_t, str_t)
+
+#undef V2_SELECT
+
+        }
+    }
+}
 
 #endif /* OPERATORSAN_TCC */

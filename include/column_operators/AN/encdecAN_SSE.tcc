@@ -25,9 +25,7 @@
 #include <type_traits>
 #include <immintrin.h>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/SSE.hpp>
 #include <column_operators/SSECMP.hpp>
 #include <column_operators/SSEAN.hpp>
@@ -121,127 +119,99 @@ namespace v2 {
                     typedef typename Tail::v2_unenc_t v2_tail_unenc_t;
                     typedef typename v2_head_unenc_t::type_t head_unenc_t;
                     typedef typename v2_tail_unenc_t::type_t tail_unenc_t;
-                    typedef typename v2_mm128_AN<head_t>::mask_t head_mask_t;
-                    typedef typename v2_mm128_AN<tail_t>::mask_t tail_mask_t;
+                    typedef typename smaller_type<head_t, tail_t>::type_t smaller_t;
+                    typedef typename smaller_type<head_unenc_t, tail_unenc_t>::type_t smaller_unenc_t;
+                    typedef typename larger_type<head_t, tail_t>::type_t larger_t;
+                    typedef typename larger_type<head_unenc_t, tail_unenc_t>::type_t larger_unenc_t;
+                    typedef typename v2_mm128_AN<smaller_t>::mask_t smaller_mask_t;
+                    typedef typename v2_mm128_AN<larger_t>::mask_t larger_mask_t;
                     typedef typename std::tuple<BAT<v2_head_unenc_t, v2_tail_unenc_t>*, std::vector<bool>*, std::vector<bool>*> result_t;
 
                     static result_t doIt(BAT<Head, Tail>* arg) {
                         static_assert(std::is_base_of<v2_anencoded_t, Head>::value || std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
 
+                        constexpr const bool isHeadSmaller = larger_type<head_t, tail_t>::isSecondLarger;
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
-                        constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_t);
-                        constexpr const head_mask_t maskMaskH = static_cast<head_mask_t>((1ull << headsPerMM128) - 1);
-                        constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_t);
-                        constexpr const tail_mask_t maskMaskT = static_cast<tail_mask_t>((1ull << tailsPerMM128) - 1);
+                        constexpr const size_t smallersPerMM128 = sizeof(__m128i) / sizeof (smaller_t);
+                        constexpr const smaller_mask_t maskMaskH = static_cast<smaller_mask_t>((1ull << smallersPerMM128) - 1);
+                        constexpr const size_t largersPerMM128 = sizeof(__m128i) / sizeof (larger_t);
+                        constexpr const larger_mask_t maskMaskT = static_cast<larger_mask_t>((1ull << largersPerMM128) - 1);
+                        constexpr const size_t factor = sizeof(larger_t) / sizeof(smaller_t);
+                        constexpr const bool isSmallerEncoded = isHeadSmaller ? isHeadEncoded : isTailEncoded;
+                        constexpr const bool isLargerEncoded = isHeadSmaller ? isTailEncoded : isHeadEncoded;
+                        constexpr const smaller_mask_t maskSMask = static_cast<smaller_mask_t>((1ull << smallersPerMM128) - 1);
+                        constexpr const larger_mask_t maskLMask = static_cast<larger_mask_t>((1ull << largersPerMM128) - 1);
+
+                        oid_t szArg = arg->size();
+
+                        std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(szArg) : nullptr);
+                        std::vector<bool> *vec2 = (isTailEncoded ? new std::vector<bool>(szArg) : nullptr);
+                        auto vecS = isHeadSmaller ? vec1 : vec2;
+                        auto vecL = isHeadSmaller ? vec2 : vec1;
+
+                        auto result = new TempBAT<v2_head_unenc_t, v2_tail_unenc_t>();
+                        result->reserve(szArg + smallersPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
+
+                        auto pmmH = reinterpret_cast<__m128i *>(arg->head.container->data());
+                        auto pmmHEnd = reinterpret_cast<__m128i *>(arg->head.container->data() + szArg);
+                        auto pmmT = reinterpret_cast<__m128i *>(arg->tail.container->data());
+                        auto pmmTEnd = reinterpret_cast<__m128i *>(arg->tail.container->data() + szArg);
+                        __m128i * pmmS = isHeadSmaller ? pmmH : pmmT;
+                        __m128i * pmmSEnd = isHeadSmaller ? pmmHEnd : pmmTEnd;
+                        __m128i * pmmL = isHeadSmaller ? pmmT : pmmH;
+                        __m128i mmDecS, mmDecL;
+                        auto pRH = reinterpret_cast<head_unenc_t*>(result->head.container->data());
+                        auto pRT = reinterpret_cast<tail_unenc_t*>(result->tail.container->data());
+                        auto pmmRS = isHeadSmaller ? reinterpret_cast<__m128i *>(pRH) : reinterpret_cast<__m128i *>(pRT);
+                        auto pmmRL = isHeadSmaller ? reinterpret_cast<__m128i *>(pRT) : reinterpret_cast<__m128i *>(pRH);
+
+                        smaller_mask_t maskSBad, maskSOk, maskSOk2;
+                        larger_mask_t maskLBad, maskLOk;
 
                         head_t hAinv = static_cast<head_t>(arg->head.metaData.AN_Ainv);
                         head_t hUnencMaxU = static_cast<head_t>(arg->head.metaData.AN_unencMaxU);
                         tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                         tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
-
-                        std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(arg->size()) : nullptr);
-                        std::vector<bool> *vec2 = (isTailEncoded ? new std::vector<bool>(arg->size()) : nullptr);
-                        auto result = new TempBAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>();
-                        oid_t szArg = arg->size();
-                        result->reserve(szArg + (headsPerMM128 > tailsPerMM128 ? headsPerMM128 : tailsPerMM128)); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
-                        auto pH = arg->head.container->data();
-                        auto pmmH = reinterpret_cast<__m128i *>(pH);
-                        auto pT = arg->tail.container->data();
-                        auto pTEnd = pT + szArg;
-                        auto pmmT = reinterpret_cast<__m128i *>(pT);
-                        auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
-                        auto mmAHInv = v2_mm128<head_t>::set1(hAinv);
-                        auto mmAHDmax = v2_mm128<head_t>::set1(hUnencMaxU);
-                        auto mmATInv = v2_mm128<tail_t>::set1(tAinv);
-                        auto mmATDmax = v2_mm128<tail_t>::set1(tUnencMaxU);
-                        __m128i mmDecH, mmDecT;
-                        auto pRH = reinterpret_cast<head_unenc_t*>(result->head.container->data());
-                        auto pmmRH = reinterpret_cast<__m128i *>(pRH);
-                        auto pRT = reinterpret_cast<tail_unenc_t*>(result->tail.container->data());
-                        auto pmmRT = reinterpret_cast<__m128i *>(pRT);
-                        head_mask_t maskHBad, maskHOk, maskHOk2;
-                        tail_mask_t maskTBad, maskTOk, maskTOk2;
-
+                        auto mmASinv = isHeadSmaller ? v2_mm128<head_t>::set1(hAinv) : v2_mm128<tail_t>::set1(tAinv);
+                        auto mmALinv = isHeadSmaller ? v2_mm128<tail_t>::set1(tAinv) : v2_mm128<head_t>::set1(hAinv);
+                        auto mmASDmax = isHeadSmaller ? v2_mm128<head_t>::set1(hUnencMaxU) : v2_mm128<tail_t>::set1(tUnencMaxU);
+                        auto mmALDmax = isHeadSmaller ? v2_mm128<tail_t>::set1(tUnencMaxU) : v2_mm128<head_t>::set1(hUnencMaxU);
                         size_t pos = 0;
-                        while (pmmT <= (pmmTEnd - 1)) {
-                            if (larger_type<head_t, tail_t>::isFirstLarger) {
-                                constexpr const size_t factor = sizeof(head_t) / sizeof(tail_t);
-                                if (isTailEncoded) {
-                                    maskTBad = v2_mm128_AN<tail_t>::detect(mmDecT, *pmmT++, mmATInv, mmATDmax, vec2, pos);
-                                    mmDecT = v2_mm128_cvt<tail_t, tail_unenc_t>(mmDecT);
-                                } else {
-                                    mmDecT = _mm_lddqu_si128(pmmT++);
-                                    maskTBad = 0;
-                                }
-                                maskTOk = (~maskTBad) & maskMaskT; // only copy valid values
-                                maskTOk2 = 0;
-                                for (size_t i = 0; i < factor; ++i) {
-                                    if (isHeadEncoded) {
-                                        maskHBad = v2_mm128_AN<head_t>::detect(mmDecH, *pmmH++, mmAHInv, mmAHDmax, vec1, pos);
-                                        mmDecH = v2_mm128_cvt<head_t, head_unenc_t>(mmDecH);
-                                    } else {
-                                        mmDecH = _mm_lddqu_si128(pmmH++);
-                                        maskHBad = 0;
-                                    }
-                                    pos += headsPerMM128;
-                                    maskHOk = (~maskHBad) & maskMaskH;
-                                    auto shift = i * headsPerMM128;
-                                    head_mask_t maskBoth = static_cast<head_mask_t>(((static_cast<tail_mask_t>(maskHOk) << shift) & maskTOk) >> shift);
-                                    maskTOk2 |= static_cast<tail_mask_t>(maskBoth) << shift;
-                                    if (maskBoth) {
-                                        _mm_storeu_si128(pmmRH, v2_mm128<head_unenc_t>::pack_right(mmDecH, maskBoth));
-                                        pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_unenc_t*>(pmmRH) + __builtin_popcount(maskBoth));
-                                    }
-                                }
-                                if (isTailEncoded) {
-                                    if (maskTOk2) {
-                                        _mm_storeu_si128(pmmRT, v2_mm128<tail_unenc_t>::pack_right(mmDecT, maskTOk2));
-                                        pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_unenc_t*>(pmmRT) + __builtin_popcount(maskTOk2));
-                                    }
-                                } else {
-                                    _mm_storeu_si128(pmmRT++, mmDecT);
-                                }
+                        while (pmmS <= (pmmSEnd - 1)) {
+                            auto mm = _mm_lddqu_si128(pmmS++);
+                            if (isSmallerEncoded) {
+                                maskSBad = v2_mm128_AN<smaller_t>::detect(mmDecS, mm, mmASinv, mmASDmax, vecS, pos);
+                                mmDecS = v2_mm128_cvt<smaller_t, smaller_unenc_t>(mmDecS);
                             } else {
-                                constexpr const size_t factor = sizeof(tail_t) / sizeof(head_t);
-                                if (isHeadEncoded) {
-                                    maskHBad = v2_mm128_AN<head_t>::detect(mmDecH, *pmmH++, mmAHInv, mmAHDmax, vec1, pos);
-                                    mmDecH = v2_mm128_cvt<head_t, head_unenc_t>(mmDecH);
+                                mmDecS = mm;
+                                maskSBad = 0;
+                            }
+                            maskSOk = (~maskSBad) & maskSMask;
+                            maskSOk2 = 0;
+                            for (size_t i = 0; i < factor; ++i) {
+                                mm = _mm_lddqu_si128(pmmL++);
+                                if (isLargerEncoded) {
+                                    maskLBad = v2_mm128_AN<larger_t>::detect(mmDecL, mm, mmALinv, mmALDmax, vecL, pos);
+                                    mmDecL = v2_mm128_cvt<larger_t, larger_unenc_t>(mmDecL);
                                 } else {
-                                    mmDecH = _mm_lddqu_si128(pmmH++);
-                                    maskHBad = 0;
+                                    mmDecL = mm;
+                                    maskLBad = 0;
                                 }
-                                maskHOk = (~maskHBad) & maskMaskH; // only copy valid values
-                                maskHOk2 = 0;
-                                for (size_t i = 0; i < factor; ++i) {
-                                    if (isTailEncoded) {
-                                        maskTBad = v2_mm128_AN<tail_t>::detect(mmDecT, *pmmT++, mmATInv, mmATDmax, vec2, pos);
-                                        mmDecT = v2_mm128_cvt<tail_t, tail_unenc_t>(mmDecT);
-                                    } else {
-                                        mmDecT = _mm_lddqu_si128(pmmT++);
-                                        maskTBad = 0;
-                                    }
-                                    pos += tailsPerMM128;
-                                    maskTOk = (~maskTBad) & maskMaskT;
-                                    auto shift = i * tailsPerMM128;
-                                    tail_mask_t maskBoth = static_cast<tail_mask_t>(((static_cast<head_mask_t>(maskTOk) << shift) & maskHOk) >> shift);
-                                    maskHOk2 |= static_cast<head_mask_t>(maskBoth) << shift;
-                                    if (maskBoth) {
-                                        _mm_storeu_si128(pmmRT, v2_mm128<tail_unenc_t>::pack_right(mmDecT, maskBoth));
-                                        pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_unenc_t*>(pmmRT) + __builtin_popcount(maskBoth));
-                                    }
-                                }
-                                if (isHeadEncoded) {
-                                    if (maskHOk2) {
-                                        _mm_storeu_si128(pmmRH, v2_mm128<head_unenc_t>::pack_right(mmDecH, maskHOk2));
-                                        pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_unenc_t*>(pmmRH) + __builtin_popcount(maskHOk2));
-                                    }
-                                } else {
-                                    _mm_storeu_si128(pmmRH++, mmDecH);
+                                pos += largersPerMM128;
+                                maskLOk = (~maskLBad) & maskLMask;
+                                auto shift = i * largersPerMM128;
+                                larger_mask_t maskBoth = static_cast<larger_mask_t>(((static_cast<smaller_mask_t>(maskLOk) << shift) & maskSOk) >> shift);
+                                maskSOk2 |= static_cast<smaller_mask_t>(maskBoth) << shift;
+                                if (maskBoth) {
+                                    _mm_storeu_si128(pmmRL, v2_mm128<larger_unenc_t>::pack_right(mmDecL, maskBoth));
+                                    pmmRL = reinterpret_cast<__m128i *>(reinterpret_cast<larger_unenc_t*>(pmmRL) + __builtin_popcount(maskBoth));
                                 }
                             }
+                            _mm_storeu_si128(pmmRS, v2_mm128<smaller_unenc_t>::pack_right(mmDecS, maskSOk2));
+                            pmmRS = reinterpret_cast<__m128i *>(reinterpret_cast<smaller_unenc_t*>(pmmRS) + __builtin_popcount(maskSOk2));
                         }
-                        result->overwrite_size(reinterpret_cast<decltype(pRT)>(pmmRT) - pRT); // "register" the number of values we added
+                        result->overwrite_size(pos); // "register" the number of values we added
                         auto iter = arg->begin();
                         for (*iter += pos; iter->hasNext(); ++*iter, ++pos) {
                             head_t decH = isHeadEncoded ? static_cast<head_t>(iter->head() * hAinv) : iter->head();
@@ -307,7 +277,7 @@ namespace v2 {
                                 pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_unenc_t*>(pmmRT) + __builtin_popcount(maskOK));
                             }
                         }
-                        result->overwrite_size(reinterpret_cast<decltype(pRT)>(pmmRT) - pRT); // "register" the number of values we added
+                        result->overwrite_size(pos); // "register" the number of values we added
                         auto iter = arg->begin();
                         for (*iter += pos; iter->hasNext(); ++*iter, ++pos) {
                             tail_t decT = static_cast<tail_t>(iter->tail() * tAinv);

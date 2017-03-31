@@ -24,9 +24,7 @@
 
 #include <type_traits>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/Storage.hpp>
 #include <column_operators/SSE.hpp>
 #include <column_operators/SSECMP.hpp>
 #include <column_operators/SSEAN.hpp>
@@ -52,7 +50,7 @@ namespace v2 {
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
                     typedef typename v2_mm128_cmp<tail_t, Op>::mask_t tail_mask_t;
-                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
+                    typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
                     static result_t filter(BAT<Head, Tail>* arg, typename Tail::type_t&& th, tail_select_t ATR = 1, // for reencoding
                             tail_select_t ATInvR = 1 // for reencoding
@@ -187,7 +185,7 @@ namespace v2 {
                     typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename v2_str_t::v2_select_t v2_tail_select_t;
-                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
+                    typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
                     static result_t filter(BAT<Head, v2_str_t> * arg, str_t && threshold, __attribute__ ((unused)) str_t ATR = nullptr, __attribute__ ((unused)) str_t ATInvR = nullptr) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
@@ -226,7 +224,8 @@ namespace v2 {
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef typename Tail::v2_select_t v2_tail_select_t;
                     typedef typename v2_tail_select_t::type_t tail_select_t;
-                    typedef typename std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
+                    typedef typename v2_mm128_cmp<tail_t, Op1>::mask_t tail_mask_t;
+                    typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> result_t;
 
                     static result_t filter(BAT<Head, Tail> * arg, tail_t && th1, tail_t && th2, tail_select_t ATR = 1, // for reencoding
                             tail_select_t ATInvR = 1 // for reencoding
@@ -278,7 +277,7 @@ namespace v2 {
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                     constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << headsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     auto maskTmp = mask;
                                     for (size_t i = 0; i < factor; ++i) {
                                         size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
@@ -300,7 +299,7 @@ namespace v2 {
                                 } else {
                                     constexpr const size_t factor = sizeof(tail_select_t) / sizeof(head_select_t);
                                     constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
-                                    decltype(mask) maskMask = static_cast<decltype(mask)>((1ull << tailsPerMM128) - 1);
+                                    tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << tailsPerMM128) - 1);
                                     auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, mask);
                                     _mm_storeu_si128(pmmRH, mmOIDs);
                                     pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nMaskOnes);
@@ -363,7 +362,7 @@ namespace v2 {
                     typedef typename v2_head_select_t::type_t head_select_t;
                     typedef v2_str_t v2_tail_select_t;
 
-                    static std::pair<TempBAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, v2_str_t> * arg, str_t&& threshold1, str_t&& threshold2, str_t ATR = nullptr, // cuurently only to match the signature
+                    static std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, std::vector<bool>*> filter(BAT<Head, v2_str_t> * arg, str_t&& threshold1, str_t&& threshold2, str_t ATR = nullptr, // cuurently only to match the signature
                             str_t ATInvR = nullptr // cuurently only to match the signature
                             ) {
                         // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!

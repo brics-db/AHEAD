@@ -535,16 +535,16 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
             echo -n "   * Q${NUM}:"
             BASE2="${BASE}${NUM}"
             NUMVARS="${#VARIANTS[@]}"
-            baseline1="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}${ARCH}.results"
+            baseline1="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}${ARCHITECTURE[0]}.results"
             baseline1Tmp="${baseline1}.tmp"
             baseline2="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}${ARCH}.err"
             awk '{print $1,$2}' "${baseline1}" >"${baseline1Tmp}"
-            for i in $(seq 1 $(echo "$NUMVARS-1"|bc)); do
-                echo -n " ${VARIANTS[$i]:1}="
-                other1="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}${ARCH}.results"
+            for VAR in "${VARIANTS[@]}"; do
+                echo -n " ${VAR:1}="
+                other1="${PATH_EVALDATA}/${BASE2}${VAR}${ARCH}.results"
                 other1Tmp="${other1}.tmp"
                 awk '{print $1,$2}' "${other1}" >"${other1Tmp}" # filters out e.g. the encoded value for the continuous encoding variants
-                other2="${PATH_EVALDATA}/${BASE2}${VARIANTS[$i]}${ARCH}.err"
+                other2="${PATH_EVALDATA}/${BASE2}${VAR}${ARCH}.err"
                 RES1=$(diff "${baseline1Tmp}" "${other1Tmp}" | wc -l)
                 RES2=$(diff "${baseline2}" "${other2}" | wc -l)
                 if [[ "${RES1}" -eq 0 ]] && [[ "${RES2}" -eq 0 ]]; then
@@ -558,20 +558,20 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
         done
     done
 
-    for q in "${IMPLEMENTED[@]}"; do
-    	for t in "${VARIANTS[@]:1}"; do
-    		for s in "${ARCHITECTURE[@]}"; do 
+    for s in "${ARCHITECTURE[@]}"; do 
+    	for q in "${IMPLEMENTED[@]}"; do
+    		for v in "${VARIANTS[@]}"; do
     			rm -f ./grep.out
-    			diff ${BASE}${q}_normal_${s}.out ${BASE}${q}_${t}_${s}.out | grep result >./grep.out
+    			diff "${PATH_EVALDATA}/${BASE}${q}_normal_seq.out" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.out" | grep result >./grep.out
     			if [[ -s ./grep.out ]]; then
-    				echo "Q${q} ${t} ${s} (OUT):"
+    				echo "Q${q}${v}${s} (OUT):"
     				cat ./grep.out
     				echo "-------------------------------"
     			fi
     			rm -f ./grep.out
-    			diff ${BASE}${q}_normal_${s}.err ${BASE}${q}_${t}_${s}.err | grep result >./grep.out
+    			diff "${PATH_EVALDATA}/${BASE}${q}_normal${s}.err" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.err" | grep result >./grep.out
     			if [[ -s ./grep.out ]]; then
-    				echo "Q${q} ${t} ${s} (ERR):"
+    				echo "Q${q}${v}${s} (ERR):"
     				cat ./grep.out
     				echo "-------------------------------"
     			fi

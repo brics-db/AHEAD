@@ -25,8 +25,7 @@
 #include <utility>
 #include <functional>
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
+#include <column_storage/Storage.hpp>
 
 #ifdef FORCE_SSE
 #include "select_SSE.tcc"

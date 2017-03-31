@@ -44,133 +44,137 @@
 #include <column_storage/BatIterator.h>
 #include <column_storage/TransactionManager.h>
 
-template<typename Head, typename Tail>
-class ColumnBatIteratorBase : public BATIterator<Head, Tail> {
+namespace v2 {
 
-    typedef typename Head::type_t head_t;
-    typedef typename Tail::type_t tail_t;
+    template<typename Head, typename Tail>
+    class ColumnBatIteratorBase : public BATIterator<Head, Tail> {
 
-protected:
-    TransactionManager::Transaction* ta;
-    TransactionManager::BinaryUnit bu;
-    TransactionManager::BinaryUnit buNext;
-    id_t mColumnId;
-    size_t Csize;
-    size_t Cconsumption;
-    ssize_t mPosition;
+        typedef typename Head::type_t head_t;
+        typedef typename Tail::type_t tail_t;
 
-public:
+    protected:
+        TransactionManager::Transaction* ta;
+        TransactionManager::BinaryUnit bu;
+        TransactionManager::BinaryUnit buNext;
+        id_t mColumnId;
+        size_t Csize;
+        size_t Cconsumption;
+        ssize_t mPosition;
 
-    /** default constructor */
-    ColumnBatIteratorBase(id_t columnId)
-            : ta(nullptr), bu(), buNext(), mColumnId(columnId), Csize(0), Cconsumption(0), mPosition(-1) {
-        TransactionManager* tm = TransactionManager::getInstance();
-        if (tm == nullptr) {
-            std::stringstream ss;
-            ss << "TA manager is not available!" << std::endl;
-            throw std::runtime_error(ss.str());
-        }
-        ta = tm->beginTransaction(false);
-        if (ta == nullptr) {
-            std::stringstream ss;
-            ss << "Column is not available!" << std::endl;
-            throw std::runtime_error(ss.str());
-        }
-        std::tie(Csize, Cconsumption) = ta->open(columnId);
-        buNext = ta->next(mColumnId);
-        next(); // init to first 
-    }
+    public:
 
-    ColumnBatIteratorBase(const ColumnBatIteratorBase<Head, Tail> &iter)
-            : ta(iter.ta), bu(iter.bu), buNext(iter.buNext), mColumnId(iter.mColumnId), Csize(iter.Csize), Cconsumption(iter.Cconsumption), mPosition(iter.mPosition) {
-    }
-
-    virtual ~ColumnBatIteratorBase() {
-        if (ta) {
+        /** default constructor */
+        ColumnBatIteratorBase(id_t columnId)
+                : ta(nullptr), bu(), buNext(), mColumnId(columnId), Csize(0), Cconsumption(0), mPosition(-1) {
             TransactionManager* tm = TransactionManager::getInstance();
-            tm->endTransaction(ta);
-            ta = nullptr;
+            if (tm == nullptr) {
+                std::stringstream ss;
+                ss << "TA manager is not available!" << std::endl;
+                throw std::runtime_error(ss.str());
+            }
+            ta = tm->beginTransaction(false);
+            if (ta == nullptr) {
+                std::stringstream ss;
+                ss << "Column is not available!" << std::endl;
+                throw std::runtime_error(ss.str());
+            }
+            std::tie(Csize, Cconsumption) = ta->open(columnId);
+            buNext = ta->next(mColumnId);
+            next(); // init to first
         }
-    }
 
-    ColumnBatIteratorBase& operator=(const ColumnBatIteratorBase &copy) {
-        new (this) ColumnBatIteratorBase(copy);
-        return *this;
-    }
+        ColumnBatIteratorBase(const ColumnBatIteratorBase<Head, Tail> &iter)
+                : ta(iter.ta), bu(iter.bu), buNext(iter.buNext), mColumnId(iter.mColumnId), Csize(iter.Csize), Cconsumption(iter.Cconsumption), mPosition(iter.mPosition) {
+        }
 
-    virtual void position(oid_t index) override {
-        bu = ta->get(mColumnId, index);
-        mPosition = index;
-        buNext = ta->next(mColumnId);
-    }
+        virtual ~ColumnBatIteratorBase() {
+            if (ta) {
+                TransactionManager* tm = TransactionManager::getInstance();
+                tm->endTransaction(ta);
+                ta = nullptr;
+            }
+        }
 
-    /** iterator next */
-    virtual void next() override {
-        ++mPosition;
-        bu = buNext; // save actual current position
-        buNext = ta->next(mColumnId);
-    }
+        ColumnBatIteratorBase& operator=(const ColumnBatIteratorBase &copy) {
+            new (this) ColumnBatIteratorBase(copy);
+            return *this;
+        }
 
-    virtual ColumnBatIteratorBase<Head, Tail>& operator++() override {
-        next();
-        return *this;
-    }
+        virtual void position(oid_t index) override {
+            bu = ta->get(mColumnId, index);
+            mPosition = index;
+            buNext = ta->next(mColumnId);
+        }
 
-    virtual ColumnBatIteratorBase<Head, Tail>& operator+=(oid_t i) override {
-        for (; i; --i) {
+        /** iterator next */
+        virtual void next() override {
+            ++mPosition;
+            bu = buNext; // save actual current position
+            buNext = ta->next(mColumnId);
+        }
+
+        virtual ColumnBatIteratorBase<Head, Tail>& operator++() override {
             next();
+            return *this;
         }
-        return *this;
-    }
 
-    /** @return true if a next item is available - otherwise false */
-    virtual bool hasNext() override {
-        return mPosition < static_cast<ssize_t>(Csize);
-    }
+        virtual ColumnBatIteratorBase<Head, Tail>& operator+=(oid_t i) override {
+            for (; i; --i) {
+                next();
+            }
+            return *this;
+        }
 
-    virtual oid_t head() override {
-        return oid_t(this->mPosition);
-    }
+        /** @return true if a next item is available - otherwise false */
+        virtual bool hasNext() override {
+            return mPosition < static_cast<ssize_t>(Csize);
+        }
 
-    virtual tail_t tail() override {
-        return *static_cast<tail_t*>(bu.tail);
-    }
+        virtual oid_t head() override {
+            return oid_t(this->mPosition);
+        }
 
-    virtual size_t size() override {
-        return Csize;
-    }
+        virtual tail_t tail() override {
+            return *static_cast<tail_t*>(bu.tail);
+        }
 
-    virtual size_t consumption() override {
-        return Cconsumption;
-    }
-};
+        virtual size_t size() override {
+            return Csize;
+        }
 
-template<typename Head, typename Tail>
-class ColumnBatIterator : public ColumnBatIteratorBase<Head, Tail> {
+        virtual size_t consumption() override {
+            return Cconsumption;
+        }
+    };
 
-public:
-    typedef ColumnBatIterator<Head, Tail> self_t;
+    template<typename Head, typename Tail>
+    class ColumnBatIterator : public ColumnBatIteratorBase<Head, Tail> {
 
-    using ColumnBatIteratorBase<Head, Tail>::ColumnBatIteratorBase;
+    public:
+        typedef ColumnBatIterator<Head, Tail> self_t;
 
-    virtual ~ColumnBatIterator() {
-    }
-};
+        using ColumnBatIteratorBase<Head, Tail>::ColumnBatIteratorBase;
 
-template<typename Head>
-class ColumnBatIterator<Head, v2_str_t> : public ColumnBatIteratorBase<Head, v2_str_t> {
+        virtual ~ColumnBatIterator() {
+        }
+    };
 
-public:
-    typedef ColumnBatIterator<Head, v2_str_t> self_t;
+    template<typename Head>
+    class ColumnBatIterator<Head, v2_str_t> : public ColumnBatIteratorBase<Head, v2_str_t> {
 
-    using ColumnBatIteratorBase<Head, v2_str_t>::ColumnBatIteratorBase;
+    public:
+        typedef ColumnBatIterator<Head, v2_str_t> self_t;
 
-    virtual ~ColumnBatIterator() {
-    }
+        using ColumnBatIteratorBase<Head, v2_str_t>::ColumnBatIteratorBase;
 
-    virtual str_t tail() override {
-        return static_cast<str_t>(this->bu.tail);
-    }
-};
+        virtual ~ColumnBatIterator() {
+        }
+
+        virtual str_t tail() override {
+            return static_cast<str_t>(this->bu.tail);
+        }
+    };
+
+}
 
 #endif

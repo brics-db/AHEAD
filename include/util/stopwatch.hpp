@@ -19,39 +19,43 @@
 #include <iomanip>
 #include <chrono>
 
-class StopWatch {
+namespace v2 {
 
-public:
-    typedef typename std::chrono::high_resolution_clock::time_point time_point;
-    typedef typename std::chrono::high_resolution_clock::rep rep;
+    class StopWatch {
 
-private:
-    time_point startNS, stopNS;
-    rep totalNS;
+    public:
+        typedef typename std::chrono::high_resolution_clock::time_point time_point;
+        typedef typename std::chrono::high_resolution_clock::rep rep;
 
-    StopWatch(time_point startNS, time_point stopNS, rep totalNS);
+    private:
+        time_point startNS, stopNS;
+        rep totalNS;
 
-public:
-    StopWatch();
+        StopWatch(time_point startNS, time_point stopNS, rep totalNS);
 
-    void start();
-    void resume();
-    rep stop();
-    rep duration();
+    public:
+        StopWatch();
 
-    friend StopWatch operator+(StopWatch lhs, const StopWatch & rhs) {
-        return StopWatch(lhs.startNS, time_point(std::chrono::high_resolution_clock::duration(lhs.stopNS.time_since_epoch().count() + rhs.totalNS)), lhs.totalNS + rhs.totalNS);
-    }
-};
+        void start();
+        void resume();
+        rep stop();
+        rep duration();
 
-typedef struct hrc_duration {
+        friend StopWatch operator+(StopWatch lhs, const StopWatch & rhs) {
+            return StopWatch(lhs.startNS, time_point(std::chrono::high_resolution_clock::duration(lhs.stopNS.time_since_epoch().count() + rhs.totalNS)), lhs.totalNS + rhs.totalNS);
+        }
+    };
 
-    StopWatch::rep dura;
+    typedef struct hrc_duration {
 
-    hrc_duration(StopWatch::rep dura);
-} hrc_duration;
+        StopWatch::rep dura;
 
-std::ostream& operator<<(std::ostream& stream, hrc_duration hrcd);
-std::ostream& operator<<(std::ostream& stream, StopWatch sw);
+        hrc_duration(StopWatch::rep dura);
+    } hrc_duration;
+
+    std::ostream& operator<<(std::ostream& stream, hrc_duration hrcd);
+    std::ostream& operator<<(std::ostream& stream, StopWatch sw);
+
+}
 
 #endif // STOPWATCH_HPP__

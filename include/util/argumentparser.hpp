@@ -29,55 +29,59 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-class ArgumentParser {
+namespace v2 {
 
-public:
-    typedef std::vector<std::string> alias_list_t;
-    typedef std::vector<std::tuple<std::string, alias_list_t, size_t>> uint_args_t;
-    typedef std::vector<std::tuple<std::string, alias_list_t, std::string>> str_args_t;
-    typedef std::vector<std::tuple<std::string, alias_list_t, bool>> bool_args_t;
+    class ArgumentParser {
 
-private:
+    public:
+        typedef std::vector<std::string> alias_list_t;
+        typedef std::vector<std::tuple<std::string, alias_list_t, size_t>> uint_args_t;
+        typedef std::vector<std::tuple<std::string, alias_list_t, std::string>> str_args_t;
+        typedef std::vector<std::tuple<std::string, alias_list_t, bool>> bool_args_t;
 
-    enum argtype_t {
+    private:
 
-        argint, argstr, argbool
+        enum argtype_t {
+
+            argint, argstr, argbool
+        };
+
+        uint_args_t uintArgs;
+        str_args_t strArgs;
+        bool_args_t boolArgs;
+        std::unordered_map<std::string, argtype_t> argTypes; // we know what we do
+
+    public:
+
+        ArgumentParser();
+
+        ArgumentParser(const uint_args_t & uintArgs, const str_args_t & strArgs, const bool_args_t & boolArgs);
+
+        ArgumentParser(const uint_args_t && uintArgs, const str_args_t && strArgs, const bool_args_t && boolArgs);
+
+        virtual ~ArgumentParser();
+
+        ArgumentParser& operator=(const ArgumentParser & other);
+
+    private:
+
+        size_t parseint(const std::string& name, char* arg);
+
+        size_t parsestr(const std::string& name, char* arg);
+
+        size_t parsebool(const std::string& name, __attribute__ ((unused)) char* arg);
+
+    public:
+
+        void parse(int argc, char** argv, size_t offset); // no C++17 (array_view), yet :-(
+
+        size_t get_uint(const std::string & name);
+
+        const std::string & get_str(const std::string & name);
+
+        bool get_bool(const std::string & name);
     };
 
-    uint_args_t uintArgs;
-    str_args_t strArgs;
-    bool_args_t boolArgs;
-    std::unordered_map<std::string, argtype_t> argTypes; // we know what we do
-
-public:
-
-    ArgumentParser();
-
-    ArgumentParser(const uint_args_t & uintArgs, const str_args_t & strArgs, const bool_args_t & boolArgs);
-
-    ArgumentParser(const uint_args_t && uintArgs, const str_args_t && strArgs, const bool_args_t && boolArgs);
-
-    virtual ~ArgumentParser();
-
-    ArgumentParser& operator=(const ArgumentParser & other);
-
-private:
-
-    size_t parseint(const std::string& name, char* arg);
-
-    size_t parsestr(const std::string& name, char* arg);
-
-    size_t parsebool(const std::string& name, __attribute__ ((unused)) char* arg);
-
-public:
-
-    void parse(int argc, char** argv, size_t offset); // no C++17 (array_view), yet :-(
-
-    size_t get_uint(const std::string & name);
-
-    const std::string & get_str(const std::string & name);
-
-    bool get_bool(const std::string & name);
-};
+}
 
 #endif /* ARGUMENTPARSER_HPP */

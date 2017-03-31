@@ -48,253 +48,257 @@
 #include <column_storage/ColumnMetaData.hpp>
 #include <column_storage/ColumnDescriptor.hpp>
 
-template<typename Head, typename Tail>
-struct BAT {
+namespace v2 {
 
-    typedef Head v2_head_t;
-    typedef Tail v2_tail_t;
-    typedef typename v2_head_t::type_t head_t;
-    typedef typename v2_tail_t::type_t tail_t;
-    typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
-    typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
-    typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
-    typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
+    template<typename Head, typename Tail>
+    struct BAT {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+        typedef Head v2_head_t;
+        typedef Tail v2_tail_t;
+        typedef typename v2_head_t::type_t head_t;
+        typedef typename v2_tail_t::type_t tail_t;
+        typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
+        typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
+        typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
+        typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
 
-    BAT()
-            : head(ColumnMetaData(sizeof(typename Head::type_t))), tail(sizeof(typename Tail::type_t)) {
-    }
+        coldesc_head_t head;
+        coldesc_tail_t tail;
 
-    BAT(coldesc_head_t head, coldesc_tail_t tail)
-            : head(std::move(head)), tail(std::move(tail)) {
-    }
+        BAT()
+                : head(ColumnMetaData(sizeof(typename Head::type_t))), tail(sizeof(typename Tail::type_t)) {
+        }
 
-    virtual ~BAT() {
-    }
+        BAT(coldesc_head_t head, coldesc_tail_t tail)
+                : head(std::move(head)), tail(std::move(tail)) {
+        }
 
-    /** returns an iterator pointing at the start of the column */
-    virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual ~BAT() {
+        }
 
-    /** append an item */
-    virtual void append(std::pair<head_t, tail_t>& p) = 0;
-    virtual void append(std::pair<head_t, tail_t>&& p) = 0;
+        /** returns an iterator pointing at the start of the column */
+        virtual BATIterator<Head, Tail>* begin() = 0;
 
-    virtual BAT<Tail, Head>* reverse() = 0;
+        /** append an item */
+        virtual void append(std::pair<head_t, tail_t>& p) = 0;
+        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
 
-    virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Head>* reverse() = 0;
 
-    virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Head, Head>* mirror_head() = 0;
 
-    /** size of column, obtained through the iterator */
-    virtual oid_t size() = 0;
+        virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
-    /** Compute the actual memory consumption of the BAT */
-    virtual size_t consumption() = 0;
+        /** size of column, obtained through the iterator */
+        virtual oid_t size() = 0;
 
-    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
-    virtual size_t consumptionProjected() = 0;
+        /** Compute the actual memory consumption of the BAT */
+        virtual size_t consumption() = 0;
 
-    virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_head_t>();
-    }
+        /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+        virtual size_t consumptionProjected() = 0;
 
-    virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_tail_t>();
-    }
-};
+        virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_head_t>();
+        }
 
-template<>
-struct BAT<v2_void_t, v2_void_t> {
+        virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_tail_t>();
+        }
+    };
 
-    typedef v2_void_t Head;
-    typedef Head v2_head_t;
-    typedef v2_void_t Tail;
-    typedef Tail v2_tail_t;
-    typedef typename v2_head_t::type_t head_t;
-    typedef typename v2_tail_t::type_t tail_t;
-    typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
-    typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
-    typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
-    typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
+    template<>
+    struct BAT<v2_void_t, v2_void_t> {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+        typedef v2_void_t Head;
+        typedef Head v2_head_t;
+        typedef v2_void_t Tail;
+        typedef Tail v2_tail_t;
+        typedef typename v2_head_t::type_t head_t;
+        typedef typename v2_tail_t::type_t tail_t;
+        typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
+        typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
+        typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
+        typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
 
-    BAT()
-            : head(), tail() {
-    }
+        coldesc_head_t head;
+        coldesc_tail_t tail;
 
-    BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-            : head(head), tail(tail) {
-    }
+        BAT()
+                : head(), tail() {
+        }
 
-    BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-            : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
-    }
+        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
+                : head(head), tail(tail) {
+        }
 
-    virtual ~BAT() {
-    }
+        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        }
 
-    /** returns an iterator pointing at the start of the column */
-    virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual ~BAT() {
+        }
 
-    /** append an item */
-    virtual void append(std::pair<head_t, tail_t>& p) = 0;
-    virtual void append(std::pair<head_t, tail_t>&& p) = 0;
+        /** returns an iterator pointing at the start of the column */
+        virtual BATIterator<Head, Tail>* begin() = 0;
 
-    virtual BAT<Tail, Head>* reverse() = 0;
+        /** append an item */
+        virtual void append(std::pair<head_t, tail_t>& p) = 0;
+        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
 
-    virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Head>* reverse() = 0;
 
-    virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Head, Head>* mirror_head() = 0;
 
-    /** size of column, obtained through the iterator */
-    virtual unsigned size() = 0;
+        virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
-    /** Compute the actual memory consumption of the BAT */
-    virtual size_t consumption() = 0;
+        /** size of column, obtained through the iterator */
+        virtual unsigned size() = 0;
 
-    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
-    virtual size_t consumptionProjected() = 0;
+        /** Compute the actual memory consumption of the BAT */
+        virtual size_t consumption() = 0;
 
-    virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_head_t>();
-    }
+        /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+        virtual size_t consumptionProjected() = 0;
 
-    virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_tail_t>();
-    }
-};
+        virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_head_t>();
+        }
 
-template<typename Head>
-struct BAT<Head, v2_void_t> {
+        virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_tail_t>();
+        }
+    };
 
-    typedef v2_void_t Tail;
-    typedef Head v2_head_t;
-    typedef Tail v2_tail_t;
-    typedef typename v2_head_t::type_t head_t;
-    typedef typename v2_tail_t::type_t tail_t;
-    typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
-    typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
-    typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
-    typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
+    template<typename Head>
+    struct BAT<Head, v2_void_t> {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+        typedef v2_void_t Tail;
+        typedef Head v2_head_t;
+        typedef Tail v2_tail_t;
+        typedef typename v2_head_t::type_t head_t;
+        typedef typename v2_tail_t::type_t tail_t;
+        typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
+        typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
+        typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
+        typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
 
-    BAT()
-            : head(), tail() {
-    }
+        coldesc_head_t head;
+        coldesc_tail_t tail;
 
-    BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-            : head(head), tail(tail) {
-    }
+        BAT()
+                : head(), tail() {
+        }
 
-    BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-            : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
-    }
+        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
+                : head(head), tail(tail) {
+        }
 
-    virtual ~BAT() {
-    }
+        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        }
 
-    /** returns an iterator pointing at the start of the column */
-    virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual ~BAT() {
+        }
 
-    /** append an item */
-    virtual void append(std::pair<head_t, tail_t>& p) = 0;
-    virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-    virtual void append(head_t & t) = 0;
-    virtual void append(head_t && t) = 0;
+        /** returns an iterator pointing at the start of the column */
+        virtual BATIterator<Head, Tail>* begin() = 0;
 
-    virtual BAT<Tail, Head>* reverse() = 0;
+        /** append an item */
+        virtual void append(std::pair<head_t, tail_t>& p) = 0;
+        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
+        virtual void append(head_t & t) = 0;
+        virtual void append(head_t && t) = 0;
 
-    virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Head>* reverse() = 0;
 
-    virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Head, Head>* mirror_head() = 0;
 
-    /** size of column, obtained through the iterator */
-    virtual unsigned size() = 0;
+        virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
-    /** Compute the actual memory consumption of the BAT */
-    virtual size_t consumption() = 0;
+        /** size of column, obtained through the iterator */
+        virtual unsigned size() = 0;
 
-    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
-    virtual size_t consumptionProjected() = 0;
+        /** Compute the actual memory consumption of the BAT */
+        virtual size_t consumption() = 0;
 
-    virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_head_t>();
-    }
+        /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+        virtual size_t consumptionProjected() = 0;
 
-    virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_tail_t>();
-    }
-};
+        virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_head_t>();
+        }
 
-template<typename Tail>
-struct BAT<v2_void_t, Tail> {
+        virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_tail_t>();
+        }
+    };
 
-    typedef v2_void_t Head;
-    typedef Head v2_head_t;
-    typedef Tail v2_tail_t;
-    typedef typename v2_head_t::type_t head_t;
-    typedef typename v2_tail_t::type_t tail_t;
-    typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
-    typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
-    typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
-    typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
+    template<typename Tail>
+    struct BAT<v2_void_t, Tail> {
 
-    coldesc_head_t head;
-    coldesc_tail_t tail;
+        typedef v2_void_t Head;
+        typedef Head v2_head_t;
+        typedef Tail v2_tail_t;
+        typedef typename v2_head_t::type_t head_t;
+        typedef typename v2_tail_t::type_t tail_t;
+        typedef typename ColumnDescriptorContainerType<v2_head_t>::container_t coldesc_head_container_t;
+        typedef typename ColumnDescriptorContainerType<v2_tail_t>::container_t coldesc_tail_container_t;
+        typedef ColumnDescriptor<v2_head_t, coldesc_head_container_t> coldesc_head_t;
+        typedef ColumnDescriptor<v2_tail_t, coldesc_tail_container_t> coldesc_tail_t;
 
-    BAT()
-            : head(), tail() {
-    }
+        coldesc_head_t head;
+        coldesc_tail_t tail;
 
-    BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-            : head(head), tail(tail) {
-    }
+        BAT()
+                : head(), tail() {
+        }
 
-    BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-            : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
-    }
+        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
+                : head(head), tail(tail) {
+        }
 
-    virtual ~BAT() {
-    }
+        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        }
 
-    /** returns an iterator pointing at the start of the column */
-    virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual ~BAT() {
+        }
 
-    /** append an item */
-    virtual void append(std::pair<head_t, tail_t>& p) = 0;
-    virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-    virtual void append(tail_t & t) = 0;
-    virtual void append(tail_t && t) = 0;
+        /** returns an iterator pointing at the start of the column */
+        virtual BATIterator<Head, Tail>* begin() = 0;
 
-    virtual BAT<Tail, Head>* reverse() = 0;
+        /** append an item */
+        virtual void append(std::pair<head_t, tail_t>& p) = 0;
+        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
+        virtual void append(tail_t & t) = 0;
+        virtual void append(tail_t && t) = 0;
 
-    virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Head>* reverse() = 0;
 
-    virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Head, Head>* mirror_head() = 0;
 
-    /** size of column, obtained through the iterator */
-    virtual unsigned size() = 0;
+        virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
-    /** Compute the actual memory consumption of the BAT */
-    virtual size_t consumption() = 0;
+        /** size of column, obtained through the iterator */
+        virtual unsigned size() = 0;
 
-    /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
-    virtual size_t consumptionProjected() = 0;
+        /** Compute the actual memory consumption of the BAT */
+        virtual size_t consumption() = 0;
 
-    virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_head_t>();
-    }
+        /** Compute the projected memory consumption of the BAT -- especially for AN encoded BATs */
+        virtual size_t consumptionProjected() = 0;
 
-    virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
-        return boost::typeindex::type_id<v2_tail_t>();
-    }
-};
+        virtual boost::typeindex::type_index type_head() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_head_t>();
+        }
+
+        virtual boost::typeindex::type_index type_tail() const BOOST_NOEXCEPT {
+            return boost::typeindex::type_id<v2_tail_t>();
+        }
+    };
+
+}
 
 #endif
 
