@@ -41,12 +41,12 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLEcb, new int_colbat_t("lineorder", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(batDY, v2::bat::ops::copy(batDYcb));
-    MEASURE_OP(batDD, v2::bat::ops::copy(batDDcb));
-    MEASURE_OP(batLQ, v2::bat::ops::copy(batLQcb));
-    MEASURE_OP(batLD, v2::bat::ops::copy(batLDcb));
-    MEASURE_OP(batLO, v2::bat::ops::copy(batLOcb));
-    MEASURE_OP(batLE, v2::bat::ops::copy(batLEcb));
+    MEASURE_OP(batDY, ahead::bat::ops::copy(batDYcb));
+    MEASURE_OP(batDD, ahead::bat::ops::copy(batDDcb));
+    MEASURE_OP(batLQ, ahead::bat::ops::copy(batLQcb));
+    MEASURE_OP(batLD, ahead::bat::ops::copy(batLDcb));
+    MEASURE_OP(batLO, ahead::bat::ops::copy(batLOcb));
+    MEASURE_OP(batLE, ahead::bat::ops::copy(batLEcb));
 
     delete batDYcb;
     delete batDDcb;
@@ -61,41 +61,41 @@ int main(int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, v2::bat::ops::select(batLQ, 26, 35)); // lo_quantity between 26 and 35
-        MEASURE_OP(bat2, v2::bat::ops::select(batLD, 4, 6)); // lo_discount between 4 and 6
+        MEASURE_OP(bat1, ahead::bat::ops::select(batLQ, 26, 35)); // lo_quantity between 26 and 35
+        MEASURE_OP(bat2, ahead::bat::ops::select(batLD, 4, 6)); // lo_discount between 4 and 6
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
-        MEASURE_OP(bat4, v2::bat::ops::matchjoin(bat3, bat2)); // join selection
+        MEASURE_OP(bat4, ahead::bat::ops::matchjoin(bat3, bat2)); // join selection
         delete bat2;
         delete bat3;
         auto bat5 = bat4->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP(bat6, v2::bat::ops::matchjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(bat6, ahead::bat::ops::matchjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(bat7, v2::bat::ops::select<std::equal_to>(batDY, 199401)); // d_yearmonthnum = 199401
+        MEASURE_OP(bat7, ahead::bat::ops::select<std::equal_to>(batDY, 199401)); // d_yearmonthnum = 199401
         auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete bat7;
-        MEASURE_OP(bat9, v2::bat::ops::matchjoin(bat8, batDD)); // only those d_datekey where d_year...
+        MEASURE_OP(bat9, ahead::bat::ops::matchjoin(bat8, batDD)); // only those d_datekey where d_year...
         delete bat8;
 
         // 3) join lineorder and date
         auto batA = bat9->reverse();
         delete bat9;
-        MEASURE_OP(batB, v2::bat::ops::hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP(batB, ahead::bat::ops::hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         delete bat6;
         delete batA;
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = batB->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batB;
         // BatF only contains the 
-        MEASURE_OP(batD, v2::bat::ops::matchjoin(batC, batLE));
-        MEASURE_OP(batE, v2::bat::ops::matchjoin(batC, bat4));
+        MEASURE_OP(batD, ahead::bat::ops::matchjoin(batC, batLE));
+        MEASURE_OP(batE, ahead::bat::ops::matchjoin(batC, bat4));
         delete batC;
         delete bat4;
 
         // 4) result
-        MEASURE_OP(batF, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
+        MEASURE_OP(batF, ahead::bat::ops::aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
         delete batD;
         delete batE;
         auto iter = batF->begin();

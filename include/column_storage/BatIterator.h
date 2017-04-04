@@ -43,7 +43,7 @@
 
 #include <column_storage/Bat.h>
 
-namespace v2 {
+namespace ahead {
 
     template<typename Head, typename Tail>
     class BATIterator {

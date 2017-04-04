@@ -46,7 +46,7 @@
 #include <column_storage/Bat.h>
 #include <column_storage/TempBatIterator.h>
 
-namespace v2 {
+namespace ahead {
 
     template<class Head, class Tail>
     class TempBAT : public BAT<Head, Tail> {

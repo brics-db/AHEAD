@@ -28,7 +28,7 @@
 
 #include <column_operators/SSE.hpp>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

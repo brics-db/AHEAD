@@ -21,7 +21,7 @@
 
 #include <column_storage/Storage.hpp>
 
-namespace v2 {
+namespace ahead {
 
     template class ColumnBAT<v2_tinyint_t> ;
     template class ColumnBAT<v2_shortint_t> ;

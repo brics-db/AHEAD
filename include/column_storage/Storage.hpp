@@ -33,7 +33,7 @@
 #include <column_storage/TempBat.h>
 #include <column_storage/ColumnBat.h>
 
-namespace v2 {
+namespace ahead {
 
     extern template class ColumnBAT<v2_tinyint_t> ;
     extern template class ColumnBAT<v2_shortint_t> ;

@@ -71,13 +71,13 @@ int main(int argc, char** argv) {
     }
 
     auto cbD_Y = new shortint_colbat_t("date", "year");
-    auto tbD_Y = v2::bat::ops::copy(cbD_Y);
+    auto tbD_Y = ahead::bat::ops::copy(cbD_Y);
 
     totalTime = 0;
     std::cout << "group date.d_year:" << std::endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::groupby(tbD_Y);
+        auto result = ahead::bat::ops::groupby(tbD_Y);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         if (i == 0) {
@@ -102,13 +102,13 @@ int main(int argc, char** argv) {
     std::cout << "average\t" << (totalTime / CONFIG.NUM_RUNS) << std::endl;
 
     auto cbP_B = new str_colbat_t("part", "brand");
-    auto tbP_B = v2::bat::ops::copy(cbP_B);
+    auto tbP_B = ahead::bat::ops::copy(cbP_B);
 
     totalTime = 0;
     std::cout << "group part.p_brand:" << std::endl;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::groupby(tbP_B);
+        auto result = ahead::bat::ops::groupby(tbP_B);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         if (i == 0) {
@@ -146,22 +146,22 @@ int main(int argc, char** argv) {
     auto cbLO_PK = new int_colbat_t("lineorder", "partkey");
     auto cbD_DK = new int_colbat_t("date", "datekey");
     auto cbP_PK = new int_colbat_t("part", "partkey");
-    auto tbLO_OD = v2::bat::ops::copy(cbLO_OD);
-    auto tbLO_R = v2::bat::ops::copy(cbLO_R);
-    auto tbLO_PK = v2::bat::ops::copy(cbLO_PK);
-    auto tbD_DK = v2::bat::ops::copy(cbD_DK);
-    auto tbP_PK = v2::bat::ops::copy(cbP_PK);
+    auto tbLO_OD = ahead::bat::ops::copy(cbLO_OD);
+    auto tbLO_R = ahead::bat::ops::copy(cbLO_R);
+    auto tbLO_PK = ahead::bat::ops::copy(cbLO_PK);
+    auto tbD_DK = ahead::bat::ops::copy(cbD_DK);
+    auto tbP_PK = ahead::bat::ops::copy(cbP_PK);
 
     totalTime = 0;
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
         auto bat1 = tbD_DK->reverse();
-        auto bat2 = v2::bat::ops::hashjoin(tbLO_OD, bat1);
+        auto bat2 = ahead::bat::ops::hashjoin(tbLO_OD, bat1);
         auto bat3 = tbP_PK->reverse();
-        auto bat4 = v2::bat::ops::hashjoin(tbLO_PK, bat3);
-        auto bat5 = v2::bat::ops::hashjoin(bat2, tbD_Y);
-        auto bat6 = v2::bat::ops::hashjoin(bat4, tbP_B);
-        auto tuple = v2::bat::ops::groupedSum<v2_bigint_t>(tbLO_R, bat5, bat6);
+        auto bat4 = ahead::bat::ops::hashjoin(tbLO_PK, bat3);
+        auto bat5 = ahead::bat::ops::hashjoin(bat2, tbD_Y);
+        auto bat6 = ahead::bat::ops::hashjoin(bat4, tbP_B);
+        auto tuple = ahead::bat::ops::groupedSum<v2_bigint_t>(tbLO_R, bat5, bat6);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         std::cout << get<0>(tuple)->size() << " " << get<1>(tuple)->size() << " " << get<2>(tuple)->size() << " " << get<3>(tuple)->size() << " " << get<4>(tuple)->size() << std::endl;

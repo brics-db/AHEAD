@@ -16,7 +16,7 @@
 
 #include <column_storage/ColumnManager.h>
 
-namespace v2 {
+namespace ahead {
 
     ColumnManager* ColumnManager::instance = 0;
 

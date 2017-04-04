@@ -31,7 +31,7 @@
 
 #include <util/v2types.hpp>
 
-namespace v2 {
+namespace ahead {
 
     typedef uint16_t restiny_t;
     typedef uint32_t resshort_t;

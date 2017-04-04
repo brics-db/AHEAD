@@ -33,7 +33,7 @@
 #include "select_seq.tcc"
 #endif
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

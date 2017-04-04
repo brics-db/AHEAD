@@ -50,17 +50,17 @@ int main(int argc, char** argv) {
     MEASURE_OP(batSRcb, new str_colbat_t("supplierAN", "region"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(batDDenc, v2::bat::ops::copy(batDDcb));
-    MEASURE_OP(batDYenc, v2::bat::ops::copy(batDYcb));
-    MEASURE_OP(batLPenc, v2::bat::ops::copy(batLPcb));
-    MEASURE_OP(batLSenc, v2::bat::ops::copy(batLScb));
-    MEASURE_OP(batLOenc, v2::bat::ops::copy(batLOcb));
-    MEASURE_OP(batLRenc, v2::bat::ops::copy(batLRcb));
-    MEASURE_OP(batPPenc, v2::bat::ops::copy(batPPcb));
-    MEASURE_OP(batPC, v2::bat::ops::copy(batPCcb));
-    MEASURE_OP(batPB, v2::bat::ops::copy(batPBcb));
-    MEASURE_OP(batSSenc, v2::bat::ops::copy(batSScb));
-    MEASURE_OP(batSR, v2::bat::ops::copy(batSRcb));
+    MEASURE_OP(batDDenc, ahead::bat::ops::copy(batDDcb));
+    MEASURE_OP(batDYenc, ahead::bat::ops::copy(batDYcb));
+    MEASURE_OP(batLPenc, ahead::bat::ops::copy(batLPcb));
+    MEASURE_OP(batLSenc, ahead::bat::ops::copy(batLScb));
+    MEASURE_OP(batLOenc, ahead::bat::ops::copy(batLOcb));
+    MEASURE_OP(batLRenc, ahead::bat::ops::copy(batLRcb));
+    MEASURE_OP(batPPenc, ahead::bat::ops::copy(batPPcb));
+    MEASURE_OP(batPC, ahead::bat::ops::copy(batPCcb));
+    MEASURE_OP(batPB, ahead::bat::ops::copy(batPBcb));
+    MEASURE_OP(batSSenc, ahead::bat::ops::copy(batSScb));
+    MEASURE_OP(batSR, ahead::bat::ops::copy(batSRcb));
 
     delete batDDcb;
     delete batDYcb;
@@ -80,67 +80,67 @@ int main(int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // s_region = 'AMERICA'
-        MEASURE_OP(bat1, v2::bat::ops::select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+        MEASURE_OP(bat1, ahead::bat::ops::select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batSSenc->reverse(); // s_suppkey | OID supplier
-        MEASURE_OP(bat4, v2::bat::ops::matchjoin(bat3, bat2)); // s_suppkey | OID supplier
+        MEASURE_OP(bat4, ahead::bat::ops::matchjoin(bat3, bat2)); // s_suppkey | OID supplier
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP(bat5, v2::bat::ops::hashjoin(batLSenc, bat4)); // OID lineorder | OID supplier
+        MEASURE_OP(bat5, ahead::bat::ops::hashjoin(batLSenc, bat4)); // OID lineorder | OID supplier
         delete bat4;
         // join with LO_PARTKEY to already reduce the join partners
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID Lineorder
         delete bat5;
-        MEASURE_OP(bat7, v2::bat::ops::matchjoin(bat6, batLPenc)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
+        MEASURE_OP(bat7, ahead::bat::ops::matchjoin(bat6, batLPenc)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
         // p_category = 'MFGR#12'
-        MEASURE_OP(bat8, v2::bat::ops::select<std::equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
+        MEASURE_OP(bat8, ahead::bat::ops::select<std::equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
         // p_brand = 'MFGR#121'
-        // MEASURE_OP(bat8, v2::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
+        // MEASURE_OP(bat8, ahead::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         delete bat8;
         auto batA = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP(batB, v2::bat::ops::matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
+        MEASURE_OP(batB, ahead::bat::ops::matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
         delete batA;
         delete bat9;
-        MEASURE_OP(batC, v2::bat::ops::hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
+        MEASURE_OP(batC, ahead::bat::ops::hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
         delete bat7;
         delete batB;
 
         // join with date now!
         auto batE = batC->mirror_head(); // OID lineorder | OID lineorder  (where ...)
         delete batC;
-        MEASURE_OP(batF, v2::bat::ops::matchjoin(batE, batLOenc)); // OID lineorder | lo_orderdate (where ...)
+        MEASURE_OP(batF, ahead::bat::ops::matchjoin(batE, batLOenc)); // OID lineorder | lo_orderdate (where ...)
         delete batE;
         auto batH = batDDenc->reverse(); // d_datekey | OID date
-        MEASURE_OP(batI, v2::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
+        MEASURE_OP(batI, ahead::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
         delete batF;
         delete batH;
 
         // now prepare grouped sum and check inputs
         auto batW = batI->mirror_head(); // OID lineorder | OID lineorder
-        MEASURE_OP(batX, v2::bat::ops::matchjoin(batW, batLPenc)); // OID lineorder | lo_partkey
+        MEASURE_OP(batX, ahead::bat::ops::matchjoin(batW, batLPenc)); // OID lineorder | lo_partkey
         auto batY = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP(batZ, v2::bat::ops::hashjoin(batX, batY)); // OID lineorder | OID part
+        MEASURE_OP(batZ, ahead::bat::ops::hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
-        MEASURE_OP(batA1, v2::bat::ops::hashjoin(batZ, batPB)); // OID lineorder | p_brand
+        MEASURE_OP(batA1, ahead::bat::ops::hashjoin(batZ, batPB)); // OID lineorder | p_brand
         delete batZ;
 
-        MEASURE_OP(batA2enc, v2::bat::ops::hashjoin(batI, batDYenc)); // OID lineorder | d_year
+        MEASURE_OP(batA2enc, ahead::bat::ops::hashjoin(batI, batDYenc)); // OID lineorder | d_year
         delete batI;
-        MEASURE_OP_TUPLE(tupleA2, v2::bat::ops::checkAndDecodeAN(batA2enc));CLEAR_CHECKANDDECODE_AN(tupleA2);
+        MEASURE_OP_TUPLE(tupleA2, ahead::bat::ops::checkAndDecodeAN(batA2enc));CLEAR_CHECKANDDECODE_AN(tupleA2);
         delete batA2enc;
 
-        MEASURE_OP(batA3enc, v2::bat::ops::matchjoin(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
+        MEASURE_OP(batA3enc, ahead::bat::ops::matchjoin(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
         delete batW;
-        MEASURE_OP_TUPLE(tupleA3, v2::bat::ops::checkAndDecodeAN(batA3enc));CLEAR_CHECKANDDECODE_AN(tupleA3);
+        MEASURE_OP_TUPLE(tupleA3, ahead::bat::ops::checkAndDecodeAN(batA3enc));CLEAR_CHECKANDDECODE_AN(tupleA3);
         delete batA3enc;
 
-        MEASURE_OP_TUPLE(tupleK, v2::bat::ops::groupedSum<v2_bigint_t>(std::get<0>(tupleA3), std::get<0>(tupleA2), batA1));
+        MEASURE_OP_TUPLE(tupleK, ahead::bat::ops::groupedSum<v2_bigint_t>(std::get<0>(tupleA3), std::get<0>(tupleA2), batA1));
         delete batA1;
         delete std::get<0>(tupleA2);
         delete std::get<0>(tupleA3);

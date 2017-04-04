@@ -34,7 +34,7 @@
 #include <utility>
 #include <ColumnStore.h>
 
-namespace v2 {
+namespace ahead {
 
     template<typename V2Type>
     struct ColumnDescriptorContainerType {

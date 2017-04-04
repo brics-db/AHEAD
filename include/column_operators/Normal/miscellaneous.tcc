@@ -30,7 +30,7 @@ typedef enum {
     left, right
 } hash_side_t;
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
             namespace Private {

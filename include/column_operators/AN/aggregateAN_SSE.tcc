@@ -31,7 +31,7 @@
 #include <column_operators/Normal/miscellaneous.tcc>
 #include <util/v2typeconversion.hpp>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

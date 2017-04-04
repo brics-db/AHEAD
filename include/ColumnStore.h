@@ -16,7 +16,7 @@
  * File:   ColumnStore.h
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 27. Juli 2016, 18:14
+ * Created on 27-07-2016 18:14
  */
 
 #ifndef COLUMNSTORE_H
@@ -27,7 +27,7 @@
 #include <util/v2types.hpp>
 #include <util/resilience.hpp>
 
-namespace v2 {
+namespace ahead {
 
 #define BITS_PER_BYTE 8
 #define BITS_SIZEOF(x) (sizeof(x) * BITS_PER_BYTE)

@@ -44,7 +44,7 @@
 #include <column_storage/BatIterator.h>
 #include <column_storage/TempBat.h>
 
-namespace v2 {
+namespace ahead {
 
     template<typename Head, typename Tail>
     class TempBATIterator : public BATIterator<Head, Tail> {

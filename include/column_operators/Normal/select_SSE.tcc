@@ -29,7 +29,7 @@
 #include <column_operators/SSECMP.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
             namespace Private {

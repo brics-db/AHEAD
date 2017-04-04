@@ -31,7 +31,7 @@
 #include <column_operators/Normal/miscellaneous.tcc>
 #include <util/v2typeconversion.hpp>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
             namespace Hashjoin {
@@ -65,7 +65,7 @@ namespace v2 {
                     typedef typename TypeMap<Tail1>::v2_base_t::type_t t1unenc_t;
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
-                    typedef typename v2::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+                    typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
                     std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2, hash_side_t hashside = hash_side_t::right, // by that, by default the order of the left BAT is preserved (what we expect in the queries)
@@ -216,7 +216,7 @@ namespace v2 {
                     typedef typename H2Enc::type_t h2enc_t;
                     typedef typename TypeMap<Tail1>::v2_base_t::type_t t1unenc_t;
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
-                    typedef typename v2::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+                    typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
                     std::tuple<TempBAT<head1_v2_select_t, v2_str_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,
                             BAT<Head2, v2_str_t>* arg2, hash_side_t hashside = hash_side_t::right, h1enc_t AH1r = 1, // for reencode
@@ -351,7 +351,7 @@ namespace v2 {
                     typedef typename H2Enc::type_t h2enc_t;
                     typedef typename TypeMap<Tail2>::v2_encoded_t T2Enc;
                     typedef typename T2Enc::type_t t2enc_t;
-                    typedef v2::larger_type<t1enc_t, h2enc_t> larger_type_t;
+                    typedef ahead::larger_type<t1enc_t, h2enc_t> larger_type_t;
                     typedef typename larger_type_t::type_t hash_t;
 
                     std::tuple<TempBAT<head1_v2_select_t, tail2_v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,

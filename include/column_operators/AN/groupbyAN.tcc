@@ -31,7 +31,7 @@
 #include <column_storage/Storage.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

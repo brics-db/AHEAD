@@ -51,7 +51,7 @@
 #include <meta_repository/MetaRepositoryManager.h>
 #include <column_storage/ColumnBatIterator.h>
 
-namespace v2 {
+namespace ahead {
 
     template<typename Tail>
     class ColumnBAT : public BAT<v2_void_t, Tail> {

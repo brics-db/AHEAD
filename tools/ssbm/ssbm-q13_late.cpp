@@ -44,13 +44,13 @@ int main(int argc, char** argv) {
     MEASURE_OP(batDWcb, new restiny_colbat_t("dateAN", "weeknuminyear"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(batDYenc, v2::bat::ops::copy(batDYcb));
-    MEASURE_OP(batDDenc, v2::bat::ops::copy(batDDcb));
-    MEASURE_OP(batLQenc, v2::bat::ops::copy(batLQcb));
-    MEASURE_OP(batLDenc, v2::bat::ops::copy(batLDcb));
-    MEASURE_OP(batLOenc, v2::bat::ops::copy(batLOcb));
-    MEASURE_OP(batLEenc, v2::bat::ops::copy(batLEcb));
-    MEASURE_OP(batDWenc, v2::bat::ops::copy(batDWcb));
+    MEASURE_OP(batDYenc, ahead::bat::ops::copy(batDYcb));
+    MEASURE_OP(batDDenc, ahead::bat::ops::copy(batDDcb));
+    MEASURE_OP(batLQenc, ahead::bat::ops::copy(batLQcb));
+    MEASURE_OP(batLDenc, ahead::bat::ops::copy(batLDcb));
+    MEASURE_OP(batLOenc, ahead::bat::ops::copy(batLOcb));
+    MEASURE_OP(batLEenc, ahead::bat::ops::copy(batLEcb));
+    MEASURE_OP(batDWenc, ahead::bat::ops::copy(batDWcb));
 
     delete batDYcb;
     delete batDDcb;
@@ -68,50 +68,50 @@ int main(int argc, char** argv) {
         // LAZY MODE !!! NO AN-OPERATORS UNTIL DECODING !!!
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, v2::bat::ops::select(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A)); // lo_quantity between 26 and 35
-        MEASURE_OP(bat2, v2::bat::ops::select(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A)); // lo_discount between 5 and 7
+        MEASURE_OP(bat1, ahead::bat::ops::select(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A)); // lo_quantity between 26 and 35
+        MEASURE_OP(bat2, ahead::bat::ops::select(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A)); // lo_discount between 5 and 7
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
-        MEASURE_OP(bat4, v2::bat::ops::matchjoin(bat3, bat2)); // join selection
+        MEASURE_OP(bat4, ahead::bat::ops::matchjoin(bat3, bat2)); // join selection
         delete bat2;
         delete bat3;
         auto bat5 = bat4->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP(bat6, v2::bat::ops::matchjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP(bat6, ahead::bat::ops::matchjoin(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(bat7, v2::bat::ops::select<std::equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.AN_A)); // d_year = 1994
+        MEASURE_OP(bat7, ahead::bat::ops::select<std::equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.AN_A)); // d_year = 1994
         auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_weeknuminyear
         delete bat7;
-        MEASURE_OP(bat9, v2::bat::ops::select<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
-        MEASURE_OP(batA, v2::bat::ops::matchjoin(bat8, bat9));
+        MEASURE_OP(bat9, ahead::bat::ops::select<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
+        MEASURE_OP(batA, ahead::bat::ops::matchjoin(bat8, bat9));
         delete bat8;
         delete bat9;
         auto batB = batA->mirror_head();
         delete batA;
-        MEASURE_OP(batC, v2::bat::ops::matchjoin(batB, batDDenc)); // only those d_datekey where d_year and d_weeknuminyear...
+        MEASURE_OP(batC, ahead::bat::ops::matchjoin(batB, batDDenc)); // only those d_datekey where d_year and d_weeknuminyear...
         delete batB;
 
         // 3) join lineorder and date
         auto batD = batC->reverse();
         delete batC;
-        MEASURE_OP(batE, v2::bat::ops::hashjoin(bat6, batD)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP(batE, ahead::bat::ops::hashjoin(bat6, batD)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         delete bat6;
         delete batD;
         // batE has in the Head the positions from lineorder and in the Tail the positions from date
         auto batF = batE->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batE;
-        MEASURE_OP(batG, v2::bat::ops::matchjoin(batF, batLEenc));
-        MEASURE_OP(batH, v2::bat::ops::matchjoin(batF, bat4));
+        MEASURE_OP(batG, ahead::bat::ops::matchjoin(batF, batLEenc));
+        MEASURE_OP(batH, ahead::bat::ops::matchjoin(batF, bat4));
         delete batF;
         delete bat4;
 
         // 4) lazy decode and result
-        MEASURE_OP_TUPLE(tupleI, v2::bat::ops::checkAndDecodeAN(batG));CLEAR_CHECKANDDECODE_AN(tupleI);
+        MEASURE_OP_TUPLE(tupleI, ahead::bat::ops::checkAndDecodeAN(batG));CLEAR_CHECKANDDECODE_AN(tupleI);
         delete batG;
-        MEASURE_OP_TUPLE(tupleJ, v2::bat::ops::checkAndDecodeAN(batH));CLEAR_CHECKANDDECODE_AN(tupleJ);
+        MEASURE_OP_TUPLE(tupleJ, ahead::bat::ops::checkAndDecodeAN(batH));CLEAR_CHECKANDDECODE_AN(tupleJ);
         delete batH;
-        MEASURE_OP(batK, v2::bat::ops::aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleI), std::get<0>(tupleJ)));
+        MEASURE_OP(batK, ahead::bat::ops::aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleI), std::get<0>(tupleJ)));
         delete std::get<0>(tupleI);
         delete std::get<0>(tupleJ);
         auto iter = batK->begin();

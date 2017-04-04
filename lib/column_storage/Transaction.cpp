@@ -28,7 +28,7 @@
 #include <column_storage/TransactionManager.h>
 #include <util/resilience.hpp>
 
-namespace v2 {
+namespace ahead {
 
     TransactionManager::Transaction::Transaction(bool isUpdater, version_t currentVersion)
             : botVersion(currentVersion), eotVersion(isUpdater ? (new id_t(std::numeric_limits<id_t>::max())) : (&this->botVersion)), isUpdater(isUpdater), iterators(), iteratorPositions() {

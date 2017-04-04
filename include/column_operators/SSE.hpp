@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <immintrin.h>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

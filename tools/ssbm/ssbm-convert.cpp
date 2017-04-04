@@ -48,38 +48,40 @@ int main(int argc, char** argv) {
     MEASURE_OP(cbSupplier_Region, new str_colbat_t("supplier", "region"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(tbDate_Year, v2::bat::ops::copy(cbDate_Year));
-    MEASURE_OP(tbDate_YearMonthNum, v2::bat::ops::copy(cbDate_YearMonthNum));
-    MEASURE_OP(tbDate_DateKey, v2::bat::ops::copy(cbDate_DateKey));
-    MEASURE_OP(tbDate_WeekNumInYear, v2::bat::ops::copy(cbDate_WeekNumInYear));
-    MEASURE_OP(tbLineorder_Quantity, v2::bat::ops::copy(cbLineorder_Quantity));
-    MEASURE_OP(tbLineorder_Discount, v2::bat::ops::copy(cbLineorder_Discount));
-    MEASURE_OP(tbLineorder_OrderDate, v2::bat::ops::copy(cbLineorder_OrderDate));
-    MEASURE_OP(tbLineorder_ExtendedPrice, v2::bat::ops::copy(cbLineorder_ExtendedPrice));
-    MEASURE_OP(tbLineorder_PartKey, v2::bat::ops::copy(cbLineorder_PartKey));
-    MEASURE_OP(tbLineorder_SuppKey, v2::bat::ops::copy(cbLineorder_SuppKey));
-    MEASURE_OP(tbLineorder_Revenue, v2::bat::ops::copy(cbLineorder_Revenue));
-    MEASURE_OP(tbPart_PartKey, v2::bat::ops::copy(cbPart_PartKey));
-    MEASURE_OP(tbPart_Category, v2::bat::ops::copy(cbPart_Category));
-    MEASURE_OP(tbPart_Brand, v2::bat::ops::copy(cbPart_Brand));
-    MEASURE_OP(tbSupplier_SuppKey, v2::bat::ops::copy(cbSupplier_SuppKey));
-    MEASURE_OP(tbSupplier_Region, v2::bat::ops::copy(cbSupplier_Region));
-
+    MEASURE_OP(tbDate_Year, ahead::bat::ops::copy(cbDate_Year));
     delete cbDate_Year;
+    MEASURE_OP(tbDate_YearMonthNum, ahead::bat::ops::copy(cbDate_YearMonthNum));
     delete cbDate_YearMonthNum;
+    MEASURE_OP(tbDate_DateKey, ahead::bat::ops::copy(cbDate_DateKey));
     delete cbDate_DateKey;
+    MEASURE_OP(tbDate_WeekNumInYear, ahead::bat::ops::copy(cbDate_WeekNumInYear));
     delete cbDate_WeekNumInYear;
+
+    MEASURE_OP(tbLineorder_Quantity, ahead::bat::ops::copy(cbLineorder_Quantity));
     delete cbLineorder_Quantity;
+    MEASURE_OP(tbLineorder_Discount, ahead::bat::ops::copy(cbLineorder_Discount));
     delete cbLineorder_Discount;
+    MEASURE_OP(tbLineorder_OrderDate, ahead::bat::ops::copy(cbLineorder_OrderDate));
     delete cbLineorder_OrderDate;
+    MEASURE_OP(tbLineorder_ExtendedPrice, ahead::bat::ops::copy(cbLineorder_ExtendedPrice));
     delete cbLineorder_ExtendedPrice;
+    MEASURE_OP(tbLineorder_PartKey, ahead::bat::ops::copy(cbLineorder_PartKey));
     delete cbLineorder_PartKey;
+    MEASURE_OP(tbLineorder_SuppKey, ahead::bat::ops::copy(cbLineorder_SuppKey));
     delete cbLineorder_SuppKey;
+    MEASURE_OP(tbLineorder_Revenue, ahead::bat::ops::copy(cbLineorder_Revenue));
     delete cbLineorder_Revenue;
+
+    MEASURE_OP(tbPart_PartKey, ahead::bat::ops::copy(cbPart_PartKey));
     delete cbPart_PartKey;
+    MEASURE_OP(tbPart_Category, ahead::bat::ops::copy(cbPart_Category));
     delete cbPart_Category;
+    MEASURE_OP(tbPart_Brand, ahead::bat::ops::copy(cbPart_Brand));
     delete cbPart_Brand;
+
+    MEASURE_OP(tbSupplier_SuppKey, ahead::bat::ops::copy(cbSupplier_SuppKey));
     delete cbSupplier_SuppKey;
+    MEASURE_OP(tbSupplier_Region, ahead::bat::ops::copy(cbSupplier_Region));
     delete cbSupplier_Region;
 
     SSBM_BEFORE_QUERIES;

@@ -182,7 +182,7 @@ int main() {
 \n\
 #include <column_operators/SSE.hpp>\n\
 \n\
-namespace v2 {\n\
+namespace ahead {\n\
     namespace bat {\n\
         namespace ops {\n\n";
     std::string mask08L = TOSTRING(MASK_64_08L);

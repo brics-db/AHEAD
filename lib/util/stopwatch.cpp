@@ -14,7 +14,7 @@
 
 #include <util/stopwatch.hpp>
 
-namespace v2 {
+namespace ahead {
 
     const bool OUTPUT_INSERT_DOT = true;
 

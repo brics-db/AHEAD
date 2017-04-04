@@ -14,7 +14,7 @@
 
 #include <column_storage/TransactionManager.h>
 
-namespace v2 {
+namespace ahead {
 
     TransactionManager* TransactionManager::instance = 0;
 

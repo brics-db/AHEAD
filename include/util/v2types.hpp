@@ -26,7 +26,7 @@
 #include <utility>
 #include <functional>
 
-namespace v2 {
+namespace ahead {
 
     /* META MACRO intended for generating type names */
 #define MKT(...) VFUNC(MKT, __VA_ARGS__)

@@ -27,7 +27,7 @@
 
 #include <column_operators/Operators.hpp>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

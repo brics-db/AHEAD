@@ -51,7 +51,7 @@
 #include <column_storage/TransactionManager.h>
 #include <column_operators/Operators.hpp>
 
-using namespace v2;
+using namespace ahead;
 
 // define
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
@@ -538,23 +538,14 @@ public:
                                     "--lenpcm"}, 16)}, {std::forward_as_tuple("dbpath", alias_list_t {"--dbpath", "-d"}, ".")}, {
 
                             std::forward_as_tuple("verbose", alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple("printresult", alias_list_t {"--print-result", "-p"}, false)}) {
-#ifdef DEBUG
-        std::cout << "ssbmconf_t()" << std::endl;
-#endif
     }
 
     ssbmconf_t(int argc, char** argv)
             : ssbmconf_t() {
-#ifdef DEBUG
-        std::cout << "ssbmconf_t(int argc, char** argv)" << std::endl;
-#endif
         init(argc, argv);
     }
 
     void init(int argc, char** argv) {
-#ifdef DEBUG
-        std::cout << "ssbmconf_t::init(int argc, char** argv)" << std::endl;
-#endif
         parser.parse(argc, argv, 1);
         NUM_RUNS = parser.get_uint("numruns");
         LEN_TIMES = parser.get_uint("lentimes");
@@ -567,14 +558,14 @@ public:
     }
 };
 
-StopWatch::rep loadTable(std::string& baseDir, const char* const columnName, const ssbmconf_t & CONFIG) {
+StopWatch::rep loadTable(std::string& baseDir, const char* const tableName, const ssbmconf_t & CONFIG) {
     StopWatch sw;
     TransactionManager* tm = TransactionManager::getInstance();
     TransactionManager::Transaction* t = tm->beginTransaction(true);
     assert(t != nullptr);
-    std::string path = baseDir + "/" + columnName;
+    std::string path = baseDir + "/" + tableName;
     sw.start();
-    size_t num = t->load(path.c_str(), columnName);
+    size_t num = t->load(path.c_str(), tableName);
     sw.stop();
     if (CONFIG.VERBOSE) {
         std::cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw << " ns." << std::endl;

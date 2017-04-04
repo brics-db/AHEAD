@@ -47,12 +47,13 @@
 #define TRANSACTIONMANAGER_H
 
 #include <utility>
+#include <vector>
 #include <unordered_set>
 
 #include "column_storage/ColumnManager.h"
 #include "meta_repository/MetaRepositoryManager.h"
 
-namespace v2 {
+namespace ahead {
 
     /**
      * @brief Klasse zur Verwaltung von Transaktionen

@@ -29,7 +29,7 @@
 #include <column_storage/Storage.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 
@@ -44,7 +44,7 @@ namespace v2 {
                 auto iter1 = arg1->begin();
                 auto iter2 = arg2->begin();
                 if (iter1->hasNext() && iter2->hasNext()) {
-                    typedef typename v2::larger_type<t1_t, h2_t>::type_t larger_t;
+                    typedef typename ahead::larger_type<t1_t, h2_t>::type_t larger_t;
                     if (side == hash_side_t::left) {
                         const larger_t t1max = static_cast<larger_t>(std::numeric_limits<t1_t>::max());
                         google::dense_hash_map<t1_t, std::vector<h1_t>> hashMap(arg1->size());

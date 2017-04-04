@@ -19,11 +19,11 @@ int main(int argc, char ** argv) {
         return 2;
     }
 
-    StopWatch sw;
+    ahead::StopWatch sw;
     std::random_device rndDevice;
     std::default_random_engine rndEngine(rndDevice());
     std::uniform_int_distribution<uint16_t> rndDistr;
-    __m128i mm = v2::bat::ops::v2_mm128<uint8_t>::set_inc(0);
+    __m128i mm = ahead::bat::ops::v2_mm128<uint8_t>::set_inc(0);
     __m128i mmResult;
     const size_t NUM_RND = 16;
     const size_t MASK_ARR = 0x0F;
@@ -55,7 +55,7 @@ int main(int argc, char ** argv) {
         pmmOut = mmOut;
         uint16_t tmpMask = rndDistr(rndEngine);
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        mmResult = v2::bat::ops::v2_mm128<uint8_t>::pack_right(mm, tmpMask);
+        mmResult = ahead::bat::ops::v2_mm128<uint8_t>::pack_right(mm, tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<uint8_t*>(pmmOut) + nMaskOnes);
     }
@@ -68,7 +68,7 @@ int main(int argc, char ** argv) {
         pmmOut = mmOut;
         uint16_t tmpMask = mask;
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        mmResult = v2::bat::ops::v2_mm128<uint8_t>::pack_right(mm, tmpMask);
+        mmResult = ahead::bat::ops::v2_mm128<uint8_t>::pack_right(mm, tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<uint8_t*>(pmmOut) + nMaskOnes);
         mask *= mask;
@@ -81,7 +81,7 @@ int main(int argc, char ** argv) {
         pmmOut = mmOut;
         uint16_t tmpMask = randoms[i & MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        mmResult = v2::bat::ops::v2_mm128<uint8_t>::pack_right(mm, tmpMask);
+        mmResult = ahead::bat::ops::v2_mm128<uint8_t>::pack_right(mm, tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<uint8_t*>(pmmOut) + nMaskOnes);
     }
@@ -103,7 +103,7 @@ int main(int argc, char ** argv) {
     for (i = 0; i < NUM128; ++i) {
         uint16_t tmpMask = rndDistr(rndEngine);
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        mmResult = v2::bat::ops::v2_mm128<uint8_t>::pack_right(_mm_lddqu_si128(pMM++), tmpMask);
+        mmResult = ahead::bat::ops::v2_mm128<uint8_t>::pack_right(_mm_lddqu_si128(pMM++), tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<uint8_t*>(pmmOut) + nMaskOnes);
     }
@@ -117,7 +117,7 @@ int main(int argc, char ** argv) {
     for (i = 0; i < NUM128; ++i) {
         uint16_t tmpMask = mask;
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        mmResult = v2::bat::ops::v2_mm128<uint8_t>::pack_right(_mm_lddqu_si128(pMM++), tmpMask);
+        mmResult = ahead::bat::ops::v2_mm128<uint8_t>::pack_right(_mm_lddqu_si128(pMM++), tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<uint8_t*>(pmmOut) + nMaskOnes);
         mask *= mask;
@@ -131,7 +131,7 @@ int main(int argc, char ** argv) {
     for (i = 0; i < NUM128; ++i) {
         uint16_t tmpMask = randoms[i & MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        mmResult = v2::bat::ops::v2_mm128<uint8_t>::pack_right(_mm_lddqu_si128(pMM++), tmpMask);
+        mmResult = ahead::bat::ops::v2_mm128<uint8_t>::pack_right(_mm_lddqu_si128(pMM++), tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<uint8_t*>(pmmOut) + nMaskOnes);
     }

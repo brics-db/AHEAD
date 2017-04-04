@@ -22,7 +22,7 @@
 #ifndef METAREPOSITORYMANAGER_TCC
 #define METAREPOSITORYMANAGER_TCC
 
-namespace v2 {
+namespace ahead {
 
     template<class Head, class Tail>
     std::pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::getLastValue(BAT<Head, Tail> *bat) {

@@ -33,12 +33,7 @@ int main(int argc, char** argv) {
         std::cout << "test_hashjoin\n=============" << std::endl;
     }
 
-    boost::filesystem::path p(CONFIG.DB_PATH);
-    if (boost::filesystem::is_regular(p)) {
-        p.remove_filename();
-    }
-    string baseDir = p.remove_trailing_separator().generic_string();
-    MetaRepositoryManager::init(baseDir.c_str());
+    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());
 
     sw1.start();
     loadTable(baseDir, "date", CONFIG);
@@ -53,7 +48,7 @@ int main(int argc, char** argv) {
     auto cbLineorderOrderdate = new int_colbat_t("lineorder", "orderdate");
 
     auto tbDateDatekey = cbDateDatekey->reverse();
-    auto tbLineorderOrderdate = v2::bat::ops::copy(cbLineorderOrderdate);
+    auto tbLineorderOrderdate = ahead::bat::ops::copy(cbLineorderOrderdate);
 
     std::cout << tbDateDatekey->size() << '\t' << tbLineorderOrderdate->size() << std::endl;
 
@@ -70,7 +65,7 @@ int main(int argc, char** argv) {
     }
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
+        auto result = ahead::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
         totalTime += sw1.stop();
         if (CONFIG.VERBOSE) {
             std::cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << std::endl;
@@ -86,7 +81,7 @@ int main(int argc, char** argv) {
     }
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         sw1.start();
-        auto result = v2::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
+        auto result = ahead::bat::ops::hashjoin(tbLineorderOrderdate, tbDateDatekey, hash_side_t::right);
         totalTime += sw1.stop();
         if (CONFIG.VERBOSE) {
             std::cout << (i + 1) << '\t' << sw1.duration() << '\t' << result->size() << std::endl;

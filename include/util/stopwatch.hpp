@@ -19,7 +19,7 @@
 #include <iomanip>
 #include <chrono>
 
-namespace v2 {
+namespace ahead {
 
     class StopWatch {
 

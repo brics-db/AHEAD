@@ -23,7 +23,7 @@
 
 #include <util/v2types.hpp>
 
-namespace v2 {
+namespace ahead {
 
     const typename v2_tinyint_t::type_t v2_tinyint_t::dhm_emptykey = static_cast<typename v2_tinyint_t::type_t>(-1);
     const typename v2_tinyint_t::type_t v2_tinyint_t::dhm_deletedkey = static_cast<typename v2_tinyint_t::type_t>(-2);

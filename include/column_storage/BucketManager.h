@@ -58,7 +58,7 @@
 #include <iostream>
 #endif
 
-namespace v2 {
+namespace ahead {
     /**
      * Die Konstante bestimmt die Anzahl der Bytes die für einen Bucket reserviert werden.
      */

@@ -25,7 +25,7 @@
 
 #include <util/argumentparser.hpp>
 
-namespace v2 {
+namespace ahead {
 
     ArgumentParser::ArgumentParser()
             : uintArgs(), strArgs(), boolArgs(), argTypes() {

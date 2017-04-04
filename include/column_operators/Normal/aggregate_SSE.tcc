@@ -26,7 +26,7 @@
 #include <column_operators/SSE.hpp>
 #include <column_operators/Normal/miscellaneous.tcc>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

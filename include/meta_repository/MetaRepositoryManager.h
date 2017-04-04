@@ -28,7 +28,7 @@
 #include <column_storage/Bat.h>
 #include <column_storage/TempBat.h>
 
-namespace v2 {
+namespace ahead {
 
     extern const char* NAME_TINYINT;
     extern const char* NAME_SHORTINT;

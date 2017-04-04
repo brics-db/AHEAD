@@ -44,7 +44,7 @@
 #include <column_storage/BatIterator.h>
 #include <column_storage/TransactionManager.h>
 
-namespace v2 {
+namespace ahead {
 
     template<typename Head, typename Tail>
     class ColumnBatIteratorBase : public BATIterator<Head, Tail> {

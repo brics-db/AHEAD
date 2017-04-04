@@ -16,7 +16,7 @@
 
 #include <column_storage/BucketManager.h>
 
-namespace v2 {
+namespace ahead {
 
     BucketManager* BucketManager::instance = nullptr;
 

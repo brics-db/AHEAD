@@ -32,7 +32,7 @@
 #include <column_operators/AN/encdecAN.tcc>
 #include <column_operators/AN/groupbyAN.tcc>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

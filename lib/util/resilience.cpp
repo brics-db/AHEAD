@@ -23,7 +23,7 @@
 
 #include <util/resilience.hpp>
 
-namespace v2 {
+namespace ahead {
     /*
      const std::array<uint16_t, 16> ANParameters::Atiny = {1, 3, 7, 13, 29, 59, 115, 233, 233, 233, 233, 233, 233, 233, 233, 233}; //, 487, 857, 1939, 3813, 7463, 13963, 27247, 55831};
      const std::array<restiny_t, 16> ANParameters::AtinyInv = {0x0001, 0xaaab, 0x6db7, 0x4ec5, 0xc235, 0xd8f3, 0xa4bb, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759, 0xd759};

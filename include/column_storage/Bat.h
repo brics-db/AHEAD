@@ -48,7 +48,7 @@
 #include <column_storage/ColumnMetaData.hpp>
 #include <column_storage/ColumnDescriptor.hpp>
 
-namespace v2 {
+namespace ahead {
 
     template<typename Head, typename Tail>
     struct BAT {

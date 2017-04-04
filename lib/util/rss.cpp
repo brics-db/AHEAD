@@ -21,7 +21,7 @@
 
 #include <util/rss.hpp>
 
-namespace v2 {
+namespace ahead {
 
     /*
      * Author:  David Robert Nadeau

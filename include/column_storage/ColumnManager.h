@@ -48,7 +48,7 @@
 #include <column_storage/BucketManager.h>
 #include <column_storage/ColumnMetaData.hpp>
 
-namespace v2 {
+namespace ahead {
 
     /**
      * @brief Klasse zur Verwaltung von Spalten mit Einträgen fester Größe

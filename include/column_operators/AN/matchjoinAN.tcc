@@ -34,7 +34,7 @@
 
 using boost::multiprecision::uint128_t;
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
             namespace MatchjoinAN {
@@ -72,7 +72,7 @@ namespace v2 {
                     typedef typename TypeMap<Tail1>::v2_base_t::type_t t1unenc_t;
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
-                    typedef typename v2::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+                    typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
                     std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2, h1enc_t AH1R = 1, // for reencode
@@ -176,7 +176,7 @@ namespace v2 {
                     typedef typename TypeMap<v2_void_t>::v2_base_t::type_t t1unenc_t;
                     typedef typename TypeMap<v2_void_t>::v2_base_t::type_t h2unenc_t;
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
-                    typedef typename v2::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+                    typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
                     std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, v2_void_t>* arg1,
                             BAT<v2_void_t, Tail2>* arg2, h1enc_t AH1R = 1, // for reencode

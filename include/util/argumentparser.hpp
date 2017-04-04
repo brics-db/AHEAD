@@ -29,7 +29,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-namespace v2 {
+namespace ahead {
 
     class ArgumentParser {
 

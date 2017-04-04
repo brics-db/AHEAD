@@ -46,7 +46,7 @@
 #include <column_operators/Normal/aggregate.tcc>
 #include <column_operators/Normal/groupby.tcc>
 
-namespace v2 {
+namespace ahead {
     namespace bat {
         namespace ops {
 

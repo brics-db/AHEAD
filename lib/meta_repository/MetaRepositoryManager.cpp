@@ -18,7 +18,7 @@
 #include <column_operators/Operators.hpp>
 #include <util/resilience.hpp>
 
-namespace v2 {
+namespace ahead {
 
     MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
     char* MetaRepositoryManager::strBaseDir = nullptr;
@@ -219,13 +219,13 @@ namespace v2 {
         id_t tableId = this->selectPKId(tables_id_pk, batIdForTableName);
 
         if (tableId != ID_INVALID) {
-            auto batForTableId = ::v2::bat::ops::select<std::equal_to>(attributes_table_id_fk, std::move(tableId));
+            auto batForTableId = ahead::bat::ops::select<std::equal_to>(attributes_table_id_fk, std::move(tableId));
 
             // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
             // reverse will not work here, because we need the bat id, not the table id
             auto mirrorTableIdBat = batForTableId->mirror_head();
             delete batForTableId;
-            auto attributesForTable = ::v2::bat::ops::hashjoin(mirrorTableIdBat, attributes_name);
+            auto attributesForTable = ahead::bat::ops::hashjoin(mirrorTableIdBat, attributes_name);
             delete mirrorTableIdBat;
             id_t batId = this->selectBatId(attributesForTable, attribute);
             delete attributesForTable;
