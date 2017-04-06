@@ -23,9 +23,12 @@
 #include <cstring>
 #include <sstream>
 #include <limits>
+#include <fstream>
 
 #include <ColumnStore.h>
 #include <column_storage/TransactionManager.h>
+#include <column_storage/Storage.hpp>
+#include <meta_repository/MetaRepositoryManager.h>
 #include <util/resilience.hpp>
 
 namespace ahead {
@@ -51,25 +54,35 @@ namespace ahead {
         return *this;
     }
 
-    size_t TransactionManager::Transaction::load(const char *path, const char* tableName, const char *prefix, size_t size, const char* delim, bool ignoreMoreData) {
+    size_t TransactionManager::Transaction::load(const char * const path, const char * const tableName, const char * const prefix, const size_t size, const char * const delim,
+            const bool ignoreMoreData) {
+        std::stringstream sserr;
+        if (!this->isUpdater) {
+            // Problem : Transaktion darf keine Änderungen vornehmen
+            sserr << "TransactionManager::load(@" << __LINE__ << ") Transaktion darf keine Änderungen vornehmen" << std::endl;
+            throw std::runtime_error(sserr.str());
+        }
+
         const size_t LEN_PATH = 1024;
         const size_t LEN_LINE = 1024;
         const size_t LEN_VALUE = 256;
 
         if (path == nullptr) {
-            throw std::runtime_error("[TransactionManager::load] You must provide a path!");
+            sserr << "TransactionManager::load(@" << __LINE__ << ")  You must provide a path!" << std::endl;
+            throw std::runtime_error(sserr.str());
         }
         size_t pathLen = strnlen(path, LEN_PATH);
         if (pathLen == 0 || pathLen > LEN_PATH) {
-            throw std::runtime_error("[TransactionManager::load] path is too long (>1024)");
+            sserr << "TransactionManager::load(@" << __LINE__ << ") path is too long (>1024)!" << std::endl;
+            throw std::runtime_error(sserr.str());
         }
         const char* actDelim = delim == nullptr ? "|" : delim;
 
         MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
         ColumnManager * cm = ColumnManager::getInstance();
 
-        std::list<ColumnManager::ColumnIterator*> iterators;
-        std::list<ColumnManager::ColumnIterator*>::iterator iteratorsIterator;
+        std::list<ColumnManager::ColumnIterator*> columnIters;
+        std::list<ColumnManager::ColumnIterator*>::iterator columnItersIterator;
         std::list<type_t> types;
         std::list<type_t>::iterator typesIterator;
 
@@ -95,33 +108,35 @@ namespace ahead {
 
         id_t newTableId(0); // unique id of the created table
         char datatype[LEN_VALUE];
-        std::vector<char*> attribute_names;
+        std::vector<char*> column_names;
         std::vector<size_t> columnWidths;
         columnWidths.reserve(32);
         size_t columnWidth(0);
-        std::stringstream sserr;
         std::vector<id_t> columnIDs;
         columnIDs.reserve(32);
         std::vector<ColumnMetaData> columnVec;
         columnVec.reserve(32);
 
-        if (!this->isUpdater) {
-            // Problem : Transaktion darf keine Änderungen vornehmen
-            sserr << "Problem : Transaktion darf keine Änderungen vornehmen" << std::endl;
-            throw std::runtime_error(sserr.str());
-        }
-
         valuesFile = std::fopen(valuesPath.c_str(), "r");
         headerFile = std::fopen(headerPath.c_str(), "r");
 
-        if (!valuesFile || !headerFile) {
+        if (!headerFile) {
             // Problem : Dateien konnten nicht geöffnet werden
-            sserr << "Problem : Dateien konnten nicht geöffnet werden:\n\tvaluesPath = " << valuesPath << "\n\theaderPath = " << headerPath << std::endl;
+            sserr << "TransactionManager::load(@" << __LINE__ << ") Header-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
+            throw std::runtime_error(sserr.str());
+        }
+
+        if (!valuesFile) {
+            // Problem : Dateien konnten nicht geöffnet werden
+            sserr << "TransactionManager::load(@" << __LINE__ << ") Content-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
         auto curColumnIDs = cm->getColumnIDs();
 
+        /////////////////////////////////////////////
+        // Make sure all metadata containers exist //
+        /////////////////////////////////////////////
         if (curColumnIDs.find(ID_BAT_COLNAMES) == curColumnIDs.end()) {
             cm->createColumn(ID_BAT_COLNAMES, sizeof(char) * LEN_VALUE);
             cm->createColumn(ID_BAT_COLTYPES, sizeof(type_t));
@@ -137,15 +152,25 @@ namespace ahead {
         this->open(ID_BAT_COLTYPES);
         this->open(ID_BAT_COLIDENT);
 
-        // create table
+        //////////////////
+        // Create Table //
+        //////////////////
         if (tableName) {
             newTableId = mrm->createTable(tableName);
         }
 
+        ///////////////////////
+        // Read Headers File //
+        ///////////////////////
+
+        //////////////////////////
+        //  * Read Column Names //
+        //////////////////////////
         // Zeile mit Spaltennamen einlesen aus Header-Datei
         std::memset(line, 0, LEN_LINE);
         if (std::fgets(line, LEN_LINE, headerFile) != line) {
-            throw std::runtime_error("Error reading line");
+            sserr << "TransactionManager::load(@" << __LINE__ << ") Error reading line!" << std::endl;
+            throw std::runtime_error(sserr.str());
         }
 
         char* pPos;
@@ -163,7 +188,7 @@ namespace ahead {
             size_t lenBuf = strlen(buffer);
             if (lenPrefix + lenBuf > (LEN_VALUE - 1)) {
                 // Problem : Name für Spalte (inkl. Prefix) zu lang
-                sserr << "[TransactionManager::load] Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
+                sserr << "TransactionManager::load(@" << __LINE__ << ") Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
                 throw std::runtime_error(sserr.str());
             }
 
@@ -181,7 +206,7 @@ namespace ahead {
             const size_t attr_name_len = lenPrefix + lenBuf + 1;
             char* attribute_name = new char[attr_name_len];
             std::strncpy(attribute_name, value, attr_name_len);
-            attribute_names.push_back(attribute_name);
+            column_names.push_back(attribute_name);
 
             std::strncpy(static_cast<str_t>(bun.tail), value, attr_name_len);
 
@@ -194,10 +219,14 @@ namespace ahead {
             buffer = std::strtok(nullptr, actDelim);
         }
 
+        //////////////////////////
+        //  * Read Column Types //
+        //////////////////////////
         // Zeile mit Spaltentypen einlesen aus Header-Datei
         std::memset(line, 0, LEN_LINE);
         if (std::fgets(line, LEN_LINE, headerFile) != line) {
-            throw std::runtime_error("Error reading line");
+            sserr << "TransactionManager::load(@" << __LINE__ << ") Error reading line" << std::endl;
+            throw std::runtime_error(sserr.str());
         }
 
         if ((pPos = std::strchr(line, '\n')) != nullptr) {
@@ -278,7 +307,7 @@ namespace ahead {
                 cm->createColumn(columnId, ColumnMetaData(columnWidth, std::get<15>(*v2_resint_t::As), std::get<15>(*v2_resint_t::Ainvs), v2_resint_t::UNENC_MAX_U, v2_resint_t::UNENC_MIN));
                 stdCreate = false;
             } else {
-                sserr << "TransactionManager::Transaction::load() data type " << buffer << " in header unknown" << std::endl;
+                sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type " << buffer << " in header unknown" << std::endl;
                 throw std::runtime_error(sserr.str());
             }
 
@@ -293,11 +322,11 @@ namespace ahead {
             *static_cast<id_t*>(bun.tail) = columnId;
 
             this->open(columnId);
-            iterators.push_back(this->iterators[columnId]);
+            columnIters.push_back(this->iterators[columnId]);
 
             // create attribute for specified table
             if (tableName) {
-                mrm->createAttribute(attribute_names.at(attributeNamesIndex), datatype, columnId, newTableId);
+                mrm->createAttribute(column_names.at(attributeNamesIndex), datatype, columnId, newTableId);
             }
 
             buffer = std::strtok(nullptr, actDelim);
@@ -312,94 +341,142 @@ namespace ahead {
         }
         delete columns;
 
+        ////////////////////////////////////////////////
+        // Test if all converted contents files exist //
+        ////////////////////////////////////////////////
+        const size_t numColumns = column_names.size();
+        bool areAllColumnsLoaded = true;
+        std::vector<bool> vecIscolumnAlreadyLoaded(numColumns);
+        columnItersIterator = columnIters.begin();
+        for (size_t i = 0; i < column_names.size(); ++i) {
+            std::string attrFilePath(path);
+            attrFilePath.append("_").append(column_names[i]).append(".ahead");
+            std::ifstream attrIStream(attrFilePath);
+            areAllColumnsLoaded &= attrIStream.is_open();
+            if (attrIStream) {
+                (*columnItersIterator)->read(attrIStream);
+                delete[] buffer;
+                if (attrIStream.fail() | attrIStream.bad()) {
+                    sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
+                    throw std::runtime_error(sserr.str());
+                }
+                vecIscolumnAlreadyLoaded[i] = true;
+            }
+            ++columnItersIterator;
+        }
+
+        ////////////////////////
+        // Read Contents File //
+        ////////////////////////
         // Spaltenwerte zeilenweise aus Datei einlesen
-        std::memset(line, 0, LEN_LINE);
-        while (std::fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
-            if ((pPos = std::strchr(line, '\n')) != nullptr) {
-                *pPos = 0;
-            }
-            if (*(pPos - 1) == '\r') {
-                *(pPos - 1) = 0;
-            }
-            n++; // increase line counter
-
-            // Iteratoren f?r Spaltentypen und Spalteniteratoren zur?cksetzen
-            iteratorsIterator = iterators.begin();
-            typesIterator = types.begin();
-
-            // Zeile durch Zeichen actDelim in Einzelwerte trennen
-            buffer = std::strtok(line, actDelim);
-            size_t numVal = 1;
-            size_t colIdx = 0;
-            while (buffer != nullptr) {
-                if (typesIterator == types.end()) {
-                    if (ignoreMoreData) {
-                        buffer = nullptr;
-                        continue;
-                    } else {
-                        sserr << "TransactionManager::Transaction::load() more values than types registered (#" << numVal << ")!";
-                        throw std::runtime_error(sserr.str());
-                    }
-                }
-
-                // Spaltentyp und Spaltenidentifikation bestimmen
-                type = *typesIterator;
-                ci = *iteratorsIterator;
-                auto record = ci->append();
-                switch (type) {
-                    case type_tinyint:
-                        *(static_cast<tinyint_t*>(record.content)) = static_cast<tinyint_t>(std::atoi(buffer));
-                        break;
-
-                    case type_shortint:
-                        *(static_cast<shortint_t*>(record.content)) = static_cast<shortint_t>(std::atoi(buffer));
-                        break;
-
-                    case type_int:
-                        *(static_cast<int_t*>(record.content)) = std::atol(buffer);
-                        break;
-
-                    case type_largeint:
-                        *(static_cast<bigint_t*>(record.content)) = static_cast<bigint_t>(std::atoll(buffer));
-                        break;
-
-                    case type_string:
-                        std::strncpy(static_cast<str_t>(record.content), buffer, columnWidths[colIdx]);
-                        break;
-
-                    case type_fixed:
-                        *(static_cast<fixed_t*>(record.content)) = std::atof(buffer);
-                        break;
-
-                    case type_char:
-                        *(static_cast<char_t*>(record.content)) = buffer[0];
-                        break;
-
-                    case type_restiny:
-                        *(static_cast<restiny_t*>(record.content)) = std::atol(buffer) * static_cast<restiny_t>(columnVec[colIdx].AN_A);
-                        break;
-
-                    case type_resshort:
-                        *(static_cast<resshort_t*>(record.content)) = std::atol(buffer) * static_cast<resshort_t>(columnVec[colIdx].AN_A);
-                        break;
-
-                    case type_resint:
-                        *(static_cast<resint_t*>(record.content)) = std::atoll(buffer) * static_cast<resint_t>(columnVec[colIdx].AN_A);
-                        break;
-
-                    default:
-                        sserr << "TransactionManager::Transaction::load() data type unknown" << std::endl;
-                        throw std::runtime_error(sserr.str());
-                }
-
-                ++colIdx;
-                ++numVal;
-                typesIterator++;
-                iteratorsIterator++;
-
-                buffer = std::strtok(nullptr, actDelim);
-            }
+        if (!areAllColumnsLoaded) {
             std::memset(line, 0, LEN_LINE);
+            while (std::fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
+                if ((pPos = std::strchr(line, '\n')) != nullptr) {
+                    *pPos = 0;
+                }
+                if (*(pPos - 1) == '\r') {
+                    *(pPos - 1) = 0;
+                }
+                n++; // increase line counter
+
+                // Iteratoren für Spaltentypen und Spalteniteratoren zur?cksetzen
+                columnItersIterator = columnIters.begin();
+                typesIterator = types.begin();
+
+                // Zeile durch Zeichen actDelim in Einzelwerte trennen
+                buffer = std::strtok(line, actDelim);
+                size_t numVal = 1;
+                size_t colIdx = 0;
+                while (buffer != nullptr) {
+                    if (typesIterator == types.end()) {
+                        if (ignoreMoreData) {
+                            buffer = nullptr;
+                            continue;
+                        } else {
+                            sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") more values than types registered (#" << numVal << ")!";
+                            throw std::runtime_error(sserr.str());
+                        }
+                    }
+
+                    if (!vecIscolumnAlreadyLoaded[colIdx]) {
+                        // Spaltentyp und Spaltenidentifikation bestimmen
+                        type = *typesIterator;
+                        ci = *columnItersIterator;
+                        auto record = ci->append();
+                        switch (type) {
+                            case type_tinyint:
+                                *(static_cast<tinyint_t*>(record.content)) = static_cast<tinyint_t>(std::atoi(buffer));
+                                break;
+
+                            case type_shortint:
+                                *(static_cast<shortint_t*>(record.content)) = static_cast<shortint_t>(std::atoi(buffer));
+                                break;
+
+                            case type_int:
+                                *(static_cast<int_t*>(record.content)) = std::atol(buffer);
+                                break;
+
+                            case type_largeint:
+                                *(static_cast<bigint_t*>(record.content)) = static_cast<bigint_t>(std::atoll(buffer));
+                                break;
+
+                            case type_string:
+                                std::strncpy(static_cast<str_t>(record.content), buffer, columnWidths[colIdx]);
+                                break;
+
+                            case type_fixed:
+                                *(static_cast<fixed_t*>(record.content)) = std::atof(buffer);
+                                break;
+
+                            case type_char:
+                                *(static_cast<char_t*>(record.content)) = buffer[0];
+                                break;
+
+                            case type_restiny:
+                                *(static_cast<restiny_t*>(record.content)) = std::atol(buffer) * static_cast<restiny_t>(columnVec[colIdx].AN_A);
+                                break;
+
+                            case type_resshort:
+                                *(static_cast<resshort_t*>(record.content)) = std::atol(buffer) * static_cast<resshort_t>(columnVec[colIdx].AN_A);
+                                break;
+
+                            case type_resint:
+                                *(static_cast<resint_t*>(record.content)) = std::atoll(buffer) * static_cast<resint_t>(columnVec[colIdx].AN_A);
+                                break;
+
+                            default:
+                                sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type unknown" << std::endl;
+                                throw std::runtime_error(sserr.str());
+                        }
+                    }
+
+                    ++colIdx;
+                    ++numVal;
+                    typesIterator++;
+                    columnItersIterator++;
+
+                    buffer = std::strtok(nullptr, actDelim);
+                }
+                std::memset(line, 0, LEN_LINE);
+            }
+        }
+
+        /////////////////////////////////////////
+        // Write Yet Unconverted Contents File //
+        /////////////////////////////////////////
+        if (!areAllColumnsLoaded) {
+            columnItersIterator = columnIters.begin();
+            for (size_t i = 0; i < numColumns; ++i) {
+                if (!vecIscolumnAlreadyLoaded[i]) {
+                    std::string attrFilePath(path);
+                    attrFilePath.append("_").append(column_names[i]).append(".ahead");
+                    std::ofstream attrOStream(attrFilePath);
+                    (*columnItersIterator)->write(attrOStream);
+                    attrOStream.flush();
+                }
+                ++columnItersIterator;
+            }
         }
 
         // Spalten schließen

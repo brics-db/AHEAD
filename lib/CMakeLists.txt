@@ -55,7 +55,8 @@ ENDMACRO( add_shared_lib )
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
 #add_static_lib(RStoreCore "util/resilience.cpp \
-add_shared_lib(RStoreCore "util/resilience.cpp \
+add_shared_lib(RStoreCore "AHEAD.cpp \
+util/resilience.cpp \
 util/rss.cpp \
 util/stopwatch.cpp \
 util/v2types.cpp \

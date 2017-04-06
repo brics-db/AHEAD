@@ -25,8 +25,7 @@
 #include <cstring>
 
 #include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/TempBat.h>
+#include <column_storage/TempStorage.hpp>
 
 namespace ahead {
 
@@ -40,6 +39,7 @@ namespace ahead {
     extern const char* NAME_RESTINY;
     extern const char* NAME_RESSHORT;
     extern const char* NAME_RESINT;
+    extern const char* NAME_RESBIGINT;
 
     extern const size_t MAXLEN_STRING;
 
@@ -62,6 +62,7 @@ namespace ahead {
 
     public:
         friend class TransactionManager;
+        friend class AHEAD;
 
         /**
          * @author Christian Vogel
@@ -73,9 +74,9 @@ namespace ahead {
          */
         static MetaRepositoryManager* getInstance();
 
-        static void init(const char* strBaseDir);
+        void init(const char* strBaseDir);
 
-        static void init(const std::string & strBaseDir);
+        void init(const std::string & strBaseDir);
 
         /**
          * @author Christian Vogel

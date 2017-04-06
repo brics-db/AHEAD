@@ -45,9 +45,7 @@
 
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
-#include <column_storage/ColumnMetaData.hpp>
 #include <column_storage/ColumnManager.h>
-#include <column_storage/TransactionManager.h>
 #include <meta_repository/MetaRepositoryManager.h>
 #include <column_storage/ColumnBatIterator.h>
 

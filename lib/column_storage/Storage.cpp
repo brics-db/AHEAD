@@ -32,8 +32,12 @@ namespace ahead {
     template class ColumnBAT<v2_fixed_t> ;
     template class ColumnBAT<v2_id_t> ;
     template class ColumnBAT<v2_oid_t> ;
+    template class ColumnBAT<v2_restiny_t> ;
+    template class ColumnBAT<v2_resshort_t> ;
+    template class ColumnBAT<v2_resint_t> ;
+    template class ColumnBAT<v2_resbigint_t> ;
 
-#define DEFINE_TEMP_BATS(v2_type_t)                         \
+#define DEFINE_BATS(v2_type_t)                         \
 template class TempBAT<v2_type_t, v2_tinyint_t> ;    \
 template class TempBAT<v2_type_t, v2_shortint_t> ;   \
 template class TempBAT<v2_type_t, v2_int_t> ;        \
@@ -51,23 +55,23 @@ template class TempBAT<v2_type_t, v2_resint_t> ;     \
 template class TempBAT<v2_type_t, v2_resbigint_t> ;  \
 template class TempBAT<v2_type_t, v2_resstr_t> ;     \
 
-    DEFINE_TEMP_BATS(v2_tinyint_t)
-    DEFINE_TEMP_BATS(v2_shortint_t)
-    DEFINE_TEMP_BATS(v2_int_t)
-    DEFINE_TEMP_BATS(v2_bigint_t)
-    DEFINE_TEMP_BATS(v2_char_t)
-    DEFINE_TEMP_BATS(v2_str_t)
-    DEFINE_TEMP_BATS(v2_fixed_t)
-    DEFINE_TEMP_BATS(v2_id_t)
-    DEFINE_TEMP_BATS(v2_size_t)
-    DEFINE_TEMP_BATS(v2_oid_t)
-    DEFINE_TEMP_BATS(v2_void_t)
-    DEFINE_TEMP_BATS(v2_restiny_t)
-    DEFINE_TEMP_BATS(v2_resshort_t)
-    DEFINE_TEMP_BATS(v2_resint_t)
-    DEFINE_TEMP_BATS(v2_resbigint_t)
-    DEFINE_TEMP_BATS(v2_resstr_t)
+    DEFINE_BATS(v2_tinyint_t)
+    DEFINE_BATS(v2_shortint_t)
+    DEFINE_BATS(v2_int_t)
+    DEFINE_BATS(v2_bigint_t)
+    DEFINE_BATS(v2_char_t)
+    DEFINE_BATS(v2_str_t)
+    DEFINE_BATS(v2_fixed_t)
+    DEFINE_BATS(v2_id_t)
+    DEFINE_BATS(v2_size_t)
+    DEFINE_BATS(v2_oid_t)
+    DEFINE_BATS(v2_void_t)
+    DEFINE_BATS(v2_restiny_t)
+    DEFINE_BATS(v2_resshort_t)
+    DEFINE_BATS(v2_resint_t)
+    DEFINE_BATS(v2_resbigint_t)
+    DEFINE_BATS(v2_resstr_t)
 
-#undef DEFINE_TEMP_BATS
+#undef DEFINE_BATS
 
 }

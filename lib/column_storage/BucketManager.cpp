@@ -176,11 +176,11 @@ namespace ahead {
     }
 
     size_t BucketManager::BucketIterator::position() {
-        if (this->previousBucket == 0 && this->currentBucket == 0) {
+        if (this->previousBucket == nullptr && this->currentBucket == nullptr) {
             return 0;
-        } else if (this->previousBucket == 0) {
+        } else if (this->previousBucket == nullptr) {
             return 1;
-        } else if (this->currentBucket == 0) {
+        } else if (this->currentBucket == nullptr) {
             return countBuckets();
         } else {
             return this->currentBucket->number + 1;
@@ -188,26 +188,26 @@ namespace ahead {
     }
 
     void BucketManager::BucketIterator::rewind() {
-        this->previousBucket = 0;
-        this->currentBucket = 0;
+        this->previousBucket = nullptr;
+        this->currentBucket = nullptr;
     }
 
     BucketManager::Chunk*
     BucketManager::BucketIterator::next() {
-        if (this->previousBucket == 0 && this->currentBucket == 0) {
+        if (this->previousBucket == nullptr && this->currentBucket == nullptr) {
             this->currentBucket = this->stream->head;
-        } else if (this->currentBucket != 0) {
+        } else if (this->currentBucket != nullptr) {
             this->previousBucket = this->currentBucket;
             this->currentBucket = this->currentBucket->next;
         }
 
-        while (this->currentBucket != 0 && *this->currentBucket->version > *this->version) {
+        while (this->currentBucket != nullptr && *this->currentBucket->version > *this->version) {
             this->currentBucket = this->currentBucket->older;
         }
 
         if (this->currentBucket == 0) {
             // Problem : Ende des Streams
-            return 0;
+            return nullptr;
         }
 
         return this->currentBucket->chunk;
@@ -217,32 +217,32 @@ namespace ahead {
     BucketManager::BucketIterator::seek(size_t number) {
         if (number < this->stream->size) {
             if (number == 0) {
-                this->previousBucket = 0;
-                this->currentBucket = 0;
+                this->previousBucket = nullptr;
+                this->currentBucket = nullptr;
 
                 return this->next();
             } else {
                 this->previousBucket = this->stream->index[number - 1];
 
-                while (this->previousBucket != 0 && *this->previousBucket->version > *this->version) {
+                while (this->previousBucket != nullptr && *this->previousBucket->version > *this->version) {
                     this->previousBucket = this->previousBucket->older;
                 }
 
-                if (this->previousBucket == 0) {
+                if (this->previousBucket == nullptr) {
                     // Problem : Ende des Streams
-                    this->currentBucket = 0;
+                    this->currentBucket = nullptr;
                     return 0;
                 } else {
                     this->currentBucket = this->previousBucket->next;
 
-                    while (this->currentBucket != 0 && *this->currentBucket->version > *this->version) {
+                    while (this->currentBucket != nullptr && *this->currentBucket->version > *this->version) {
                         this->currentBucket = this->currentBucket->older;
                     }
 
-                    if (this->currentBucket == 0) {
+                    if (this->currentBucket == nullptr) {
                         // Problem : Ende des Streams
-                        this->previousBucket = 0;
-                        return 0;
+                        this->previousBucket = nullptr;
+                        return nullptr;
                     } else {
                         return this->currentBucket->chunk;
                     }
@@ -251,9 +251,9 @@ namespace ahead {
 
         } else {
             // Problem : Ende des Streams
-            this->previousBucket = 0;
-            this->currentBucket = 0;
-            return 0;
+            this->previousBucket = nullptr;
+            this->currentBucket = nullptr;
+            return nullptr;
         }
     }
 
@@ -261,20 +261,20 @@ namespace ahead {
     BucketManager::BucketIterator::edit() {
         BucketManager::Bucket *newBucket;
 
-        if (this->currentBucket == 0) {
+        if (this->currentBucket == nullptr) {
             // Problem : Anfang/Ende des Streams
-            return 0;
+            return nullptr;
         } else {
-            if (this->currentBucket->newer != 0) {
+            if (this->currentBucket->newer != nullptr) {
                 // Problem : Existenz aktuellerer Version
-                return 0;
+                return nullptr;
             } else {
                 if (this->currentBucket->version != this->version) {
                     newBucket = new BucketManager::Bucket;
 
                     newBucket->next = this->currentBucket->next;
                     newBucket->older = this->currentBucket;
-                    newBucket->newer = 0;
+                    newBucket->newer = nullptr;
 
                     newBucket->version = this->version;
                     newBucket->number = this->currentBucket->number;
@@ -324,6 +324,7 @@ namespace ahead {
         newBucket->chunk = new BucketManager::Chunk;
 
         newBucket->chunk->content = malloc(CHUNK_CONTENT_SIZE);
+        *static_cast<oid_t*>(newBucket->chunk->content) = 0;
 
         this->log.push(this->stream->tail);
 

@@ -13,8 +13,10 @@
 // limitations under the License.
 
 #include <sstream>
+#include <fstream>
 
 #include <column_storage/ColumnManager.h>
+#include <column_storage/TransactionManager.h>
 
 namespace ahead {
 
@@ -45,12 +47,12 @@ namespace ahead {
     }
 
     ColumnManager::ColumnIterator*
-    ColumnManager::openColumn(unsigned int id, unsigned int *version) {
+    ColumnManager::openColumn(id_t id, version_t *version) {
         if (columnMetaData.find(id) != columnMetaData.end()) {
             return new ColumnManager::ColumnIterator(columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version));
         } else {
             // Problem : Spalte existiert nicht
-            return 0;
+            return nullptr;
         }
     }
 
@@ -93,8 +95,13 @@ namespace ahead {
             ss << "There is already a column with id " << id;
             throw std::runtime_error(ss.str());
         }
-        columnMetaData.emplace(id, width);
-        return iter->second;
+        auto pairIns = columnMetaData.emplace(id, width);
+        if (!pairIns.second) {
+            std::stringstream ss;
+            ss << "Could not create column with id " << id;
+            throw std::runtime_error(ss.str());
+        }
+        return pairIns.first->second;
     }
 
     ColumnMetaData &
@@ -105,26 +112,21 @@ namespace ahead {
             ss << "There is already a column with id " << id;
             throw std::runtime_error(ss.str());
         }
-        columnMetaData.emplace(id, std::forward<ColumnMetaData>(column));
-        return iter->second;
+        auto pairIns = columnMetaData.emplace(id, std::forward<ColumnMetaData>(column));
+        return pairIns.first->second;
     }
 
     size_t ColumnManager::ColumnIterator::size() {
-        const unsigned int recordsPerBucket = (unsigned int) ((CHUNK_CONTENT_SIZE - sizeof(unsigned int)) / this->columnMetaData.width);
-        unsigned int position;
-        unsigned int *elementCounter;
-
+        const oid_t recordsPerBucket = (oid_t) ((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / this->columnMetaData.width);
+        oid_t position;
+        oid_t * elementCounter;
         if (this->iterator->countBuckets() == 0) {
             return 0;
         } else {
             position = this->iterator->position();
-
             this->currentChunk = this->iterator->seek(this->iterator->countBuckets() - 1);
-
-            elementCounter = (unsigned int*) this->currentChunk->content;
-
+            elementCounter = static_cast<oid_t *>(this->currentChunk->content);
             this->currentChunk = this->iterator->seek(position);
-
             return (this->iterator->countBuckets() - 1) * recordsPerBucket + *elementCounter;
         }
     }
@@ -135,7 +137,7 @@ namespace ahead {
 
     ColumnManager::Record ColumnManager::ColumnIterator::next() {
         if (this->currentChunk != 0) {
-            unsigned int *elementCounter = (unsigned int*) this->currentChunk->content;
+            oid_t * elementCounter = static_cast<oid_t *>(this->currentChunk->content);
 
             if (this->currentPosition >= *elementCounter) {
                 BucketManager::Chunk *chunk = this->iterator->next();
@@ -150,7 +152,7 @@ namespace ahead {
                     return next();
                 }
             } else {
-                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(unsigned int) + this->currentPosition * this->columnMetaData.width);
+                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width);
                 this->currentPosition++;
                 return rec;
             }
@@ -171,21 +173,19 @@ namespace ahead {
     }
 
     ColumnManager::Record ColumnManager::ColumnIterator::seek(oid_t index) {
-        const size_t recordsPerBucket = (size_t) ((CHUNK_CONTENT_SIZE - sizeof(size_t)) / this->columnMetaData.width);
-
-        this->currentChunk = this->iterator->seek(index / recordsPerBucket);
+        this->currentChunk = this->iterator->seek(index / this->recordsPerBucket);
 
         if (this->currentChunk != 0) {
-            unsigned int *elementCounter = (unsigned int*) this->currentChunk->content;
+            oid_t * elementCounter = (oid_t *) this->currentChunk->content;
 
-            this->currentPosition = index - recordsPerBucket * (index / recordsPerBucket);
+            this->currentPosition = index - this->recordsPerBucket * (index / this->recordsPerBucket);
 
             if (this->currentPosition >= *elementCounter) {
                 // Problem : Falscher Index
                 rewind();
                 return Record(nullptr);
             } else {
-                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(unsigned int) + this->currentPosition * this->columnMetaData.width);
+                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width);
                 this->currentPosition++;
                 return rec;
             }
@@ -205,7 +205,7 @@ namespace ahead {
     ColumnManager::Record ColumnManager::ColumnIterator::edit() {
         if (this->currentChunk != 0) {
             this->currentChunk = this->iterator->edit();
-            return Record(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(unsigned int) + (this->currentPosition - 1) * this->columnMetaData.width);
+            return Record(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + (this->currentPosition - 1) * this->columnMetaData.width);
         } else {
             // Problem : Anfang/Ende der Spalte
             return Record(nullptr);
@@ -213,32 +213,89 @@ namespace ahead {
     }
 
     ColumnManager::Record ColumnManager::ColumnIterator::append() {
-        unsigned int *elementCounter = nullptr;
+        oid_t * elementCounter = nullptr;
 
-        unsigned numBuckets = this->iterator->countBuckets();
+        oid_t numBuckets = this->iterator->countBuckets();
         if (numBuckets == 0) {
             this->currentChunk = this->iterator->append();
-            elementCounter = (unsigned*) this->currentChunk->content;
-            *elementCounter = 0;
+            elementCounter = (oid_t *) this->currentChunk->content;
         } else {
             this->currentChunk = this->iterator->seek(numBuckets - 1);
-            elementCounter = (unsigned*) this->currentChunk->content;
-            if (*elementCounter == recordsPerBucket) {
+            elementCounter = (oid_t *) this->currentChunk->content;
+            if (*elementCounter == this->recordsPerBucket) {
                 this->currentChunk = this->iterator->append();
-                elementCounter = (unsigned*) this->currentChunk->content;
-                *elementCounter = 0;
+                elementCounter = static_cast<oid_t *>(this->currentChunk->content);
             } else {
                 this->currentChunk = this->iterator->edit();
-                elementCounter = (unsigned*) this->currentChunk->content;
+                elementCounter = static_cast<oid_t *>(this->currentChunk->content);
             }
         }
 
         this->currentPosition = *elementCounter;
 
-        Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(unsigned int) + this->currentPosition * this->columnMetaData.width);
+        Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width);
         this->currentPosition++;
         (*elementCounter)++;
         return rec;
+    }
+
+    void ColumnManager::ColumnIterator::read(std::istream & inStream) {
+        const size_t pos = inStream.tellg();
+        inStream.seekg(0, std::ios_base::end);
+        const size_t numBytesTotal = static_cast<size_t>(inStream.tellg()) - pos;
+        inStream.seekg(pos, std::ios_base::beg);
+        // char * buffer = new char[numBytesTotal];
+        // istream.read(buffer, numBytesTotal);
+        ssize_t totalValues = static_cast<ssize_t>(numBytesTotal / this->columnMetaData.width);
+        // char * pSrc = buffer;
+        oid_t * elementCounter = nullptr;
+
+        // find first bucket to insert. Mostly this will be the very first (initialized) bucket
+        oid_t numBuckets = this->iterator->countBuckets();
+        if (numBuckets == 0) {
+            this->currentChunk = this->iterator->append();
+            elementCounter = static_cast<oid_t *>(this->currentChunk->content);
+        } else {
+            this->currentChunk = this->iterator->seek(numBuckets - 1);
+            elementCounter = static_cast<oid_t *>(this->currentChunk->content);
+            if (*elementCounter == this->recordsPerBucket) {
+                this->currentChunk = this->iterator->append();
+                elementCounter = static_cast<oid_t *>(this->currentChunk->content);
+            } else {
+                this->currentChunk = this->iterator->edit();
+                elementCounter = static_cast<oid_t *>(this->currentChunk->content);
+            }
+        }
+
+        // now read in the contents and split it into bucket sizes
+        while (totalValues > 0) {
+            this->currentPosition = *elementCounter;
+            size_t numValuesToInsert = this->recordsPerBucket - this->currentPosition;
+            if (numValuesToInsert > static_cast<size_t>(totalValues)) {
+                numValuesToInsert = totalValues;
+            }
+            size_t numBytesToInsert = numValuesToInsert * this->columnMetaData.width;
+            *elementCounter = this->currentPosition + numValuesToInsert;
+            char * pDest = reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width;
+            // std::memcpy(pDest, pSrc, numValuesToInsert * this->columnMetaData.width);
+            inStream.read(pDest, numBytesToInsert);
+            totalValues -= numValuesToInsert;
+            if (totalValues > 0) {
+                this->currentChunk = this->iterator->append();
+                elementCounter = static_cast<oid_t *>(this->currentChunk->content);
+            }
+        }
+    }
+
+    void ColumnManager::ColumnIterator::write(std::ostream & outStream) {
+        this->rewind();
+        auto pChunk = this->iterator->next();
+        while (pChunk != nullptr) {
+            auto numValues = *static_cast<oid_t*>(pChunk->content);
+            char * pStart = reinterpret_cast<char*>(reinterpret_cast<oid_t*>(pChunk->content) + 1);
+            outStream.write(pStart, numValues * this->columnMetaData.width);
+            pChunk = this->iterator->next();
+        }
     }
 
     void ColumnManager::ColumnIterator::undo() {
@@ -249,7 +306,7 @@ namespace ahead {
 
     ColumnManager::ColumnIterator::ColumnIterator(ColumnMetaData & columnMetaData, BucketManager::BucketIterator *iterator)
             : iterator(iterator), columnMetaData(columnMetaData), currentChunk(nullptr), currentPosition(0),
-                    recordsPerBucket(static_cast<unsigned>((CHUNK_CONTENT_SIZE - sizeof(unsigned)) / columnMetaData.width)) {
+                    recordsPerBucket(static_cast<oid_t>((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / columnMetaData.width)) {
         this->iterator->rewind();
     }
 

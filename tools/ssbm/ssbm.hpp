@@ -46,10 +46,7 @@
 #include <util/rss.hpp>
 #include <util/stopwatch.hpp>
 
-#include <ColumnStore.h>
-#include <column_storage/ColumnBat.h>
-#include <column_storage/TransactionManager.h>
-#include <column_operators/Operators.hpp>
+#include <AHEAD.hpp>
 
 using namespace ahead;
 
@@ -158,57 +155,51 @@ PCM::ErrorCode pcmStatus = PCM::UnknownError;                                  \
         m->getAllCounterStates(sysstate1, sktstate1, cstate1);                 \
     }                                                                          \
     std::cout << Headline << std::endl;                                        \
-    MetaRepositoryManager::init(CONFIG.DB_PATH.c_str());                       \
+    AHEAD::createInstance(CONFIG.DB_PATH.c_str());                             \
 } while (false)
 
 ///////////////
 // SSBM_LOAD //
 ///////////////
-#define SSBM_LOAD(...) VFUNC(SSBM_LOAD, __VA_ARGS__)
+#define SSBM_LOAD_PRINTQUERYSTRING(...) VFUNC(SSBM_LOAD_PRINTQUERYSTRING, __VA_ARGS__)
+#define SSBM_LOAD_PRINTQUERYSTRING6(tab1, tab2, tab3, tab4, tab5, QueryString) \
+std::cout << QueryString << std::endl;
+#define SSBM_LOAD_PRINTQUERYSTRING5(tab1, tab2, tab3, tab4, QueryString) \
+std::cout << QueryString << std::endl;
+#define SSBM_LOAD_PRINTQUERYSTRING4(tab1, tab2, tab3,  QueryString) \
+std::cout << QueryString << std::endl;
+#define SSBM_LOAD_PRINTQUERYSTRING3(tab1, tab2, QueryString) \
+std::cout << QueryString << std::endl;
+#define SSBM_LOAD_PRINTQUERYSTRING2(tab1, QueryString) \
+std::cout << QueryString << std::endl;
+#define SSBM_LOAD(...)                                                         \
+;do {                                                                          \
+    rssBeforeLoad = getPeakRSS(size_enum_t::B);                                \
+    sw1.start();                                                               \
+    VFUNC(SSBM_LOAD, __VA_ARGS__)                                              \
+    sw1.stop();                                                                \
+    rssAfterLoad = getPeakRSS(size_enum_t::B);                                 \
+    std::cout << "Total loading time: " << sw1 << " ns.\n" << std::endl;       \
+    if (CONFIG.VERBOSE) {                                                      \
+        SSBM_LOAD_PRINTQUERYSTRING(__VA_ARGS__);                               \
+    }                                                                          \
+} while (false)
 #define SSBM_LOAD6(tab1, tab2, tab3, tab4, tab5, QueryString)                  \
-;do {                                                                          \
-    rssBeforeLoad = getPeakRSS(size_enum_t::B);                                \
-    sw1.start();                                                               \
-    loadTable(CONFIG.DB_PATH, tab1, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab2, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab3, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab4, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab5, CONFIG);                                   \
-    sw1.stop();                                                                \
-    rssAfterLoad = getPeakRSS(size_enum_t::B);                                 \
-    std::cout << "Total loading time: " << sw1 << " ns.\n" << std::endl;       \
-    if (CONFIG.VERBOSE) {                                                      \
-        std::cout << QueryString << std::endl;                                 \
-    }                                                                          \
-} while (false)
+loadTable(tab1, CONFIG);                                                       \
+loadTable(tab2, CONFIG);                                                       \
+loadTable(tab3, CONFIG);                                                       \
+loadTable(tab4, CONFIG);                                                       \
+loadTable(tab5, CONFIG);
 #define SSBM_LOAD5(tab1, tab2, tab3, tab4, QueryString)                        \
-;do {                                                                          \
-    rssBeforeLoad = getPeakRSS(size_enum_t::B);                                \
-    sw1.start();                                                               \
-    loadTable(CONFIG.DB_PATH, tab1, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab2, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab3, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab4, CONFIG);                                   \
-    sw1.stop();                                                                \
-    rssAfterLoad = getPeakRSS(size_enum_t::B);                                 \
-    std::cout << "Total loading time: " << sw1 << " ns.\n" << std::endl;       \
-    if (CONFIG.VERBOSE) {                                                      \
-        std::cout << QueryString << std::endl;                                 \
-    }                                                                          \
-} while (false)
+loadTable(tab1, CONFIG);                                                       \
+loadTable(tab2, CONFIG);                                                       \
+loadTable(tab3, CONFIG);                                                       \
+loadTable(tab4, CONFIG);
 #define SSBM_LOAD3(tab1, tab2, QueryString)                                    \
-;do {                                                                          \
-    rssBeforeLoad = getPeakRSS(size_enum_t::B);                                \
-    sw1.start();                                                               \
-    loadTable(CONFIG.DB_PATH, tab1, CONFIG);                                   \
-    loadTable(CONFIG.DB_PATH, tab2, CONFIG);                                   \
-    sw1.stop();                                                                \
-    rssAfterLoad = getPeakRSS(size_enum_t::B);                                 \
-    std::cout << "Total loading time: " << sw1 << " ns.\n" << std::endl;       \
-    if (CONFIG.VERBOSE) {                                                      \
-        std::cout << QueryString << std::endl;                                 \
-    }                                                                          \
-} while (false)
+loadTable(tab1, CONFIG);                                                       \
+loadTable(tab2, CONFIG);
+#define SSBM_LOAD2(tab1, QueryString)                                          \
+loadTable(tab1, CONFIG);
 
 /////////////////////////
 // SSBM_BEFORE_QUERIES //
@@ -534,10 +525,9 @@ public:
             : NUM_RUNS(0), LEN_TIMES(0), LEN_TYPES(0), LEN_SIZES(0), LEN_PCM(0), DB_PATH(), VERBOSE(false), PRINT_RESULT(0),
                     parser(
                             {std::forward_as_tuple("numruns", alias_list_t {"--numruns", "-n"}, 15), std::forward_as_tuple("lentimes", alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(
-                                    "lentypes", alias_list_t {"--lentypes"}, 14), std::forward_as_tuple("lensizes", alias_list_t {"--lensizes"}, 16), std::forward_as_tuple("lenpcm", alias_list_t {
-                                    "--lenpcm"}, 16)}, {std::forward_as_tuple("dbpath", alias_list_t {"--dbpath", "-d"}, ".")}, {
-
-                            std::forward_as_tuple("verbose", alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple("printresult", alias_list_t {"--print-result", "-p"}, false)}) {
+                                    "lentypes", alias_list_t {"--lentypes"}, 20), std::forward_as_tuple("lensizes", alias_list_t {"--lensizes"}, 16), std::forward_as_tuple("lenpcm", alias_list_t {
+                                    "--lenpcm"}, 16)}, {std::forward_as_tuple("dbpath", alias_list_t {"--dbpath", "-d"}, ".")},
+                            {std::forward_as_tuple("verbose", alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple("printresult", alias_list_t {"--print-result", "-p"}, false)}) {
     }
 
     ssbmconf_t(int argc, char** argv)
@@ -558,19 +548,14 @@ public:
     }
 };
 
-StopWatch::rep loadTable(std::string& baseDir, const char* const tableName, const ssbmconf_t & CONFIG) {
+StopWatch::rep loadTable(const char* const tableName, const ssbmconf_t & CONFIG) {
     StopWatch sw;
-    TransactionManager* tm = TransactionManager::getInstance();
-    TransactionManager::Transaction* t = tm->beginTransaction(true);
-    assert(t != nullptr);
-    std::string path = baseDir + "/" + tableName;
     sw.start();
-    size_t num = t->load(path.c_str(), tableName);
+    size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
     sw.stop();
     if (CONFIG.VERBOSE) {
-        std::cout << "File: " << path << "\n\tNumber of BUNs: " << num << "\n\tTime: " << sw << " ns." << std::endl;
+        std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
     }
-    tm->endTransaction(t);
     return sw.duration();
 }
 

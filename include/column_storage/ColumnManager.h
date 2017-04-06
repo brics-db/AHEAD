@@ -75,7 +75,18 @@ namespace ahead {
         /**
          * @brief Klasse zum Lesen und Editieren der Records einer Spalte
          *
-         * Die Klasse stellt eine Möglichekeit zur Verfügung eine Spalte nach dem Open/Next/Close-Prinzip zu lesen und editieren. Beim Erzeugen der Klasse muss ein Zeiger auf eine Version übergeben werden, dessen Inhalt, im folgenden Version des Iterators genannt, angibt welche Records das Open/Next/Close-Interface liefert. Man liest daraufhin die Records mit der größten Versionnummer kleiner oder gleich der Version des Iterators. Hierbei ist zu beachten, dass sich die Version des Iterators während der kompletten Lebensdauer eines Objekts dieser Klasse nicht ändern darf, da man ggf. falsche Daten geliefert bekommt und bei Änderungen die komplette Datenbasis zerstören kann. Außerdem ist darauf zu achten, dass zu einem festen Zeitpunkt maximal einen Iterator der Änderung durchgeführt hat oder Änderungen durchfphren wird pro Spalte gibt. Operationen zur Änderung der Datenbasis dürfen nur aufgerufen werden, falls die Version des Iterators größer als die aktuellste Version ist. Der Speicher für die Version eines Iterators, welcher Änderungen an der Datenbasis vollzogen hat, darf nach Zerstörung des Objektes nicht freigegeben werden und der Inhalt darf auf eine Nummer größer als die aktuelle Version verändert werden. Der Speicher für die Version eines Iterators, der ausschließlich lesend auf die Datenbasis zugegriffen hat, kann nach Zerstörung des Objekts freigegeben werden.
+         * Die Klasse stellt eine Möglichekeit zur Verfügung eine Spalte nach dem Open/Next/Close-Prinzip zu lesen und editieren.
+         * Beim Erzeugen der Klasse muss ein Zeiger auf eine Version übergeben werden, dessen Inhalt, im folgenden Version des
+         * Iterators genannt, angibt welche Records das Open/Next/Close-Interface liefert. Man liest daraufhin die Records mit
+         * der größten Versionnummer kleiner oder gleich der Version des Iterators. Hierbei ist zu beachten, dass sich die Version
+         * des Iterators während der kompletten Lebensdauer eines Objekts dieser Klasse nicht ändern darf, da man ggf. falsche
+         * Daten geliefert bekommt und bei Änderungen die komplette Datenbasis zerstören kann. Außerdem ist darauf zu achten, dass
+         * zu einem festen Zeitpunkt maximal einen Iterator der Änderung durchgeführt hat oder Änderungen durchfphren wird pro
+         * Spalte gibt. Operationen zur Änderung der Datenbasis dürfen nur aufgerufen werden, falls die Version des Iterators größer
+         * als die aktuellste Version ist. Der Speicher für die Version eines Iterators, welcher Änderungen an der Datenbasis
+         * vollzogen hat, darf nach Zerstörung des Objektes nicht freigegeben werden und der Inhalt darf auf eine Nummer größer als
+         * die aktuelle Version verändert werden. Der Speicher für die Version eines Iterators, der ausschließlich lesend auf die
+         * Datenbasis zugegriffen hat, kann nach Zerstörung des Objekts freigegeben werden.
          */
         class ColumnIterator {
 
@@ -103,7 +114,9 @@ namespace ahead {
              *
              * @return Zeiger auf Inhalt des nächsten Records innerhalb der Spalte
              *
-             * Die Funktion gibt einen Zeiger auf den Inhalt des nächsten Records innerhalb der Spalte zurück. Falls keine weiteren Records vorhanden sein sollten, wird ein NULL-Zeiger zurückgegeben. Um die Datenintegrität zu erhalten, darf der Inhalt des Records nicht verändert werden.
+             * Die Funktion gibt einen Zeiger auf den Inhalt des nächsten Records innerhalb der Spalte zurück. Falls keine weiteren Records
+             * vorhanden sein sollten, wird ein NULL-Zeiger zurückgegeben. Um die Datenintegrität zu erhalten, darf der Inhalt des Records
+             * nicht verändert werden.
              */
             Record next();
             /**
@@ -113,13 +126,17 @@ namespace ahead {
              *
              * @return Zeiger auf den Record an der übergebenen Position innerhalb der Spalte
              *
-             * Die Funktion gibt einen Zeiger auf den Record an der übergebenen Position zurück. Hierbei ist zu beachten, dass die Nummerierung der Positionen innerhalb einer Spalte bei 0 beginnt. Falls zur übergebenen Position kein entsprechender Record gefunden wurde, wird rewind() aufgerufen und ein NULL-Zeiger zurückgegeben. Um die Datenintegrität zu erhalten, darf der Inhalt des Records nicht verändert werden.
+             * Die Funktion gibt einen Zeiger auf den Record an der übergebenen Position zurück. Hierbei ist zu beachten, dass die Nummerierung
+             * der Positionen innerhalb einer Spalte bei 0 beginnt. Falls zur übergebenen Position kein entsprechender Record gefunden wurde,
+             * wird rewind() aufgerufen und ein NULL-Zeiger zurückgegeben. Um die Datenintegrität zu erhalten, darf der Inhalt des Records
+             * nicht verändert werden.
              */
             Record seek(oid_t index);
             /**
              * @author Julian Hollender
              *
-             * Die Funktion setzt den Iterator in seine Ausgangsposition zurück, wodurch beim nächsten Aufruf der Funktion next() wieder der Record an erster Position in der Spalte zurückgegeben wird. Mögliche Änderungen an der Datenbasis werden nicht rückgängig gemacht.
+             * Die Funktion setzt den Iterator in seine Ausgangsposition zurück, wodurch beim nächsten Aufruf der Funktion next() wieder
+             * der Record an erster Position in der Spalte zurückgegeben wird. Mögliche Änderungen an der Datenbasis werden nicht rückgängig gemacht.
              */
             void rewind();
 
@@ -128,22 +145,46 @@ namespace ahead {
              *
              * @return Zeiger auf den Record an der aktuellen Position
              *
-             * Die Funktion liefert einen Zeiger auf den Record an der aktuellen Position zurück, dessen Inhalt geändert werden darf. Hierbei wird der Zeiger für die Version des Records auf die Version des Iterators gesetzt. Ein erneuter Aufruf der Funktion während der Lebenszeit des Iterator-Objektes an der gleichen Position in der Spalte liefert einen Zeiger auf die gleiche Speicherposition zurück.
+             * Die Funktion liefert einen Zeiger auf den Record an der aktuellen Position zurück, dessen Inhalt geändert werden darf.
+             * Hierbei wird der Zeiger für die Version des Records auf die Version des Iterators gesetzt. Ein erneuter Aufruf der Funktion
+             * während der Lebenszeit des Iterator-Objektes an der gleichen Position in der Spalte liefert einen Zeiger auf die gleiche
+             * Speicherposition zurück.
              */
             Record edit();
+
             /**
              * @author Julian Hollender
              *
              * @return Zeiger auf einen Record, der an das Ende des Bucket-Streams angehängt wurde
              *
-             * Die Funktion liefert einen Zeiger auf einen Record, der an das Ende der Spalte angehängt wurde. Hierbei wird der Zeiger für die Version des Records auf die Version des Iterators gesetzt. Nach dem Aufruf steht der Iterator auf dem neu angehängten Record. Ein erneutes Aufrufen der Funktion edit() würde also einen Zeiger auf den gleiche Speicherbereich liefern.
+             * Die Funktion liefert einen Zeiger auf einen Record, der an das Ende der Spalte angehängt wurde. Hierbei wird der Zeiger für
+             * die Version des Records auf die Version des Iterators gesetzt. Nach dem Aufruf steht der Iterator auf dem neu angehängten
+             * Record. Ein erneutes Aufrufen der Funktion edit() würde also einen Zeiger auf den gleiche Speicherbereich liefern.
              */
             Record append();
 
             /**
+             * @author Till Kolditz
+             *
+             * @param content Pointer to the contents
+             * @param lenContent length of the content array in BYTES
+             * @param dataSizeInBits length of one data item in BYTES
+             *
+             * BULK inserts the storage and automatically splits it into bucket sizes.
+             */
+            void read(std::istream & istream);
+
+            /**
+             * @author Till Kolditz
+             */
+            void write(std::ostream & ostream);
+
+            /**
              * @author Julian Hollender
              *
-             * Die Funktion nimmt alle bisher durchgeführten Änderungen des Iterators zurück und setzt anschließend den Iterator in seine Ausgangsposition zurück, wodurch beim nächsten Aufruf der Funktion next() wieder den Record an erster Position in der Spalte zurückgegeben wird.
+             * Die Funktion nimmt alle bisher durchgeführten Änderungen des Iterators zurück und setzt anschließend den Iterator in seine
+             * Ausgangsposition zurück, wodurch beim nächsten Aufruf der Funktion next() wieder den Record an erster Position in der Spalte
+             * zurückgegeben wird.
              */
             void undo();
 

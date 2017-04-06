@@ -32,7 +32,9 @@
 #include <vector>
 #include <atomic>
 #include <utility>
+
 #include <ColumnStore.h>
+#include <column_storage/ColumnMetaData.hpp>
 
 namespace ahead {
 

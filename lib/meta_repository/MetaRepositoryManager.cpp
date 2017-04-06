@@ -14,9 +14,9 @@
 
 #include <cstring>
 
+#include <ColumnStore.h>
 #include <meta_repository/MetaRepositoryManager.h>
 #include <column_operators/Operators.hpp>
-#include <util/resilience.hpp>
 
 namespace ahead {
 
@@ -35,6 +35,7 @@ namespace ahead {
     cstr_t NAME_RESTINY = "RESTINY";
     cstr_t NAME_RESSHORT = "RESSHORT";
     cstr_t NAME_RESINT = "RESINT";
+    cstr_t NAME_RESBIGINT = "RESBIGINT";
 
     const size_t MAXLEN_STRING = 64;
 
@@ -45,10 +46,6 @@ namespace ahead {
         // creates the whole repository
         this->createRepository();
         this->createDefaultDataTypes();
-
-        // test table
-        //    table_name->append(std::make_pair(0, "tables"));
-        // pk_table_id->append(std::make_pair(0, 1));
     }
 
     MetaRepositoryManager::MetaRepositoryManager(const MetaRepositoryManager &copy)
@@ -79,7 +76,7 @@ namespace ahead {
 
     MetaRepositoryManager*
     MetaRepositoryManager::getInstance() {
-        if (MetaRepositoryManager::instance == 0) {
+        if (MetaRepositoryManager::instance == nullptr) {
             MetaRepositoryManager::instance = new MetaRepositoryManager();
         }
 
@@ -95,16 +92,10 @@ namespace ahead {
 
     void MetaRepositoryManager::init(cstr_t strBaseDir) {
         if (MetaRepositoryManager::strBaseDir == nullptr) {
+            getInstance(); // make sure that an instance exists
             size_t len = strlen(strBaseDir);
             MetaRepositoryManager::strBaseDir = new char[len + 1];
             memcpy(MetaRepositoryManager::strBaseDir, strBaseDir, len + 1); // includes NULL character
-
-            getInstance(); // make sure that an instance exists
-
-            // size_t len2 = strlen(PATH_DATABASE);
-            // instance->TEST_DATABASE_PATH = new char[len + len2 + 1];
-            // memcpy(instance->TEST_DATABASE_PATH, strBaseDir, len); // excludes NULL character
-            // memcpy(instance->TEST_DATABASE_PATH + len, PATH_DATABASE, len2 + 1); // includes NULL character
 
             size_t len3 = strlen(PATH_INFORMATION_SCHEMA);
             instance->META_PATH = new char[len + len3 + 1];
@@ -128,6 +119,7 @@ namespace ahead {
         datatype_id_pk->append(std::make_pair(7, 8));
         datatype_id_pk->append(std::make_pair(8, 9));
         datatype_id_pk->append(std::make_pair(9, 10));
+        datatype_id_pk->append(std::make_pair(10, 11));
 
         datatype_name->append(std::make_pair(0, const_cast<str_t>(NAME_TINYINT)));
         datatype_name->append(std::make_pair(1, const_cast<str_t>(NAME_SHORTINT)));
@@ -139,6 +131,7 @@ namespace ahead {
         datatype_name->append(std::make_pair(7, const_cast<str_t>(NAME_RESTINY)));
         datatype_name->append(std::make_pair(8, const_cast<str_t>(NAME_RESSHORT)));
         datatype_name->append(std::make_pair(9, const_cast<str_t>(NAME_RESINT)));
+        datatype_name->append(std::make_pair(10, const_cast<str_t>(NAME_RESBIGINT)));
 
         datatype_length->append(std::make_pair(0, sizeof(tinyint_t)));
         datatype_length->append(std::make_pair(1, sizeof(shortint_t)));
@@ -150,6 +143,7 @@ namespace ahead {
         datatype_length->append(std::make_pair(7, sizeof(restiny_t)));
         datatype_length->append(std::make_pair(8, sizeof(resshort_t)));
         datatype_length->append(std::make_pair(9, sizeof(resint_t)));
+        datatype_length->append(std::make_pair(10, sizeof(resbigint_t)));
 
         datatype_category->append(std::make_pair(0, 'N'));
         datatype_category->append(std::make_pair(1, 'N'));
@@ -161,6 +155,7 @@ namespace ahead {
         datatype_category->append(std::make_pair(7, 'N'));
         datatype_category->append(std::make_pair(8, 'N'));
         datatype_category->append(std::make_pair(9, 'N'));
+        datatype_category->append(std::make_pair(10, 'N'));
     }
 
     void MetaRepositoryManager::createRepository() {
