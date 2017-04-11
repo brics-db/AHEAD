@@ -160,8 +160,8 @@ namespace ahead {
         typedef v2_resstr_t v2_select_t;
         typedef v2_resstr_t v2_compare_t;
 
-        static cstr_t dhm_emptykey;
-        static cstr_t dhm_deletedkey;
+        static str_t dhm_emptykey;
+        static str_t dhm_deletedkey;
 
         static str_t UNENC_MIN;
         static str_t UNENC_MAX;
@@ -177,7 +177,7 @@ namespace ahead {
         typedef v2_tinyint_t v2_base_t;
         typedef v2_restiny_t v2_encoded_t;
         typedef v2_tinyint_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -186,7 +186,7 @@ namespace ahead {
         typedef v2_shortint_t v2_base_t;
         typedef v2_resshort_t v2_encoded_t;
         typedef v2_shortint_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -195,7 +195,7 @@ namespace ahead {
         typedef v2_int_t v2_base_t;
         typedef v2_resint_t v2_encoded_t;
         typedef v2_int_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -204,7 +204,7 @@ namespace ahead {
         typedef v2_bigint_t v2_base_t;
         typedef v2_resbigint_t v2_encoded_t;
         typedef v2_bigint_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -213,7 +213,7 @@ namespace ahead {
         typedef v2_oid_t v2_base_t;
         typedef v2_resoid_t v2_encoded_t;
         typedef v2_oid_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -222,7 +222,7 @@ namespace ahead {
         typedef v2_void_t v2_base_t;
         typedef v2_resoid_t v2_encoded_t;
         typedef v2_oid_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -231,7 +231,7 @@ namespace ahead {
         typedef v2_str_t v2_base_t;
         typedef v2_resstr_t v2_encoded_t;
         typedef v2_str_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -240,7 +240,7 @@ namespace ahead {
         typedef v2_tinyint_t v2_base_t;
         typedef v2_restiny_t v2_encoded_t;
         typedef v2_restiny_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -249,7 +249,7 @@ namespace ahead {
         typedef v2_shortint_t v2_base_t;
         typedef v2_resshort_t v2_encoded_t;
         typedef v2_resshort_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -258,7 +258,7 @@ namespace ahead {
         typedef v2_int_t v2_base_t;
         typedef v2_resint_t v2_encoded_t;
         typedef v2_resint_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -267,7 +267,7 @@ namespace ahead {
         typedef v2_bigint_t v2_base_t;
         typedef v2_resbigint_t v2_encoded_t;
         typedef v2_resbigint_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -276,7 +276,7 @@ namespace ahead {
         typedef v2_oid_t v2_base_t;
         typedef v2_resoid_t v2_encoded_t;
         typedef v2_resoid_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -285,7 +285,7 @@ namespace ahead {
         typedef v2_str_t v2_base_t;
         typedef v2_resstr_t v2_encoded_t;
         typedef v2_str_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -294,7 +294,7 @@ namespace ahead {
         typedef v2_fixed_t v2_base_t;
         typedef v2_fixed_t v2_encoded_t;
         typedef v2_fixed_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -303,7 +303,7 @@ namespace ahead {
         typedef v2_char_t v2_base_t;
         typedef v2_char_t v2_encoded_t;
         typedef v2_char_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -312,7 +312,7 @@ namespace ahead {
         typedef v2_id_t v2_base_t;
         typedef v2_id_t v2_encoded_t;
         typedef v2_id_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<>
@@ -321,7 +321,7 @@ namespace ahead {
         typedef v2_size_t v2_base_t;
         typedef v2_size_t v2_encoded_t;
         typedef v2_size_t v2_actual_t;
-        static cstr_t TYPENAME;
+        static cstrc_t TYPENAME;
     };
 
     template<typename V2Type, bool isV2BaseType>

@@ -29,47 +29,49 @@
 namespace ahead {
     namespace bat {
         namespace ops {
+            namespace scalar {
 
-            /**
-             * Simple sum of all tail values in a Bat
-             * @param arg a Bat
-             * @return a single sum value
-             */
-            template<typename v2_result_t, typename Head, typename Tail>
-            typename v2_result_t::type_t aggregate_sum(BAT<Head, Tail>* arg) {
-                typedef typename v2_result_t::type_t result_t;
-                result_t sum = 0;
-                auto iter = arg->begin();
-                for (; iter->hasNext(); ++*iter) {
-                    sum += static_cast<result_t>(iter->tail());
+                /**
+                 * Simple sum of all tail values in a Bat
+                 * @param arg a Bat
+                 * @return a single sum value
+                 */
+                template<typename v2_result_t, typename Head, typename Tail>
+                typename v2_result_t::type_t aggregate_sum(BAT<Head, Tail>* arg) {
+                    typedef typename v2_result_t::type_t result_t;
+                    result_t sum = 0;
+                    auto iter = arg->begin();
+                    for (; iter->hasNext(); ++*iter) {
+                        sum += static_cast<result_t>(iter->tail());
+                    }
+                    delete iter;
+                    return sum;
                 }
-                delete iter;
-                return sum;
-            }
 
-            /**
-             * Multiplies the tail values of each of the two Bat's and sums everything up.
-             * @param arg1
-             * @param arg2
-             * @return A single sum of the pair-wise products of the two Bats
-             */
-            template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-            BAT<v2_void_t, Result>*
-            aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0)) {
-                typedef typename Result::type_t result_t;
-                auto iter1 = arg1->begin();
-                auto iter2 = arg2->begin();
-                result_t total = init;
-                for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
-                    total += (static_cast<result_t>(iter1->tail()) * static_cast<result_t>(iter2->tail()));
+                /**
+                 * Multiplies the tail values of each of the two Bat's and sums everything up.
+                 * @param arg1
+                 * @param arg2
+                 * @return A single sum of the pair-wise products of the two Bats
+                 */
+                template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, Result>*
+                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0)) {
+                    typedef typename Result::type_t result_t;
+                    auto iter1 = arg1->begin();
+                    auto iter2 = arg2->begin();
+                    result_t total = init;
+                    for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
+                        total += (static_cast<result_t>(iter1->tail()) * static_cast<result_t>(iter2->tail()));
+                    }
+                    delete iter2;
+                    delete iter1;
+                    auto bat = new TempBAT<v2_void_t, Result>;
+                    bat->append(total);
+                    return bat;
                 }
-                delete iter2;
-                delete iter1;
-                auto bat = new TempBAT<v2_void_t, Result>;
-                bat->append(total);
-                return bat;
-            }
 
+            }
         }
     }
 }

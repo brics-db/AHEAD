@@ -19,13 +19,13 @@
  * Created on 13. August 2016, 22:58
  */
 
-#include "../ssbm/ssbm.hpp"
+#include "../ssbm/ssb.hpp"
 
 /*
  * 
  */
 int main(int argc, char** argv) {
-    ssbmconf_t CONFIG(argc, argv);
+    SSB_CONF CONFIG(argc, argv);
     StopWatch sw1;
     StopWatch::rep totalTime = 0;
 

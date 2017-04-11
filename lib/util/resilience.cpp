@@ -79,29 +79,29 @@ namespace ahead {
 // const std::array<uint16_t, 16> * v2_resoid_t::As = &ANParameters::Aint;
 // const std::array<resoid_t, 16> * v2_resoid_t::Ainvs = &ANParameters::AintInv;
 
-    cstr_t v2_resstr_t::dhm_emptykey = v2_str_t::dhm_emptykey;
-    cstr_t v2_resstr_t::dhm_deletedkey = v2_str_t::dhm_deletedkey;
+    str_t v2_resstr_t::dhm_emptykey = v2_str_t::dhm_emptykey;
+    str_t v2_resstr_t::dhm_deletedkey = v2_str_t::dhm_deletedkey;
     str_t v2_resstr_t::UNENC_MIN = 0x0000000000000000ull;
     str_t v2_resstr_t::UNENC_MAX = reinterpret_cast<str_t>(0xFFFFFFFFFFFFFFFFull);
     str_t v2_resstr_t::UNENC_MAX_U = reinterpret_cast<str_t>(0xFFFFFFFFFFFFFFFFull);
 
-    cstr_t TypeMap<v2_tinyint_t>::TYPENAME = "v2_tinyint_t";
-    cstr_t TypeMap<v2_shortint_t>::TYPENAME = "v2_shortint_t";
-    cstr_t TypeMap<v2_int_t>::TYPENAME = "v2_int_t";
-    cstr_t TypeMap<v2_bigint_t>::TYPENAME = "v2_bigint_t";
-    cstr_t TypeMap<v2_oid_t>::TYPENAME = "v2_oid_t";
-    cstr_t TypeMap<v2_void_t>::TYPENAME = "v2_void_t";
-    cstr_t TypeMap<v2_str_t>::TYPENAME = "v2_str_t";
-    cstr_t TypeMap<v2_fixed_t>::TYPENAME = "v2_fixed_t";
-    cstr_t TypeMap<v2_char_t>::TYPENAME = "v2_char_t";
-    cstr_t TypeMap<v2_id_t>::TYPENAME = "v2_id_t";
-    cstr_t TypeMap<v2_size_t>::TYPENAME = "v2_size_t";
+    cstrc_t TypeMap<v2_tinyint_t>::TYPENAME = "v2_tinyint_t";
+    cstrc_t TypeMap<v2_shortint_t>::TYPENAME = "v2_shortint_t";
+    cstrc_t TypeMap<v2_int_t>::TYPENAME = "v2_int_t";
+    cstrc_t TypeMap<v2_bigint_t>::TYPENAME = "v2_bigint_t";
+    cstrc_t TypeMap<v2_oid_t>::TYPENAME = "v2_oid_t";
+    cstrc_t TypeMap<v2_void_t>::TYPENAME = "v2_void_t";
+    cstrc_t TypeMap<v2_str_t>::TYPENAME = "v2_str_t";
+    cstrc_t TypeMap<v2_fixed_t>::TYPENAME = "v2_fixed_t";
+    cstrc_t TypeMap<v2_char_t>::TYPENAME = "v2_char_t";
+    cstrc_t TypeMap<v2_id_t>::TYPENAME = "v2_id_t";
+    cstrc_t TypeMap<v2_size_t>::TYPENAME = "v2_size_t";
 
-    cstr_t TypeMap<v2_restiny_t>::TYPENAME = "v2_restiny_t";
-    cstr_t TypeMap<v2_resshort_t>::TYPENAME = "v2_resshort_t";
-    cstr_t TypeMap<v2_resint_t>::TYPENAME = "v2_resint_t";
-    cstr_t TypeMap<v2_resbigint_t>::TYPENAME = "v2_resbigint_t";
-    cstr_t TypeMap<v2_resoid_t>::TYPENAME = "v2_resoid_t";
-    cstr_t TypeMap<v2_resstr_t>::TYPENAME = "v2_resstr_t";
+    cstrc_t TypeMap<v2_restiny_t>::TYPENAME = "v2_restiny_t";
+    cstrc_t TypeMap<v2_resshort_t>::TYPENAME = "v2_resshort_t";
+    cstrc_t TypeMap<v2_resint_t>::TYPENAME = "v2_resint_t";
+    cstrc_t TypeMap<v2_resbigint_t>::TYPENAME = "v2_resbigint_t";
+    cstrc_t TypeMap<v2_resoid_t>::TYPENAME = "v2_resoid_t";
+    cstrc_t TypeMap<v2_resstr_t>::TYPENAME = "v2_resstr_t";
 
 }

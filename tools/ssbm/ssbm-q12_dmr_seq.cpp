@@ -19,11 +19,11 @@
  * Created on 24. January 2017, 17:03
  */
 
-#include "ssbm.hpp"
+#include "ssb.hpp"
+
+typedef DMRValue<bigint_t> DMR;
 
 int main(int argc, char** argv) {
-    const size_t MODULARITY = 2;
-
     SSBM_REQUIRED_VARIABLES("SSBM Query 1.2 DMR Sequential\n=============================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
             "N", "O", "P");
 
@@ -44,26 +44,21 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLEcb, new int_colbat_t("lineorder", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    int_tmpbat_t * batDYs[2];
-    int_tmpbat_t * batDDs[2];
-    tinyint_tmpbat_t * batLQs[2];
-    tinyint_tmpbat_t * batLDs[2];
-    int_tmpbat_t * batLOs[2];
-    int_tmpbat_t * batLEs[2];
+    int_tmpbat_t * batDYs[DMR::modularity];
+    int_tmpbat_t * batDDs[DMR::modularity];
+    tinyint_tmpbat_t * batLQs[DMR::modularity];
+    tinyint_tmpbat_t * batLDs[DMR::modularity];
+    int_tmpbat_t * batLOs[DMR::modularity];
+    int_tmpbat_t * batLEs[DMR::modularity];
 
-    MEASURE_OP(batDYs, [0], ahead::bat::ops::copy(batDYcb), batDYs[0]->size(), batDYs[0]->consumption(), batDYs[0]->consumptionProjected());
-    MEASURE_OP(batDDs, [0], ahead::bat::ops::copy(batDDcb), batDDs[0]->size(), batDDs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batLQs, [0], ahead::bat::ops::copy(batLQcb), batLQs[0]->size(), batLQs[0]->consumption(), batLQs[0]->consumptionProjected());
-    MEASURE_OP(batLDs, [0], ahead::bat::ops::copy(batLDcb), batLDs[0]->size(), batLDs[0]->consumption(), batLDs[0]->consumptionProjected());
-    MEASURE_OP(batLOs, [0], ahead::bat::ops::copy(batLOcb), batLOs[0]->size(), batLOs[0]->consumption(), batLOs[0]->consumptionProjected());
-    MEASURE_OP(batLEs, [0], ahead::bat::ops::copy(batLEcb), batLEs[0]->size(), batLEs[0]->consumption(), batLEs[0]->consumptionProjected());
-
-    MEASURE_OP(batDYs, [1], ahead::bat::ops::copy(batDYcb), batDYs[1]->size(), batDYs[1]->consumption(), batDYs[1]->consumptionProjected());
-    MEASURE_OP(batDDs, [1], ahead::bat::ops::copy(batDDcb), batDDs[1]->size(), batDDs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batLQs, [1], ahead::bat::ops::copy(batLQcb), batLQs[1]->size(), batLQs[1]->consumption(), batLQs[1]->consumptionProjected());
-    MEASURE_OP(batLDs, [1], ahead::bat::ops::copy(batLDcb), batLDs[1]->size(), batLDs[1]->consumption(), batLDs[1]->consumptionProjected());
-    MEASURE_OP(batLOs, [1], ahead::bat::ops::copy(batLOcb), batLOs[1]->size(), batLOs[1]->consumption(), batLOs[1]->consumptionProjected());
-    MEASURE_OP(batLEs, [1], ahead::bat::ops::copy(batLEcb), batLEs[1]->size(), batLEs[1]->consumption(), batLEs[1]->consumptionProjected());
+    for (size_t k = 0; k < DMR::modularity; ++k) {
+        MEASURE_OP(batDYs, [k], copy(batDYcb), batDYs[k]->size(), batDYs[k]->consumption(), batDYs[k]->consumptionProjected());
+        MEASURE_OP(batDDs, [k], copy(batDDcb), batDDs[k]->size(), batDDs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batLQs, [k], copy(batLQcb), batLQs[k]->size(), batLQs[k]->consumption(), batLQs[k]->consumptionProjected());
+        MEASURE_OP(batLDs, [k], copy(batLDcb), batLDs[k]->size(), batLDs[k]->consumption(), batLDs[k]->consumptionProjected());
+        MEASURE_OP(batLOs, [k], copy(batLOcb), batLOs[k]->size(), batLOs[k]->consumption(), batLOs[k]->consumptionProjected());
+        MEASURE_OP(batLEs, [k], copy(batLEcb), batLEs[k]->size(), batLEs[k]->consumption(), batLEs[k]->consumptionProjected());
+    }
 
     delete batDYcb;
     delete batDDcb;
@@ -77,45 +72,45 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         SSBM_BEFORE_QUERY;
 
-        ModularRedundantValue<bigint_t, MODULARITY> results(0);
+        DMR results(0);
 
-        for (size_t k = 0; k < MODULARITY; ++k) {
+        for (size_t k = 0; k < DMR::modularity; ++k) {
             // 1) select from lineorder
-            MEASURE_OP(bat1, ahead::bat::ops::select(batLQs[k], 26, 35)); // lo_quantity between 26 and 35
-            MEASURE_OP(bat2, ahead::bat::ops::select(batLDs[k], 4, 6)); // lo_discount between 4 and 6
+            MEASURE_OP(bat1, select(batLQs[k], 26, 35)); // lo_quantity between 26 and 35
+            MEASURE_OP(bat2, select(batLDs[k], 4, 6)); // lo_discount between 4 and 6
             auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
             delete bat1;
-            MEASURE_OP(bat4, ahead::bat::ops::matchjoin(bat3, bat2)); // join selection
+            MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection
             delete bat2;
             delete bat3;
             auto bat5 = bat4->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
-            MEASURE_OP(bat6, ahead::bat::ops::matchjoin(bat5, batLOs[k])); // only those lo_orderdates where lo_quantity... and lo_discount
+            MEASURE_OP(bat6, matchjoin(bat5, batLOs[k])); // only those lo_orderdates where lo_quantity... and lo_discount
             delete bat5;
 
             // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-            MEASURE_OP(bat7, ahead::bat::ops::select<std::equal_to>(batDYs[k], 199401)); // d_yearmonthnum = 199401
+            MEASURE_OP(bat7, select<std::equal_to>(batDYs[k], 199401)); // d_yearmonthnum = 199401
             auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_datekey
             delete bat7;
-            MEASURE_OP(bat9, ahead::bat::ops::matchjoin(bat8, batDDs[k])); // only those d_datekey where d_year...
+            MEASURE_OP(bat9, matchjoin(bat8, batDDs[k])); // only those d_datekey where d_year...
             delete bat8;
 
             // 3) join lineorder and date
             auto batA = bat9->reverse();
             delete bat9;
-            MEASURE_OP(batB, ahead::bat::ops::hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+            MEASURE_OP(batB, hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
             delete bat6;
             delete batA;
             // batE now has in the Head the positions from lineorder and in the Tail the positions from date
             auto batC = batB->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
             delete batB;
             // BatF only contains the 
-            MEASURE_OP(batD, ahead::bat::ops::matchjoin(batC, batLEs[k]));
-            MEASURE_OP(batE, ahead::bat::ops::matchjoin(batC, bat4));
+            MEASURE_OP(batD, matchjoin(batC, batLEs[k]));
+            MEASURE_OP(batE, matchjoin(batC, bat4));
             delete batC;
             delete bat4;
 
             // 4) result
-            MEASURE_OP(batF, ahead::bat::ops::aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
+            MEASURE_OP(batF, aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
             delete batD;
             delete batE;
             auto iter = batF->begin();
@@ -127,14 +122,14 @@ int main(int argc, char** argv) {
         }
 
         // 5) Voting
-        auto result = results();
+        auto result = vote_majority(results);
 
         SSBM_AFTER_QUERY(i, result);
     }
 
     SSBM_AFTER_QUERIES;
 
-    for (size_t k = 0; k < MODULARITY; ++k) {
+    for (size_t k = 0; k < DMR::modularity; ++k) {
         delete batDYs[k];
         delete batDDs[k];
         delete batLQs[k];

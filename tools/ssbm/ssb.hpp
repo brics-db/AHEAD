@@ -43,12 +43,60 @@
 #endif
 
 #include <util/argumentparser.hpp>
+#include <util/ModularRedundant.hpp>
 #include <util/rss.hpp>
 #include <util/stopwatch.hpp>
 
 #include <AHEAD.hpp>
 
 using namespace ahead;
+using namespace ahead::bat::ops;
+#ifdef FORCE_SSE
+using namespace ahead::bat::ops::sse;
+#else
+using namespace ahead::bat::ops::scalar;
+#endif
+
+///////////////////////////////
+// CMDLINE ARGUMENT PARSING  //
+///////////////////////////////
+
+struct SSB_CONF {
+
+    typedef typename ArgumentParser::alias_list_t alias_list_t;
+
+    size_t NUM_RUNS;
+    size_t LEN_TIMES;
+    size_t LEN_TYPES;
+    size_t LEN_SIZES;
+    size_t LEN_PCM;
+    std::string DB_PATH;
+    bool VERBOSE;
+    bool PRINT_RESULT;
+    bool CONVERT_TABLE_FILES;
+
+private:
+    ArgumentParser parser;
+
+    constexpr static const char * const ID_NUMRUNS = "numruns";
+    constexpr static const char * const ID_LENTIMES = "lentimes";
+    constexpr static const char * const ID_LENTYPES = "lentypes";
+    constexpr static const char * const ID_LENSIZES = "lensizes";
+    constexpr static const char * const ID_LENPCM = "lenpcm";
+    constexpr static const char * const ID_DBPATH = "numruns";
+    constexpr static const char * const ID_VERBOSE = "verbose";
+    constexpr static const char * const ID_PRINTRESULT = "printresult";
+    constexpr static const char * const ID_CONVERTTABLEFILES = "converttablefiles";
+
+public:
+
+    SSB_CONF();
+    SSB_CONF(int argc, char** argv);
+
+    void init(int argc, char** argv);
+};
+
+StopWatch::rep loadTable(const char* const tableName, const SSB_CONF & CONFIG);
 
 // define
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
@@ -60,7 +108,8 @@ namespace boost {
 }
 
 template<typename Head, typename Tail>
-void printBat(BAT<Head, Tail> *bat, const char* filename, const char* message = nullptr) {
+void printBat(StopWatch & sw, BAT<Head, Tail> *bat, const char* filename, const char* message = nullptr) {
+    sw.stop();
     std::ofstream fout(filename);
     typedef typename Head::type_t head_t;
     typedef typename Tail::type_t tail_t;
@@ -99,15 +148,8 @@ void printBat(BAT<Head, Tail> *bat, const char* filename, const char* message = 
     fout << std::flush;
     fout.close();
     delete iter;
+    sw.resume();
 }
-
-#define PRINT_BAT(PRINTCMD)                                                    \
-;do {                                                                          \
-    StopWatch swp;                                                             \
-    swp.stop();                                                                \
-    PRINTCMD;                                                                  \
-    swp.resume();                                                              \
-} while (false)
 
 /////////////////////////////
 // SSBM_REQUIRED_VARIABLES //
@@ -129,7 +171,7 @@ std::string emptyString;                                                       \
 } while (false)
 
 #define SSBM_REQUIRED_VARIABLES(Headline, OpsNum, ...)                         \
-ssbmconf_t CONFIG(argc, argv);                                                 \
+SSB_CONF CONFIG(argc, argv);                                                   \
 std::vector<StopWatch::rep> totalTimes(CONFIG.NUM_RUNS);                       \
 RUNTABLE_REQUIRED_VARIABLES(OpsNum);                                           \
 cstr_t OP_NAMES[NUM_OPS] = {__VA_ARGS__};                                      \
@@ -498,144 +540,6 @@ SAVE_TYPE((std::get<0>(TUPLE)))
         delete std::get<10>(TUPLE);                                            \
     }                                                                          \
 } while (false)
-
-///////////////////////////////
-// CMDLINE ARGUMENT PARSING  //
-///////////////////////////////
-
-struct ssbmconf_t {
-
-    typedef typename ArgumentParser::alias_list_t alias_list_t;
-
-    size_t NUM_RUNS;
-    size_t LEN_TIMES;
-    size_t LEN_TYPES;
-    size_t LEN_SIZES;
-    size_t LEN_PCM;
-    std::string DB_PATH;
-    bool VERBOSE;
-    bool PRINT_RESULT;
-
-private:
-    ArgumentParser parser;
-
-public:
-
-    ssbmconf_t()
-            : NUM_RUNS(0), LEN_TIMES(0), LEN_TYPES(0), LEN_SIZES(0), LEN_PCM(0), DB_PATH(), VERBOSE(false), PRINT_RESULT(0),
-                    parser(
-                            {std::forward_as_tuple("numruns", alias_list_t {"--numruns", "-n"}, 15), std::forward_as_tuple("lentimes", alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(
-                                    "lentypes", alias_list_t {"--lentypes"}, 20), std::forward_as_tuple("lensizes", alias_list_t {"--lensizes"}, 16), std::forward_as_tuple("lenpcm", alias_list_t {
-                                    "--lenpcm"}, 16)}, {std::forward_as_tuple("dbpath", alias_list_t {"--dbpath", "-d"}, ".")},
-                            {std::forward_as_tuple("verbose", alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple("printresult", alias_list_t {"--print-result", "-p"}, false)}) {
-    }
-
-    ssbmconf_t(int argc, char** argv)
-            : ssbmconf_t() {
-        init(argc, argv);
-    }
-
-    void init(int argc, char** argv) {
-        parser.parse(argc, argv, 1);
-        NUM_RUNS = parser.get_uint("numruns");
-        LEN_TIMES = parser.get_uint("lentimes");
-        LEN_TYPES = parser.get_uint("lentypes");
-        LEN_SIZES = parser.get_uint("lensizes");
-        LEN_PCM = parser.get_uint("lenpcm");
-        DB_PATH = parser.get_str("dbpath");
-        VERBOSE = parser.get_bool("verbose");
-        PRINT_RESULT = parser.get_bool("printresult");
-    }
-};
-
-StopWatch::rep loadTable(const char* const tableName, const ssbmconf_t & CONFIG) {
-    StopWatch sw;
-    sw.start();
-    size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
-    sw.stop();
-    if (CONFIG.VERBOSE) {
-        std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
-    }
-    return sw.duration();
-}
-
-template<size_t MODULARITY>
-struct ModularRedundancyVoter {
-
-    template<typename T>
-    static T vote(T (&values)[MODULARITY]) {
-        std::stringstream ss;
-        ss << "Unsupported ModularRedundancyVoter<" << MODULARITY << '>';
-        throw std::runtime_error(ss.str());
-    }
-};
-
-template<>
-struct ModularRedundancyVoter<2> {
-
-    template<typename T>
-    static T vote(T (&values)[2]) {
-        return values[0] == values[1] ? values[0] : static_cast<uint64_t>(-1);;
-    }
-};
-
-template<>
-struct ModularRedundancyVoter<3> {
-
-    template<typename T>
-    static T vote(T (&values)[3]) {
-        return values[0] == values[1] ? values[0] : (values[1] == values[2] ? values[1] : static_cast<uint64_t>(-1));;
-    }
-};
-
-template<typename T, size_t MODULARITY, size_t i>
-struct ModularRedundantValueInitializer {
-
-    static
-    void init(T (&values)[MODULARITY], T value) {
-        values[MODULARITY - i] = value;
-        ModularRedundantValueInitializer<T, MODULARITY, i - 1>::init(values, value);
-    }
-};
-
-template<typename T, size_t MODULARITY>
-struct ModularRedundantValueInitializer<T, MODULARITY, 1> {
-
-    static
-    void init(T (&values)[MODULARITY], T value) {
-        values[MODULARITY - 1] = value;
-    }
-};
-
-template<typename T, size_t MODULARITY>
-class ModularRedundantValue {
-
-    T values[MODULARITY];
-
-public:
-
-    ModularRedundantValue(T value) {
-        ModularRedundantValueInitializer<T, MODULARITY, MODULARITY>::init(this->values, value);
-    }
-
-    T operator()() {
-        return ModularRedundancyVoter<MODULARITY>::vote(values);
-    }
-
-    ModularRedundantValue<T, MODULARITY> & operator=(T value) {
-        ModularRedundantValueInitializer<T, MODULARITY, MODULARITY>::init(this->values, value);
-        return *this;
-    }
-
-    T & operator[](const size_t i) {
-        if (i >= MODULARITY) {
-            std::stringstream ss;
-            ss << "[Exception] [ModularRedundantError:operator[]] given index " << i << " is too large! Must be less than " << MODULARITY;
-            throw std::runtime_error(ss.str());
-        }
-        return values[i];
-    }
-};
 
 #endif /* SSBM_HPP */
 

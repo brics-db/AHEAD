@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../ssbm/ssbm.hpp"
+#include "../ssbm/ssb.hpp"
 
 int main(int argc, char ** argv) {
-    ssbmconf_t CONFIG(argc, argv);
+    SSB_CONF CONFIG(argc, argv);
 
     boost::filesystem::path p(CONFIG.DB_PATH);
     if (boost::filesystem::is_regular(p)) {

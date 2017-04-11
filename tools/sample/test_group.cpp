@@ -19,7 +19,7 @@
  * Created on 3. November 2016, 16:40
  */
 
-#include "../ssbm/ssbm.hpp"
+#include "../ssbm/ssb.hpp"
 
 /*
  * Testing with scale factor 1, the following is the expected result (from MonetDB):
@@ -44,7 +44,7 @@
  * @return 
  */
 int main(int argc, char** argv) {
-    ssbmconf_t CONFIG(argc, argv);
+    SSB_CONF CONFIG(argc, argv);
     StopWatch sw1;
     StopWatch::rep totalTime = 0;
     StopWatch::rep *allTimes = new StopWatch::rep[CONFIG.NUM_RUNS];

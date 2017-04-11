@@ -24,6 +24,7 @@
 
 #include <limits>
 #include <type_traits>
+#include <utility>
 
 #include <google/dense_hash_map>
 
@@ -48,11 +49,11 @@ namespace ahead {
                     typedef typename TypeMap<T>::v2_encoded_t::v2_select_t v2_select_t;
                 };
 
-                template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencode = false>
+                template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencodeHead = false, bool reencodeTail = false>
                 struct hashjoinANunencHashmap {
 
-                    typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
-                    typedef typename ReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
+                    typedef typename ReturnTypeSelector<Head1, reencodeHead>::v2_select_t v2_h1_select_t;
+                    typedef typename ReturnTypeSelector<Tail2, reencodeTail>::v2_select_t v2_t2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
                     typedef typename H1Enc::type_t h1enc_t;
                     typedef typename TypeMap<Tail1>::v2_encoded_t T1Enc;
@@ -66,8 +67,9 @@ namespace ahead {
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+                    constexpr static const bool reencode = reencodeHead | reencodeTail;
 
-                    std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,
+                    static std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2, hash_side_t hashside = hash_side_t::right, // by that, by default the order of the left BAT is preserved (what we expect in the queries)
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
@@ -218,7 +220,7 @@ namespace ahead {
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    std::tuple<TempBAT<head1_v2_select_t, v2_str_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,
+                    static std::tuple<TempBAT<head1_v2_select_t, v2_str_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(BAT<Head1, Tail1>* arg1,
                             BAT<Head2, v2_str_t>* arg2, hash_side_t hashside = hash_side_t::right, h1enc_t AH1r = 1, // for reencode
                             h1enc_t AH1InvR = 1 // for reencode
                             ) {
@@ -354,7 +356,7 @@ namespace ahead {
                     typedef ahead::larger_type<t1enc_t, h2enc_t> larger_type_t;
                     typedef typename larger_type_t::type_t hash_t;
 
-                    std::tuple<TempBAT<head1_v2_select_t, tail2_v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* arg1,
+                    static std::tuple<TempBAT<head1_v2_select_t, tail2_v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2, hash_side_t hashside = hash_side_t::right, // by that, by default the order of the left BAT is preserved (what we expect in the queries)
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
@@ -523,16 +525,14 @@ namespace ahead {
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
             std::tuple<TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> hashjoinAN(
                     BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, hash_side_t hashside = hash_side_t::right) {
-                auto impl = Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, false>();
-                return impl(arg1, arg2, hashside);
+                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, false>::run(arg1, arg2, hashside);
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
             std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> hashjoinAN(
                     BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename TypeMap<Head1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc,
                     hash_side_t hashside = hash_side_t::right) {
-                auto impl = Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true>();
-                return impl(arg1, arg2, hashside, AH1reenc, AH1InvReenc);
+                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true>::run(arg1, arg2, hashside, AH1reenc, AH1InvReenc);
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
@@ -540,8 +540,7 @@ namespace ahead {
                     std::vector<bool>*> hashjoinAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename TypeMap<Head1>::v2_encoded_t::type_t AH1Reenc,
                     typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc, typename TypeMap<Tail2>::v2_encoded_t::type_t AT2Reenc, typename TypeMap<Tail2>::v2_encoded_t::type_t AT2InvReenc,
                     hash_side_t hashside = hash_side_t::right) {
-                auto impl = Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true>();
-                return impl(arg1, arg2, hashside, AH1Reenc, AH1InvReenc, AT2Reenc, AT2InvReenc);
+                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true, true>::run(arg1, arg2, hashside, AH1Reenc, AH1InvReenc, AT2Reenc, AT2InvReenc);
             }
         }
     }

@@ -24,9 +24,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "../ssbm/ssbm.hpp"
+#include "../ssbm/ssb.hpp"
 
-ssbmconf_t CONFIG;
+SSB_CONF CONFIG;
 const size_t NUM_RUNS = 10;
 
 template<typename Tail>

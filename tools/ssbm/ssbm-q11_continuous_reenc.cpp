@@ -16,11 +16,11 @@
  * File:   ssbm-q11_continuous_reenc.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 8. December 2016, 01:32
+ * Created on 08-12-2016 01:32
  */
 
-#include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
+#include "ssb.hpp"
 
 int main(int argc, char** argv) {
     SSBM_REQUIRED_VARIABLES("SSBM Query 1.1 Continuous Detection With Reencoding\n===================================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C",
@@ -43,12 +43,12 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLEcb, new resint_colbat_t("lineorderAN", "extendedprice"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(batDYenc, ahead::bat::ops::copy(batDYcb));
-    MEASURE_OP(batDDenc, ahead::bat::ops::copy(batDDcb));
-    MEASURE_OP(batLQenc, ahead::bat::ops::copy(batLQcb));
-    MEASURE_OP(batLDenc, ahead::bat::ops::copy(batLDcb));
-    MEASURE_OP(batLOenc, ahead::bat::ops::copy(batLOcb));
-    MEASURE_OP(batLEenc, ahead::bat::ops::copy(batLEcb));
+    MEASURE_OP(batDYenc, copy(batDYcb));
+    MEASURE_OP(batDDenc, copy(batDDcb));
+    MEASURE_OP(batLQenc, copy(batLQcb));
+    MEASURE_OP(batLDenc, copy(batLDcb));
+    MEASURE_OP(batLOenc, copy(batLOcb));
+    MEASURE_OP(batLEenc, copy(batLEcb));
 
     delete batDYcb;
     delete batDDcb;
@@ -63,31 +63,28 @@ int main(int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(pair1, ahead::bat::ops::selectAN<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A, std::get<6>(*v2_restiny_t::As), std::get<6>(*v2_restiny_t::Ainvs))); // lo_quantity < 25
+        MEASURE_OP_PAIR(pair1, selectAN<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A, std::get<6>(*v2_restiny_t::As), std::get<6>(*v2_restiny_t::Ainvs))); // lo_quantity < 25
         delete pair1.second;
-        MEASURE_OP_PAIR(pair2, ahead::bat::ops::selectAN(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A, std::get<5>(*v2_restiny_t::As), std::get<5>(*v2_restiny_t::Ainvs))); // lo_discount between 1 and 3
+        MEASURE_OP_PAIR(pair2, selectAN(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A, std::get<5>(*v2_restiny_t::As), std::get<5>(*v2_restiny_t::Ainvs))); // lo_discount between 1 and 3
         delete pair2.second;
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
-        MEASURE_OP_TUPLE(tuple4,
-                ahead::bat::ops::matchjoinAN(bat3, pair2.first, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<4>(*v2_restiny_t::As), std::get<4>(*v2_restiny_t::Ainvs))); // join selection
+        MEASURE_OP_TUPLE(tuple4, matchjoinAN(bat3, pair2.first, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<4>(*v2_restiny_t::As), std::get<4>(*v2_restiny_t::Ainvs))); // join selection
         delete bat3;
         delete pair2.first;
         CLEAR_HASHJOIN_AN(tuple4);
         auto bat5 = std::get<0>(tuple4)->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP_TUPLE(tuple6,
-                ahead::bat::ops::matchjoinAN(bat5, batLOenc, std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs))); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP_TUPLE(tuple6, matchjoinAN(bat5, batLOenc, std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs))); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(pair7, (ahead::bat::ops::selectAN<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As), std::get<14>(*v2_resshort_t::Ainvs)))); // d_year = 1993
+        MEASURE_OP_PAIR(pair7, (selectAN<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As), std::get<14>(*v2_resshort_t::Ainvs)))); // d_year = 1993
         if (pair7.second)
             delete pair7.second;
         auto bat8 = pair7.first->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete pair7.first;
-        MEASURE_OP_TUPLE(tuple9,
-                (ahead::bat::ops::matchjoinAN(bat8, batDDenc, std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs), std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs)))); // only those d_datekey where d_year...
+        MEASURE_OP_TUPLE(tuple9, (matchjoinAN(bat8, batDDenc, std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs), std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs)))); // only those d_datekey where d_year...
         delete bat8;
         CLEAR_HASHJOIN_AN(tuple9);
 
@@ -95,26 +92,23 @@ int main(int argc, char** argv) {
         auto batA = std::get<0>(tuple9)->reverse();
         delete std::get<0>(tuple9);
         MEASURE_OP_TUPLE(tupleB,
-                (ahead::bat::ops::hashjoinAN(std::get<0>(tuple6), batA, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<10>(*v2_resoid_t::As),
-                        std::get<10>(*v2_resoid_t::Ainvs)))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+                (hashjoinAN(std::get<0>(tuple6), batA, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<10>(*v2_resoid_t::As), std::get<10>(*v2_resoid_t::Ainvs)))); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         delete std::get<0>(tuple6);
         delete batA;
         CLEAR_HASHJOIN_AN(tupleB);
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = std::get<0>(tupleB)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete std::get<0>(tupleB);
-        MEASURE_OP_TUPLE(tupleD,
-                (ahead::bat::ops::matchjoinAN(batC, batLEenc, std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs))));CLEAR_HASHJOIN_AN(
+        MEASURE_OP_TUPLE(tupleD, (matchjoinAN(batC, batLEenc, std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs))));CLEAR_HASHJOIN_AN(
                 tupleD);
         MEASURE_OP_TUPLE(tupleE,
-                (ahead::bat::ops::matchjoinAN(batC, std::get<0>(tuple4), std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As),
-                        std::get<3>(*v2_restiny_t::Ainvs))));
+                (matchjoinAN(batC, std::get<0>(tuple4), std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As), std::get<3>(*v2_restiny_t::Ainvs))));
         delete batC;
         delete std::get<0>(tuple4);
         CLEAR_HASHJOIN_AN(tupleE);
 
         // 4) result
-        MEASURE_OP_TUPLE(tupleF, (ahead::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
+        MEASURE_OP_TUPLE(tupleF, (aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
         delete std::get<0>(tupleD);
         delete std::get<0>(tupleE);
         delete std::get<1>(tupleF);

@@ -25,6 +25,7 @@
 #include <limits>
 #include <fstream>
 
+#include <AHEAD.hpp>
 #include <ColumnStore.h>
 #include <column_storage/TransactionManager.h>
 #include <column_storage/Storage.hpp>
@@ -347,22 +348,24 @@ namespace ahead {
         const size_t numColumns = column_names.size();
         bool areAllColumnsLoaded = true;
         std::vector<bool> vecIscolumnAlreadyLoaded(numColumns);
-        columnItersIterator = columnIters.begin();
-        for (size_t i = 0; i < column_names.size(); ++i) {
-            std::string attrFilePath(path);
-            attrFilePath.append("_").append(column_names[i]).append(".ahead");
-            std::ifstream attrIStream(attrFilePath);
-            areAllColumnsLoaded &= attrIStream.is_open();
-            if (attrIStream) {
-                (*columnItersIterator)->read(attrIStream);
-                delete[] buffer;
-                if (attrIStream.fail() | attrIStream.bad()) {
-                    sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
-                    throw std::runtime_error(sserr.str());
+        if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
+            columnItersIterator = columnIters.begin();
+            for (size_t i = 0; i < column_names.size(); ++i) {
+                std::string attrFilePath(path);
+                attrFilePath.append("_").append(column_names[i]).append(".ahead");
+                std::ifstream attrIStream(attrFilePath);
+                areAllColumnsLoaded &= attrIStream.is_open();
+                if (attrIStream) {
+                    (*columnItersIterator)->read(attrIStream);
+                    delete[] buffer;
+                    if (attrIStream.fail() | attrIStream.bad()) {
+                        sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
+                        throw std::runtime_error(sserr.str());
+                    }
+                    vecIscolumnAlreadyLoaded[i] = true;
                 }
-                vecIscolumnAlreadyLoaded[i] = true;
+                ++columnItersIterator;
             }
-            ++columnItersIterator;
         }
 
         ////////////////////////

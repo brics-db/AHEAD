@@ -19,11 +19,12 @@
  * Created on 24. January 2017, 17:19
  */
 
-#include "ssbm.hpp"
+#include "ssb.hpp"
+
+typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_shortint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> result_tuple_t;
+typedef DMRValue<result_tuple_t> DMR;
 
 int main(int argc, char** argv) {
-    const size_t MODULARITY = 2;
-
     SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 DMR Sequential\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
             "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
@@ -51,41 +52,31 @@ int main(int argc, char** argv) {
     MEASURE_OP(batSRcb, new str_colbat_t("supplier", "region"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    int_tmpbat_t * batDDs[2];
-    shortint_tmpbat_t * batDYs[2];
-    int_tmpbat_t * batLPs[2];
-    int_tmpbat_t * batLSs[2];
-    int_tmpbat_t * batLOs[2];
-    int_tmpbat_t * batLRs[2];
-    int_tmpbat_t * batPPs[2];
-    str_tmpbat_t * batPCs[2];
-    str_tmpbat_t * batPBs[2];
-    int_tmpbat_t * batSSs[2];
-    str_tmpbat_t * batSRs[2];
+    int_tmpbat_t * batDDs[DMR::modularity];
+    shortint_tmpbat_t * batDYs[DMR::modularity];
+    int_tmpbat_t * batLPs[DMR::modularity];
+    int_tmpbat_t * batLSs[DMR::modularity];
+    int_tmpbat_t * batLOs[DMR::modularity];
+    int_tmpbat_t * batLRs[DMR::modularity];
+    int_tmpbat_t * batPPs[DMR::modularity];
+    str_tmpbat_t * batPCs[DMR::modularity];
+    str_tmpbat_t * batPBs[DMR::modularity];
+    int_tmpbat_t * batSSs[DMR::modularity];
+    str_tmpbat_t * batSRs[DMR::modularity];
 
-    MEASURE_OP(batDDs, [0], ahead::bat::ops::copy(batDDcb), batDDs[0]->size(), batDDs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batDYs, [0], ahead::bat::ops::copy(batDYcb), batDYs[0]->size(), batDYs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batLPs, [0], ahead::bat::ops::copy(batLPcb), batLPs[0]->size(), batLPs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batLSs, [0], ahead::bat::ops::copy(batLScb), batLSs[0]->size(), batLSs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batLOs, [0], ahead::bat::ops::copy(batLOcb), batLOs[0]->size(), batLOs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batLRs, [0], ahead::bat::ops::copy(batLRcb), batLRs[0]->size(), batLRs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batPPs, [0], ahead::bat::ops::copy(batPPcb), batPPs[0]->size(), batPPs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batPCs, [0], ahead::bat::ops::copy(batPCcb), batPCs[0]->size(), batPCs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batPBs, [0], ahead::bat::ops::copy(batPBcb), batPBs[0]->size(), batPBs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batSSs, [0], ahead::bat::ops::copy(batSScb), batSSs[0]->size(), batSSs[0]->consumption(), batDDs[0]->consumptionProjected());
-    MEASURE_OP(batSRs, [0], ahead::bat::ops::copy(batSRcb), batSRs[0]->size(), batSRs[0]->consumption(), batDDs[0]->consumptionProjected());
-
-    MEASURE_OP(batDDs, [1], ahead::bat::ops::copy(batDDcb), batDDs[1]->size(), batDDs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batDYs, [1], ahead::bat::ops::copy(batDYcb), batDYs[1]->size(), batDYs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batLPs, [1], ahead::bat::ops::copy(batLPcb), batLPs[1]->size(), batLPs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batLSs, [1], ahead::bat::ops::copy(batLScb), batLSs[1]->size(), batLSs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batLOs, [1], ahead::bat::ops::copy(batLOcb), batLOs[1]->size(), batLOs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batLRs, [1], ahead::bat::ops::copy(batLRcb), batLRs[1]->size(), batLRs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batPPs, [1], ahead::bat::ops::copy(batPPcb), batPPs[1]->size(), batPPs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batPCs, [1], ahead::bat::ops::copy(batPCcb), batPCs[1]->size(), batPCs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batPBs, [1], ahead::bat::ops::copy(batPBcb), batPBs[1]->size(), batPBs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batSSs, [1], ahead::bat::ops::copy(batSScb), batSSs[1]->size(), batSSs[1]->consumption(), batDDs[1]->consumptionProjected());
-    MEASURE_OP(batSRs, [1], ahead::bat::ops::copy(batSRcb), batSRs[1]->size(), batSRs[1]->consumption(), batDDs[1]->consumptionProjected());
+    for (size_t k = 0; k < DMR::modularity; ++k) {
+        MEASURE_OP(batDDs, [k], copy(batDDcb), batDDs[k]->size(), batDDs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batDYs, [k], copy(batDYcb), batDYs[k]->size(), batDYs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batLPs, [k], copy(batLPcb), batLPs[k]->size(), batLPs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batLSs, [k], copy(batLScb), batLSs[k]->size(), batLSs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batLOs, [k], copy(batLOcb), batLOs[k]->size(), batLOs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batLRs, [k], copy(batLRcb), batLRs[k]->size(), batLRs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batPPs, [k], copy(batPPcb), batPPs[k]->size(), batPPs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batPCs, [k], copy(batPCcb), batPCs[k]->size(), batPCs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batPBs, [k], copy(batPBcb), batPBs[k]->size(), batPBs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batSSs, [k], copy(batSScb), batSSs[k]->size(), batSSs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batSRs, [k], copy(batSRcb), batSRs[k]->size(), batSRs[k]->consumption(), batDDs[k]->consumptionProjected());
+    }
 
     delete batDDcb;
     delete batDYcb;
@@ -104,68 +95,67 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
         SSBM_BEFORE_QUERY;
 
-        typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_shortint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> result_tuple_t;
-        result_tuple_t results[MODULARITY] = { {nullptr, nullptr, nullptr, nullptr, nullptr}, {nullptr, nullptr, nullptr, nullptr, nullptr}};
+        DMR results( {nullptr, nullptr, nullptr, nullptr, nullptr});
 
-        for (size_t k = 0; k < MODULARITY; ++k) {
+        for (size_t k = 0; k < DMR::modularity; ++k) {
             // s_region = 'AMERICA'
-            MEASURE_OP(bat1, ahead::bat::ops::select<std::equal_to>(batSRs[k], const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+            MEASURE_OP(bat1, select<std::equal_to>(batSRs[k], const_cast<str_t>("AMERICA"))); // OID supplier | s_region
             auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
             delete bat1;
             auto bat3 = batSSs[k]->reverse(); // s_suppkey | OID supplier
-            MEASURE_OP(bat4, ahead::bat::ops::matchjoin(bat3, bat2)); // s_suppkey | OID supplier
+            MEASURE_OP(bat4, matchjoin(bat3, bat2)); // s_suppkey | OID supplier
             delete bat2;
             delete bat3;
             // lo_suppkey = s_suppkey
-            MEASURE_OP(bat5, ahead::bat::ops::hashjoin(batLSs[k], bat4)); // OID lineorder | OID supplier
+            MEASURE_OP(bat5, hashjoin(batLSs[k], bat4)); // OID lineorder | OID supplier
             delete bat4;
             // join with LO_PARTKEY to already reduce the join partners
             auto bat6 = bat5->mirror_head(); // OID lineorder | OID Lineorder
             delete bat5;
-            MEASURE_OP(bat7, ahead::bat::ops::matchjoin(bat6, batLPs[k])); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
+            MEASURE_OP(bat7, matchjoin(bat6, batLPs[k])); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
             delete bat6;
 
             // p_category = 'MFGR#12'
-            MEASURE_OP(bat8, ahead::bat::ops::select<std::equal_to>(batPCs[k], const_cast<str_t>("MFGR#12"))); // OID part | p_category
+            MEASURE_OP(bat8, select<std::equal_to>(batPCs[k], const_cast<str_t>("MFGR#12"))); // OID part | p_category
             // p_brand = 'MFGR#121'
-            // MEASURE_OP(bat8, ahead::bat::ops::select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
+            // MEASURE_OP(bat8, select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
             auto bat9 = bat8->mirror_head(); // OID part | OID part
             delete bat8;
             auto batA = batPPs[k]->reverse(); // p_partkey | OID part
-            MEASURE_OP(batB, ahead::bat::ops::matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
+            MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
             delete batA;
             delete bat9;
-            MEASURE_OP(batC, ahead::bat::ops::hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
+            MEASURE_OP(batC, hashjoin(bat7, batB)); // OID lineorder | OID part (where s_region = 'AMERICA' and p_category = 'MFGR#12')
             delete bat7;
             delete batB;
 
             // join with date now!
             auto batE = batC->mirror_head(); // OID lineorder | OID lineorder  (where ...)
             delete batC;
-            MEASURE_OP(batF, ahead::bat::ops::matchjoin(batE, batLOs[k])); // OID lineorder | lo_orderdate (where ...)
+            MEASURE_OP(batF, matchjoin(batE, batLOs[k])); // OID lineorder | lo_orderdate (where ...)
             delete batE;
             auto batH = batDDs[k]->reverse(); // d_datekey | OID date
-            MEASURE_OP(batI, ahead::bat::ops::hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
+            MEASURE_OP(batI, hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
             delete batF;
             delete batH;
 
             // now prepare grouped sum
             auto batW = batI->mirror_head(); // OID lineorder | OID lineorder
-            MEASURE_OP(batX, ahead::bat::ops::matchjoin(batW, batLPs[k])); // OID lineorder | lo_partkey
+            MEASURE_OP(batX, matchjoin(batW, batLPs[k])); // OID lineorder | lo_partkey
             auto batY = batPPs[k]->reverse(); // p_partkey | OID part
-            MEASURE_OP(batZ, ahead::bat::ops::hashjoin(batX, batY)); // OID lineorder | OID part
+            MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
             delete batX;
             delete batY;
-            MEASURE_OP(batA1, ahead::bat::ops::hashjoin(batZ, batPBs[k])); // OID lineorder | p_brand
+            MEASURE_OP(batA1, hashjoin(batZ, batPBs[k])); // OID lineorder | p_brand
             delete batZ;
 
-            MEASURE_OP(batA2, ahead::bat::ops::hashjoin(batI, batDYs[k])); // OID lineorder | d_year
+            MEASURE_OP(batA2, hashjoin(batI, batDYs[k])); // OID lineorder | d_year
             delete batI;
 
-            MEASURE_OP(batA3, ahead::bat::ops::matchjoin(batW, batLRs[k])); // OID lineorder | lo_revenue (where ...)
+            MEASURE_OP(batA3, matchjoin(batW, batLRs[k])); // OID lineorder | lo_revenue (where ...)
             delete batW;
 
-            MEASURE_OP_TUPLE(tupleK, ahead::bat::ops::groupedSum<v2_bigint_t>(batA3, batA2, batA1));
+            MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(batA3, batA2, batA1));
             delete batA1;
             delete batA2;
             delete batA3;
@@ -243,21 +233,19 @@ int main(int argc, char** argv) {
             delete iter4;
             delete iter5;
         }
-        delete std::get<0>(results[0]);
-        delete std::get<0>(results[1]);
-        delete std::get<1>(results[0]);
-        delete std::get<1>(results[1]);
-        delete std::get<2>(results[0]);
-        delete std::get<2>(results[1]);
-        delete std::get<3>(results[0]);
-        delete std::get<3>(results[1]);
-        delete std::get<4>(results[0]);
-        delete std::get<4>(results[1]);
+
+        for (size_t k = 0; k < DMR::modularity; ++k) {
+            delete std::get<0>(results[k]);
+            delete std::get<1>(results[k]);
+            delete std::get<2>(results[k]);
+            delete std::get<3>(results[k]);
+            delete std::get<4>(results[k]);
+        }
     }
 
     SSBM_AFTER_QUERIES;
 
-    for (size_t k = 0; k < MODULARITY; ++k) {
+    for (size_t k = 0; k < DMRValue<result_tuple_t>::modularity; ++k) {
         delete batDDs[k];
         delete batDYs[k];
         delete batLPs[k];

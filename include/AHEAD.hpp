@@ -26,8 +26,8 @@
 #include <ColumnStore.h>
 #include <column_storage/Storage.hpp>
 #include <column_operators/Operators.hpp>
-#include <column_storage/TransactionManager.h>
-#include <meta_repository/MetaRepositoryManager.h>
+//#include <column_storage/TransactionManager.h>
+//#include <meta_repository/MetaRepositoryManager.h>
 
 namespace ahead {
 
@@ -36,6 +36,8 @@ namespace ahead {
 
         MetaRepositoryManager * mgrMeta;
         TransactionManager * mgrTx;
+
+        bool doConvertTableFilesOnLoad;
 
         AHEAD(const std::string& strBaseDir);
         AHEAD(const AHEAD & other);
@@ -62,6 +64,10 @@ namespace ahead {
 
         size_t loadTable(const char * const tableName, const char * const prefix = nullptr, const size_t size = static_cast<size_t>(-1), const char * const delim = nullptr, const bool ignoreMoreData =
                 true);
+
+        bool isConvertTableFilesOnLoad();
+
+        void setConverttableFilesOnLoad(bool newValue);
     };
 
 }

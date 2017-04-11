@@ -22,17 +22,17 @@
 #ifndef MISCELLANEOUS_TCC
 #define MISCELLANEOUS_TCC
 
-
 #include <column_storage/Storage.hpp>
-
-typedef enum {
-
-    left, right
-} hash_side_t;
 
 namespace ahead {
     namespace bat {
         namespace ops {
+
+            typedef enum {
+
+                left, right
+            } hash_side_t;
+
             namespace Private {
 
                 struct eqstr {
@@ -106,12 +106,13 @@ namespace ahead {
             namespace Private {
 
                 template<typename Head, typename Tail>
-                struct copy0 {
+                struct copy {
 
                     typedef typename Head::v2_copy_t CHead;
                     typedef typename Tail::v2_copy_t CTail;
 
-                    TempBAT<CHead, CTail> * operator()(BAT<Head, Tail> * arg) {
+                    static TempBAT<CHead, CTail> *
+                    run(BAT<Head, Tail> * arg) {
                         auto result = skeleton<CHead, CTail>(arg);
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
@@ -124,11 +125,12 @@ namespace ahead {
                 };
 
                 template<typename Tail>
-                struct copy0<v2_void_t, Tail> {
+                struct copy<v2_void_t, Tail> {
 
                     typedef typename Tail::v2_copy_t CTail;
 
-                    TempBAT<v2_void_t, CTail> * operator()(BAT<v2_void_t, Tail> * arg) {
+                    static TempBAT<v2_void_t, CTail> *
+                    run(BAT<v2_void_t, Tail> * arg) {
                         auto result = skeleton<v2_void_t, CTail>(arg);
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
@@ -145,7 +147,7 @@ namespace ahead {
             template<typename Head, typename Tail>
             TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
             copy(BAT<Head, Tail>* arg) {
-                return Private::copy0<typename Head::v2_copy_t, typename Tail::v2_copy_t>()(arg);
+                return Private::copy<typename Head::v2_copy_t, typename Tail::v2_copy_t>::run(arg);
             }
         }
     }

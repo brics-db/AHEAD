@@ -20,17 +20,21 @@
  */
 
 #include <AHEAD.hpp>
+#include <column_storage/Storage.hpp>
+#include <column_operators/Operators.hpp>
+#include <column_storage/TransactionManager.h>
+#include <meta_repository/MetaRepositoryManager.h>
 
 namespace ahead {
     AHEAD * AHEAD::instance;
 
     AHEAD::AHEAD(const std::string & path)
-            : mgrMeta(MetaRepositoryManager::getInstance()), mgrTx(TransactionManager::getInstance()) {
+            : mgrMeta(MetaRepositoryManager::getInstance()), mgrTx(TransactionManager::getInstance()), doConvertTableFilesOnLoad(true) {
         mgrMeta->init(path);
     }
 
     AHEAD::AHEAD(const AHEAD & other)
-            : mgrMeta(other.mgrMeta), mgrTx(other.mgrTx) {
+            : mgrMeta(other.mgrMeta), mgrTx(other.mgrTx), doConvertTableFilesOnLoad(other.doConvertTableFilesOnLoad) {
     }
 
     AHEAD::~AHEAD() {
@@ -73,5 +77,13 @@ namespace ahead {
         size_t numBUNs = t->load(path.c_str(), tableName, prefix, size, delim, ignoreMoreData);
         mgrTx->endTransaction(t);
         return numBUNs;
+    }
+
+    bool AHEAD::isConvertTableFilesOnLoad() {
+        return this->doConvertTableFilesOnLoad;
+    }
+
+    void AHEAD::setConverttableFilesOnLoad(bool newValue) {
+        this->doConvertTableFilesOnLoad = newValue;
     }
 }

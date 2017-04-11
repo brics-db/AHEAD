@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Till Kolditz
+// Copyright (c) 2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,16 +13,11 @@
 // limitations under the License.
 
 /* 
- * File:   aggregate.tcc
+ * File:   matchjoinAN.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 23. November 2016, 00:28
+ * Created on 10-04-2017 22:14
  */
 
-#ifndef AGGREGATE_TCC
-#define AGGREGATE_TCC
 
-#include "aggregate_SSE.tcc"
-#include "aggregate_seq.tcc"
 
-#endif /* AGGREGATE_TCC */

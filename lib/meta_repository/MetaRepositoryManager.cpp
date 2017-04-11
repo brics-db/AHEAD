@@ -214,7 +214,7 @@ namespace ahead {
         id_t tableId = this->selectPKId(tables_id_pk, batIdForTableName);
 
         if (tableId != ID_INVALID) {
-            auto batForTableId = ahead::bat::ops::select<std::equal_to>(attributes_table_id_fk, std::move(tableId));
+            auto batForTableId = ahead::bat::ops::sse::select<std::equal_to>(attributes_table_id_fk, std::move(tableId));
 
             // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
             // reverse will not work here, because we need the bat id, not the table id

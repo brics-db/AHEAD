@@ -127,6 +127,7 @@ namespace ahead {
     typedef uint64_t bigint_t;
     typedef char char_t, *str_t;
     typedef const char cchar_t, *cstr_t;
+    typedef const char * const cstrc_t;
     typedef double fixed_t;
 
     typedef uint32_t id_t;

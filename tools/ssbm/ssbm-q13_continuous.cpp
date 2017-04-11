@@ -19,8 +19,8 @@
  * Created on 31. October 2016, 22:54
  */
 
-#include "ssbm.hpp"
 #include <column_operators/OperatorsAN.hpp>
+#include "ssb.hpp"
 
 int main(int argc, char** argv) {
     SSBM_REQUIRED_VARIABLES("SSBM Query 1.3 Continuous Detection\n===================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
@@ -44,13 +44,13 @@ int main(int argc, char** argv) {
     MEASURE_OP(batDWcb, new restiny_colbat_t("dateAN", "weeknuminyear"));
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(batDYenc, ahead::bat::ops::copy(batDYcb));
-    MEASURE_OP(batDDenc, ahead::bat::ops::copy(batDDcb));
-    MEASURE_OP(batLQenc, ahead::bat::ops::copy(batLQcb));
-    MEASURE_OP(batLDenc, ahead::bat::ops::copy(batLDcb));
-    MEASURE_OP(batLOenc, ahead::bat::ops::copy(batLOcb));
-    MEASURE_OP(batLEenc, ahead::bat::ops::copy(batLEcb));
-    MEASURE_OP(batDWenc, ahead::bat::ops::copy(batDWcb));
+    MEASURE_OP(batDYenc, copy(batDYcb));
+    MEASURE_OP(batDDenc, copy(batDDcb));
+    MEASURE_OP(batLQenc, copy(batLQcb));
+    MEASURE_OP(batLDenc, copy(batLDcb));
+    MEASURE_OP(batLOenc, copy(batLOcb));
+    MEASURE_OP(batLEenc, copy(batLEcb));
+    MEASURE_OP(batDWenc, copy(batDWcb));
 
     delete batDYcb;
     delete batDDcb;
@@ -66,54 +66,54 @@ int main(int argc, char** argv) {
         SSBM_BEFORE_QUERY;
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(pair1, ahead::bat::ops::selectAN(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A)); // lo_quantity between 26 and 35
+        MEASURE_OP_PAIR(pair1, selectAN(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A)); // lo_quantity between 26 and 35
         delete pair1.second;
-        MEASURE_OP_TUPLE(pair2, ahead::bat::ops::selectAN(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A)); // lo_discount between 5 and 7
+        MEASURE_OP_TUPLE(pair2, selectAN(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A)); // lo_discount between 5 and 7
         delete pair2.second;
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
-        MEASURE_OP_TUPLE(tuple4, ahead::bat::ops::matchjoinAN(bat3, pair2.first)); // join selection
+        MEASURE_OP_TUPLE(tuple4, matchjoinAN(bat3, pair2.first)); // join selection
         delete pair2.first;
         delete bat3;
         CLEAR_HASHJOIN_AN(tuple4);
         auto bat5 = std::get<0>(tuple4)->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP_TUPLE(tuple6, ahead::bat::ops::matchjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
+        MEASURE_OP_TUPLE(tuple6, matchjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
         CLEAR_HASHJOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(pair7, ahead::bat::ops::selectAN<std::equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.AN_A)); // d_year = 1994
+        MEASURE_OP_PAIR(pair7, selectAN<std::equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.AN_A)); // d_year = 1994
         delete pair7.second;
         auto bat8 = pair7.first->mirror_head(); // prepare joined selection over d_year and d_weeknuminyear
         delete pair7.first;
-        MEASURE_OP_PAIR(pair9, ahead::bat::ops::selectAN<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
+        MEASURE_OP_PAIR(pair9, selectAN<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
         delete pair9.second;
-        MEASURE_OP_TUPLE(tupleA, ahead::bat::ops::matchjoinAN(bat8, pair9.first));
+        MEASURE_OP_TUPLE(tupleA, matchjoinAN(bat8, pair9.first));
         delete bat8;
         delete pair9.first;
         CLEAR_HASHJOIN_AN(tupleA);
         auto batB = std::get<0>(tupleA)->mirror_head();
         delete std::get<0>(tupleA);
-        MEASURE_OP_TUPLE(tupleC, ahead::bat::ops::matchjoinAN(batB, batDDenc)); // only those d_datekey where d_year and d_weeknuminyear...
+        MEASURE_OP_TUPLE(tupleC, matchjoinAN(batB, batDDenc)); // only those d_datekey where d_year and d_weeknuminyear...
         delete batB;
         CLEAR_HASHJOIN_AN(tupleC);
 
         // 3) join lineorder and date
         auto batD = std::get<0>(tupleC)->reverse();
         delete std::get<0>(tupleC);
-        MEASURE_OP_TUPLE(tupleE, ahead::bat::ops::hashjoinAN(std::get<0>(tuple6), batD)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
+        MEASURE_OP_TUPLE(tupleE, hashjoinAN(std::get<0>(tuple6), batD)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
         CLEAR_HASHJOIN_AN(tupleE);
         delete std::get<0>(tuple6);
         delete batD;
         // batE has in the Head the positions from lineorder and in the Tail the positions from date
         auto batF = std::get<0>(tupleE)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
-        MEASURE_OP_TUPLE(tupleG, ahead::bat::ops::matchjoinAN(batF, batLEenc));CLEAR_HASHJOIN_AN(tupleG);
-        MEASURE_OP_TUPLE(tupleH, ahead::bat::ops::matchjoinAN(batF, std::get<0>(tuple4)));CLEAR_HASHJOIN_AN(tupleH);
+        MEASURE_OP_TUPLE(tupleG, matchjoinAN(batF, batLEenc));CLEAR_HASHJOIN_AN(tupleG);
+        MEASURE_OP_TUPLE(tupleH, matchjoinAN(batF, std::get<0>(tuple4)));CLEAR_HASHJOIN_AN(tupleH);
         delete batF;
         delete std::get<0>(tuple4);
 
         // 4) result
-        MEASURE_OP_TUPLE(tupleI, (ahead::bat::ops::aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleG), std::get<0>(tupleH))));
+        MEASURE_OP_TUPLE(tupleI, (aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleG), std::get<0>(tupleH))));
         delete std::get<0>(tupleG);
         delete std::get<0>(tupleH);
         delete std::get<1>(tupleI);
