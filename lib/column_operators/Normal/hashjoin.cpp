@@ -57,8 +57,8 @@ V2_HASHJOIN_SUB(v2_resint_t, V2TYPE) \
 V2_HASHJOIN_SUB(v2_resbigint_t, V2TYPE) \
 V2_HASHJOIN_SUB(v2_resstr_t, V2TYPE)
 
-            V2_HASHJOIN(v2_void_t)
-            V2_HASHJOIN(v2_oid_t)
+        V2_HASHJOIN(v2_void_t)
+        V2_HASHJOIN(v2_oid_t)
         // V2_HASHJOIN(v2_id_t)
         // V2_HASHJOIN(v2_size_t)
         // V2_HASHJOIN(v2_tinyint_t)

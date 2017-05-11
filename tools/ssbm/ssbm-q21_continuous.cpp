@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
 
     SSBM_BEFORE_QUERIES;
 
-    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
+    for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         SSBM_BEFORE_QUERY;
 
         // s_region = 'AMERICA'
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
 
         SSBM_AFTER_QUERY(i, szResult);
 
-        if (CONFIG.PRINT_RESULT && i == 0) {
+        if (ssb::ssb_config.PRINT_RESULT && i == 0) {
             size_t sum = 0;
             auto iter0 = std::get<0>(tupleK)->begin();
             auto iter1 = std::get<1>(tupleK)->begin();

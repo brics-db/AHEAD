@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 
     SSBM_BEFORE_QUERIES;
 
-    for (size_t i = 0; i < CONFIG.NUM_RUNS; ++i) {
+    for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         SSBM_BEFORE_QUERY;
 
         // 1) select from lineorder

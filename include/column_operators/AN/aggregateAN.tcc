@@ -22,10 +22,7 @@
 #ifndef AGGREGATE_AN_TCC
 #define AGGREGATE_AN_TCC
 
-#ifdef FORCE_SSE
 #include "aggregateAN_SSE.tcc"
-#else
 #include "aggregateAN_seq.tcc"
-#endif
 
 #endif /* AGGREGATE_AN_TCC */

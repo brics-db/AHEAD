@@ -86,10 +86,11 @@ V2_HASHJOIN_SUB_AN(v2_resstr_t, V2TYPE)
 */
 
 #define V2_HASHJOIN_AN(V2TYPE) \
-V2_HASHJOIN_SUB_AN(v2_void_t, V2TYPE)
+V2_HASHJOIN_SUB_AN(v2_void_t, V2TYPE) \
+V2_HASHJOIN_SUB_AN(v2_resoid_t, V2TYPE)
 
-        // V2_HASHJOIN_AN(v2_void_t)
-            V2_HASHJOIN_AN(v2_oid_t)
+        V2_HASHJOIN_AN(v2_void_t)
+        V2_HASHJOIN_AN(v2_oid_t)
         // V2_HASHJOIN_AN(v2_id_t)
         // V2_HASHJOIN_AN(v2_size_t)
         // V2_HASHJOIN_AN(v2_tinyint_t)
@@ -97,7 +98,7 @@ V2_HASHJOIN_SUB_AN(v2_void_t, V2TYPE)
         // V2_HASHJOIN_AN(v2_int_t)
         // V2_HASHJOIN_AN(v2_bigint_t)
         // V2_HASHJOIN_AN(v2_str_t)
-        // V2_HASHJOIN_AN(v2_resoid_t)
+        V2_HASHJOIN_AN(v2_resoid_t)
         // V2_HASHJOIN_AN(v2_restiny_t)
         // V2_HASHJOIN_AN(v2_resshort_t)
         // V2_HASHJOIN_AN(v2_resint_t)

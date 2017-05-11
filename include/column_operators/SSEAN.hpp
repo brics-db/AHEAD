@@ -28,6 +28,7 @@
 
 #include <column_operators/SSE.hpp>
 #include <column_operators/SSECMP.hpp>
+#include <column_operators/AN/ANbase.hpp>
 
 namespace ahead {
     namespace bat {
@@ -54,6 +55,19 @@ namespace ahead {
                     return maskGT;
                 }
 
+                static inline mask_t detect(__m128i mmCol, __m128i mmInv, __m128i mmDMax, AN_indicator_vector * vec, size_t pos, resoid_t Aoid) {
+                    mask_t maskGT = v2_mm128_cmp<T, std::greater>::cmp_mask(v2_mm128<T>::mullo(mmCol, mmInv), mmDMax);
+                    if (maskGT) {
+                        decltype(maskGT) test = 1;
+                        for (size_t k = 0; k < steps; ++k, test <<= 1) {
+                            if (maskGT & test) {
+                                vec->push_back((pos + k) * Aoid);
+                            }
+                        }
+                    }
+                    return maskGT;
+                }
+
                 static inline mask_t detect(__m128i & mmDec, __m128i mmCol, __m128i mmInv, __m128i mmDMax, std::vector<bool> * vec, size_t pos) {
                     mmDec = v2_mm128<T>::mullo(mmCol, mmInv);
                     mask_t maskGT = v2_mm128_cmp<T, std::greater>::cmp_mask(mmDec, mmDMax);
@@ -63,6 +77,20 @@ namespace ahead {
                         for (size_t k = 0; k < steps; ++k, test <<= 1) {
                             if (maskGT & test) {
                                 (*vec)[pos + k] = true;
+                            }
+                        }
+                    }
+                    return maskGT;
+                }
+
+                static inline mask_t detect(__m128i & mmDec, __m128i mmCol, __m128i mmInv, __m128i mmDMax, AN_indicator_vector * vec, size_t pos, resoid_t Aoid) {
+                    mmDec = v2_mm128<T>::mullo(mmCol, mmInv);
+                    mask_t maskGT = v2_mm128_cmp<T, std::greater>::cmp_mask(mmDec, mmDMax);
+                    if (maskGT) {
+                        decltype(maskGT) test = 1;
+                        for (size_t k = 0; k < steps; ++k, test <<= 1) {
+                            if (maskGT & test) {
+                                vec->push_back((pos + k) * Aoid);
                             }
                         }
                     }

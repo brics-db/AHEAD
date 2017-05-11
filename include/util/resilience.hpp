@@ -33,8 +33,8 @@
 
 namespace ahead {
 
-    typedef uint16_t restiny_t;
-    typedef uint32_t resshort_t;
+    typedef uint16_t restiny_t, restinyint_t;
+    typedef uint32_t resshort_t, resshortint_t;
     typedef uint64_t resint_t;
     typedef uint64_t resbigint_t;
     typedef uint64_t resoid_t;
@@ -75,6 +75,7 @@ namespace ahead {
         static constexpr const std::array<uint16_t, 16> * As = &ANParameters::Atiny;
         static constexpr const std::array<restiny_t, 16> * Ainvs = &ANParameters::AtinyInv;
     };
+    typedef v2_restiny_t v2_restinyint_t;
 
     struct v2_resshort_t : public v2_anencoded_t {
 
@@ -94,6 +95,7 @@ namespace ahead {
         static constexpr const std::array<uint16_t, 16> * As = &ANParameters::Ashort;
         static constexpr const std::array<resshort_t, 16> * Ainvs = &ANParameters::AshortInv;
     };
+    typedef v2_resshort_t v2_resshortint_t;
 
     struct v2_resint_t : public v2_anencoded_t {
 
@@ -368,7 +370,7 @@ namespace ahead {
     T ext_euclidean(T b0, size_t codewidth) {
         T a0(1);
         a0 <<= codewidth;
-        T a[16], b[16], q[16], r[16], s[16], t[16]; // 16 values is enough for 16-bit A's
+        T a[20], b[20], q[20], r[20], s[20], t[20]; // 16 values is enough for 16-bit A's, let's add some space for larger A's
         uint8_t aI = 1, bI = 1, qI = 0, rI = 0, sI = 1, tI = 1;
         a[0] = a0;
         b[0] = b0;

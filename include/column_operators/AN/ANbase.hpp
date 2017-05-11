@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Till Kolditz
+// Copyright (c) 2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,16 +13,26 @@
 // limitations under the License.
 
 /* 
- * File:   encdec.tcc
+ * File:   ANbase.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 22. November 2016, 16:22
+ * Created on 03-05-2017 12:59
  */
+#ifndef COLUMN_OPERATORS_AN_ANBASE_HPP_
+#define COLUMN_OPERATORS_AN_ANBASE_HPP_
 
-#ifndef ENCDECAN_TCC
-#define ENCDECAN_TCC
+#include <vector>
 
-#include "encdecAN_SSE.tcc"
-#include "encdecAN_scalar.tcc"
+#include <ColumnStore.h>
 
-#endif /* ENCDECAN_TCC */
+namespace ahead {
+    namespace bat {
+        namespace ops {
+
+            typedef std::vector<resoid_t> AN_indicator_vector;
+
+        }
+    }
+}
+
+#endif /* COLUMN_OPERATORS_AN_ANBASE_HPP_ */

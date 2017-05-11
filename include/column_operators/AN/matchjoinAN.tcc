@@ -37,6 +37,7 @@ using boost::multiprecision::uint128_t;
 namespace ahead {
     namespace bat {
         namespace ops {
+
             namespace MatchjoinAN {
 
                 template<typename T, bool>

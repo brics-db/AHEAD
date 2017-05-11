@@ -36,16 +36,17 @@ namespace ahead {
         struct v2converter {
         };
 
-        template<>
-        struct v2converter<uint64_t, uint128_t> {
-            static uint64_t doIt(uint128_t & source) {
-                uint64_t target = 0;
-                const unsigned limb_num = source.backend().size(); // number of limbs
-                const unsigned limb_bits = sizeof(boost::multiprecision::limb_type) * CHAR_BIT; // size of limb in bits
-                for (unsigned i = 0; i < limb_num && ((i * limb_bits) < (sizeof(target) * 8)); ++i) {
-                    target |= (source.backend().limbs()[i]) << (i * limb_bits);
+        template<typename T>
+        struct v2converter<T, uint128_t> {
+            static T doIt(uint128_t & source) {
+                constexpr const unsigned nBitsLimb = sizeof(boost::multiprecision::limb_type) * CHAR_BIT; // size of limb in bits
+                boost::multiprecision::limb_type target = 0;
+                const unsigned nLimbs = source.backend().size(); // number of limbs
+                auto pLimbs = source.backend().limbs();
+                for (unsigned i = 0; i < nLimbs && ((i * nBitsLimb) < (sizeof(T) * CHAR_BIT)); ++i) {
+                    target |= (pLimbs[i]) << (i * nBitsLimb);
                 }
-                return target;
+                return static_cast<T>(target);
             }
         };
 

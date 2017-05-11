@@ -24,3 +24,5 @@ CMakeFiles
 /eval/2017*
 /lib/column_operators/createshufflemaskarrays
 /lib/column_operators/testshufflemask
+/Debug
+/Release
