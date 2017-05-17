@@ -33,8 +33,23 @@ namespace ahead {
             template<typename T>
             struct v2_mm128;
 
+            template<size_t current, size_t x>
+            inline void extract(uint8_t * & result, __m128i & a, uint16_t mask) {
+                *result = _mm_extract_epi8(a, current);
+                result += (mask >> current) & 0x1;
+                extract<current + 1, x - 1>(result, a, mask);
+            }
+
+            template<>
+            inline void extract<15, 0>(uint8_t * & result, __m128i & a, uint16_t mask) {
+                *result = _mm_extract_epi8(a, 15);
+                result += (mask >> 15) & 0x1;
+            }
+
             template<>
             struct v2_mm128<uint8_t> {
+
+                typedef uint16_t mask_t;
 
                 static inline __m128i set1(uint8_t value) {
                     return _mm_set1_epi8(value);
@@ -80,7 +95,7 @@ namespace ahead {
                     return static_cast<uint16_t>(_mm_extract_epi8(mm, 0));
                 }
 
-                static inline __m128i pack_right(__m128i a, uint16_t mask) {
+                static inline __m128i pack_right(__m128i a, mask_t mask) {
                     static const uint64_t ALL_ONES = 0xFFFFFFFFFFFFFFFFull;
                     uint64_t shuffleMaskL = SHUFFLE_TABLE_L[static_cast<uint8_t>(mask)];
                     int clzb = __builtin_clzll(~shuffleMaskL); // number of unmatched bytes (if a value matches, the leading bits are zero and the inversion makes it ones, so only full bytes are counted)
@@ -88,13 +103,34 @@ namespace ahead {
                     return _mm_shuffle_epi8(a, _mm_set_epi64x(((shuffleMaskH >> clzb) | (ALL_ONES << (64 - clzb))), shuffleMaskL & ((shuffleMaskH << (64 - clzb)) | (ALL_ONES >> clzb))));
                 }
 
+                static inline void pack_right2(uint8_t * & result, __m128i a, mask_t mask) {
+                    if (mask) {
+                        extract<0, 15>(result, a, mask);
+                    }
+                }
+
             private:
                 static const uint64_t * const SHUFFLE_TABLE_L;
                 static const uint64_t * const SHUFFLE_TABLE_H;
             };
 
+            template<size_t current, size_t x>
+            inline void extract(uint16_t * & result, __m128i & a, uint8_t mask) {
+                *result = _mm_extract_epi16(a, current);
+                result += (mask >> current) & 0x1;
+                extract<current + 1, x - 1>(result, a, mask);
+            }
+
+            template<>
+            inline void extract<7, 0>(uint16_t * & result, __m128i & a, uint8_t mask) {
+                *result = _mm_extract_epi16(a, 7);
+                result += (mask >> 7) & 0x1;
+            }
+
             template<>
             struct v2_mm128<uint16_t> {
+
+                typedef uint8_t mask_t;
 
                 static inline __m128i set1(uint16_t value) {
                     return _mm_set1_epi16(value);
@@ -135,16 +171,37 @@ namespace ahead {
                     return static_cast<uint16_t>(_mm_extract_epi16(mm, 0));
                 }
 
-                static inline __m128i pack_right(__m128i a, uint8_t mask) {
+                static inline __m128i pack_right(__m128i a, mask_t mask) {
                     return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
+                }
+
+                static inline void pack_right2(uint16_t * & result, __m128i a, mask_t mask) {
+                    if (mask) {
+                        extract<0, 7>(result, a, mask);
+                    }
                 }
 
             private:
                 static const __m128i * const SHUFFLE_TABLE;
             };
 
+            template<size_t current, size_t x>
+            inline void extract(uint32_t * & result, __m128i & a, uint8_t mask) {
+                *result = _mm_extract_epi32(a, current);
+                result += (mask >> current) & 0x1;
+                extract<current + 1, x - 1>(result, a, mask);
+            }
+
+            template<>
+            inline void extract<3, 0>(uint32_t * & result, __m128i & a, uint8_t mask) {
+                *result = _mm_extract_epi32(a, 3);
+                result += (mask >> 3) & 0x1;
+            }
+
             template<>
             struct v2_mm128<uint32_t> {
+
+                typedef uint8_t mask_t;
 
                 static inline __m128i set1(uint32_t value) {
                     return _mm_set1_epi32(value);
@@ -193,16 +250,37 @@ namespace ahead {
                     return static_cast<uint32_t>(_mm_extract_epi32(mm, 0));
                 }
 
-                static inline __m128i pack_right(__m128i a, uint8_t mask) {
+                static inline __m128i pack_right(__m128i a, mask_t mask) {
                     return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
+                }
+
+                static inline void pack_right2(uint32_t * & result, __m128i a, mask_t mask) {
+                    if (mask) {
+                        extract<0, 3>(result, a, mask);
+                    }
                 }
 
             private:
                 static const __m128i * const SHUFFLE_TABLE;
             };
 
+            template<size_t current, size_t x>
+            inline void extract(uint64_t * & result, __m128i & a, uint8_t mask) {
+                *result = _mm_extract_epi64(a, current);
+                result += (mask >> current) & 0x1;
+                extract<current + 1, x - 1>(result, a, mask);
+            }
+
+            template<>
+            inline void extract<1, 0>(uint64_t * & result, __m128i & a, uint8_t mask) {
+                *result = _mm_extract_epi64(a, 1);
+                result += (mask >> 1) & 0x1;
+            }
+
             template<>
             struct v2_mm128<uint64_t> {
+
+                typedef uint8_t mask_t;
 
                 static inline __m128i set1(uint64_t value) {
                     return _mm_set1_epi64x(value);
@@ -251,8 +329,14 @@ namespace ahead {
                     return static_cast<uint64_t>(_mm_extract_epi64(a, 0)) + static_cast<uint64_t>(_mm_extract_epi64(a, 1));
                 }
 
-                static inline __m128i pack_right(__m128i a, uint8_t mask) {
+                static inline __m128i pack_right(__m128i a, mask_t mask) {
                     return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
+                }
+
+                static inline void pack_right2(uint64_t * & result, __m128i a, mask_t mask) {
+                    if (mask) {
+                        extract<0, 1>(result, a, mask);
+                    }
                 }
 
             private:
