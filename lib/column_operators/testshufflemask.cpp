@@ -190,7 +190,7 @@ template<typename T>
 void testPack1SingleRandom1(concrete_context_t<T, initcolumns_out_t> & ctx) {
     auto pmmOut = ctx.pmmOut;
     for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
-        typename concrete_context_t<T, initcolumns_out_t>::mask_t tmpMask = ctx.pac->rndDistr(ctx.pac->paac->rndEngine);
+        typename concrete_context_t<T, initcolumns_out_t>::mask_t tmpMask = ctx.pac->rndDistr(ctx.pac->paac->rndEngine) % (sizeof(__m128i) / sizeof(T));
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
         __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(ctx.pac->mm, tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
