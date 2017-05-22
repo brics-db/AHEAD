@@ -28,14 +28,20 @@ struct abstract_abstract_context_t {
     ahead::StopWatch sw;
     std::random_device rndDevice;
     std::default_random_engine rndEngine;
+    const size_t numValues;
+    const size_t numRepititions;
     const size_t widthValuesCout;
 
-    abstract_abstract_context_t()
-            : abstract_abstract_context_t(12) {
+    abstract_abstract_context_t(const size_t numValues)
+            : abstract_abstract_context_t(numValues, 1) {
     }
 
-    abstract_abstract_context_t(const size_t widthValuesCout)
-            : sw(), rndDevice(), rndEngine(), widthValuesCout(widthValuesCout) {
+    abstract_abstract_context_t(const size_t numValues, const size_t numRepititions) 
+            : abstract_abstract_context_t(numValues, numRepititions, 12) {
+    }
+
+    abstract_abstract_context_t(const size_t numValues, const size_t numRepititions, const size_t widthValuesCout)
+            : sw(), rndDevice(), rndEngine(), numValues(numValues), numRepititions(numRepititions), widthValuesCout(widthValuesCout) {
     }
 };
 
@@ -50,11 +56,10 @@ struct abstract_context_t {
     std::uniform_int_distribution<mask_t> rndDistr;
     mask_t randoms[NUM_RND];
     __m128i mm;
-    const size_t NUM;
-    const size_t NUM128;
+    const size_t numMM128;
 
-    abstract_context_t(abstract_abstract_context_t & aac, size_t NUM)
-            : paac(&aac), rndDistr(), mm(ahead::bat::ops::v2_mm128<T>::set_inc(0)), NUM(NUM), NUM128(NUM / (sizeof(__m128i ) / sizeof(T))) {
+    abstract_context_t(abstract_abstract_context_t & aac)
+            : paac(&aac), rndDistr(), mm(ahead::bat::ops::v2_mm128<T>::set_inc(0)), numMM128(aac.numValues / (sizeof(__m128i ) / sizeof(T))) {
         for (size_t i = 0; i < NUM_RND; ++i) {
             randoms[i] = rndDistr(paac->rndEngine) % (sizeof(__m128i) / sizeof(T));
         }
@@ -112,14 +117,14 @@ struct concrete_context_t {
     }
 
     concrete_context_t(abstract_context_t<T> & ac)
-            : pac(&ac), pmmIn(column_initializer<initcolumns_in_t, M>::init(ac.NUM128 + 1)), pmmOut(column_initializer<initcolumns_out_t, M>::init(ac.NUM128 + 1)) {
+            : pac(&ac), pmmIn(column_initializer<initcolumns_in_t, M>::init(ac.numMM128 + 1)), pmmOut(column_initializer<initcolumns_out_t, M>::init(ac.numMM128 + 1)) {
         if (pmmIn) {
-            for (size_t i = 0; i < ac.NUM128; ++i) {
+            for (size_t i = 0; i < ac.numMM128; ++i) {
                 _mm_storeu_si128(&pmmIn[i], ac.mm);
             }
         }
         if (pmmOut) {
-            for (size_t i = 0; i < ac.NUM128; ++i) {
+            for (size_t i = 0; i < ac.numMM128; ++i) {
                 _mm_storeu_si128(&pmmOut[i], ac.mm);
             }
         }
@@ -158,7 +163,9 @@ struct Test {
         ac.paac->sw.start();
 #pragma omp parallel for
         for (size_t i = 0; i < N; ++i) {
-            F(ccs[i]);
+            for (size_t r = 0; r < ac.paac->numRepititions; ++r) {
+                F(ccs[i]);
+            }
         }
         ac.paac->sw.stop();
         std::cout << '\t' << std::setw(ac.paac->widthValuesCout) << ac.paac->sw.duration();
@@ -174,14 +181,14 @@ struct Test<T, M, F, 0> {
 template<typename T>
 void testRndDistrScalar(concrete_context_t<T, initcolumns_out_t> & ctx) {
     T * pOut = reinterpret_cast<T*>(ctx.pmmOut);
-    for (size_t i = 0; i < ctx.pac->NUM; ++i) {
+    for (size_t i = 0; i < ctx.pac->paac->numValues; ++i) {
         *pOut++ = ctx.pac->rndDistr(ctx.pac->paac->rndEngine);
     }
 }
 
 template<typename T>
 void testRndDistrSSE(concrete_context_t<T, initcolumns_out_t> & ctx) {
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         ctx.pmmOut[i] = ahead::bat::ops::v2_mm128<T>::set1(ctx.pac->rndDistr(ctx.pac->paac->rndEngine));
     }
 }
@@ -189,7 +196,7 @@ void testRndDistrSSE(concrete_context_t<T, initcolumns_out_t> & ctx) {
 template<typename T>
 void testPack1SingleRandom1(concrete_context_t<T, initcolumns_out_t> & ctx) {
     auto pmmOut = ctx.pmmOut;
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_out_t>::mask_t tmpMask = ctx.pac->rndDistr(ctx.pac->paac->rndEngine) % (sizeof(__m128i) / sizeof(T));
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
         __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(ctx.pac->mm, tmpMask);
@@ -202,7 +209,7 @@ template<typename T>
 void testPack1SingleRandom2(concrete_context_t<T, initcolumns_out_t> & ctx) {
     typename concrete_context_t<T, initcolumns_out_t>::mask_t mask = static_cast<typename concrete_context_t<T, initcolumns_out_t>::mask_t>(0x59A3);
     auto pmmOut = ctx.pmmOut;
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         size_t nMaskOnes = __builtin_popcountll(mask);
         __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(ctx.pac->mm, mask);
         _mm_storeu_si128(pmmOut, mmResult);
@@ -214,7 +221,7 @@ void testPack1SingleRandom2(concrete_context_t<T, initcolumns_out_t> & ctx) {
 template<typename T>
 void testPack1SingleArray(concrete_context_t<T, initcolumns_out_t> & ctx) {
     auto pmmOut = ctx.pmmOut;
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_out_t>::mask_t tmpMask = ctx.pac->randoms[i & abstract_context_t<T>::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
         __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(ctx.pac->mm, tmpMask);
@@ -227,7 +234,7 @@ template<typename T>
 void testPack1ColumnRandom1(concrete_context_t<T, initcolumns_inout_t> & ctx) {
     auto pmmIn = ctx.pmmIn;
     auto pmmOut = ctx.pmmOut;
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_inout_t>::mask_t tmpMask = ctx.pac->rndDistr(ctx.pac->paac->rndEngine) % (sizeof(__m128i) / sizeof(T));
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
         __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
@@ -241,7 +248,7 @@ void testPack1ColumnRandom2(concrete_context_t<T, initcolumns_inout_t> & ctx) {
     auto pmmIn = ctx.pmmIn;
     auto pmmOut = ctx.pmmOut;
     typename concrete_context_t<T, initcolumns_inout_t>::mask_t mask = static_cast<typename concrete_context_t<T, initcolumns_inout_t>::mask_t>(0x59A3);
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_inout_t>::mask_t tmpMask = mask % (sizeof(__m128i) / sizeof(T));
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
         __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
@@ -255,7 +262,7 @@ template<typename T>
 void testPack1ColumnArray(concrete_context_t<T, initcolumns_inout_t> & ctx) {
     auto pmmIn = ctx.pmmIn;
     auto pmmOut = ctx.pmmOut;
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_inout_t>::mask_t tmpMask = ctx.pac->randoms[i & abstract_context_t<T>::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
         __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
@@ -268,7 +275,7 @@ template<typename T>
 void testPack2ColumnArray(concrete_context_t<T, initcolumns_inout_t> & ctx) {
     auto pmmIn = ctx.pmmIn;
     auto pOut = reinterpret_cast<T*>(ctx.pmmOut);
-    for (size_t i = 0; i < ctx.pac->NUM128; ++i) {
+    for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_inout_t>::mask_t tmpMask = ctx.pac->randoms[i & abstract_context_t<T>::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
         ahead::bat::ops::v2_mm128<T>::pack_right2(pOut, _mm_lddqu_si128(pmmIn++), tmpMask);
@@ -276,9 +283,9 @@ void testPack2ColumnArray(concrete_context_t<T, initcolumns_inout_t> & ctx) {
 }
 
 template<typename T>
-void test(size_t NUM, abstract_abstract_context_t & aac) {
-    abstract_context_t<T> ac(aac, NUM);
-    std::cout << "\tdata size: " << (sizeof(T) * 8) << " bits\n\t# 128-bit vectors: " << ac.NUM128 << std::endl;
+void test(abstract_abstract_context_t & aac) {
+    abstract_context_t<T> ac(aac);
+    std::cout << "#data bits\t" << (sizeof(T) * 8) << "\n#128-bit vectors\t" << (ac.numMM128 * aac.numRepititions) << "\t(" << ac.numMM128 << " repeated " << aac.numRepititions << " times)" << std::endl;
 
     constexpr static const size_t nprocs = NPROCS;
 /*
@@ -310,34 +317,41 @@ void test(size_t NUM, abstract_abstract_context_t & aac) {
     Test<T, initcolumns_inout_t, testPack1ColumnRandom2, nprocs>::run(ac);
     std::cout << std::endl;
 */
-    std::cout << "\t\t" << std::setw(30) << "pack_right1 (column, array)";
+    std::cout << std::setw(30) << "pack_right1 (column, array)" << std::flush;
     Test<T, initcolumns_inout_t, testPack1ColumnArray, nprocs>::run(ac);
     std::cout << std::endl;
 
-    std::cout << "\t\t" << std::setw(30) << "pack_right2 (column, array)";
+    std::cout << std::setw(30) << "pack_right2 (column, array)" << std::flush;
     Test<T, initcolumns_inout_t, testPack2ColumnArray, nprocs>::run(ac);
     std::cout << std::endl;
 }
 
 int main(int argc, char ** argv) {
-    if (argc != 2) {
-        std::cout << "Usage: " << argv[0] << " <#values>" << std::endl;
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <#values> (<#repititions>)" << std::endl;
         return 1;
     }
 
     char* end;
-    const size_t NUM = strtoull(argv[1], &end, 10);
-    if (NUM == 0) {
-        std::cout << "<#values> is not valid! Must be an integer > 0." << std::endl;
+    const size_t numValues = strtoull(argv[1], &end, 10);
+    size_t numRepititions = 1;
+    if (numValues == 0) {
+        std::cerr << "<#values> is invalid! Must be an integer > 0." << std::endl;
         return 2;
-    } else {
-        std::cout << "#total values: " << NUM << std::endl;
+    }
+    if (argc > 2) {
+        numRepititions = strtoull(argv[2], &end, 10);
+        if (numRepititions == 0) {
+            std::cerr << "<#repititions> is invalid! Must be an integer > 0." << std::endl;
+            return 3;
+        }
     }
 
-    abstract_abstract_context_t aac;
+    std::cout << "#total values: " << (numValues * numRepititions) << "\t(" << numValues << " repeated " << numRepititions << " times)" << std::endl;
+    abstract_abstract_context_t aac(numValues, numRepititions);
 
-    test<uint8_t>(NUM, aac);
-    test<uint16_t>(NUM, aac);
-    test<uint32_t>(NUM, aac);
+    test<uint8_t>(aac);
+    test<uint16_t>(aac);
+    test<uint32_t>(aac);
 }
 
