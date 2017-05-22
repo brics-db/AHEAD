@@ -16,13 +16,13 @@ fi
 
 if [[ -e testshufflemask.build ]] && [[ -s testshufflemask.build ]]; then
 	echo "testshufflemask:"
-	cat createshufflemaskarrays.build
+	cat testshufflemask.build
 	echo
 fi
 
 if [[ -e testshufflemask_dbg.build ]] && [[ -s testshufflemask_dbg.build ]]; then
 	echo "testshufflemask_dbg:"
-	cat createshufflemaskarrays.build
+	cat testshufflemask_dbg.build
 	echo
 fi
 

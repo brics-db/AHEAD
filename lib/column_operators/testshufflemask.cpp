@@ -281,7 +281,7 @@ void test(size_t NUM, abstract_abstract_context_t & aac) {
     std::cout << "\tdata size: " << (sizeof(T) * 8) << " bits\n\t# 128-bit vectors: " << ac.NUM128 << std::endl;
 
     constexpr static const size_t nprocs = NPROCS;
-
+/*
     std::cout << "\t\t" << std::setw(30) << "rndDistrScalar(rndEngine)";
     Test<T, initcolumns_out_t, testRndDistrScalar, nprocs>::run(ac);
     std::cout << std::endl;
@@ -309,7 +309,7 @@ void test(size_t NUM, abstract_abstract_context_t & aac) {
     std::cout << "\t\t" << std::setw(30) << "pack_right1 (column, random2)";
     Test<T, initcolumns_inout_t, testPack1ColumnRandom2, nprocs>::run(ac);
     std::cout << std::endl;
-
+*/
     std::cout << "\t\t" << std::setw(30) << "pack_right1 (column, array)";
     Test<T, initcolumns_inout_t, testPack1ColumnArray, nprocs>::run(ac);
     std::cout << std::endl;
