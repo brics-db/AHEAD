@@ -120,7 +120,7 @@ struct concrete_context_t {
         }
         if (pmmOut) {
             for (size_t i = 0; i < ac.NUM128; ++i) {
-                _mm_storeu_si128(&pmmOut[i], ahead::bat::ops::v2_mm128<T>::set1(ac.rndDistr(ac.paac->rndEngine)));
+                _mm_storeu_si128(&pmmOut[i], ac.mm);
             }
         }
     }
