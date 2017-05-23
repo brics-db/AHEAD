@@ -297,9 +297,9 @@ ssb::before_op();                                                               
 TYPE VAR = OP;                                                                 \
 ssb::after_op(); \
 ;do {                                                                          \
-    ssb::batSizes[ssb::I] = STORE_SIZE_OP;                                               \
-    ssb::batConsumptions[ssb::I] = STORE_CONSUMPTION_OP;                                 \
-    ssb::batConsumptionsProj[ssb::I] = STORE_PROJECTEDCONSUMPTION_OP;                    \
+    ssb::batSizes[ssb::I-1] = STORE_SIZE_OP;                                               \
+    ssb::batConsumptions[ssb::I-1] = STORE_CONSUMPTION_OP;                                 \
+    ssb::batConsumptionsProj[ssb::I-1] = STORE_PROJECTEDCONSUMPTION_OP;                    \
 } while (false)
 
 #define MEASURE_OP3(TYPE, VAR, OP)                                             \

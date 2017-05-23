@@ -16,13 +16,14 @@
 
 
 # Basic constants
-CXX_COMPILER=g++-6
+CXX_COMPILER=g++
+DATE=$(date '+%Y-%m-%d %H-%M')
 PATH_BASE=..
-PATH_BUILD=${PATH_BASE}/build
+PATH_BUILD=${PATH_BASE}/build/Release
 PATH_DB=${PATH_BASE}/database
 PATH_EVAL=${PATH_BASE}/eval
-PATH_EVALDATA=${PATH_EVAL}/data
-PATH_EVALOUT=${PATH_EVAL}/out
+PATH_EVALDATA=${PATH_EVAL}/${DATE}/data
+PATH_EVALOUT=${PATH_EVAL}/${DATE}/out
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
@@ -105,7 +106,7 @@ if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
 if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
-if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=10; fi
+if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS)); fi
 declare -p BENCHMARK_SCALEFACTORS 2>/dev/null
 ret=$?
 if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
