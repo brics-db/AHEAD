@@ -41,6 +41,8 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLEcb, new int_colbat_t("lineorder", "extendedprice"));
     MEASURE_OP(batDWcb, new tinyint_colbat_t("date", "weeknuminyear"));
 
+    ssb::after_create_columnbats();
+
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(batDY, copy(batDYcb));
     MEASURE_OP(batDD, copy(batDDcb));
@@ -58,10 +60,10 @@ int main(int argc, char** argv) {
     delete batLEcb;
     delete batDWcb;
 
-    SSBM_BEFORE_QUERIES;
+    ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
-        SSBM_BEFORE_QUERY;
+        ssb::before_query();
 
         // 1) select from lineorder
         MEASURE_OP(bat1, select(batLQ, 26, 35)); // lo_quantity between 26 and 35
@@ -110,10 +112,10 @@ int main(int argc, char** argv) {
         delete iter;
         delete batI;
 
-        SSBM_AFTER_QUERY(i, result);
+        ssb::after_query(i, result);
     }
 
-    SSBM_AFTER_QUERIES;
+    ssb::after_queries();
 
     delete batDY;
     delete batDD;
@@ -123,7 +125,7 @@ int main(int argc, char** argv) {
     delete batLE;
     delete batDW;
 
-    SSBM_FINALIZE;
+    ssb::finalize();
 
     return 0;
 }

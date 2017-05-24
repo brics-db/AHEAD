@@ -49,6 +49,8 @@ int main(int argc, char** argv) {
     MEASURE_OP(batSScb, new resint_colbat_t("supplierAN", "suppkey"));
     MEASURE_OP(batSRcb, new str_colbat_t("supplierAN", "region"));
 
+    ssb::after_create_columnbats();
+
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(batDDenc, copy(batDDcb));
     MEASURE_OP(batDYenc, copy(batDYcb));
@@ -74,10 +76,10 @@ int main(int argc, char** argv) {
     delete batSScb;
     delete batSRcb;
 
-    SSBM_BEFORE_QUERIES;
+    ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
-        SSBM_BEFORE_QUERY;
+        ssb::before_query();
 
         // s_region = 'AMERICA'
         MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
@@ -147,7 +149,7 @@ int main(int argc, char** argv) {
 
         auto szResult = std::get<0>(tupleK)->size();
 
-        SSBM_AFTER_QUERY(i, szResult);
+        ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
             size_t sum = 0;
@@ -182,7 +184,7 @@ int main(int argc, char** argv) {
         delete std::get<4>(tupleK);
     }
 
-    SSBM_AFTER_QUERIES;
+    ssb::after_queries();
 
     delete batDDenc;
     delete batDYenc;
@@ -196,7 +198,7 @@ int main(int argc, char** argv) {
     delete batSSenc;
     delete batSR;
 
-    SSBM_FINALIZE;
+    ssb::finalize();
 
     return 0;
 }

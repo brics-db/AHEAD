@@ -51,6 +51,8 @@ int main(int argc, char** argv) {
     MEASURE_OP(batSScb, new int_colbat_t("supplier", "suppkey"));
     MEASURE_OP(batSRcb, new str_colbat_t("supplier", "region"));
 
+    ssb::after_create_columnbats();
+
     /* Measure converting (copying) ColumnBats to TempBats */
     int_tmpbat_t * batDDs[DMR::modularity];
     shortint_tmpbat_t * batDYs[DMR::modularity];
@@ -65,17 +67,17 @@ int main(int argc, char** argv) {
     str_tmpbat_t * batSRs[DMR::modularity];
 
     for (size_t k = 0; k < DMR::modularity; ++k) {
-        MEASURE_OP(batDDs, [k], copy(batDDcb), batDDs[k]->size(), batDDs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batDYs, [k], copy(batDYcb), batDYs[k]->size(), batDYs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batLPs, [k], copy(batLPcb), batLPs[k]->size(), batLPs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batLSs, [k], copy(batLScb), batLSs[k]->size(), batLSs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batLOs, [k], copy(batLOcb), batLOs[k]->size(), batLOs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batLRs, [k], copy(batLRcb), batLRs[k]->size(), batLRs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batPPs, [k], copy(batPPcb), batPPs[k]->size(), batPPs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batPCs, [k], copy(batPCcb), batPCs[k]->size(), batPCs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batPBs, [k], copy(batPBcb), batPBs[k]->size(), batPBs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batSSs, [k], copy(batSScb), batSSs[k]->size(), batSSs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batSRs, [k], copy(batSRcb), batSRs[k]->size(), batSRs[k]->consumption(), batDDs[k]->consumptionProjected());
+        MEASURE_OP(batDDs, [k], copy(batDDcb), batDDs[k]);
+        MEASURE_OP(batDYs, [k], copy(batDYcb), batDYs[k]);
+        MEASURE_OP(batLPs, [k], copy(batLPcb), batLPs[k]);
+        MEASURE_OP(batLSs, [k], copy(batLScb), batLSs[k]);
+        MEASURE_OP(batLOs, [k], copy(batLOcb), batLOs[k]);
+        MEASURE_OP(batLRs, [k], copy(batLRcb), batLRs[k]);
+        MEASURE_OP(batPPs, [k], copy(batPPcb), batPPs[k]);
+        MEASURE_OP(batPCs, [k], copy(batPCcb), batPCs[k]);
+        MEASURE_OP(batPBs, [k], copy(batPBcb), batPBs[k]);
+        MEASURE_OP(batSSs, [k], copy(batSScb), batSSs[k]);
+        MEASURE_OP(batSRs, [k], copy(batSRcb), batSRs[k]);
     }
 
     delete batDDcb;
@@ -90,10 +92,10 @@ int main(int argc, char** argv) {
     delete batSScb;
     delete batSRcb;
 
-    SSBM_BEFORE_QUERIES;
+    ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
-        SSBM_BEFORE_QUERY;
+        ssb::before_query();
 
         DMR results( {nullptr, nullptr, nullptr, nullptr, nullptr});
 
@@ -205,7 +207,7 @@ int main(int argc, char** argv) {
 
         auto szResult = std::get<0>(results[0])->size();
 
-        SSBM_AFTER_QUERY(i, szResult);
+        ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
             size_t sum = 0;
@@ -243,7 +245,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    SSBM_AFTER_QUERIES;
+    ssb::after_queries();
 
     for (size_t k = 0; k < DMRValue<result_tuple_t>::modularity; ++k) {
         delete batDDs[k];
@@ -259,7 +261,7 @@ int main(int argc, char** argv) {
         delete batSRs[k];
     }
 
-    SSBM_FINALIZE;
+    ssb::finalize();
 
     return 0;
 }

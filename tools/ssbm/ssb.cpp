@@ -81,7 +81,6 @@ namespace ssb {
     SystemCounterState sysstate1, sysstate2, sysstate3;
     std::string emptyString;
     std::vector<StopWatch::rep> totalTimes;
-    size_t I = 0;
     StopWatch sw1, sw2;
 
     std::vector<cstr_t> opNames;
@@ -129,12 +128,33 @@ namespace ssb {
         }
     }
 
+    void clear_stats() {
+        ssb::opTimes.clear();
+        ssb::batSizes.clear();
+        ssb::batConsumptions.clear();
+        ssb::batConsumptionsProj.clear();
+        ssb::batRSS.clear();
+        ssb::hasTwoTypes.clear();
+        ssb::headTypes.clear();
+        ssb::tailTypes.clear();
+    }
+
+    void after_create_columnbats() {
+        if (ssb::ssb_config.VERBOSE) {
+            std::cout << "\n(Create ColumnBATs)\n";
+            ssb::print_headline();
+            ssb::print_result();
+            std::cout << std::endl;
+        }
+        ssb::clear_stats();
+    }
+
     void before_queries() {
         ssb::rssAfterCopy = getPeakRSS(size_enum_t::B);
         if (ssb::ssb_config.VERBOSE) {
             std::cout << "\n(Copying)\n";
             ssb::print_headline();
-            ssb::print_result(0, ssb::I);
+            ssb::print_result();
             std::cout << std::endl;
         }
         if (ssb::pcmStatus == PCM::Success) {
@@ -157,15 +177,15 @@ namespace ssb {
     }
 
     void before_query() {
+        ssb::clear_stats();
         ssb::sw2.start();
-        ssb::I = 0;
     }
 
     void after_query(size_t index, size_t result) {
         ssb::totalTimes[index] = ssb::sw2.stop();
         std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::sw2 << " ns.\n";
         ssb::print_headline();
-        ssb::print_result(0, ssb::I, ssb::opNames);
+        ssb::print_result(ssb::opNames);
     }
 
     void before_op() {
@@ -173,9 +193,8 @@ namespace ssb {
     }
 
     void after_op() {
-        ssb::opTimes[ssb::I] = ssb::sw1.stop();
-        ssb::batRSS[ssb::I] = getPeakRSS(size_enum_t::B);
-        ++ssb::I;
+        ssb::opTimes.push_back(ssb::sw1.stop());
+        ssb::batRSS.push_back(getPeakRSS(size_enum_t::B));
     }
 
     ///////////////
@@ -212,8 +231,8 @@ namespace ssb {
                 << std::setw(ssb::ssb_config.LEN_TYPES) << "type head" << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type tail" << "\n";
     }
 
-    void print_result(size_t start, size_t max) {
-        for (size_t k = start; k < max; ++k) {
+    void print_result() {
+        for (size_t k = 0; k < ssb::opTimes.size(); ++k) {
             std::cout << "\top" << std::setw(2) << k << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]) << "\t" << std::setw(ssb::ssb_config.LEN_SIZES)
                     << ssb::batSizes[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptions[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptionsProj[k]
                     << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << (k == 0 ? (ssb::batRSS[k] - ssb::rssAfterCopy) : (ssb::batRSS[k] - ssb::batRSS[k - 1])) << "\t"
@@ -223,8 +242,8 @@ namespace ssb {
         std::cout << std::flush;
     }
 
-    void print_result(size_t start, size_t max, std::vector<cstr_t> const & opNames) {
-        for (size_t k = start; k < max; ++k) {
+    void print_result(std::vector<cstr_t> const & opNames) {
+        for (size_t k = 0; k < ssb::opTimes.size(); ++k) {
             std::cout << "\top" << std::setw(2) << opNames[k] << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]) << "\t" << std::setw(ssb::ssb_config.LEN_SIZES)
                     << ssb::batSizes[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptions[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptionsProj[k]
                     << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << (k == 0 ? (ssb::batRSS[k] - ssb::rssAfterCopy) : (ssb::batRSS[k] - ssb::batRSS[k - 1])) << "\t"

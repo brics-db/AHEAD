@@ -67,13 +67,14 @@ namespace ahead {
                             const tail_select_t ATailInv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                             const tail_select_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
                             const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
-                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector(20));
+                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector());
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                             result.first->reserve(arg->size() / 2);
                             if (reencode) {
                                 result.first->tail.metaData.AN_A = ATR;
                                 result.first->tail.metaData.AN_Ainv = ATInvR;
                             }
+                            result.second->reserve(32);
                             tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
 
                             auto mmATInv = v2_mm128<tail_select_t>::set1(ATailInv);
@@ -86,9 +87,7 @@ namespace ahead {
                             auto pmmT = reinterpret_cast<__m128i *>(pT);
                             auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                             auto pRH = reinterpret_cast<head_select_t*>(result.first->head.container->data());
-                            auto pmmRH = reinterpret_cast<__m128i *>(pRH);
                             auto pRT = reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
-                            auto pmmRT = reinterpret_cast<__m128i *>(pRT);
                             // we encode the OIDs here already and increase accordingly by multiples of AHead
                             auto mmOID = v2_mm128<head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
 
@@ -108,11 +107,9 @@ namespace ahead {
                                     if (mask) {
                                         auto maskTmp = mask;
                                         for (size_t i = 0; i < factor; ++i) {
-                                            size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
-                                            if (nToAdd) {
-                                                auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, maskTmp & maskMask);
-                                                _mm_storeu_si128(pmmRH, mmOIDs);
-                                                pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nToAdd);
+                                            auto actMask = maskTmp & maskMask;
+                                            if (actMask) {
+                                                v2_mm128<head_select_t>::pack_right2(pRH, mmOID, actMask);
                                             }
                                             mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                             maskTmp >>= headsPerMM128;
@@ -121,13 +118,13 @@ namespace ahead {
                                         if (reencode) {
                                             mm = v2_mm128<tail_t>::mullo(mm, mmATReenc);
                                         }
-                                        _mm_storeu_si128(pmmRT, v2_mm128<tail_t>::pack_right(mm, mask));
-                                        pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + __builtin_popcountll(mask));
+                                        v2_mm128<tail_t>::pack_right2(pRT, mm, mask);
                                     } else {
                                         mmOID = v2_mm128<head_select_t>::add(mmOID, v2_mm128<head_select_t>::mullo(mmInc, v2_mm128<head_select_t>::set1(factor)));
                                     }
                                 }
                             } else {
+                                // currently, resoid_t is the largest type anyways, so the tail type will be at most as large as resoid_t
                                 auto mmInc = v2_mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (tail_select_t)) * AHead);
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                     auto mm = _mm_lddqu_si128(pmmT);
@@ -136,28 +133,26 @@ namespace ahead {
                                     auto mask = v2_mm128_cmp<tail_t, Op>::cmp_mask(mm, mmThreshold);
                                     if (mask) {
                                         // the mask will select only the lower OIDs anyways
-                                        auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, mask);
-                                        _mm_storeu_si128(pmmRH, mmOIDs);
-                                        size_t nToAdd = __builtin_popcountll(mask);
-                                        pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nToAdd);
+                                        v2_mm128<head_select_t>::pack_right2(pRH, mmOID, mask);
                                         pos += tailsPerMM128;
                                         if (reencode) {
                                             mm = v2_mm128<tail_t>::mullo(mm, mmATReenc);
                                         }
-                                        _mm_storeu_si128(pmmRT, v2_mm128<tail_t>::pack_right(mm, mask));
-                                        pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + nToAdd);
+                                        v2_mm128<tail_t>::pack_right2(pRT, mm, mask);
                                     }
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                 }
                             }
-                            result.first->overwrite_size(reinterpret_cast<decltype(pRT)>(pmmRT) - pRT); // "register" the number of values we added
+                            const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
+                            result.first->overwrite_size(numSelectedValues); // "register" the number of values we added
                             auto iter = arg->begin();
-                            *iter += (reinterpret_cast<decltype(pT)>(pmmT) - pT);
+                            const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
+                            *iter += (numFilteredValues);
                             Op<tail_t> op;
                             for (; iter->hasNext(); ++*iter, ++pos) {
                                 auto t = iter->tail();
-                                if ((t * ATailInv) > TailUnencMaxU) {
-                                    (*result.second)[pos] = true;
+                                if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
+                                    result.second->push_back(pos * Aoid);
                                 }
                                 if (op(t, th)) {
                                     if (reencode) {
@@ -234,13 +229,14 @@ namespace ahead {
                             const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                             const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
                             const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
-                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector(20));
+                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector());
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                             result.first->reserve(arg->size() / 2);
                             if (reencode) {
                                 result.first->tail.metaData.AN_A = ATR;
                                 result.first->tail.metaData.AN_Ainv = ATInvR;
                             }
+                            result.second->reserve(32);
                             tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
 
                             auto mmATInv = v2_mm128<tail_select_t>::set1(ATailInv);
@@ -254,33 +250,29 @@ namespace ahead {
                             auto pmmT = reinterpret_cast<__m128i *>(pT);
                             auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                             auto pRH = reinterpret_cast<head_select_t*>(result.first->head.container->data());
-                            auto pmmRH = reinterpret_cast<__m128i *>(pRH);
                             auto pRT = reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
-                            auto pmmRT = reinterpret_cast<__m128i *>(pRT);
                             // we encode the OIDs here already and increase accordingly by multiples of AHead
                             auto mmOID = v2_mm128<head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
+                            auto mmInc = v2_mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead);
 
                             constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
                             constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
 
                             size_t pos = 0;
-                            if (larger_type<head_select_t, tail_t>::isFirstLarger) {
-                                constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
-                                constexpr const tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
-                                auto mmInc = v2_mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (head_select_t)) * AHead);
-                                for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mm = _mm_lddqu_si128(pmmT);
+                            for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
+                                auto mm = _mm_lddqu_si128(pmmT);
+                                if (larger_type<head_select_t, tail_t>::isFirstLarger) {
+                                    constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
+                                    constexpr const tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     v2_mm128_AN<tail_t>::detect(mm, mmATInv, mmDMax, result.second, pos, Aoid); // we only need to check the tail types since the head is virtual anyways
                                     // comparison on encoded values
                                     auto mask = v2_mm128_cmp<tail_t, Op1>::cmp_mask(mm, mmThreshold1) & v2_mm128_cmp<tail_t, Op2>::cmp_mask(mm, mmThreshold2);
                                     if (mask) {
                                         auto maskTmp = mask;
                                         for (size_t i = 0; i < factor; ++i) {
-                                            size_t nToAdd = __builtin_popcountll(maskTmp & maskMask);
-                                            if (nToAdd) {
-                                                auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, maskTmp & maskMask);
-                                                _mm_storeu_si128(pmmRH, mmOIDs);
-                                                pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nToAdd);
+                                            auto actMask = maskTmp & maskMask;
+                                            if (actMask) {
+                                                v2_mm128<head_select_t>::pack_right2(pRH, mmOID, actMask);
                                             }
                                             mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                             maskTmp >>= headsPerMM128;
@@ -289,44 +281,37 @@ namespace ahead {
                                         if (reencode) {
                                             mm = v2_mm128<tail_t>::mullo(mm, mmATReenc);
                                         }
-                                        _mm_storeu_si128(pmmRT, v2_mm128<tail_t>::pack_right(mm, mask));
-                                        pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + __builtin_popcountll(mask));
+                                        v2_mm128<tail_t>::pack_right2(pRT, mm, mask);
                                     } else {
                                         mmOID = v2_mm128<head_select_t>::add(mmOID, v2_mm128<head_select_t>::mullo(mmInc, v2_mm128<head_select_t>::set1(factor)));
                                     }
-                                }
-                            } else {
-                                auto mmInc = v2_mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (tail_select_t)) * AHead);
-                                for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mm = _mm_lddqu_si128(pmmT);
+                                } else {
                                     v2_mm128_AN<tail_t>::detect(mm, mmATInv, mmDMax, result.second, pos, Aoid); // we only need to check the tail types since the head is virtual anyways
                                     // comparison on encoded values
                                     auto mask = v2_mm128_cmp<tail_t, Op1>::cmp_mask(mm, mmThreshold1) & v2_mm128_cmp<tail_t, Op2>::cmp_mask(mm, mmThreshold2);
                                     if (mask) {
                                         // the mask will select only the lower OIDs anyways
-                                        auto mmOIDs = v2_mm128<head_select_t>::pack_right(mmOID, mask);
-                                        _mm_storeu_si128(pmmRH, mmOIDs);
-                                        size_t nToAdd = __builtin_popcountll(mask);
-                                        pmmRH = reinterpret_cast<__m128i *>(reinterpret_cast<head_select_t*>(pmmRH) + nToAdd);
+                                        v2_mm128<head_select_t>::pack_right2(pRH, mmOID, mask);
                                         pos += tailsPerMM128;
                                         if (reencode) {
                                             mm = v2_mm128<tail_t>::mullo(mm, mmATReenc);
                                         }
-                                        _mm_storeu_si128(pmmRT, v2_mm128<tail_t>::pack_right(mm, mask));
-                                        pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_select_t*>(pmmRT) + nToAdd);
+                                        v2_mm128<tail_t>::pack_right2(pRT, mm, mask);
                                     }
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                 }
                             }
-                            result.first->overwrite_size(reinterpret_cast<decltype(pRT)>(pmmRT) - pRT); // "register" the number of values we added
+                            size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
+                            result.first->overwrite_size(numSelectedValues); // "register" the number of values we added
                             auto iter = arg->begin();
-                            *iter += (reinterpret_cast<decltype(pT)>(pmmT) - pT);
+                            const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
+                            *iter += (numFilteredValues);
                             Op1<tail_t> op1;
                             Op2<tail_t> op2;
                             for (; iter->hasNext(); ++*iter, ++pos) {
                                 auto t = iter->tail();
-                                if ((t * ATailInv) > TailUnencMaxU) {
-                                    (*result.second)[pos] = true;
+                                if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
+                                    result.second->push_back(pos * Aoid);
                                 }
                                 if (op1(t, th1) & op2(t, th2)) {
                                     if (reencode) {

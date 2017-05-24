@@ -14,15 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#if the outputs are not redirected to files, then call ourselves again with additional piping
+
+if [[ -t 1 ]] || [[ -t 2 ]]; then
+	echo "one of stdout or stderr is not redirected, calling script with redirecting"
+	./$0 $@ > >(tee "$0.out") 2> >(tee "$0.err" >&2)
+	exit $?
+else
+	echo "stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
+fi
 
 # Basic constants
-CXX_COMPILER=g++-6
-PATH_BASE=..
-PATH_BUILD=${PATH_BASE}/build
-PATH_DB=${PATH_BASE}/database
-PATH_EVAL=${PATH_BASE}/eval
-PATH_EVALDATA=${PATH_EVAL}/data
-PATH_EVALOUT=${PATH_EVAL}/out
+CXX_COMPILER="g++"
+DATE="$(date '+%Y-%m-%d_%H-%M')"
+PATH_BASE="$(pwd)/.."
+PATH_BUILD="${PATH_BASE}/build/Release"
+PATH_DB="${PATH_BASE}/database"
+PATH_EVAL="${PATH_BASE}/eval"
+PATH_EVALDATA="${PATH_EVAL}/${DATE}/data"
+PATH_EVALOUT="${PATH_EVAL}/${DATE}/out"
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
@@ -105,7 +115,7 @@ if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
 if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
-if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=10; fi
+if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS)); fi
 declare -p BENCHMARK_SCALEFACTORS 2>/dev/null
 ret=$?
 if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
@@ -324,7 +334,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                     for SF in ${BENCHMARK_SCALEFACTORS[*]}; do
                         echo -n " sf${SF}"
                         echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
-                        /usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath ${PATH_DB}/sf-${SF} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                        /usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath "${PATH_DB}/sf-${SF}/" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
                     done
                     echo " done."
                 else
