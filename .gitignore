@@ -25,6 +25,7 @@ CMakeFiles
 /eval/dataNewHashjoin2/
 /eval/2017*
 /lib/column_operators/createshufflemaskarrays
+/lib/column_operators/functors
 /lib/column_operators/testshufflemask
 /lib/column_operators/testshufflemasktable
 /Debug
