@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
     MEASURE_OP(batLEcb, new resint_colbat_t("lineorderAN", "extendedprice"));
 
+    ssb::after_create_columnbats();
+
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(batDYenc, copy(batDYcb));
     MEASURE_OP(batDDenc, copy(batDDcb));
@@ -57,10 +59,10 @@ int main(int argc, char** argv) {
     delete batLOcb;
     delete batLEcb;
 
-    SSBM_BEFORE_QUERIES;
+    ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
-        SSBM_BEFORE_QUERY;
+        ssb::before_query();
 
         // 1) select from lineorder
         MEASURE_OP_PAIR(pair1, (selectAN(batLQenc, static_cast<restiny_t>(26) * batLQenc->tail.metaData.AN_A, static_cast<restiny_t>(35) * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
@@ -116,10 +118,10 @@ int main(int argc, char** argv) {
         delete iter;
         delete std::get<0>(tupleF);
 
-        SSBM_AFTER_QUERY(i, result);
+        ssb::after_query(i, result);
     }
 
-    SSBM_AFTER_QUERIES;
+    ssb::after_queries();
 
     delete batDYenc;
     delete batDDenc;
@@ -128,7 +130,7 @@ int main(int argc, char** argv) {
     delete batLOenc;
     delete batLEenc;
 
-    SSBM_FINALIZE;
+    ssb::finalize();
 
     return 0;
 }

@@ -44,6 +44,8 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLEcb, new int_colbat_t("lineorder", "extendedprice"));
     MEASURE_OP(batDWcb, new tinyint_colbat_t("date", "weeknuminyear"));
 
+    ssb::after_create_columnbats();
+
     /* Measure converting (copying) ColumnBats to TempBats */
     shortint_tmpbat_t * batDYs[DMR::modularity];
     int_tmpbat_t * batDDs[DMR::modularity];
@@ -54,13 +56,13 @@ int main(int argc, char** argv) {
     tinyint_tmpbat_t * batDWs[DMR::modularity];
 
     for (size_t k = 0; k < DMR::modularity; ++k) {
-        MEASURE_OP(batDYs, [k], copy(batDYcb), batDYs[k]->size(), batDYs[k]->consumption(), batDYs[k]->consumptionProjected());
-        MEASURE_OP(batDDs, [k], copy(batDDcb), batDDs[k]->size(), batDDs[k]->consumption(), batDDs[k]->consumptionProjected());
-        MEASURE_OP(batLQs, [k], copy(batLQcb), batLQs[k]->size(), batLQs[k]->consumption(), batLQs[k]->consumptionProjected());
-        MEASURE_OP(batLDs, [k], copy(batLDcb), batLDs[k]->size(), batLDs[k]->consumption(), batLDs[k]->consumptionProjected());
-        MEASURE_OP(batLOs, [k], copy(batLOcb), batLOs[k]->size(), batLOs[k]->consumption(), batLOs[k]->consumptionProjected());
-        MEASURE_OP(batLEs, [k], copy(batLEcb), batLEs[k]->size(), batLEs[k]->consumption(), batLEs[k]->consumptionProjected());
-        MEASURE_OP(batDWs, [k], copy(batDWcb), batDWs[k]->size(), batDWs[k]->consumption(), batDWs[k]->consumptionProjected());
+        MEASURE_OP(batDYs, [k], copy(batDYcb), batDYs[k]);
+        MEASURE_OP(batDDs, [k], copy(batDDcb), batDDs[k]);
+        MEASURE_OP(batLQs, [k], copy(batLQcb), batLQs[k]);
+        MEASURE_OP(batLDs, [k], copy(batLDcb), batLDs[k]);
+        MEASURE_OP(batLOs, [k], copy(batLOcb), batLOs[k]);
+        MEASURE_OP(batLEs, [k], copy(batLEcb), batLEs[k]);
+        MEASURE_OP(batDWs, [k], copy(batDWcb), batDWs[k]);
     }
 
     delete batDYcb;
@@ -71,10 +73,10 @@ int main(int argc, char** argv) {
     delete batLEcb;
     delete batDWcb;
 
-    SSBM_BEFORE_QUERIES;
+    ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
-        SSBM_BEFORE_QUERY;
+        ssb::before_query();
 
         DMR results(0);
 
@@ -132,10 +134,10 @@ int main(int argc, char** argv) {
         // 5) Voting
         auto result = vote_majority(results);
 
-        SSBM_AFTER_QUERY(i, result);
+        ssb::after_query(i, result);
     }
 
-    SSBM_AFTER_QUERIES;
+    ssb::after_queries();
 
     for (size_t k = 0; k < DMR::modularity; ++k) {
         delete batDYs[k];
@@ -147,7 +149,7 @@ int main(int argc, char** argv) {
         delete batDWs[k];
     }
 
-    SSBM_FINALIZE;
+    ssb::finalize();
 
     return 0;
 }

@@ -96,9 +96,10 @@ namespace ahead {
                                 }
                             }
 
-                            const size_t numFilteredValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
-                            result->overwrite_size(numFilteredValues); // "register" the number of values we added
+                            const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
+                            result->overwrite_size(numSelectedValues); // "register" the number of values we added
                             auto iter = arg->begin();
+                            const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                             *iter += numFilteredValues;
                             Op<tail_t> op;
                             for (; iter->hasNext(); ++*iter) {
@@ -194,9 +195,10 @@ namespace ahead {
                                 }
                             }
 
-                            const size_t numFilteredValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
-                            result->overwrite_size(numFilteredValues); // "register" the number of values we added
+                            const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
+                            result->overwrite_size(numSelectedValues); // "register" the number of values we added
                             auto iter = arg->begin();
+                            const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                             *iter += numFilteredValues;
                             Op1<tail_t> op1;
                             Op2<tail_t> op2;

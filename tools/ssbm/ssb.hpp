@@ -188,6 +188,8 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
 
     void init(int argc, char ** argv, const char * strHeadline, size_t numOps);
     void init_pcm();
+    void clear_stats();
+    void after_create_columnbats();
     void before_queries();
     void after_queries();
     void before_query();
@@ -197,8 +199,8 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     void finalize();
 
     void print_headline();
-    void print_result(size_t start, size_t max);
-    void print_result(size_t start, size_t max, std::vector<cstr_t> const & opNames);
+    void print_result();
+    void print_result(std::vector<cstr_t> const & opNames);
 
 }
 
@@ -252,39 +254,14 @@ loadTable(tab2, ssb::ssb_config);
 #define SSBM_LOAD2(tab1, QueryString)                                          \
 loadTable(tab1, ssb::ssb_config);
 
-/////////////////////////
-// SSBM_BEFORE_QUERIES //
-/////////////////////////
-#define SSBM_BEFORE_QUERIES ssb::before_queries();
-
-///////////////////////
-// SSBM_BEFORE_QUERY //
-///////////////////////
-#define SSBM_BEFORE_QUERY ssb::before_query();
-
-//////////////////////
-// SSBM_AFTER_QUERY //
-//////////////////////
-#define SSBM_AFTER_QUERY(index, result) ssb::after_query(index, result);
-
-////////////////////////
-// SSBM_AFTER_QUERIES //
-////////////////////////
-#define SSBM_AFTER_QUERIES ssb::after_queries();
-
-///////////////////
-// SSBM_FINALIZE //
-///////////////////
-#define SSBM_FINALIZE ssb::finalize()
-
 ///////////////
 // SAVE_TYPE //
 ///////////////
 #define SAVE_TYPE(BAT)                                                         \
 ;do {                                                                          \
-	ssb::headTypes[ssb::I - 1] = BAT->type_head();                                       \
-	ssb::tailTypes[ssb::I - 1] = BAT->type_tail();                                       \
-	ssb::hasTwoTypes[ssb::I - 1] = true;                                                 \
+	ssb::headTypes.push_back(BAT->type_head());                                \
+	ssb::tailTypes.push_back(BAT->type_tail());                                \
+	ssb::hasTwoTypes.push_back(true);                                          \
 } while (false)
 
 ////////////////
@@ -292,21 +269,27 @@ loadTable(tab1, ssb::ssb_config);
 ////////////////
 #define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
 
+#define MEASURE_OP4(VAR, IDX, OP, TYPE) \
+MEASURE_OP6(VAR, IDX, OP, VAR IDX ->size(), VAR IDX ->consumption(), VAR IDX ->consumptionProjected()); \
+do { \
+    SAVE_TYPE(TYPE); \
+} while (false)
+
 #define MEASURE_OP6(TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP, STORE_PROJECTEDCONSUMPTION_OP) \
-ssb::before_op();                                                                   \
+ssb::before_op();                                                              \
 TYPE VAR = OP;                                                                 \
-ssb::after_op(); \
+ssb::after_op();                                                               \
 ;do {                                                                          \
-    ssb::batSizes[ssb::I-1] = STORE_SIZE_OP;                                               \
-    ssb::batConsumptions[ssb::I-1] = STORE_CONSUMPTION_OP;                                 \
-    ssb::batConsumptionsProj[ssb::I-1] = STORE_PROJECTEDCONSUMPTION_OP;                    \
+    ssb::batSizes.push_back(STORE_SIZE_OP);                                    \
+    ssb::batConsumptions.push_back(STORE_CONSUMPTION_OP);                      \
+    ssb::batConsumptionsProj.push_back(STORE_PROJECTEDCONSUMPTION_OP);         \
 } while (false)
 
 #define MEASURE_OP3(TYPE, VAR, OP)                                             \
 MEASURE_OP6(TYPE, VAR, OP, 1, sizeof(TYPE), sizeof(TYPE));                     \
 ;do {                                                                          \
-	ssb::headTypes[ssb::I-1] = boost::typeindex::type_id<TYPE>().type_info();            \
-	ssb::hasTwoTypes[ssb::I-1] = false;                                                  \
+	ssb::headTypes.push_back(boost::typeindex::type_id<TYPE>().type_info());   \
+	ssb::hasTwoTypes.push_back(false);                                         \
 } while (false)
 
 #define MEASURE_OP2(BAT, OP)                                                               \

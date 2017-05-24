@@ -43,6 +43,8 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLEcb, new resint_colbat_t("lineorderAN", "extendedprice"));
     MEASURE_OP(batDWcb, new restiny_colbat_t("dateAN", "weeknuminyear"));
 
+    ssb::after_create_columnbats();
+
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(batDYenc, copy(batDYcb));
     MEASURE_OP(batDDenc, copy(batDDcb));
@@ -60,10 +62,10 @@ int main(int argc, char** argv) {
     delete batLEcb;
     delete batDWcb;
 
-    SSBM_BEFORE_QUERIES;
+    ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
-        SSBM_BEFORE_QUERY;
+        ssb::before_query();
 
         // 0) Eager Check
         MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));CLEAR_CHECKANDDECODE_AN(tupleDY);
@@ -128,10 +130,10 @@ int main(int argc, char** argv) {
         delete iter;
         delete batI;
 
-        SSBM_AFTER_QUERY(i, result);
+        ssb::after_query(i, result);
     }
 
-    SSBM_AFTER_QUERIES;
+    ssb::after_queries();
 
     delete batDYenc;
     delete batDDenc;
@@ -141,7 +143,7 @@ int main(int argc, char** argv) {
     delete batLEenc;
     delete batDWenc;
 
-    SSBM_FINALIZE;
+    ssb::finalize();
 
     return 0;
 }

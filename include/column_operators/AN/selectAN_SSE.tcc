@@ -143,9 +143,10 @@ namespace ahead {
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                 }
                             }
-                            const size_t numFilteredValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
-                            result.first->overwrite_size(numFilteredValues); // "register" the number of values we added
+                            const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
+                            result.first->overwrite_size(numSelectedValues); // "register" the number of values we added
                             auto iter = arg->begin();
+                            const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                             *iter += (numFilteredValues);
                             Op<tail_t> op;
                             for (; iter->hasNext(); ++*iter, ++pos) {
@@ -300,9 +301,10 @@ namespace ahead {
                                     mmOID = v2_mm128<head_select_t>::add(mmOID, mmInc);
                                 }
                             }
-                            size_t numFilteredValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
-                            result.first->overwrite_size(numFilteredValues); // "register" the number of values we added
+                            size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
+                            result.first->overwrite_size(numSelectedValues); // "register" the number of values we added
                             auto iter = arg->begin();
+                            const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                             *iter += (numFilteredValues);
                             Op1<tail_t> op1;
                             Op2<tail_t> op2;
