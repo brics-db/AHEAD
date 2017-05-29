@@ -185,7 +185,7 @@ namespace ahead {
                         typedef v2_str_t v2_tail_select_t;
                         typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, AN_indicator_vector*> result_t;
 
-                        static result_t filter(BAT<Head, v2_str_t> * arg, str_t&& threshold1, str_t&& threshold2, str_t ATR = nullptr, str_t ATInvR = nullptr) {
+                        static result_t filter(BAT<Head, v2_str_t> * arg, str_t&& threshold1, str_t&& threshold2, __attribute__((unused)) str_t ATR = nullptr, __attribute__((unused)) str_t ATInvR = nullptr) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
                             // always encode head (void -> resoid)

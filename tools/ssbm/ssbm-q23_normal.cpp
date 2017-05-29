@@ -13,26 +13,26 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q21.cpp
+ * File:   ssbm-q23_normal.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 6. November 2016, 22:25
+ * Created on 24. May 2017, 13:40
  */
 
 #include "ssb.hpp"
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Normal\n=====================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P",
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.3 Normal\n=====================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P",
             "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.1:\n"
+    SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.3:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
             "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"
             "    and lo_partkey = p_partkey\n"
             "    and lo_suppkey = s_suppkey\n"
-            "    and p_category = 'MFGR#12'\n"
-            "    and s_region = 'AMERICA'\n"
+            "    and p_brand = 'MFGR#2239'\n"
+            "    and s_region = 'EUROPE'\n"
             "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
@@ -43,7 +43,6 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLOcb, new int_colbat_t("lineorder", "orderdate"));
     MEASURE_OP(batLRcb, new int_colbat_t("lineorder", "revenue"));
     MEASURE_OP(batPPcb, new int_colbat_t("part", "partkey"));
-    MEASURE_OP(batPCcb, new str_colbat_t("part", "category"));
     MEASURE_OP(batPBcb, new str_colbat_t("part", "brand"));
     MEASURE_OP(batSScb, new int_colbat_t("supplier", "suppkey"));
     MEASURE_OP(batSRcb, new str_colbat_t("supplier", "region"));
@@ -58,7 +57,6 @@ int main(int argc, char** argv) {
     MEASURE_OP(batLO, copy(batLOcb));
     MEASURE_OP(batLR, copy(batLRcb));
     MEASURE_OP(batPP, copy(batPPcb));
-    MEASURE_OP(batPC, copy(batPCcb));
     MEASURE_OP(batPB, copy(batPBcb));
     MEASURE_OP(batSS, copy(batSScb));
     MEASURE_OP(batSR, copy(batSRcb));
@@ -70,7 +68,6 @@ int main(int argc, char** argv) {
     delete batLOcb;
     delete batLRcb;
     delete batPPcb;
-    delete batPCcb;
     delete batPBcb;
     delete batSScb;
     delete batSRcb;
@@ -81,7 +78,7 @@ int main(int argc, char** argv) {
         ssb::before_query();
 
         // s_region = 'AMERICA'
-        MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+        MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("EUROPE"))); // OID supplier | s_region
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batSS->reverse(); // s_suppkey | OID supplier
@@ -98,7 +95,7 @@ int main(int argc, char** argv) {
         delete bat6;
 
         // p_category = 'MFGR#12'
-        MEASURE_OP(bat8, select<std::equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
+        MEASURE_OP(bat8, select<std::equal_to>(batPB, const_cast<str_t>("MFGR#2239"))); // OID part | p_category
         // p_brand = 'MFGR#121'
         // MEASURE_OP(bat8, select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
@@ -188,7 +185,6 @@ int main(int argc, char** argv) {
     delete batLO;
     delete batLR;
     delete batPP;
-    delete batPC;
     delete batPB;
     delete batSS;
     delete batSR;

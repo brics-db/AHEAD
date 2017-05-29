@@ -209,7 +209,7 @@ namespace ahead {
                 template<typename Head1, typename Tail1, typename Head2, bool reencode>
                 struct hashjoinANunencHashmap<Head1, Tail1, Head2, v2_str_t, reencode> {
 
-                    typedef typename Head1::v2_select_t head1_v2_select_t;
+                    typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t head1_v2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
                     typedef typename H1Enc::type_t h1enc_t;
                     typedef typename TypeMap<Tail1>::v2_encoded_t T1Enc;

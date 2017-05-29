@@ -60,13 +60,14 @@ V2_SELECT2(V2TYPE)
 
 #define V2_SELECT_STR(V2TYPE) \
 template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1);
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
+V2_SELECT2(V2TYPE);
 
             V2_SELECT(v2_tinyint_t)
             V2_SELECT(v2_shortint_t)
             V2_SELECT(v2_int_t)
             V2_SELECT(v2_bigint_t)
-            V2_SELECT_STR(v2_str_t)
+            V2_SELECT(v2_str_t)
             V2_SELECT(v2_resoid_t)
             V2_SELECT(v2_restiny_t)
             V2_SELECT(v2_resshort_t)
