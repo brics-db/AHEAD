@@ -132,18 +132,12 @@ namespace ahead {
             }
 
 #define V2_SELECT2_AN_SUB(SELECT, V2TYPE) \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::not_equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::not_equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2);
+extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> selectAN<std::greater, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
+extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> selectAN<std::greater_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
+extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> selectAN<std::equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
+extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> selectAN<std::less_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
+extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> selectAN<std::less, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
+extern template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> selectAN<std::not_equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2);
 
 #define V2_SELECT2_AN(V2TYPE) \
 V2_SELECT2_AN_SUB(std::greater, V2TYPE) \
@@ -154,18 +148,12 @@ V2_SELECT2_AN_SUB(std::less, V2TYPE) \
 V2_SELECT2_AN_SUB(std::not_equal_to, V2TYPE)
 
 #define V2_SELECT1_AN(V2HEAD, V2TAIL) \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater_equal, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::equal_to, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less_equal, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::not_equal_to, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater_equal, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::equal_to, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less_equal, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
-extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::not_equal_to, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1);
+extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> selectAN<std::greater, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
+extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> selectAN<std::greater_equal, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
+extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> selectAN<std::equal_to, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
+extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> selectAN<std::less_equal, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
+extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> selectAN<std::less, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1); \
+extern template std::pair<BAT<typename TypeMap<V2HEAD>::v2_encoded_t::v2_select_t, typename V2TAIL::v2_select_t>*, AN_indicator_vector*> selectAN<std::not_equal_to, V2HEAD, V2TAIL> (BAT<V2HEAD, V2TAIL>* arg, typename V2TAIL::type_t && th1);
 
 #define V2_SELECT_AN(V2TAIL) \
 V2_SELECT1_AN(v2_void_t, V2TAIL) \
@@ -185,13 +173,24 @@ V2_SELECT1_AN(v2_resbigint_t, V2TAIL) \
 V2_SELECT1_AN(v2_resstr_t, V2TAIL) \
 V2_SELECT2_AN(V2TAIL)
 
-            V2_SELECT_AN(v2_restiny_t)
-            V2_SELECT_AN(v2_resshort_t)
-            V2_SELECT_AN(v2_resint_t)
-            V2_SELECT_AN(v2_resbigint_t)
-            V2_SELECT_AN(v2_resstr_t)
+            namespace scalar {
+                V2_SELECT_AN(v2_restiny_t)
+                V2_SELECT_AN(v2_resshort_t)
+                V2_SELECT_AN(v2_resint_t)
+                V2_SELECT_AN(v2_resbigint_t)
+                V2_SELECT_AN(v2_resstr_t)
+            }
+
+            namespace sse {
+                V2_SELECT_AN(v2_restiny_t)
+                V2_SELECT_AN(v2_resshort_t)
+                V2_SELECT_AN(v2_resint_t)
+                V2_SELECT_AN(v2_resbigint_t)
+                V2_SELECT_AN(v2_resstr_t)
+            }
 
 #undef V2_SELECT_AN
+#undef V2_SELECT1_AN
 #undef V2_SELECT2_AN
 #undef V2_SELECT2_AN_SUB
 
@@ -326,8 +325,7 @@ V2_MATCHJOIN_AN_SUB2(H1, v2_resbigint_t)
 #undef V2_MATCHJOIN_AN_SUB4
 
 #define V2_AGGREGATE_MUL_SUM_AN(Result, ResEnc, Head1, Tail1, Head2, Tail2) \
-extern template std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> scalar::aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init, typename ResEnc::type_t RA, typename ResEnc::type_t RAInv); \
-extern template std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> sse::aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init, typename ResEnc::type_t RA, typename ResEnc::type_t RAInv);
+extern template std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init, typename ResEnc::type_t RA, typename ResEnc::type_t RAInv);
 
 #define V2_AGGREGATE_MUL_SUM_AN_SUB(Result, Tail1, Tail2) \
 V2_AGGREGATE_MUL_SUM_AN(CONCAT(v2_, Result, _t), CONCAT(v2_, Result, _t), v2_void_t, CONCAT(v2_, Tail1, _t), v2_void_t, CONCAT(v2_, Tail2, _t)) \
@@ -375,23 +373,33 @@ V2_AGGREGATE_MUL_SUM_AN(CONCAT(v2_, Result, _t), CONCAT(v2_, Result, _t), v2_res
 V2_AGGREGATE_MUL_SUM_AN(CONCAT(v2_, Result, _t), CONCAT(v2_, Result, _t), v2_resoid_t, CONCAT(v2_res, Tail1, _t), v2_oid_t, CONCAT(v2_res, Tail2, _t)) \
 V2_AGGREGATE_MUL_SUM_AN(CONCAT(v2_, Result, _t), CONCAT(v2_, Result, _t), v2_resoid_t, CONCAT(v2_res, Tail1, _t), v2_resoid_t, CONCAT(v2_res, Tail2, _t))
 
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resshort, tinyint, tinyint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resint, tinyint, tinyint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, tinyint, tinyint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resint, tinyint, shortint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resint, shortint, tinyint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, tinyint, shortint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, shortint, tinyint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, tinyint, int)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, tinyint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, shortint, int)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, shortint)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, int)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, bigint, int)
-            V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, bigint)
+#define AHEAD_AGGREGATE_MUL_SUM_AN \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resshort, tinyint, tinyint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resint, tinyint, tinyint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, tinyint, tinyint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resint, tinyint, shortint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resint, shortint, tinyint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, tinyint, shortint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, shortint, tinyint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, tinyint, int) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, tinyint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, shortint, int) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, shortint) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, int) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, bigint, int) \
+V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, bigint)
+
+            namespace scalar {
+                AHEAD_AGGREGATE_MUL_SUM_AN
+            }
+
+            namespace sse {
+                AHEAD_AGGREGATE_MUL_SUM_AN
+            }
 
 #undef V2_AGGREGATE_MUL_SUM_AN_SUB
 #undef V2_AGGREGATE_MUL_SUM_AN
+#undef AHEAD_AGGREGATE_MUL_SUM_AN
 
         }
     }
