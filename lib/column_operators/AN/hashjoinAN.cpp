@@ -19,7 +19,8 @@
  * Created on 10-04-2017 22:14
  */
 
-#include <column_operators/AN/hashjoinAN.tcc>
+#include <column_operators/ANbase.hpp>
+#include "hashjoinAN.tcc"
 
 namespace ahead {
     namespace bat {

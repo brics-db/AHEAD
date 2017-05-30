@@ -25,9 +25,9 @@
 #include <type_traits>
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/SSE.hpp>
-#include <column_operators/SSECMP.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
+#include "../SSE.hpp"
+#include "../SSECMP.hpp"
+#include "../miscellaneous.hpp"
 
 namespace ahead {
     namespace bat {

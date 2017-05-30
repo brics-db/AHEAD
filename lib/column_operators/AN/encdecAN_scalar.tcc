@@ -25,7 +25,8 @@
 #include <type_traits>
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
+#include <column_operators/ANbase.hpp>
+#include "../miscellaneous.hpp"
 
 namespace ahead {
     namespace bat {
@@ -78,7 +79,8 @@ namespace ahead {
                 }
 
                 template<typename Head, typename ResTail>
-                std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*> decodeAN(BAT<Head, ResTail>* arg) {
+                std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*>
+                decodeAN(BAT<Head, ResTail>* arg) {
 
                     typedef typename ResTail::type_t restail_t;
                     typedef typename ResTail::v2_unenc_t Tail;
@@ -188,7 +190,8 @@ namespace ahead {
                 }
 
                 template<typename Head, typename Tail>
-                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*> checkAndDecodeAN(BAT<Head, Tail>* arg) {
+                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
+                checkAndDecodeAN(BAT<Head, Tail>* arg) {
                     return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg);
                 }
 

@@ -26,9 +26,9 @@
 
 #include <immintrin.h>
 
-#include <column_operators/SSE.hpp>
-#include <column_operators/SSECMP.hpp>
-#include <column_operators/AN/ANbase.hpp>
+#include <column_operators/ANbase.hpp>
+#include "../SSE.hpp"
+#include "../SSECMP.hpp"
 
 namespace ahead {
     namespace bat {

@@ -3,7 +3,7 @@
 #include <random>
 #include <array>
 #include <omp.h>
-#include "../../include/column_operators/SSE.hpp"
+#include "SSE.hpp"
 #include "../../include/util/stopwatch.hpp"
 
 #ifndef NPROCS

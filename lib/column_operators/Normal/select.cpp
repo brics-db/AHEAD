@@ -19,7 +19,7 @@
  * Created on 10-04-2017 22:03
  */
 
-#include <column_operators/Normal/select.tcc>
+#include "select.tcc"
 
 namespace ahead {
     namespace bat {
@@ -63,6 +63,8 @@ template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::equal_
 template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
 V2_SELECT2(V2TYPE);
 
+            V2_SELECT(v2_id_t)
+            V2_SELECT(v2_size_t)
             V2_SELECT(v2_tinyint_t)
             V2_SELECT(v2_shortint_t)
             V2_SELECT(v2_int_t)

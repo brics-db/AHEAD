@@ -19,17 +19,16 @@
  * Created on 23. November 2016, 00:28
  */
 
-#ifndef AGGREGATE_SSE_TCC
-#define AGGREGATE_SSE_TCC
+#ifndef AGGREGATE_SEQ_TCC
+#define AGGREGATE_SEQ_TCC
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/SSE.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
+#include "../miscellaneous.hpp"
 
 namespace ahead {
     namespace bat {
         namespace ops {
-            namespace sse {
+            namespace scalar {
 
                 /**
                  * Simple sum of all tail values in a Bat
@@ -37,7 +36,8 @@ namespace ahead {
                  * @return a single sum value
                  */
                 template<typename v2_result_t, typename Head, typename Tail>
-                typename v2_result_t::type_t aggregate_sum(BAT<Head, Tail>* arg) {
+                typename v2_result_t::type_t
+                aggregate_sum(BAT<Head, Tail>* arg) {
                     typedef typename v2_result_t::type_t result_t;
                     result_t sum = 0;
                     auto iter = arg->begin();
@@ -57,30 +57,15 @@ namespace ahead {
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
                 BAT<v2_void_t, Result>*
                 aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0)) {
-                    typedef typename Tail1::type_t tail1_t;
-                    typedef typename Tail2::type_t tail2_t;
                     typedef typename Result::type_t result_t;
-                    oid_t szTail1 = arg1->tail.container->size();
-                    oid_t szTail2 = arg2->tail.container->size();
-                    auto pT1 = arg1->tail.container->data();
-                    auto pT1End = pT1 + szTail1;
-                    auto pmmT1 = reinterpret_cast<__m128i *>(pT1);
-                    auto pmmT1End = reinterpret_cast<__m128i *>(pT1End);
-                    auto pT2 = arg2->tail.container->data();
-                    auto pT2End = pT2 + szTail2;
-                    auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
-                    auto pmmT2End = reinterpret_cast<__m128i *>(pT2End);
-                    auto mmTotal = v2_mm128<result_t>::set1(0);
-                    size_t inc1 = 0, inc2 = 0;
-                    for (; (pmmT1 <= (pmmT1End - 1)) && (pmmT2 <= (pmmT2End - 1)); pmmT1 += inc1, pmmT2 += inc2) {
-                        mmTotal = v2_mm128<result_t>::add(mmTotal, v2_mm128_mul_add<tail1_t, tail2_t, result_t>(pmmT1, pmmT2, inc1, inc2));
+                    auto iter1 = arg1->begin();
+                    auto iter2 = arg2->begin();
+                    result_t total = init;
+                    for (; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
+                        total += (static_cast<result_t>(iter1->tail()) * static_cast<result_t>(iter2->tail()));
                     }
-                    result_t total = init + v2_mm128<result_t>::sum(mmTotal);
-                    pT1 = reinterpret_cast<tail1_t*>(pmmT1);
-                    pT2 = reinterpret_cast<tail2_t*>(pmmT2);
-                    for (; pT1 < pT1End && pT2 < pT2End; ++pT1, ++pT2) {
-                        total += *pT1 * *pT2;
-                    }
+                    delete iter2;
+                    delete iter1;
                     auto bat = new TempBAT<v2_void_t, Result>;
                     bat->append(total);
                     return bat;
@@ -91,4 +76,4 @@ namespace ahead {
     }
 }
 
-#endif /* AGGREGATE_SSE_TCC */
+#endif /* AGGREGATE_SEQ_TCC */

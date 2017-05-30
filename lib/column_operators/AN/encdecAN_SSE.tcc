@@ -26,10 +26,9 @@
 #include <immintrin.h>
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/SSE.hpp>
-#include <column_operators/SSECMP.hpp>
-#include <column_operators/SSEAN.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
+#include <column_operators/ANbase.hpp>
+#include "SSEAN.hpp"
+#include "../miscellaneous.hpp"
 
 namespace ahead {
     namespace bat {
@@ -293,7 +292,8 @@ namespace ahead {
                 }
 
                 template<typename Head, typename Tail>
-                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*> checkAndDecodeAN(BAT<Head, Tail>* arg) {
+                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
+                checkAndDecodeAN(BAT<Head, Tail>* arg) {
                     return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg);
                 }
 

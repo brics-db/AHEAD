@@ -19,7 +19,7 @@
  * Created on 10-04-2017 22:02
  */
 
-#include <column_operators/Normal/groupby.tcc>
+#include "groupby.tcc"
 
 namespace ahead {
     namespace bat {

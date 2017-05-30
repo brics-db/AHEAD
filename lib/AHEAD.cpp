@@ -19,6 +19,8 @@
  * Created on 04-04-2017 10:50
  */
 
+#include <cassert>
+
 #include <AHEAD.hpp>
 #include <column_storage/Storage.hpp>
 #include <column_operators/Operators.hpp>

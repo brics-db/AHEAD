@@ -21,7 +21,7 @@
  * Created on 25. Februar 2017, 23:48
  */
 
-#include <column_operators/SSE.hpp>
+#include "SSE.hpp"
 
 namespace ahead {
     namespace bat {

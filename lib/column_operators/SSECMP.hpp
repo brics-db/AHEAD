@@ -26,7 +26,7 @@
 
 #include <immintrin.h>
 
-#include <column_operators/SSE.hpp>
+#include "SSE.hpp"
 
 namespace ahead {
     namespace bat {

@@ -19,7 +19,8 @@
  * Created on 10-04-2017 22:11
  */
 
-#include <column_operators/AN/aggregateAN.tcc>
+#include <column_operators/ANbase.hpp>
+#include "aggregateAN.tcc"
 
 namespace ahead {
     namespace bat {

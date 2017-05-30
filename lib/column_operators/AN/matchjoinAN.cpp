@@ -19,7 +19,8 @@
  * Created on 10-04-2017 22:14
  */
 
-#include <column_operators/AN/matchjoinAN.tcc>
+#include <column_operators/ANbase.hpp>
+#include "matchjoinAN.tcc"
 
 namespace ahead {
     namespace bat {

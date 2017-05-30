@@ -36,20 +36,74 @@
  * @author Dirk Habich
  * @author Till Kolditz <Till.Kolditz@gmail.com>
  */
-#ifndef OPERATORS_H
-#define OPERATORS_H
+#ifndef OPERATORS_HPP
+#define OPERATORS_HPP
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
-#include <column_operators/Normal/select.tcc>
-#include <column_operators/Normal/hashjoin.tcc>
-#include <column_operators/Normal/matchjoin.tcc>
-#include <column_operators/Normal/aggregate.tcc>
-#include <column_operators/Normal/groupby.tcc>
 
 namespace ahead {
     namespace bat {
         namespace ops {
+
+            template<typename Head, typename Tail>
+            TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
+            copy(BAT<Head, Tail>* arg);
+
+            template<typename H1, typename T1, typename H2, typename T2>
+            BAT<typename H1::v2_select_t, typename T2::v2_select_t>*
+            matchjoin(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2);
+
+            template<typename H1, typename T1, typename H2, typename T2>
+            BAT<typename H1::v2_select_t, typename T2::v2_select_t>*
+            hashjoin(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, hash_side_t side = hash_side_t::right);
+
+            template<typename Head, typename Tail>
+            std::pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*>
+            groupby(BAT<Head, Tail>* bat);
+
+            template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
+            std::tuple<TempBAT<v2_void_t, V2Result>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail2>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail3>*>
+            groupedSum(BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2, BAT<Head3, Tail3>* bat3);
+
+            namespace scalar {
+                // SELECT
+                template<template<typename > class Op, typename Head, typename Tail>
+                BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1);
+
+                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1, typename Tail::type_t && th2);
+
+                // AGGREGATE
+                template<typename v2_result_t, typename Head, typename Tail>
+                typename v2_result_t::type_t
+                aggregate_sum(BAT<Head, Tail>* arg);
+
+                template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, Result>*
+                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0));
+            }
+
+            namespace sse {
+                // SELECT
+                template<template<typename > class Op, typename Head, typename Tail>
+                BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1);
+
+                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1, typename Tail::type_t && th2);
+
+                // AGGREGATE
+                template<typename v2_result_t, typename Head, typename Tail>
+                typename v2_result_t::type_t
+                aggregate_sum(BAT<Head, Tail>* arg);
+
+                template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, Result>*
+                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0));
+            }
 
 #define V2_COPY(V2TYPE) \
 extern template TempBAT<v2_void_t, V2TYPE>* copy(BAT<v2_void_t, V2TYPE>* arg); \
@@ -342,4 +396,4 @@ extern template BAT<v2_void_t, V2RESULT> * sse::aggregate_mul_sum<V2RESULT, v2_o
     }
 }
 
-#endif
+#endif /* OPERATORS_HPP */

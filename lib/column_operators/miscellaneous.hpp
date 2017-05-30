@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Till Kolditz
+// Copyright (c) 2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,14 +13,13 @@
 // limitations under the License.
 
 /* 
- * File:   miscellaneous.tcc
+ * File:   miscellaneous.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 22. November 2016, 21:00
+ * Created on 30-05-2017 10:01
  */
-
-#ifndef MISCELLANEOUS_TCC
-#define MISCELLANEOUS_TCC
+#ifndef LIB_COLUMN_OPERATORS_MISCELLANEOUS_HPP_
+#define LIB_COLUMN_OPERATORS_MISCELLANEOUS_HPP_
 
 #include <column_storage/Storage.hpp>
 
@@ -28,15 +27,9 @@ namespace ahead {
     namespace bat {
         namespace ops {
 
-            typedef enum {
-
-                left, right
-            } hash_side_t;
-
             namespace Private {
 
                 struct eqstr {
-
                     bool operator()(str_t s1, str_t s2) const {
                         if (s1 == nullptr) {
                             return s2 == nullptr;
@@ -53,7 +46,6 @@ namespace ahead {
                  * http://stackoverflow.com/questions/15518418/whats-behind-the-hashcode-method-for-string-in-java
                  */
                 struct hashstr {
-
                     size_t operator()(str_t const &s) const {
                         size_t len = std::strlen(s);
                         size_t hash(0), multiplier(1);
@@ -103,54 +95,8 @@ namespace ahead {
                 return new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
             }
 
-            namespace Private {
-
-                template<typename Head, typename Tail>
-                struct copy {
-
-                    typedef typename Head::v2_copy_t CHead;
-                    typedef typename Tail::v2_copy_t CTail;
-
-                    static TempBAT<CHead, CTail> *
-                    run(BAT<Head, Tail> * arg) {
-                        auto result = skeleton<CHead, CTail>(arg);
-                        result->reserve(arg->size());
-                        auto *iter = arg->begin();
-                        for (; iter->hasNext(); ++*iter) {
-                            result->append(std::make_pair(iter->head(), iter->tail()));
-                        }
-                        delete iter;
-                        return result;
-                    }
-                };
-
-                template<typename Tail>
-                struct copy<v2_void_t, Tail> {
-
-                    typedef typename Tail::v2_copy_t CTail;
-
-                    static TempBAT<v2_void_t, CTail> *
-                    run(BAT<v2_void_t, Tail> * arg) {
-                        auto result = skeleton<v2_void_t, CTail>(arg);
-                        result->reserve(arg->size());
-                        auto *iter = arg->begin();
-                        for (; iter->hasNext(); ++*iter) {
-                            result->append(iter->tail());
-                        }
-                        delete iter;
-                        return result;
-                    }
-                };
-
-            }
-
-            template<typename Head, typename Tail>
-            TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
-            copy(BAT<Head, Tail>* arg) {
-                return Private::copy<typename Head::v2_copy_t, typename Tail::v2_copy_t>::run(arg);
-            }
         }
     }
 }
 
-#endif /* MISCELLANEOUS_TCC */
+#endif /* LIB_COLUMN_OPERATORS_MISCELLANEOUS_HPP_ */

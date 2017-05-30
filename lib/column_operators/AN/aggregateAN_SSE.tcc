@@ -25,11 +25,10 @@
 #include <type_traits>
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/SSE.hpp>
-#include <column_operators/SSECMP.hpp>
-#include <column_operators/SSEAN.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
 #include <util/v2typeconversion.hpp>
+#include <column_operators/ANbase.hpp>
+#include "SSEAN.hpp"
+#include "../miscellaneous.hpp"
 
 namespace ahead {
     namespace bat {

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <random>
-#include "../../include/column_operators/SSE.hpp"
+#include "SSE.hpp"
 #include "../../include/util/stopwatch.hpp"
 
 template<typename T>

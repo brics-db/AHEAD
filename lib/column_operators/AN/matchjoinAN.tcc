@@ -30,7 +30,8 @@
 #include <google/dense_hash_map>
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
+#include <column_operators/ANbase.hpp>
+#include "../miscellaneous.hpp"
 
 using boost::multiprecision::uint128_t;
 

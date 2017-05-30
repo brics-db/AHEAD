@@ -25,7 +25,7 @@
 #include <limits>
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
+#include "../miscellaneous.hpp"
 
 namespace ahead {
     namespace bat {

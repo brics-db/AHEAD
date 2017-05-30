@@ -19,7 +19,7 @@
  * Created on 10-04-2017 22:03
  */
 
-#include <column_operators/Normal/miscellaneous.tcc>
+#include "miscellaneous.tcc"
 
 namespace ahead {
     namespace bat {

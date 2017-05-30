@@ -25,8 +25,8 @@
 #include <type_traits>
 
 #include <column_storage/Storage.hpp>
-#include <column_operators/Normal/miscellaneous.tcc>
-#include "ANbase.hpp"
+#include <column_operators/ANbase.hpp>
+#include "../miscellaneous.hpp"
 
 namespace ahead {
     namespace bat {

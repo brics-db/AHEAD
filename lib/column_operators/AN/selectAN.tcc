@@ -25,8 +25,7 @@
 #include <type_traits>
 
 #include <column_storage/Storage.hpp>
-#include "ANbase.hpp"
-
+#include <column_operators/ANbase.hpp>
 #include "selectAN_SSE.tcc"
 #include "selectAN_seq.tcc"
 

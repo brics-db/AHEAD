@@ -19,7 +19,8 @@
  * Created on 10-04-2017 22:10
  */
 
-#include <column_operators/AN/selectAN.tcc>
+#include <column_operators/ANbase.hpp>
+#include "selectAN.tcc"
 
 namespace ahead {
     namespace bat {
