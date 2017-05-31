@@ -96,8 +96,8 @@ int main(int argc, char** argv) {
         DMR results( {nullptr, nullptr, nullptr, nullptr, nullptr});
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
-            // s_region = 'AMERICA'
-            MEASURE_OP(bat1, select<std::equal_to>(batSRs[k], const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+            // s_region = 'ASIA'
+            MEASURE_OP(bat1, select<std::equal_to>(batSRs[k], const_cast<str_t>("ASIA"))); // OID supplier | s_region
             auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
             delete bat1;
             auto bat3 = batSSs[k]->reverse(); // s_suppkey | OID supplier

@@ -78,8 +78,8 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        // s_region = 'AMERICA'
-        MEASURE_OP_PAIR(pair1, selectAN<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+        // s_region = 'ASIA'
+        MEASURE_OP_PAIR(pair1, selectAN<std::equal_to>(batSR, const_cast<str_t>("ASIA"))); // OID supplier | s_region
         CLEAR_SELECT_AN(pair1);
         auto bat2 = std::get<0>(pair1)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(pair1);
