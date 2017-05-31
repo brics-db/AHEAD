@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        // s_region = 'AMERICA'
+        // s_region = 'ASIA'
         MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("ASIA"))); // OID supplier | s_region
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
         MEASURE_OP(bat7, matchjoin(bat6, batLP)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
-        // p_category between 'MFGR#2221' and 'MFGR#2228'
+        // p_brand between 'MFGR#2221' and 'MFGR#2228'
         MEASURE_OP(bat8, select(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         auto batA = batPP->reverse(); // p_partkey | OID part

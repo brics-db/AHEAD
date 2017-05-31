@@ -115,8 +115,8 @@ int main(int argc, char** argv) {
             MEASURE_OP(bat7, matchjoin(bat6, batLPs[k])); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
             delete bat6;
 
-            // p_category between 'MFGR#2221' and 'MFGR#2228'
-            MEASURE_OP(bat8, select(batPBs[k], const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_category
+            // p_brand between 'MFGR#2221' and 'MFGR#2228'
+            MEASURE_OP(bat8, select(batPBs[k], const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
             auto bat9 = bat8->mirror_head(); // OID part | OID part
             auto batA = batPPs[k]->reverse(); // p_partkey | OID part
             MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'

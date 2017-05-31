@@ -13,27 +13,27 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q22_late.cpp
+ * File:   ssbm-q23_early.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 29. May 2017, 22:27
+ * Created on 31. May 2017, 15:36
  */
 
 #include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.2 Late Detection\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
-            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.3 Early Detection\n==============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L",
+            "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.2:\n"
+    SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.3:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"
             "    and lo_partkey = p_partkey\n"
             "    and lo_suppkey = s_suppkey\n"
-            "    and p_brand between 'MFGR#2221' and 'MFGR#2228'\n"
-            "    and s_region = 'ASIA'\n"
+            "    and p_brand = 'MFGR#2239'\n"
+            "    and s_region = 'EUROPE'\n"
             "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
@@ -78,27 +78,39 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        // s_region = 'ASIA'
-        MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("ASIA"))); // OID supplier | s_region
+        // 0) Eager Check
+        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));CLEAR_CHECKANDDECODE_AN(tupleDD);
+        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));CLEAR_CHECKANDDECODE_AN(tupleDY);
+        MEASURE_OP_TUPLE(tupleLP, checkAndDecodeAN(batLPenc));CLEAR_CHECKANDDECODE_AN(tupleLP);
+        MEASURE_OP_TUPLE(tupleLS, checkAndDecodeAN(batLSenc));CLEAR_CHECKANDDECODE_AN(tupleLS);
+        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));CLEAR_CHECKANDDECODE_AN(tupleLO);
+        MEASURE_OP_TUPLE(tupleLR, checkAndDecodeAN(batLRenc));CLEAR_CHECKANDDECODE_AN(tupleLR);
+        MEASURE_OP_TUPLE(tuplePP, checkAndDecodeAN(batPPenc));CLEAR_CHECKANDDECODE_AN(tuplePP);
+        MEASURE_OP_TUPLE(tupleSS, checkAndDecodeAN(batSSenc));CLEAR_CHECKANDDECODE_AN(tupleSS);
+
+        // s_region = 'EUROPE'
+        MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("EUROPE"))); // OID supplier | s_region
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
-        auto bat3 = batSSenc->reverse(); // s_suppkey | OID supplier
+        auto bat3 = std::get<0>(tupleSS)->reverse(); // s_suppkey | OID supplier
+        delete std::get<0>(tupleSS);
         MEASURE_OP(bat4, matchjoin(bat3, bat2)); // s_suppkey | OID supplier
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP(bat5, hashjoin(batLSenc, bat4)); // OID lineorder | OID supplier
+        MEASURE_OP(bat5, hashjoin(std::get<0>(tupleLS), bat4)); // OID lineorder | OID supplier
+        delete std::get<0>(tupleLS);
         delete bat4;
         // join with LO_PARTKEY to already reduce the join partners
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID Lineorder
         delete bat5;
-        MEASURE_OP(bat7, matchjoin(bat6, batLPenc)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
+        MEASURE_OP(bat7, matchjoin(bat6, std::get<0>(tupleLP))); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
-        // p_brand between 'MFGR#2221' and 'MFGR#2228'
-        MEASURE_OP(bat8, select(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
+        // p_brand = 'MFGR#2239'
+        MEASURE_OP(bat8, select<std::equal_to>(batPB, const_cast<str_t>("MFGR#2239"))); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
-        auto batA = batPPenc->reverse(); // p_partkey | OID part
+        auto batA = std::get<0>(tuplePP)->reverse(); // p_partkey | OID part
         MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
         delete batA;
         delete bat9;
@@ -109,17 +121,21 @@ int main(int argc, char** argv) {
         // join with date now!
         auto batE = batC->mirror_head(); // OID lineorder | OID lineorder  (where ...)
         delete batC;
-        MEASURE_OP(batF, matchjoin(batE, batLOenc)); // OID lineorder | lo_orderdate (where ...)
+        MEASURE_OP(batF, matchjoin(batE, std::get<0>(tupleLO))); // OID lineorder | lo_orderdate (where ...)
         delete batE;
-        auto batH = batDDenc->reverse(); // d_datekey | OID date
+        delete std::get<0>(tupleLO);
+        auto batH = std::get<0>(tupleDD)->reverse(); // d_datekey | OID date
+        delete std::get<0>(tupleDD);
         MEASURE_OP(batI, hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
         delete batF;
         delete batH;
 
-        // now prepare grouped sum and check inputs
+        // now prepare grouped sum
         auto batW = batI->mirror_head(); // OID lineorder | OID lineorder
-        MEASURE_OP(batX, matchjoin(batW, batLPenc)); // OID lineorder | lo_partkey
-        auto batY = batPPenc->reverse(); // p_partkey | OID part
+        MEASURE_OP(batX, matchjoin(batW, std::get<0>(tupleLP))); // OID lineorder | lo_partkey
+        delete std::get<0>(tupleLP);
+        auto batY = std::get<0>(tuplePP)->reverse(); // p_partkey | OID part
+        delete std::get<0>(tuplePP);
         MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
@@ -127,20 +143,18 @@ int main(int argc, char** argv) {
         delete batZ;
         delete bat8;
 
-        MEASURE_OP(batA2enc, hashjoin(batI, batDYenc)); // OID lineorder | d_year
+        MEASURE_OP(batA2, hashjoin(batI, std::get<0>(tupleDY))); // OID lineorder | d_year
         delete batI;
-        MEASURE_OP_TUPLE(tupleA2, checkAndDecodeAN(batA2enc));CLEAR_CHECKANDDECODE_AN(tupleA2);
-        delete batA2enc;
+        delete std::get<0>(tupleDY);
 
-        MEASURE_OP(batA3enc, matchjoin(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
+        MEASURE_OP(batA3, matchjoin(batW, std::get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
         delete batW;
-        MEASURE_OP_TUPLE(tupleA3, checkAndDecodeAN(batA3enc));CLEAR_CHECKANDDECODE_AN(tupleA3);
-        delete batA3enc;
+        delete std::get<0>(tupleLR);
 
-        MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(std::get<0>(tupleA3), std::get<0>(tupleA2), batA1));
+        MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(batA3, batA2, batA1));
         delete batA1;
-        delete std::get<0>(tupleA2);
-        delete std::get<0>(tupleA3);
+        delete batA2;
+        delete batA3;
 
         auto szResult = std::get<0>(tupleK)->size();
 

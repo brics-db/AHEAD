@@ -231,7 +231,7 @@ namespace ahead {
     struct TypeMap<v2_str_t> {
 
         typedef v2_str_t v2_base_t;
-        typedef v2_resstr_t v2_encoded_t;
+        typedef v2_str_t v2_encoded_t;
         typedef v2_str_t v2_actual_t;
         static cstrc_t TYPENAME;
     };

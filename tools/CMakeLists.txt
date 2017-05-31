@@ -123,13 +123,13 @@ ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuou
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
 ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc \
 ssbm-q22_normal ssbm-q22_dmr_seq ssbm-q22_early ssbm-q22_late ssbm-q22_continuous ssbm-q22_continuous_reenc \
-ssbm-q23_normal")
+ssbm-q23_normal ssbm-q23_dmr_seq ssbm-q23_early ssbm-q23_late ssbm-q23_continuous ssbm-q23_continuous_reenc")
 add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
 ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc \
 ssbm-q22_normal ssbm-q22_dmr_seq ssbm-q22_early ssbm-q22_late ssbm-q22_continuous ssbm-q22_continuous_reenc \
-ssbm-q23_normal")
+ssbm-q23_normal ssbm-q23_dmr_seq ssbm-q23_early ssbm-q23_late ssbm-q23_continuous ssbm-q23_continuous_reenc")
 
 ##############
 ### OPENMP ###
@@ -147,10 +147,10 @@ FIND_PACKAGE(OpenMP)
 
 IF(OPENMP_FOUND)
 	MESSAGE("Generating OpenMP targets")
-	add_ssb("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt ssbm-q22_dmr_mt")
-	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt ssbm-q22_dmr_mt")
-	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q21_dmr_mt_seq ssbm-q22_dmr_mt_seq \
-ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE")
+	add_ssb("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt")
+	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt")
+	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q21_dmr_mt_seq ssbm-q22_dmr_mt_seq ssbm-q23_dmr_mt_seq \
+ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE ssbm-q23_dmr_mt_SSE")
 ELSE(OPENMP_FOUND)
 	MESSAGE(WARNING "OpenMP not found!")
 ENDIF(OPENMP_FOUND)

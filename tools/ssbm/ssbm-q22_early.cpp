@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
         MEASURE_OP(bat7, matchjoin(bat6, std::get<0>(tupleLP))); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
-        // p_category between 'MFGR#2221' and 'MFGR#2228'
+        // p_brand between 'MFGR#2221' and 'MFGR#2228'
         MEASURE_OP(bat8, select(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         auto batA = std::get<0>(tuplePP)->reverse(); // p_partkey | OID part

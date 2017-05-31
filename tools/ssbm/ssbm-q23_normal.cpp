@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        // s_region = 'AMERICA'
+        // s_region = 'EUROPE'
         MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("EUROPE"))); // OID supplier | s_region
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
@@ -94,12 +94,9 @@ int main(int argc, char** argv) {
         MEASURE_OP(bat7, matchjoin(bat6, batLP)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
-        // p_category = 'MFGR#12'
-        MEASURE_OP(bat8, select<std::equal_to>(batPB, const_cast<str_t>("MFGR#2239"))); // OID part | p_category
-        // p_brand = 'MFGR#121'
-        // MEASURE_OP(bat8, select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
+        // p_brand = 'MFGR#2239'
+        MEASURE_OP(bat8, select<std::equal_to>(batPB, const_cast<str_t>("MFGR#2239"))); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
-        delete bat8;
         auto batA = batPP->reverse(); // p_partkey | OID part
         MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
         delete batA;
@@ -125,8 +122,9 @@ int main(int argc, char** argv) {
         MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
-        MEASURE_OP(batA1, hashjoin(batZ, batPB)); // OID lineorder | p_brand
+        MEASURE_OP(batA1, hashjoin(batZ, bat8)); // OID lineorder | p_brand
         delete batZ;
+        delete bat8;
 
         MEASURE_OP(batA2, hashjoin(batI, batDY)); // OID lineorder | d_year
         delete batI;

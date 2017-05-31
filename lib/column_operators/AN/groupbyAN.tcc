@@ -62,8 +62,17 @@ namespace ahead {
                     typedef typename Tail::type_t tail_t;
                     typedef typename TypeMap<Tail>::v2_base_t::type_t tunenc_t;
 
+                    static
                     std::tuple<TempBAT<Head, v2_resoid_t>*, TempBAT<v2_void_t, Tail>*, std::vector<bool>*, std::vector<bool>*>
-                    operator()(BAT<Head, Tail>* bat, resoid_t AOID, resoid_t AOIDinv, head_t AHR = 1, head_t AHinvR = 1, tail_t ATR = 1, tail_t ATinvR = 1) const {
+                    run(
+                            BAT<Head, Tail>* bat,
+                            resoid_t AOID,
+                            resoid_t AOIDinv,
+                            head_t AHR = 1,
+                            head_t AHinvR = 1,
+                            tail_t ATR = 1,
+                            tail_t ATinvR = 1
+                            ) {
 
                         head_t HAInv = static_cast<head_t>(bat->head.metaData.AN_Ainv);
                         head_t HUnencMaxU = static_cast<head_t>(bat->head.metaData.AN_unencMaxU);
@@ -141,9 +150,17 @@ namespace ahead {
                     typedef typename HEnc::type_t head_t;
                     typedef typename TEnc::type_t tail_t;
 
+                    static
                     std::tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, v2_str_t>*, std::vector<bool>*, std::vector<bool>*>
-                    operator()(BAT<Head, v2_str_t>* bat, typename v2_resoid_t::type_t AOID, typename v2_resoid_t::type_t AOIDinv, head_t AHR = 1,
-                            head_t AHinvR = 1, __attribute__ ((unused)) str_t ATR = nullptr, __attribute__ ((unused)) str_t ATinvR = nullptr) const {
+                    run(
+                            BAT<Head, v2_str_t>* bat,
+                            typename v2_resoid_t::type_t AOID,
+                            typename v2_resoid_t::type_t AOIDinv,
+                            head_t AHR = 1,
+                            head_t AHinvR = 1,
+                            __attribute__ ((unused)) str_t ATR = nullptr,
+                            __attribute__ ((unused)) str_t ATinvR = nullptr
+                            ) {
 
                         head_t HAInv = bat->head.metaData.AN_Ainv;
                         head_t HUnencMaxU = bat->head.metaData.AN_unencMaxU;
@@ -201,11 +218,12 @@ namespace ahead {
              */
             template<typename Head, typename Tail>
             std::tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, Tail>*, std::vector<bool>*, std::vector<bool>*>
-            groupbyAN(BAT<Head, Tail>* bat,
+            groupbyAN(
+                    BAT<Head, Tail>* bat,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
                     typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
-                            ) {
-                return Private::GroupByAN<Head, Tail, false>()(bat, AOID, AOIDinv);
+                    ) {
+                return Private::GroupByAN<Head, Tail, false>::run(bat, AOID, AOIDinv);
             }
 
             /**
@@ -225,12 +243,16 @@ namespace ahead {
              */
             template<typename Head, typename Tail>
             std::tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, Tail>*, std::vector<bool>*, std::vector<bool>*>
-            groupbyAN(BAT<Head, Tail>* bat, typename Head::type_t AHR, typename Head::type_t AHinvR,
-                    typename Tail::type_t ATR, typename Tail::type_t ATinvR,
+            groupbyAN(
+                    BAT<Head, Tail>* bat,
+                    typename Head::type_t AHR,
+                    typename Head::type_t AHinvR,
+                    typename Tail::type_t ATR,
+                    typename Tail::type_t ATinvR,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
                     typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
-                            ) {
-                return Private::GroupByAN<Head, Tail, true>()(bat, AOID, AOIDinv, AHR, AHinvR, ATR, ATinvR);
+                    ) {
+                return Private::GroupByAN<Head, Tail, true>::run(bat, AOID, AOIDinv, AHR, AHinvR, ATR, ATinvR);
             }
 
             namespace Private {
@@ -256,14 +278,26 @@ namespace ahead {
                 template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3, bool reencode>
                 struct GroupedSumAN {
 
+                    static
                     std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail3>*, std::vector<bool>*,
-                            std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> operator()(BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2,
-                            BAT<Head3, Tail3>* bat3, typename Head2::type_t AH2R = 1, typename Head2::type_t AH2invR = 1, typename Tail2::type_t AT2R = 1, typename Tail2::type_t AT2invR = 1,
-                            typename Head3::type_t AH3R = 1, typename Head3::type_t AH3invR = 1, typename Tail3::type_t AT3R = 1, typename Tail3::type_t AT3invR = 1,
+                            std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+                    run(
+                            BAT<Head1, Tail1>* bat1,
+                            BAT<Head2, Tail2>* bat2,
+                            BAT<Head3, Tail3>* bat3,
+                            typename Head2::type_t AH2R = 1,
+                            typename Head2::type_t AH2invR = 1,
+                            typename Tail2::type_t AT2R = 1,
+                            typename Tail2::type_t AT2invR = 1,
+                            typename Head3::type_t AH3R = 1,
+                            typename Head3::type_t AH3invR = 1,
+                            typename Tail3::type_t AT3R = 1,
+                            typename Tail3::type_t AT3invR = 1,
                             typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
                             typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs),
                             typename V2Result::type_t ARes = std::get<ANParametersSelector<V2Result>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                            typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)) {
+                            typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)
+                            ) {
                         static_assert(std::is_base_of<v2_anencoded_t, V2Result>::value, "V2Result is not derived from v2_anencoded_t!");
 
                         typedef typename Head1::type_t head1_t;
@@ -379,27 +413,40 @@ namespace ahead {
 
             template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
             std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail3>*, std::vector<bool>*, std::vector<bool>*,
-                    std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            groupedSumAN(BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2, BAT<Head3, Tail3>* bat3,
+                std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            groupedSumAN(
+                    BAT<Head1, Tail1>* bat1,
+                    BAT<Head2, Tail2>* bat2,
+                    BAT<Head3, Tail3>* bat3,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs), typename V2Result::type_t ARes =
-                            std::get<ANParametersSelector<V2Result>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)) {
-                return Private::GroupedSumAN<V2Result, Head1, Tail1, Head2, Tail2, Head3, Tail3, false>()(bat1, bat2, bat3, 0, 0, 0, 0, 0, 0, 0, 0, AOID, AOIDinv, ARes, AResInv);
+                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs),
+                    typename V2Result::type_t ARes = std::get<ANParametersSelector<V2Result>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
+                    typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)
+                    ) {
+                return Private::GroupedSumAN<V2Result, Head1, Tail1, Head2, Tail2, Head3, Tail3, false>::run(bat1, bat2, bat3, 0, 0, 0, 0, 0, 0, 0, 0, AOID, AOIDinv, ARes, AResInv);
             }
 
             template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
             std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail3>*, std::vector<bool>*, std::vector<bool>*,
-                    std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            groupedSumAN(BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2, BAT<Head3, Tail3>* bat3,
-                    typename Head2::type_t AH2R, typename Head2::type_t AH2invR, typename Tail2::type_t AT2R, typename Tail2::type_t AT2invR, typename Head3::type_t AH3R,
-                    typename Head3::type_t AH3invR, typename Tail3::type_t AT3R, typename Tail3::type_t AT3invR,
+                std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            groupedSumAN(
+                    BAT<Head1, Tail1>* bat1,
+                    BAT<Head2, Tail2>* bat2,
+                    BAT<Head3, Tail3>* bat3,
+                    typename Head2::type_t AH2R,
+                    typename Head2::type_t AH2invR,
+                    typename Tail2::type_t AT2R,
+                    typename Tail2::type_t AT2invR,
+                    typename Head3::type_t AH3R,
+                    typename Head3::type_t AH3invR,
+                    typename Tail3::type_t AT3R,
+                    typename Tail3::type_t AT3invR,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs), typename V2Result::type_t ARes =
-                            std::get<ANParametersSelector<V2Result>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)) {
-                return Private::GroupedSumAN<V2Result, Head1, Tail1, Head2, Tail2, Head3, Tail3, true>()(bat1, bat2, bat3, AH2R, AH2invR, AT2R, AT2invR, AH3R, AH3invR, AT3R, AT3invR, AOID, AOIDinv,
-                        ARes, AResInv);
+                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs),
+                    typename V2Result::type_t ARes = std::get<ANParametersSelector<V2Result>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
+                    typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)
+                    ) {
+                return Private::GroupedSumAN<V2Result, Head1, Tail1, Head2, Tail2, Head3, Tail3, true>::run(bat1, bat2, bat3, AH2R, AH2invR, AT2R, AT2invR, AH3R, AH3invR, AT3R, AT3invR, AOID, AOIDinv, ARes, AResInv);
             }
         }
     }

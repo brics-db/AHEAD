@@ -13,10 +13,10 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q22_dmr_seq.cpp
+ * File:   ssbm-q23_dmr_seq.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 29. May 2017, 22:27
+ * Created on 31. May 2017, 15:36
  */
 
 #include "ssb.hpp"
@@ -25,17 +25,17 @@ typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t,
 typedef DMRValue<result_tuple_t> DMR;
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.2 DMR Sequential\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
+    SSBM_REQUIRED_VARIABLES("SSBM Query 2.3 DMR Sequential\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
             "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
 
-    SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.2:\n"
+    SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.3:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"
             "    and lo_partkey = p_partkey\n"
             "    and lo_suppkey = s_suppkey\n"
-            "    and p_brand between 'MFGR#2221' and 'MFGR#2228'\n"
-            "    and s_region = 'ASIA'\n"
+            "    and p_brand = 'MFGR#2239'\n"
+            "    and s_region = 'EUROPE'\n"
             "  group by d_year, p_brand;");
 
     /* Measure loading ColumnBats */
@@ -96,8 +96,8 @@ int main(int argc, char** argv) {
         DMR results( {nullptr, nullptr, nullptr, nullptr, nullptr});
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
-            // s_region = 'AMERICA'
-            MEASURE_OP(bat1, select<std::equal_to>(batSRs[k], const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+            // s_region = 'EUROPE'
+            MEASURE_OP(bat1, select<std::equal_to>(batSRs[k], const_cast<str_t>("EUROPE"))); // OID supplier | s_region
             auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
             delete bat1;
             auto bat3 = batSSs[k]->reverse(); // s_suppkey | OID supplier
@@ -113,8 +113,8 @@ int main(int argc, char** argv) {
             MEASURE_OP(bat7, matchjoin(bat6, batLPs[k])); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
             delete bat6;
 
-            // p_brand between 'MFGR#2221' and 'MFGR#2228'
-            MEASURE_OP(bat8, select(batPBs[k], const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
+            // p_brand = 'MFGR#2239'
+            MEASURE_OP(bat8, select<std::equal_to>(batPBs[k], const_cast<str_t>("MFGR#2239"))); // OID part | p_brand
             auto bat9 = bat8->mirror_head(); // OID part | OID part
             auto batA = batPPs[k]->reverse(); // p_partkey | OID part
             MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'

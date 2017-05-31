@@ -50,18 +50,20 @@ V2_MATCHJOIN_AN_SUB2(H1, v2_resshortint_t) \
 V2_MATCHJOIN_AN_SUB2(H1, v2_resint_t) \
 V2_MATCHJOIN_AN_SUB2(H1, v2_resbigint_t)
 
-        // V2_MATCHJOIN_AN_SUB1(v2_void_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_oid_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_tinyint_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_shortint_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_int_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_bigint_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_resoid_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_restinyint_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_resshortint_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_resint_t)
-        // V2_MATCHJOIN_AN_SUB1(v2_resbigint_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_void_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_oid_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_tinyint_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_shortint_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_int_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_bigint_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_resoid_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_restinyint_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_resshortint_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_resint_t)
+            // V2_MATCHJOIN_AN_SUB1(v2_resbigint_t)
             V2_MATCHJOIN_AN_SUB4(v2_resoid_t, v2_resoid_t, v2_resoid_t, v2_restiny_t)
+            V2_MATCHJOIN_AN_SUB4(v2_resint_t, v2_void_t, v2_resoid_t, v2_resoid_t)
+            V2_MATCHJOIN_AN_SUB4(v2_resoid_t, v2_resoid_t, v2_void_t, v2_resint_t)
 
 #undef V2_MATCHJOIN_AN_SUB1
 #undef V2_MATCHJOIN_AN_SUB2

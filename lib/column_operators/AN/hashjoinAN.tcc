@@ -50,7 +50,7 @@ namespace ahead {
                     typedef typename TypeMap<T>::v2_encoded_t::v2_select_t v2_select_t;
                 };
 
-                template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencodeHead = false, bool reencodeTail = false>
+                template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencodeHead, bool reencodeTail>
                 struct hashjoinANunencHashmap {
 
                     typedef typename ReturnTypeSelector<Head1, reencodeHead>::v2_select_t v2_h1_select_t;
@@ -70,12 +70,16 @@ namespace ahead {
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
                     constexpr static const bool reencode = reencodeHead | reencodeTail;
 
-                    static std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(BAT<Head1, Tail1>* arg1,
-                            BAT<Head2, Tail2>* arg2, hash_side_t hashside = hash_side_t::right, // by that, by default the order of the left BAT is preserved (what we expect in the queries)
+                    static
+                    std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+                    run(
+                            BAT<Head1, Tail1>* arg1,
+                            BAT<Head2, Tail2>* arg2,
+                            hash_side_t hashside = hash_side_t::right, // by that, by default the order of the left BAT is preserved (what we expect in the queries)
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
                             t2enc_t AT2R = 1, // for reencode
-                            h1enc_t AT2InvR = 1 // for reencode
+                            t2enc_t AT2InvR = 1 // for reencode
                             ) {
                         const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
@@ -207,8 +211,8 @@ namespace ahead {
                     }
                 };
 
-                template<typename Head1, typename Tail1, typename Head2, bool reencode>
-                struct hashjoinANunencHashmap<Head1, Tail1, Head2, v2_str_t, reencode> {
+                template<typename Head1, typename Tail1, typename Head2, bool reencode, bool dummy>
+                struct hashjoinANunencHashmap<Head1, Tail1, Head2, v2_str_t, reencode, dummy> {
 
                     typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t head1_v2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
@@ -217,13 +221,22 @@ namespace ahead {
                     typedef typename T1Enc::type_t t1enc_t;
                     typedef typename TypeMap<Head2>::v2_encoded_t H2Enc;
                     typedef typename H2Enc::type_t h2enc_t;
+                    typedef typename TypeMap<v2_str_t>::v2_encoded_t T2Enc;
+                    typedef typename T2Enc::type_t t2enc_t;
                     typedef typename TypeMap<Tail1>::v2_base_t::type_t t1unenc_t;
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    static std::tuple<TempBAT<head1_v2_select_t, v2_str_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(BAT<Head1, Tail1>* arg1,
-                            BAT<Head2, v2_str_t>* arg2, hash_side_t hashside = hash_side_t::right, h1enc_t AH1r = 1, // for reencode
-                            h1enc_t AH1InvR = 1 // for reencode
+                    static
+                    std::tuple<TempBAT<head1_v2_select_t, v2_str_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+                    run(
+                            BAT<Head1, Tail1>* arg1,
+                            BAT<Head2, v2_str_t>* arg2,
+                            hash_side_t hashside = hash_side_t::right,
+                            h1enc_t AH1R = 1, // for reencode
+                            h1enc_t AH1InvR = 1, // for reencode
+                            __attribute__((unused)) t2enc_t AT2R = nullptr, // dummy
+                            __attribute__((unused)) t2enc_t AT2InvR = nullptr // dummy
                             ) {
                         const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
@@ -234,13 +247,13 @@ namespace ahead {
                         const t1enc_t AT1UnencMaxU = arg1->tail.metaData.AN_unencMaxU;
                         const h2enc_t AH2Inv = arg2->head.metaData.AN_Ainv;
                         const h2enc_t AH2UnencMaxU = arg2->head.metaData.AN_unencMaxU;
-                        const h1enc_t reencFactorH1 = AH1r * AH1Inv;
+                        const h1enc_t reencFactorH1 = AH1R * AH1Inv;
                         TempBAT<head1_v2_select_t, v2_str_t> * bat;
                         if (reencode) {
                             typedef typename TempBAT<head1_v2_select_t, v2_str_t>::coldesc_head_t bat_coldesc_head_t;
                             typedef typename TempBAT<head1_v2_select_t, v2_str_t>::coldesc_tail_t bat_coldesc_tail_t;
                             bat = new TempBAT<head1_v2_select_t, v2_str_t>(
-                                    bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1r, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
+                                    bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
                                     bat_coldesc_tail_t(arg2->tail.metaData));
                         } else {
                             bat = skeletonJoin<head1_v2_select_t, v2_str_t>(arg1, arg2);
@@ -357,7 +370,10 @@ namespace ahead {
                     typedef ahead::larger_type<t1enc_t, h2enc_t> larger_type_t;
                     typedef typename larger_type_t::type_t hash_t;
 
-                    static std::tuple<TempBAT<head1_v2_select_t, tail2_v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(BAT<Head1, Tail1>* arg1,
+                    static
+                    std::tuple<TempBAT<head1_v2_select_t, tail2_v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+                    run(
+                            BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2, hash_side_t hashside = hash_side_t::right, // by that, by default the order of the left BAT is preserved (what we expect in the queries)
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
@@ -524,23 +540,39 @@ namespace ahead {
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-            std::tuple<TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> hashjoinAN(
-                    BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, hash_side_t hashside = hash_side_t::right) {
-                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, false>::run(arg1, arg2, hashside);
+            std::tuple<TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            hashjoinAN(
+                    BAT<Head1, Tail1>* arg1,
+                    BAT<Head2, Tail2>* arg2,
+                    hash_side_t hashside = hash_side_t::right
+                    ) {
+                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, false, false>::run(arg1, arg2, hashside);
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> hashjoinAN(
-                    BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename TypeMap<Head1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc,
-                    hash_side_t hashside = hash_side_t::right) {
-                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true>::run(arg1, arg2, hashside, AH1reenc, AH1InvReenc);
+            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            hashjoinAN(
+                    BAT<Head1, Tail1>* arg1,
+                    BAT<Head2, Tail2>* arg2,
+                    typename TypeMap<Head1>::v2_encoded_t::type_t AReenc,
+                    typename TypeMap<Head1>::v2_encoded_t::type_t AInvReenc,
+                    hash_side_t hashside = hash_side_t::right
+                    ) {
+                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true, false>::run(
+                        arg1, arg2, hashside, AReenc, AInvReenc);
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename TypeMap<Tail2>::v2_encoded_t::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*,
-                    std::vector<bool>*> hashjoinAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename TypeMap<Head1>::v2_encoded_t::type_t AH1Reenc,
-                    typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc, typename TypeMap<Tail2>::v2_encoded_t::type_t AT2Reenc, typename TypeMap<Tail2>::v2_encoded_t::type_t AT2InvReenc,
-                    hash_side_t hashside = hash_side_t::right) {
+            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename TypeMap<Tail2>::v2_encoded_t::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            hashjoinAN(
+                    BAT<Head1, Tail1>* arg1,
+                    BAT<Head2, Tail2>* arg2,
+                    typename TypeMap<Head1>::v2_encoded_t::type_t AH1Reenc,
+                    typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc,
+                    typename TypeMap<Tail2>::v2_encoded_t::type_t AT2Reenc,
+                    typename TypeMap<Tail2>::v2_encoded_t::type_t AT2InvReenc,
+                    hash_side_t hashside = hash_side_t::right
+                    ) {
                 return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true, true>::run(arg1, arg2, hashside, AH1Reenc, AH1InvReenc, AT2Reenc, AT2InvReenc);
             }
         }

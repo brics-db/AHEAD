@@ -37,7 +37,7 @@ BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
-IMPLEMENTED=(11 12 13 21)
+IMPLEMENTED=(11 12 13 21 22 23)
 VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 ARCHITECTURE=("_seq")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null

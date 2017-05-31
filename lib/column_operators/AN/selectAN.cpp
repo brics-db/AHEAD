@@ -26,52 +26,81 @@ namespace ahead {
     namespace bat {
         namespace ops {
 
-#define V2_SELECT2_AN_SUB(SELECT, V2TYPE) \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::not_equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less_equal, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::not_equal_to, SELECT, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg,typename V2TYPE::type_t && th1,typename V2TYPE::type_t && th2);
+#define SELECT1_AN(Head, Tail, Operator) \
+template \
+std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
+selectAN<Operator, Head, Tail> ( \
+        BAT<Head, Tail> *, \
+        typename Tail::type_t && \
+        );
 
-#define V2_SELECT2_AN(V2TYPE) \
-V2_SELECT2_AN_SUB(std::greater, V2TYPE) \
-V2_SELECT2_AN_SUB(std::greater_equal, V2TYPE) \
-V2_SELECT2_AN_SUB(std::equal_to, V2TYPE) \
-V2_SELECT2_AN_SUB(std::less_equal, V2TYPE) \
-V2_SELECT2_AN_SUB(std::less, V2TYPE) \
-V2_SELECT2_AN_SUB(std::not_equal_to, V2TYPE)
+#define SELECT1_AN_REENC(Head, Tail, Operator) \
+template \
+std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
+selectAN<Operator>( \
+        BAT<Head, Tail> *, \
+        typename Tail::type_t &&, \
+        typename Tail::v2_select_t::type_t, \
+        typename Tail::v2_select_t::type_t \
+        );
 
-#define V2_SELECT_AN(V2TYPE) \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> scalar::selectAN<std::not_equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template std::pair<BAT<v2_resoid_t, typename V2TYPE::v2_select_t>*, AN_indicator_vector*> sse::selectAN<std::not_equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-V2_SELECT2_AN(V2TYPE)
+#define SELECT2_AN(Head, Tail, Operator1, Operator2) \
+template \
+std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
+selectAN<Operator1, Operator2, Head, Tail>( \
+        BAT<Head, Tail> *, \
+        typename Tail::type_t &&, \
+        typename Tail::type_t && \
+        );
 
-            V2_SELECT_AN(v2_restiny_t)
-            V2_SELECT_AN(v2_resshort_t)
-            V2_SELECT_AN(v2_resint_t)
-            // V2_SELECT_AN(v2_resbigint_t)
-            // V2_SELECT_AN(v2_resstr_t)
+#define SELECT2_AN_REENC(Head, Tail, Operator1, Operator2) \
+template \
+std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
+selectAN<Operator1, Operator2, Head, Tail>( \
+        BAT<Head, Tail> *, \
+        typename Tail::type_t &&, \
+        typename Tail::type_t &&, \
+        typename Tail::v2_select_t::type_t, \
+        typename Tail::v2_select_t::type_t \
+        );
 
-#undef V2_SELECT_AN
-#undef V2_SELECT2_AN
-#undef V2_SELECT2_AN_SUB
+#define V2_SELECT_AN(V2Tail) \
+SELECT1_AN(v2_void_t, V2Tail, std::less) \
+SELECT1_AN(v2_void_t, V2Tail, std::less_equal) \
+SELECT1_AN(v2_void_t, V2Tail, std::equal_to) \
+SELECT1_AN(v2_void_t, V2Tail, std::not_equal_to) \
+SELECT1_AN(v2_void_t, V2Tail, std::greater_equal) \
+SELECT1_AN(v2_void_t, V2Tail, std::greater) \
+SELECT2_AN(v2_void_t, V2Tail, std::greater_equal, std::less_equal)
+
+#define V2_SELECT_AN_REENC(V2Tail) \
+SELECT1_AN_REENC(v2_void_t, V2Tail, std::less) \
+SELECT1_AN_REENC(v2_void_t, V2Tail, std::less_equal) \
+SELECT1_AN_REENC(v2_void_t, V2Tail, std::equal_to) \
+SELECT1_AN_REENC(v2_void_t, V2Tail, std::not_equal_to) \
+SELECT1_AN_REENC(v2_void_t, V2Tail, std::greater_equal) \
+SELECT1_AN_REENC(v2_void_t, V2Tail, std::greater) \
+SELECT2_AN_REENC(v2_void_t, V2Tail, std::greater_equal, std::less_equal)
+
+            namespace scalar {
+                V2_SELECT_AN(v2_restiny_t)
+                V2_SELECT_AN_REENC(v2_restiny_t)
+                V2_SELECT_AN(v2_resshort_t)
+                V2_SELECT_AN_REENC(v2_resshort_t)
+                V2_SELECT_AN(v2_resint_t)
+                V2_SELECT_AN_REENC(v2_resint_t)
+                V2_SELECT_AN(v2_str_t)
+            }
+
+            namespace sse {
+                V2_SELECT_AN(v2_restiny_t)
+                V2_SELECT_AN_REENC(v2_restiny_t)
+                V2_SELECT_AN(v2_resshort_t)
+                V2_SELECT_AN_REENC(v2_resshort_t)
+                V2_SELECT_AN(v2_resint_t)
+                V2_SELECT_AN_REENC(v2_resint_t)
+                V2_SELECT_AN(v2_str_t)
+            }
 
         }
     }

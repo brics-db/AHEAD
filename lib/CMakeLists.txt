@@ -71,6 +71,7 @@ column_operators/Normal/matchjoin.cpp \
 column_operators/Normal/miscellaneous.cpp \
 column_operators/Normal/select.cpp \
 column_operators/AN/aggregateAN.cpp \
+column_operators/AN/encdecAN.cpp \
 column_operators/AN/groupbyAN.cpp \
 column_operators/AN/hashjoinAN.cpp \
 column_operators/AN/matchjoinAN.cpp \
