@@ -34,6 +34,7 @@ MACRO( add_static_lib arg_name arg_source_files arg_dep_libs )
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 14)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
+    cotire(${LIBNAME})
 ENDMACRO( add_static_lib )
 
 MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
@@ -46,8 +47,8 @@ MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 14)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
+    cotire(${LIBNAME})
 ENDMACRO( add_shared_lib )
-
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
@@ -114,3 +115,4 @@ column_operators/AN/matchjoinAN.cpp \
 column_operators/AN/selectAN.cpp \
 column_operators/SSE.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
+

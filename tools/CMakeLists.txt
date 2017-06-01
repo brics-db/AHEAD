@@ -54,9 +54,9 @@ ENDIF(LIBPCM)
 ### SSB Shared Library ###
 ##########################
 MACRO( add_shared_lib target_name arg_source_files )
+    MESSAGE(STATUS "Add shared library ${LIBNAME}")
     SET(LIBNAME "${target_name}")
     STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
-    MESSAGE(STATUS "Add shared library ${LIBNAME}")
     ADD_LIBRARY(${LIBNAME} SHARED ${SOURCE_FILES})
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 14)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -70,6 +70,7 @@ add_shared_lib(SSB "ssbm/ssb.cpp")
 ######################
 
 MACRO( add_algorithm arg_name arg_path target_name )
+    MESSAGE(STATUS "Add executable ${target_name}")
     FILE(GLOB SOURCE_FILES
         "${arg_path}/${arg_name}.cpp")
     ADD_EXECUTABLE(${target_name} ${SOURCE_FILES})
@@ -77,7 +78,6 @@ MACRO( add_algorithm arg_name arg_path target_name )
     SET_PROPERTY(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED ON)
 	TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC "${PCMDIR}")
     TARGET_LINK_LIBRARIES(${target_name} ${LIBPCM} AHEAD SSB)
-    MESSAGE(STATUS "Add executable ${target_name}")
 ENDMACRO( add_algorithm )
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
