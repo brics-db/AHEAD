@@ -109,7 +109,7 @@ namespace ahead {
         }
 
         virtual bool hasNext() override {
-            return (iterHead != iterHeadEnd) & (iterTail != iterTailEnd);
+            return (iterHead < iterHeadEnd) & (iterTail < iterTailEnd);
         }
 
         virtual head_t head() override {
@@ -269,7 +269,7 @@ namespace ahead {
         }
 
         virtual bool hasNext() override {
-            return iterHead != iterHeadEnd;
+            return iterHead < iterHeadEnd;
         }
 
         virtual head_t head() override {
@@ -348,7 +348,7 @@ namespace ahead {
         }
 
         virtual bool hasNext() override {
-            return iterTail != iterTailEnd;
+            return iterTail < iterTailEnd;
         }
 
         virtual head_t head() override {
