@@ -13,11 +13,13 @@
 // limitations under the License.
 
 /* 
- * File:   matchjoin.cpp
+ * File:   matchjoin.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 10-04-2017 22:03
+ * Created on 01-06-2017 09:58
  */
+#ifndef LIB_COLUMN_OPERATORS_NORMAL_MATCHJOIN_HPP_
+#define LIB_COLUMN_OPERATORS_NORMAL_MATCHJOIN_HPP_
 
 #include "matchjoin.tcc"
 
@@ -47,24 +49,8 @@ V2_MATCHJOIN_SUB(v2_resint_t, V2TAIL) \
 V2_MATCHJOIN_SUB(v2_resbigint_t, V2TAIL) \
 V2_MATCHJOIN_SUB(v2_resstr_t, V2TAIL)
 
-            // V2_MATCHJOIN(v2_void_t)
-            V2_MATCHJOIN(v2_oid_t)
-            V2_MATCHJOIN(v2_id_t)
-            V2_MATCHJOIN(v2_size_t)
-            V2_MATCHJOIN(v2_tinyint_t)
-            V2_MATCHJOIN(v2_shortint_t)
-            V2_MATCHJOIN(v2_int_t)
-            V2_MATCHJOIN(v2_bigint_t)
-            V2_MATCHJOIN(v2_str_t)
-            V2_MATCHJOIN(v2_restiny_t)
-            V2_MATCHJOIN(v2_resshort_t)
-            V2_MATCHJOIN(v2_resint_t)
-            V2_MATCHJOIN(v2_resbigint_t)
-            // V2_MATCHJOIN(v2_resstr_t)
-
-#undef V2_HASHJOIN
-#undef V2_MATCHJOIN_SUB
-
         }
     }
 }
+
+#endif /* LIB_COLUMN_OPERATORS_NORMAL_MATCHJOIN_HPP_ */

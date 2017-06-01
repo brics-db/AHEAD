@@ -13,11 +13,13 @@
 // limitations under the License.
 
 /* 
- * File:   hashjoin.cpp
+ * File:   hashjoin.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 10-04-2017 22:02
+ * Created on 01-06-2017 09:49
  */
+#ifndef LIB_COLUMN_OPERATORS_NORMAL_HASHJOIN_HPP_
+#define LIB_COLUMN_OPERATORS_NORMAL_HASHJOIN_HPP_
 
 #include "hashjoin.tcc"
 
@@ -59,24 +61,8 @@ V2_HASHJOIN_SUB(v2_resint_t, V2TYPE) \
 V2_HASHJOIN_SUB(v2_resbigint_t, V2TYPE) \
 V2_HASHJOIN_SUB(v2_resstr_t, V2TYPE)
 
-        V2_HASHJOIN(v2_void_t)
-        V2_HASHJOIN(v2_oid_t)
-        V2_HASHJOIN(v2_id_t)
-        V2_HASHJOIN(v2_size_t)
-        V2_HASHJOIN(v2_tinyint_t)
-        V2_HASHJOIN(v2_shortint_t)
-        V2_HASHJOIN(v2_int_t)
-        V2_HASHJOIN(v2_bigint_t)
-        V2_HASHJOIN(v2_str_t)
-        V2_HASHJOIN(v2_restiny_t)
-        V2_HASHJOIN(v2_resshort_t)
-        V2_HASHJOIN(v2_resint_t)
-        V2_HASHJOIN(v2_resbigint_t)
-        // V2_HASHJOIN(v2_resstr_t)
-
-#undef V2_HASHJOIN
-#undef V2_HASHJOIN_SUB
-
         }
     }
 }
+
+#endif /* LIB_COLUMN_OPERATORS_NORMAL_HASHJOIN_HPP_ */
