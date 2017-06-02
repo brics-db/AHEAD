@@ -54,10 +54,10 @@ namespace ahead {
                  * @param arg2
                  * @return A single sum of the pair-wise products of the two Bats
                  */
-                template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-                BAT<v2_void_t, Result>*
-                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0)) {
-                    typedef typename Result::type_t result_t;
+                template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, V2Result> *
+                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename V2Result::type_t init = typename V2Result::type_t(0)) {
+                    typedef typename V2Result::type_t result_t;
                     auto iter1 = arg1->begin();
                     auto iter2 = arg2->begin();
                     result_t total = init;
@@ -66,7 +66,7 @@ namespace ahead {
                     }
                     delete iter2;
                     delete iter1;
-                    auto bat = new TempBAT<v2_void_t, Result>;
+                    auto bat = new TempBAT<v2_void_t, V2Result>;
                     bat->append(total);
                     return bat;
                 }

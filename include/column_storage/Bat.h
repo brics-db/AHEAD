@@ -79,10 +79,6 @@ namespace ahead {
         /** returns an iterator pointing at the start of the column */
         virtual BATIterator<Head, Tail>* begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-
         virtual BAT<Tail, Head>* reverse() = 0;
 
         virtual BAT<Head, Head>* mirror_head() = 0;
@@ -142,10 +138,6 @@ namespace ahead {
         /** returns an iterator pointing at the start of the column */
         virtual BATIterator<Head, Tail>* begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-
         virtual BAT<Tail, Head>* reverse() = 0;
 
         virtual BAT<Head, Head>* mirror_head() = 0;
@@ -153,7 +145,7 @@ namespace ahead {
         virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
         /** size of column, obtained through the iterator */
-        virtual unsigned size() = 0;
+        virtual oid_t size() = 0;
 
         /** Compute the actual memory consumption of the BAT */
         virtual size_t consumption() = 0;
@@ -204,12 +196,6 @@ namespace ahead {
         /** returns an iterator pointing at the start of the column */
         virtual BATIterator<Head, Tail>* begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-        virtual void append(head_t & t) = 0;
-        virtual void append(head_t && t) = 0;
-
         virtual BAT<Tail, Head>* reverse() = 0;
 
         virtual BAT<Head, Head>* mirror_head() = 0;
@@ -217,7 +203,7 @@ namespace ahead {
         virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
         /** size of column, obtained through the iterator */
-        virtual unsigned size() = 0;
+        virtual oid_t size() = 0;
 
         /** Compute the actual memory consumption of the BAT */
         virtual size_t consumption() = 0;
@@ -268,12 +254,6 @@ namespace ahead {
         /** returns an iterator pointing at the start of the column */
         virtual BATIterator<Head, Tail>* begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-        virtual void append(tail_t & t) = 0;
-        virtual void append(tail_t && t) = 0;
-
         virtual BAT<Tail, Head>* reverse() = 0;
 
         virtual BAT<Head, Head>* mirror_head() = 0;
@@ -281,7 +261,7 @@ namespace ahead {
         virtual BAT<Tail, Tail>* mirror_tail() = 0;
 
         /** size of column, obtained through the iterator */
-        virtual unsigned size() = 0;
+        virtual oid_t size() = 0;
 
         /** Compute the actual memory consumption of the BAT */
         virtual size_t consumption() = 0;

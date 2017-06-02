@@ -21,6 +21,8 @@
 #ifndef LIB_COLUMN_OPERATORS_MISCELLANEOUS_HPP_
 #define LIB_COLUMN_OPERATORS_MISCELLANEOUS_HPP_
 
+#include <optional>
+
 #include <column_storage/Storage.hpp>
 
 namespace ahead {
@@ -29,8 +31,50 @@ namespace ahead {
 
             namespace Private {
 
-                struct eqstr {
-                    bool operator()(str_t s1, str_t s2) const {
+                template<typename T>
+                struct equals {
+
+                    bool
+                    operator()(
+                            T t1,
+                            T t2
+                            ) const {
+                        return t1 == t2;
+                    }
+
+                    static
+                    bool
+                    eq(
+                            T t1,
+                            T t2
+                            ) {
+                        return t1 == t2;
+                    }
+                };
+
+                template<>
+                struct equals<str_t> {
+
+                    bool
+                    operator()(
+                            str_t s1,
+                            str_t s2
+                            ) const {
+                        if (s1 == nullptr) {
+                            return s2 == nullptr;
+                        }
+                        if (s2 == nullptr) {
+                            return false;
+                        }
+                        return strcmp(s1, s2) == 0;
+                    }
+
+                    static
+                    bool
+                    eq(
+                            str_t s1,
+                            str_t s2
+                            ) {
                         if (s1 == nullptr) {
                             return s2 == nullptr;
                         }
@@ -41,15 +85,49 @@ namespace ahead {
                     }
                 };
 
+                template<typename T>
+                struct hash {
+                    typedef T hash_t;
+
+                    T
+                    operator()(
+                            T const & t
+                            ) const {
+                        return t;
+                    }
+
+                    static
+                    T
+                    get(
+                            T const & t
+                            ) {
+                        return t;
+                    }
+                };
+
                 /**
                  * The following function is taken almost verbatim from (currently) the first answer at:
                  * http://stackoverflow.com/questions/15518418/whats-behind-the-hashcode-method-for-string-in-java
                  */
-                struct hashstr {
-                    size_t operator()(str_t const &s) const {
+                template<>
+                struct hash<str_t> {
+                    typedef uint32_t hash_t;
+
+                    hash_t
+                    operator()(
+                            str_t const & s
+                            ) const {
+                        return get(s);
+                    }
+
+                    static
+                    hash_t
+                    get(
+                            str_t const & s
+                            ) {
                         size_t len = std::strlen(s);
-                        size_t hash(0), multiplier(1);
-                        for (int i = len - 1; i >= 0; --i) {
+                        hash_t hash(0), multiplier(1);
+                        for (ssize_t i = len - 1; i >= 0; --i) {
                             hash += s[i] * multiplier;
                             int shifted = multiplier << 5;
                             multiplier = shifted - multiplier;
@@ -61,7 +139,9 @@ namespace ahead {
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
             TempBAT<TargetHead, TargetTail>*
-            skeleton(BAT<Head, Tail>* arg) {
+            skeleton(
+                    BAT<Head, Tail>* arg
+                    ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
@@ -70,7 +150,9 @@ namespace ahead {
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
             TempBAT<TargetHead, TargetTail>*
-            skeletonHead(BAT<Head, Tail>* arg) {
+            skeletonHead(
+                    BAT<Head, Tail>* arg
+                    ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
@@ -79,7 +161,9 @@ namespace ahead {
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
             TempBAT<TargetHead, TargetTail>*
-            skeletonTail(BAT<Head, Tail>* arg) {
+            skeletonTail(
+                    BAT<Head, Tail>* arg
+                    ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
@@ -88,12 +172,55 @@ namespace ahead {
 
             template<typename TargetHead, typename TargetTail, typename Head1, typename Tail1, typename Head2, typename Tail2>
             TempBAT<TargetHead, TargetTail>*
-            skeletonJoin(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2) {
+            skeletonJoin(
+                    BAT<Head1, Tail1>* arg1,
+                    BAT<Head2, Tail2>* arg2
+                    ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
                 return new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
             }
+
+            template<typename Head, typename Tail>
+            std::optional<typename Tail::v2_select_t::type_t>
+            findFirstHead(
+                    BAT<Head, Tail> * bat,
+                    typename Head::type_t const value) {
+                for(auto iter = bat->begin(); iter->hasNext(); ++*iter) {
+                    if (iter->head() == value) {
+                        auto tail = iter->tail();
+                        delete iter;
+                        return std::optional<typename Tail::v2_select_t::type_t>(tail);
+                    }
+                }
+                return std::optional<typename Tail::v2_select_t::type_t>();
+            }
+
+            template<typename Head, typename Tail>
+            std::optional<typename Head::v2_select_t::type_t>
+            findFirstTail(
+                    BAT<Head, Tail> * bat,
+                    typename Tail::type_t const value) {
+                for(auto iter = bat->begin(); iter->hasNext(); ++*iter) {
+                    if (iter->tail() == value) {
+                        auto head = iter->head();
+                        delete iter;
+                        return std::optional<typename Head::v2_select_t::type_t>(head);
+                    }
+                }
+                return std::optional<typename Head::v2_select_t::type_t>();
+            }
+
+            template<typename T, typename U>
+            struct is_instance_of {
+                constexpr static const bool value = false;
+            };
+
+            template<typename T>
+            struct is_instance_of<T, T> {
+                constexpr static const bool value = true;
+            };
 
         }
     }

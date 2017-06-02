@@ -25,4 +25,37 @@
 #include "aggregateAN_SSE.tcc"
 #include "aggregateAN_seq.tcc"
 
+namespace ahead {
+    namespace bat {
+        namespace ops {
+
+            template<typename Result, typename Head, typename Tail>
+            BAT<v2_void_t, typename TypeMap<Result>::v2_encoded_t> *
+            aggregate_sum_grouped(
+                    BAT<Head, Tail> * bat,
+                    BAT<v2_void_t, v2_resoid_t> * grouping
+                    ) {
+                if (bat->size() != grouping->size()) {
+                    throw std::runtime_error("bat and grouping must have the same size!");
+                }
+                typedef typename TypeMap<Result>::v2_encoded_t EncResult;
+                typedef typename EncResult::type_t encresult_t;
+                auto batResult = new TempBAT<v2_void_t, EncResult>();
+
+                constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
+
+                auto vec = batResult->tail.container.get();
+                vec->resize(grouping->size(), encresult_t(0));
+                auto iter = bat->begin();
+                auto iterGroup = grouping->begin();
+                for (; iter->hasNext(); ++*iter, ++*iterGroup) {
+                    (*vec)[iterGroup->tail()] += iter->tail();
+                }
+                return batResult;
+            }
+
+        }
+    }
+}
+
 #endif /* AGGREGATE_AN_TCC */

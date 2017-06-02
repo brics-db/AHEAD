@@ -25,4 +25,33 @@
 #include "aggregate_SSE.tcc"
 #include "aggregate_seq.tcc"
 
+namespace ahead {
+    namespace bat {
+        namespace ops {
+
+            template<typename Result, typename Head, typename Tail>
+            BAT<v2_void_t, Result> *
+            aggregate_sum_grouped(
+                    BAT<Head, Tail> * bat,
+                    BAT<v2_void_t, v2_oid_t> * grouping
+                    ) {
+                if (bat->size() != grouping->size()) {
+                    throw std::runtime_error("bat and grouping must have the same size!");
+                }
+                typedef typename Result::type_t result_t;
+                auto batResult = new TempBAT<v2_void_t, Result>();
+                auto vec = batResult->tail.container.get();
+                vec->resize(grouping->size(), result_t(0));
+                auto iter = bat->begin();
+                auto iterGroup = grouping->begin();
+                for (; iter->hasNext(); ++*iter, ++*iterGroup) {
+                    (*vec)[iterGroup->tail()] += iter->tail();
+                }
+                return batResult;
+            }
+
+        }
+    }
+}
+
 #endif /* AGGREGATE_TCC */

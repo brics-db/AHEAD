@@ -96,41 +96,13 @@ namespace ahead {
                     );
 
             template<typename Head, typename Tail>
-            std::tuple<BAT<Head, v2_resoid_t>*, BAT<v2_void_t, Tail>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, std::vector<bool>*, std::vector<bool>*>
             groupbyAN(
-                    BAT<Head, Tail>* bat,
-                    typename Head::type_t AHR,
-                    typename Head::type_t AHinvR,
-                    typename Tail::type_t ATR,
-                    typename Tail::type_t ATinvR,
-                    typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As),
-                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)
-                    );
-
-            template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
-            std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail3>*,
-                    std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            groupedSumAN(
-                    BAT<Head1, Tail1>* bat1,
-                    BAT<Head2, Tail2>* bat2,
-                    BAT<Head3, Tail3>* bat3,
+                    BAT<Head, Tail> * bat,
+                    BAT<v2_void_t, v2_resoid_t> * grouping,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs),
-                    typename V2Result::type_t ARes = std::get<ANParametersSelector<V2Result>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)
+                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
                     );
-
-            template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
-            std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, Tail3>*,
-                    std::vector<bool>*, std::vector<bool>*,
-                    std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            groupedSumAN(
-                    BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2, BAT<Head3, Tail3>* bat3, typename Head2::type_t AH2R, typename Head2::type_t AH2invR, typename Tail2::type_t AT2R,
-                    typename Tail2::type_t AT2invR, typename Head3::type_t AH3R, typename Head3::type_t AH3invR, typename Tail3::type_t AT3R, typename Tail3::type_t AT3invR,
-                    typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs), typename V2Result::type_t ARes =
-                            std::get<ANParametersSelector<V2Result>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AResInv = std::get<ANParametersSelector<V2Result>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs));
 
             namespace scalar {
 

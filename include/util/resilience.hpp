@@ -54,8 +54,14 @@ namespace ahead {
     };
 
     struct v2_anencoded_t {
-
     };
+
+    struct v2_restiny_t;
+    struct v2_resint_t;
+    struct v2_resshort_t;
+    struct v2_resbigint_t;
+    struct v2_resoid_t;
+    struct v2_resstr_t;
 
     struct v2_restiny_t : public v2_anencoded_t {
 
@@ -64,6 +70,7 @@ namespace ahead {
         typedef v2_restiny_t v2_copy_t;
         typedef v2_restiny_t v2_select_t;
         typedef v2_restiny_t v2_compare_t;
+        typedef v2_resshort_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -84,6 +91,7 @@ namespace ahead {
         typedef v2_resshort_t v2_copy_t;
         typedef v2_resshort_t v2_select_t;
         typedef v2_resshort_t v2_compare_t;
+        typedef v2_resint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -104,6 +112,7 @@ namespace ahead {
         typedef v2_resint_t v2_copy_t;
         typedef v2_resint_t v2_select_t;
         typedef v2_resint_t v2_compare_t;
+        typedef v2_resbigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -123,6 +132,7 @@ namespace ahead {
         typedef v2_resbigint_t v2_copy_t;
         typedef v2_resbigint_t v2_select_t;
         typedef v2_resbigint_t v2_compare_t;
+        typedef v2_resbigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -142,6 +152,7 @@ namespace ahead {
         typedef v2_resoid_t v2_copy_t;
         typedef v2_resoid_t v2_select_t;
         typedef v2_resoid_t v2_compare_t;
+        typedef v2_resbigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;

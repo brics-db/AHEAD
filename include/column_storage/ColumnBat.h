@@ -87,16 +87,16 @@ namespace ahead {
         }
 
         /** append an item */
-        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>& p) override {
+        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>& p) {
         }
 
-        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) override {
+        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) {
         }
 
-        virtual void append(__attribute__ ((unused)) tail_t& t) override {
+        virtual void append(__attribute__ ((unused)) tail_t& t) {
         }
 
-        virtual void append(__attribute__ ((unused)) tail_t&& t) override {
+        virtual void append(__attribute__ ((unused)) tail_t&& t) {
         }
 
         virtual BAT<Tail, Head>*

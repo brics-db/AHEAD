@@ -186,6 +186,21 @@ namespace ahead {
     struct v2_base_t {
     };
 
+    // forward declarations
+    struct v2_empty_t;
+    struct v2_tinyint_t;
+    struct v2_shortint_t;
+    struct v2_int_t;
+    struct v2_bigint_t;
+    struct v2_char_t;
+    struct v2_str_t;
+    struct v2_fixed_t;
+    struct v2_id_t;
+    struct v2_oid_t;
+    struct v2_void_t;
+    struct v2_version_t;
+    struct v2_size_t;
+
     struct v2_empty_t : public v2_base_t {
 
         typedef empty_t type_t;
@@ -204,6 +219,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_shortint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -216,6 +232,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_int_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -228,6 +245,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -240,6 +258,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -252,6 +271,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_shortint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -264,6 +284,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_int_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -276,6 +297,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_fixed_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -288,6 +310,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -300,6 +323,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -312,6 +336,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_oid_t v2_select_t;
         typedef v2_oid_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -324,6 +349,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
@@ -336,6 +362,7 @@ namespace ahead {
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_size_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;

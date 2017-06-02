@@ -46,24 +46,28 @@ namespace ahead {
         namespace ops {
 
             template<typename Head, typename Tail>
-            TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
-            copy(BAT<Head, Tail>* arg);
+            TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t> *
+            copy(BAT<Head, Tail> * arg);
 
             template<typename H1, typename T1, typename H2, typename T2>
-            BAT<typename H1::v2_select_t, typename T2::v2_select_t>*
-            matchjoin(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2);
+            BAT<typename H1::v2_select_t, typename T2::v2_select_t> *
+            matchjoin(BAT<H1, T1> * arg1, BAT<H2, T2> * arg2);
 
             template<typename H1, typename T1, typename H2, typename T2>
-            BAT<typename H1::v2_select_t, typename T2::v2_select_t>*
-            hashjoin(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, hash_side_t side = hash_side_t::right);
+            BAT<typename H1::v2_select_t, typename T2::v2_select_t> *
+            hashjoin(BAT<H1, T1> * arg1, BAT<H2, T2> * arg2, hash_side_t side = hash_side_t::right);
 
             template<typename Head, typename Tail>
-            std::pair<TempBAT<Head, v2_oid_t>*, TempBAT<v2_void_t, Tail>*>
+            std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
             groupby(BAT<Head, Tail>* bat);
 
-            template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename Head3, typename Tail3>
-            std::tuple<TempBAT<v2_void_t, V2Result>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail2>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, Tail3>*>
-            groupedSum(BAT<Head1, Tail1>* bat1, BAT<Head2, Tail2>* bat2, BAT<Head3, Tail3>* bat3);
+            template<typename Head, typename Tail>
+            std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
+            groupby(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
+
+            template<typename V2Result, typename Head, typename Tail>
+            BAT<v2_void_t, V2Result> *
+            aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
 
             namespace scalar {
                 // SELECT
@@ -312,24 +316,14 @@ V2_MATCHJOIN_SUB(v2_resstr_t, V2TYPE)
 #undef V2_HASHJOIN
 #undef V2_MATCHJOIN_SUB
 
-#define V2_GROUPBY(V2TYPE) \
-extern template std::pair<TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_void_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_oid_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_oid_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_id_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_id_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_size_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_size_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_tinyint_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_tinyint_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_shortint_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_shortint_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_int_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_int_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_bigint_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_bigint_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_str_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_str_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_resoid_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_resoid_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_restiny_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_restiny_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_resshort_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_resshort_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_resint_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_resint_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_resbigint_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_resbigint_t, V2TYPE>* bat); \
-extern template std::pair<TempBAT<v2_resstr_t, v2_oid_t>*, TempBAT<v2_void_t, V2TYPE>*> groupby(BAT<v2_resstr_t, V2TYPE>* bat);
+#define V2_GROUPBY_SUB(Head, Tail) \
+extern template std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> groupby(BAT<Head, Tail> * bat); \
+extern template std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> groupby(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
 
-            V2_GROUPBY(v2_void_t)
+#define V2_GROUPBY(Tail) \
+V2_GROUPBY_SUB(v2_void_t, Tail) \
+V2_GROUPBY_SUB(v2_oid_t, Tail)
+
             V2_GROUPBY(v2_oid_t)
             V2_GROUPBY(v2_id_t)
             V2_GROUPBY(v2_size_t)
@@ -346,13 +340,6 @@ extern template std::pair<TempBAT<v2_resstr_t, v2_oid_t>*, TempBAT<v2_void_t, V2
             V2_GROUPBY(v2_resstr_t)
 
 #undef V2_GROUPBY
-
-#define V2_GROUPEDSUM_SUB(V2RESULT, V2TAIL1, V2TAIL2, V2TAIL3) \
-extern template std::tuple<TempBAT<v2_void_t, V2RESULT>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, V2TAIL2>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, V2TAIL3>*> groupedSum(BAT<v2_oid_t, V2TAIL1>* bat1, BAT<v2_oid_t, V2TAIL2>* bat2, BAT<v2_oid_t, V2TAIL3>* bat3);
-
-            V2_GROUPEDSUM_SUB(v2_bigint_t, v2_int_t, v2_shortint_t, v2_str_t)
-
-#undef V2_GROUPEDSUM_SUB
 
 #define V2_AGGREGATE_SUM(V2RESULT, V2TYPE) \
 extern template typename V2RESULT::type_t scalar::aggregate_sum<V2RESULT, v2_oid_t, V2TYPE>(BAT<v2_oid_t, V2TYPE> * arg); \
@@ -391,6 +378,13 @@ extern template BAT<v2_void_t, V2RESULT> * sse::aggregate_mul_sum<V2RESULT, v2_o
             V2_AGGREGATE_MUL_SUM(v2_bigint_t, v2_int_t, v2_bigint_t)
 
 #undef V2_AGGREGATE_MUL_SUM
+
+#define V2_AGGREGATE_SUM_GROUPED(Result, Head, Tail) \
+extern template BAT<v2_void_t, Result> * aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
+
+            V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_oid_t, v2_int_t)
+
+#undef V2_AGGREGATE_SUM_GROUPED
 
         }
     }

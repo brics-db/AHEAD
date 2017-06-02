@@ -40,8 +40,6 @@ template typename V2RESULT::type_t sse::aggregate_sum<V2RESULT, v2_oid_t, V2TYPE
             V2_AGGREGATE_SUM(v2_bigint_t, v2_int_t)
             V2_AGGREGATE_SUM(v2_bigint_t, v2_bigint_t)
 
-#undef V2_AGGREGATE_SUM
-
 #define V2_AGGREGATE_MUL_SUM(V2RESULT, V2TAIL1, V2TAIL2) \
 template BAT<v2_void_t, V2RESULT> * scalar::aggregate_mul_sum<V2RESULT, v2_oid_t, V2TAIL1, v2_oid_t, V2TAIL2>(BAT<v2_oid_t, V2TAIL1> * arg1, BAT<v2_oid_t, V2TAIL2> * arg2, typename V2RESULT::type_t init); \
 template BAT<v2_void_t, V2RESULT> * sse::aggregate_mul_sum<V2RESULT, v2_oid_t, V2TAIL1, v2_oid_t, V2TAIL2>(BAT<v2_oid_t, V2TAIL1> * arg1, BAT<v2_oid_t, V2TAIL2> * arg2, typename V2RESULT::type_t init);
@@ -61,7 +59,10 @@ template BAT<v2_void_t, V2RESULT> * sse::aggregate_mul_sum<V2RESULT, v2_oid_t, V
             // V2_AGGREGATE_MUL_SUM(v2_bigint_t, v2_bigint_t, v2_int_t)
             // V2_AGGREGATE_MUL_SUM(v2_bigint_t, v2_int_t, v2_bigint_t)
 
-#undef V2_AGGREGATE_MUL_SUM
+#define V2_AGGREGATE_SUM_GROUPED(Result, Head, Tail) \
+template BAT<v2_void_t, Result> * aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
+
+            V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_oid_t, v2_int_t)
 
         }
     }

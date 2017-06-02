@@ -83,13 +83,13 @@ namespace ahead {
         }
 
         /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) override {
+        virtual void append(std::pair<head_t, tail_t>& p) {
             this->head.container->push_back(p.first);
             this->tail.container->push_back(p.second);
         }
 
         /** append an item */
-        virtual void append(std::pair<head_t, tail_t>&& p) override {
+        virtual void append(std::pair<head_t, tail_t>&& p) {
             this->head.container->push_back(p.first);
             this->tail.container->push_back(p.second);
         }
@@ -184,12 +184,12 @@ namespace ahead {
         }
 
         /** append an item */
-        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>& p) override {
+        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>& p) {
             ++count;
         }
 
         /** append an item */
-        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) override {
+        virtual void append(__attribute__ ((unused)) std::pair<head_t, tail_t>&& p) {
             ++count;
         }
 
@@ -263,22 +263,22 @@ namespace ahead {
         }
 
         /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) override {
+        virtual void append(std::pair<head_t, tail_t>& p) {
             if (this->head.container)
                 this->head.container->push_back(p.first);
         }
 
         /** append an item */
-        virtual void append(std::pair<head_t, tail_t>&& p) override {
+        virtual void append(std::pair<head_t, tail_t>&& p) {
             if (this->head.container)
                 this->head.container->push_back(std::move(p.first));
         }
 
-        virtual void append(head_t& h) override {
+        virtual void append(head_t& h) {
             this->head.container->push_back(h);
         }
 
-        virtual void append(head_t&& h) override {
+        virtual void append(head_t&& h) {
             this->head.container->push_back(std::forward<head_t>(h));
         }
 
@@ -363,12 +363,12 @@ namespace ahead {
         }
 
         /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) override {
+        virtual void append(std::pair<head_t, tail_t>& p) {
             this->tail.container->push_back(p.second);
         }
 
         /** append an item */
-        virtual void append(std::pair<head_t, tail_t>&& p) override {
+        virtual void append(std::pair<head_t, tail_t>&& p) {
             this->tail.container->push_back(p.second);
         }
 

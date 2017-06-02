@@ -26,62 +26,30 @@ namespace ahead {
     namespace bat {
         namespace ops {
 
-#define GROUPBY_AN(V2Head, V2Tail) \
-template std::tuple<BAT<V2Head, v2_resoid_t>*, BAT<v2_void_t, V2Tail>*, std::vector<bool>*, std::vector<bool>*> \
-groupbyAN( \
-        BAT<V2Head, V2Tail> *, \
-        typename v2_resoid_t::type_t, \
-        typename v2_resoid_t::type_t \
-        );
 
-#define GROUPBY_AN_REENC(V2Head, V2Tail) \
-template std::tuple<BAT<V2Head, v2_resoid_t>*, BAT<v2_void_t, V2Tail>*, std::vector<bool>*, std::vector<bool>*> \
-groupbyAN( \
-        BAT<V2Head, V2Tail> *, \
-        typename V2Head::type_t, \
-        typename V2Head::type_t, \
-        typename V2Tail::type_t, \
-        typename V2Tail::type_t, \
-        typename v2_resoid_t::type_t, \
-        typename v2_resoid_t::type_t \
-        );
+#define V2_GROUPBY_AN_SUB(Head, Tail) \
+template std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, std::vector<bool>*, std::vector<bool>*> groupbyAN(BAT<Head, Tail> * bat, resoid_t AOID, resoid_t AOIDinv); \
+template std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, std::vector<bool>*, std::vector<bool>*> groupbyAN(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_resoid_t> * grouping, resoid_t AOID, resoid_t AOIDinv);
 
-#define GROUPEDSUM_AN(V2Result, V2Head1, V2Tail1, V2Head2, V2Tail2, V2Head3, V2Tail3) \
-template std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, V2Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, V2Tail3>*, \
-    std::vector<bool>*, std::vector<bool>*,  std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-groupedSumAN( \
-        BAT<V2Head1, V2Tail1> *, \
-        BAT<V2Head2, V2Tail2> *, \
-        BAT<V2Head3, V2Tail3> *, \
-        typename v2_resoid_t::type_t, \
-        typename v2_resoid_t::type_t, \
-        typename V2Result::type_t ARes, \
-        typename v2_resoid_t::type_t \
-        );
+#define V2_GROUPBY_AN(Tail) \
+V2_GROUPBY_AN_SUB(v2_void_t, Tail) \
+V2_GROUPBY_AN_SUB(v2_oid_t, Tail)
 
-#define GROUPEDSUM_AN_REENC(V2Result, V2Head1, V2Tail1, V2Head2, V2Tail2, V2Head3, V2Tail3) \
-template std::tuple<BAT<v2_void_t, V2Result>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, V2Tail2>*, BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, V2Tail3>*, \
-    std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-groupedSumAN( \
-        BAT<V2Head1, V2Tail1> *, \
-        BAT<V2Head2, V2Tail2> *, \
-        BAT<V2Head3, V2Tail3> *, \
-        typename V2Head2::type_t, \
-        typename V2Head2::type_t, \
-        typename V2Tail2::type_t, \
-        typename V2Tail2::type_t, \
-        typename V2Head3::type_t, \
-        typename V2Head3::type_t, \
-        typename V2Tail3::type_t, \
-        typename V2Tail3::type_t, \
-        typename v2_resoid_t::type_t, \
-        typename v2_resoid_t::type_t, \
-        typename V2Result::type_t ARes, \
-        typename v2_resoid_t::type_t \
-        );
-
-            GROUPEDSUM_AN(v2_resbigint_t, v2_resoid_t, v2_resint_t, v2_resoid_t, v2_resshort_t, v2_resoid_t, v2_str_t)
-            GROUPEDSUM_AN_REENC(v2_resbigint_t, v2_resoid_t, v2_resint_t, v2_resoid_t, v2_resshort_t, v2_resoid_t, v2_str_t)
+            // V2_GROUPBY_AN(v2_void_t)
+            V2_GROUPBY_AN(v2_oid_t)
+            // V2_GROUPBY_AN(v2_id_t)
+            // V2_GROUPBY_AN(v2_size_t)
+            V2_GROUPBY_AN(v2_tinyint_t)
+            V2_GROUPBY_AN(v2_shortint_t)
+            V2_GROUPBY_AN(v2_int_t)
+            // V2_GROUPBY_AN(v2_bigint_t)
+            V2_GROUPBY_AN(v2_str_t)
+            V2_GROUPBY_AN(v2_resoid_t)
+            V2_GROUPBY_AN(v2_restiny_t)
+            V2_GROUPBY_AN(v2_resshort_t)
+            V2_GROUPBY_AN(v2_resint_t)
+            // V2_GROUPBY_AN(v2_resbigint_t)
+            // V2_GROUPBY_AN(v2_resstr_t)
 
         }
     }
