@@ -103,7 +103,7 @@ namespace ahead {
                         auto iter = bat->begin();
                         auto iter2 = grouping->begin();
                         for (; iter->hasNext(); ++*iter, ++*iter2) {
-                            largerTail_t curHash = static_cast<largerTail_t>(hasher::get(iter->tail())) * static_cast<largerTail_t>(numExistingGroups) + static_cast<largerTail_t>(iter2->head());
+                            largerTail_t curHash = static_cast<largerTail_t>(hasher::get(iter->tail())) * static_cast<largerTail_t>(numExistingGroups) + static_cast<largerTail_t>(iter2->tail());
                             // search this tail in our mapping
                             // idx is the void value of mapGIDtoTail, which starts at zero
                             auto opt = findFirstHead(batHashToGID, curHash);
@@ -117,6 +117,8 @@ namespace ahead {
                             }
                         }
                         delete iter;
+                        delete iter2;
+                        delete batHashToGID;
                         return std::make_pair(batVoidToGID, batGIDtoOID);
                     }
                 };

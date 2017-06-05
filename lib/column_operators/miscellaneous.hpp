@@ -111,7 +111,7 @@ namespace ahead {
                  */
                 template<>
                 struct hash<str_t> {
-                    typedef uint32_t hash_t;
+                    typedef size_t hash_t;
 
                     hash_t
                     operator()(
@@ -187,13 +187,15 @@ namespace ahead {
             findFirstHead(
                     BAT<Head, Tail> * bat,
                     typename Head::type_t const value) {
-                for(auto iter = bat->begin(); iter->hasNext(); ++*iter) {
+                auto iter = bat->begin();
+                for(; iter->hasNext(); ++*iter) {
                     if (iter->head() == value) {
                         auto tail = iter->tail();
                         delete iter;
                         return std::optional<typename Tail::v2_select_t::type_t>(tail);
                     }
                 }
+                delete iter;
                 return std::optional<typename Tail::v2_select_t::type_t>();
             }
 
@@ -202,13 +204,15 @@ namespace ahead {
             findFirstTail(
                     BAT<Head, Tail> * bat,
                     typename Tail::type_t const value) {
-                for(auto iter = bat->begin(); iter->hasNext(); ++*iter) {
+                auto iter = bat->begin();
+                for(; iter->hasNext(); ++*iter) {
                     if (iter->tail() == value) {
                         auto head = iter->head();
                         delete iter;
                         return std::optional<typename Head::v2_select_t::type_t>(head);
                     }
                 }
+                delete iter;
                 return std::optional<typename Head::v2_select_t::type_t>();
             }
 

@@ -99,19 +99,24 @@ namespace ahead {
         virtual void append(__attribute__ ((unused)) tail_t&& t) {
         }
 
-        virtual BAT<Tail, Head>*
+        virtual BAT<Tail, Head> *
         reverse() override {
             return nullptr;
         }
 
-        virtual BAT<Head, Head>*
+        virtual BAT<Head, Head> *
         mirror_head() override {
             return nullptr;
         }
 
-        virtual BAT<Tail, Tail>*
+        virtual BAT<Tail, Tail> *
         mirror_tail() override {
             return nullptr;
+        }
+
+        virtual BAT<v2_void_t, Tail> *
+        clear_head() override {
+            return this;
         }
 
         virtual oid_t size() override {

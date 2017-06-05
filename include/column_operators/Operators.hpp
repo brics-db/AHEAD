@@ -53,6 +53,10 @@ namespace ahead {
             BAT<typename H1::v2_select_t, typename T2::v2_select_t> *
             matchjoin(BAT<H1, T1> * arg1, BAT<H2, T2> * arg2);
 
+            template<typename T2>
+            BAT<v2_void_t, typename T2::v2_select_t> *
+            fetchjoin(BAT<v2_void_t, v2_oid_t> * arg1, BAT<v2_void_t, T2> * arg2);
+
             template<typename H1, typename T1, typename H2, typename T2>
             BAT<typename H1::v2_select_t, typename T2::v2_select_t> *
             hashjoin(BAT<H1, T1> * arg1, BAT<H2, T2> * arg2, hash_side_t side = hash_side_t::right);
@@ -67,7 +71,7 @@ namespace ahead {
 
             template<typename V2Result, typename Head, typename Tail>
             BAT<v2_void_t, V2Result> *
-            aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
+            aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping, size_t numGroups);
 
             namespace scalar {
                 // SELECT
@@ -295,7 +299,8 @@ V2_MATCHJOIN_SUB(v2_resoid_t, V2TYPE) \
 V2_MATCHJOIN_SUB(v2_resshort_t, V2TYPE) \
 V2_MATCHJOIN_SUB(v2_resint_t, V2TYPE) \
 V2_MATCHJOIN_SUB(v2_resbigint_t, V2TYPE) \
-V2_MATCHJOIN_SUB(v2_resstr_t, V2TYPE)
+V2_MATCHJOIN_SUB(v2_resstr_t, V2TYPE) \
+extern template BAT<v2_void_t, typename V2TYPE::v2_select_t> * fetchjoin(BAT<v2_void_t, v2_oid_t> * arg1, BAT<v2_void_t, V2TYPE> * arg2);
 
             V2_MATCHJOIN(v2_void_t)
             V2_MATCHJOIN(v2_oid_t)
@@ -380,7 +385,7 @@ extern template BAT<v2_void_t, V2RESULT> * sse::aggregate_mul_sum<V2RESULT, v2_o
 #undef V2_AGGREGATE_MUL_SUM
 
 #define V2_AGGREGATE_SUM_GROUPED(Result, Head, Tail) \
-extern template BAT<v2_void_t, Result> * aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
+extern template BAT<v2_void_t, Result> * aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping, size_t numGroups);
 
             V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_oid_t, v2_int_t)
 

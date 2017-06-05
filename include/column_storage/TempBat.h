@@ -65,7 +65,7 @@ namespace ahead {
         }
 
         TempBAT(coldesc_head_t head, coldesc_tail_t tail)
-                : BAT<Head, Tail>(std::move(head), std::move(tail)) {
+                : BAT<Head, Tail>(head, tail) {
         }
 
         virtual ~TempBAT() {
@@ -120,6 +120,14 @@ namespace ahead {
         virtual BAT<Tail, Tail>*
         mirror_tail() override {
             return new TempBAT<Tail, Tail>(this->tail, this->tail);
+        }
+
+        virtual BAT<v2_void_t, Tail> *
+        clear_head() override {
+            typedef TempBAT<v2_void_t, Tail> bat_t;
+            typedef typename bat_t::coldesc_head_t coldesc_head_t;
+            typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+            return new bat_t(coldesc_head_t(), coldesc_tail_t(this->tail));
         }
 
         virtual oid_t size() override {
@@ -197,19 +205,31 @@ namespace ahead {
             count = newSize;
         }
 
-        virtual BAT<Tail, Head>*
+        virtual BAT<Tail, Head> *
         reverse() override {
             return new TempBAT<Tail, Head>(this->tail, this->head);
         }
 
-        virtual BAT<Head, Head>*
+        virtual BAT<Head, Head> *
         mirror_head() override {
             return new TempBAT<Head, Head>(this->head, this->head);
         }
 
-        virtual BAT<Tail, Tail>*
+        virtual BAT<Tail, Tail> *
         mirror_tail() override {
             return new TempBAT<Tail, Tail>(this->tail, this->tail);
+        }
+
+        virtual BAT<v2_void_t, Tail> *
+        clear_head() override {
+            typedef TempBAT<v2_void_t, Tail> bat_t;
+            typedef typename bat_t::coldesc_head_t coldesc_head_t;
+            typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+            if (this->head.metaData.seqbase == 0) {
+                return this;
+            } else {
+                return new bat_t(coldesc_head_t(), coldesc_tail_t(this->tail));
+            }
         }
 
         virtual oid_t size() override {
@@ -271,7 +291,7 @@ namespace ahead {
         /** append an item */
         virtual void append(std::pair<head_t, tail_t>&& p) {
             if (this->head.container)
-                this->head.container->push_back(std::move(p.first));
+                this->head.container->push_back(p.first);
         }
 
         virtual void append(head_t& h) {
@@ -292,19 +312,27 @@ namespace ahead {
 #endif
         }
 
-        virtual BAT<Tail, Head>*
+        virtual BAT<Tail, Head> *
         reverse() override {
             return new TempBAT<Tail, Head>(this->tail, this->head);
         }
 
-        virtual BAT<Head, Head>*
+        virtual BAT<Head, Head> *
         mirror_head() override {
             return new TempBAT<Head, Head>(this->head, this->head);
         }
 
-        virtual BAT<Tail, Tail>*
+        virtual BAT<Tail, Tail> *
         mirror_tail() override {
             return new TempBAT<Tail, Tail>(this->tail, this->tail);
+        }
+
+        virtual BAT<v2_void_t, Tail> *
+        clear_head() override {
+            typedef TempBAT<v2_void_t, Tail> bat_t;
+            typedef typename bat_t::coldesc_head_t coldesc_head_t;
+            typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+            return new bat_t(coldesc_head_t(), coldesc_tail_t(this->tail));
         }
 
         virtual oid_t size() override {
@@ -390,19 +418,31 @@ namespace ahead {
 #endif
         }
 
-        virtual BAT<Tail, Head>*
+        virtual BAT<Tail, Head> *
         reverse() override {
             return new TempBAT<Tail, v2_void_t>(this->tail, this->head);
         }
 
-        virtual BAT<Head, Head>*
+        virtual BAT<Head, Head> *
         mirror_head() override {
             return new TempBAT<v2_void_t, v2_void_t>(this->head, this->head);
         }
 
-        virtual BAT<Tail, Tail>*
+        virtual BAT<Tail, Tail> *
         mirror_tail() override {
             return new TempBAT<Tail, Tail>(this->tail, this->tail);
+        }
+
+        virtual BAT<v2_void_t, Tail> *
+        clear_head() override {
+            typedef TempBAT<v2_void_t, Tail> bat_t;
+            typedef typename bat_t::coldesc_head_t coldesc_head_t;
+            typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+            if (this->head.metaData.seqbase == 0) {
+                return this;
+            } else {
+                return new bat_t(coldesc_head_t(), coldesc_tail_t(this->tail));
+            }
         }
 
         virtual oid_t size() override {

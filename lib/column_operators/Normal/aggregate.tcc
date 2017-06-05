@@ -33,7 +33,8 @@ namespace ahead {
             BAT<v2_void_t, Result> *
             aggregate_sum_grouped(
                     BAT<Head, Tail> * bat,
-                    BAT<v2_void_t, v2_oid_t> * grouping
+                    BAT<v2_void_t, v2_oid_t> * grouping,
+                    size_t numGroups
                     ) {
                 if (bat->size() != grouping->size()) {
                     throw std::runtime_error("bat and grouping must have the same size!");
@@ -41,12 +42,14 @@ namespace ahead {
                 typedef typename Result::type_t result_t;
                 auto batResult = new TempBAT<v2_void_t, Result>();
                 auto vec = batResult->tail.container.get();
-                vec->resize(grouping->size(), result_t(0));
+                vec->resize(numGroups, result_t(0));
                 auto iter = bat->begin();
                 auto iterGroup = grouping->begin();
                 for (; iter->hasNext(); ++*iter, ++*iterGroup) {
                     (*vec)[iterGroup->tail()] += iter->tail();
                 }
+                delete iter;
+                delete iterGroup;
                 return batResult;
             }
 

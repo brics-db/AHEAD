@@ -99,8 +99,6 @@ int main(int argc, char** argv) {
 
         // p_category = 'MFGR#12'
         MEASURE_OP(bat8, select<std::equal_to>(batPC, const_cast<str_t>("MFGR#12"))); // OID part | p_category
-        // p_brand = 'MFGR#121'
-        // MEASURE_OP(bat8, select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         delete bat8;
         auto batA = batPP->reverse(); // p_partkey | OID part
@@ -128,55 +126,57 @@ int main(int argc, char** argv) {
         MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
-        MEASURE_OP(batA1, hashjoin(batZ, batPB)); // OID lineorder | p_brand
-        delete batZ;
-
-        MEASURE_OP(batA2, hashjoin(batI, batDY)); // OID lineorder | d_year
+        MEASURE_OP(batAY, matchjoin(batI, batDY)); // OID lineorder | d_year
         delete batI;
-
-        MEASURE_OP(batA3, matchjoin(batW, batLR)); // OID lineorder | lo_revenue (where ...)
+        MEASURE_OP(batAB, matchjoin(batZ, batPB)); // OID lineorder | p_brand
+        delete batZ;
+        MEASURE_OP(batAR, matchjoin(batW, batLR)); // OID lineorder | lo_revenue (where ...)
         delete batW;
+        MEASURE_OP_PAIR(pairGY, groupby(batAY));
+        MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY)));
+        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+        auto batAY2 = batAY->clear_head();
+        auto batAB2 = batAB->clear_head();
+        MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY2));
+        MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB2));
 
-        MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(batA3, batA2, batA1));
-        delete batA1;
-        delete batA2;
-        delete batA3;
-
-        auto szResult = std::get<0>(tupleK)->size();
+        auto szResult = batRR->size();
 
         ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
             size_t sum = 0;
-            auto iter1 = std::get<0>(tupleK)->begin();
-            auto iter2 = std::get<1>(tupleK)->begin();
-            auto iter3 = std::get<2>(tupleK)->begin();
-            auto iter4 = std::get<3>(tupleK)->begin();
-            auto iter5 = std::get<4>(tupleK)->begin();
+            auto iter1 = batRR->begin();
+            auto iter2 = batRY->begin();
+            auto iter3 = batRB->begin();
             std::cerr << "+------------+--------+-----------+\n";
             std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
-            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
+            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail();
                 std::cerr << "| " << std::setw(10) << iter1->tail();
-                iter3->position(iter2->tail());
-                std::cerr << " | " << std::setw(6) << iter3->tail();
-                iter5->position(iter4->tail());
-                std::cerr << " | " << std::setw(9) << iter5->tail() << " |\n";
+                std::cerr << " | " << std::setw(6) << iter2->tail();
+                std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;
-            delete iter4;
-            delete iter5;
         }
-        delete std::get<0>(tupleK);
-        delete std::get<1>(tupleK);
-        delete std::get<2>(tupleK);
-        delete std::get<3>(tupleK);
-        delete std::get<4>(tupleK);
+
+        delete batAY;
+        delete batAB;
+        delete batAR;
+        delete std::get<0>(pairGY);
+        delete std::get<1>(pairGY);
+        delete std::get<0>(pairGB);
+        delete std::get<1>(pairGB);
+        delete batRR;
+        delete batAY2;
+        delete batAB2;
+        delete batRY;
+        delete batRB;
     }
 
     ssb::after_queries();

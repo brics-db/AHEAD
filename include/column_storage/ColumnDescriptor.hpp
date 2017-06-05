@@ -68,15 +68,15 @@ namespace ahead {
         }
 
         ColumnDescriptor(const ColumnDescriptor<V2Type, Container> & cd)
-                : container(cd.container), metaData(std::move(cd.metaData)) {
+                : container(cd.container), metaData(cd.metaData) {
         }
 
         ColumnDescriptor(ColumnDescriptor<V2Type, Container> && cd)
-                : container(cd.container), metaData(std::move(cd.metaData)) {
+                : container(cd.container), metaData(cd.metaData) {
         }
 
         ColumnDescriptor(ColumnMetaData metaData)
-                : container(new Container), metaData(std::move(metaData)) {
+                : container(new Container), metaData(metaData) {
         }
 
         virtual ~ColumnDescriptor() {
@@ -105,7 +105,7 @@ namespace ahead {
         }
 
         ColumnDescriptor(ColumnMetaData metaData)
-                : metaData(std::move(metaData)) {
+                : metaData(metaData) {
         }
 
         ColumnDescriptor(const ColumnDescriptor<v2_void_t, void> & cd) = default;
@@ -137,11 +137,11 @@ namespace ahead {
         }
 
         ColumnDescriptor(const ColumnDescriptor<V2Type, void> & cd)
-                : metaData(std::move(cd.metaData)) {
+                : metaData(cd.metaData) {
         }
 
         ColumnDescriptor(ColumnDescriptor<V2Type, void> && cd)
-                : metaData(std::move(cd.metaData)) {
+                : metaData(cd.metaData) {
         }
 
         virtual ~ColumnDescriptor() {

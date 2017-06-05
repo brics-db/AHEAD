@@ -27,27 +27,28 @@ namespace ahead {
     namespace bat {
         namespace ops {
 
-#define V2_MATCHJOIN_SUB(V2HEAD, V2TAIL) \
-template BAT<typename V2HEAD::v2_select_t, typename V2TAIL::v2_select_t> * matchjoin(BAT<V2HEAD, v2_void_t> * arg1, BAT<v2_void_t, V2TAIL> * arg2); \
-template BAT<typename V2HEAD::v2_select_t, typename V2TAIL::v2_select_t> * matchjoin(BAT<V2HEAD, v2_void_t> * arg1, BAT<v2_oid_t, V2TAIL> * arg2); \
-template BAT<typename V2HEAD::v2_select_t, typename V2TAIL::v2_select_t> * matchjoin(BAT<V2HEAD, v2_oid_t> * arg1, BAT<v2_oid_t, V2TAIL> * arg2); \
-template BAT<typename V2HEAD::v2_select_t, typename V2TAIL::v2_select_t> * matchjoin(BAT<V2HEAD, v2_oid_t> * arg1, BAT<v2_void_t, V2TAIL> * arg2);
+#define V2_MATCHJOIN_SUB(Head, Tail) \
+template BAT<typename Head::v2_select_t, typename Tail::v2_select_t> * matchjoin(BAT<Head, v2_void_t> *, BAT<v2_void_t, Tail> *); \
+template BAT<typename Head::v2_select_t, typename Tail::v2_select_t> * matchjoin(BAT<Head, v2_void_t> *, BAT<v2_oid_t, Tail> *); \
+template BAT<typename Head::v2_select_t, typename Tail::v2_select_t> * matchjoin(BAT<Head, v2_oid_t> *, BAT<v2_oid_t, Tail> *); \
+template BAT<typename Head::v2_select_t, typename Tail::v2_select_t> * matchjoin(BAT<Head, v2_oid_t> *, BAT<v2_void_t, Tail> *);
 
-#define V2_MATCHJOIN(V2TAIL) \
-V2_MATCHJOIN_SUB(v2_void_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_oid_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_id_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_size_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_tinyint_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_shortint_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_int_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_bigint_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_str_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_restiny_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_resshort_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_resint_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_resbigint_t, V2TAIL) \
-V2_MATCHJOIN_SUB(v2_resstr_t, V2TAIL)
+#define V2_MATCHJOIN(Tail) \
+V2_MATCHJOIN_SUB(v2_void_t, Tail) \
+V2_MATCHJOIN_SUB(v2_oid_t, Tail) \
+V2_MATCHJOIN_SUB(v2_id_t, Tail) \
+V2_MATCHJOIN_SUB(v2_size_t, Tail) \
+V2_MATCHJOIN_SUB(v2_tinyint_t, Tail) \
+V2_MATCHJOIN_SUB(v2_shortint_t, Tail) \
+V2_MATCHJOIN_SUB(v2_int_t, Tail) \
+V2_MATCHJOIN_SUB(v2_bigint_t, Tail) \
+V2_MATCHJOIN_SUB(v2_str_t, Tail) \
+V2_MATCHJOIN_SUB(v2_restiny_t, Tail) \
+V2_MATCHJOIN_SUB(v2_resshort_t, Tail) \
+V2_MATCHJOIN_SUB(v2_resint_t, Tail) \
+V2_MATCHJOIN_SUB(v2_resbigint_t, Tail) \
+V2_MATCHJOIN_SUB(v2_resstr_t, Tail) \
+template BAT<v2_void_t, Tail> * fetchjoin(BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, Tail> *);
 
         }
     }

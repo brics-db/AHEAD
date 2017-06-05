@@ -77,13 +77,15 @@ namespace ahead {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
+
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
         virtual oid_t size() = 0;
@@ -136,13 +138,15 @@ namespace ahead {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
+
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
         virtual oid_t size() = 0;
@@ -194,13 +198,15 @@ namespace ahead {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
+
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
         virtual oid_t size() = 0;
@@ -252,13 +258,15 @@ namespace ahead {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
+
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
         virtual oid_t size() = 0;
