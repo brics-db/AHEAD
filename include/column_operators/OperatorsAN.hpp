@@ -104,6 +104,17 @@ namespace ahead {
                     typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
                     );
 
+            template<typename Result, typename Head, typename Tail>
+            std::tuple<BAT<v2_void_t, typename TypeMap<Result>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
+            aggregate_sum_groupedAN(
+                    BAT<Head, Tail> * bat,
+                    BAT<v2_void_t, v2_resoid_t> * grouping,
+                    typename TypeMap<Result>::v2_encoded_t::type_t RA = std::get<ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::As->size() - 1>(*ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::As), // use largest A for encoding by default
+                    typename TypeMap<Result>::v2_encoded_t::type_t RAInv = std::get<ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::Ainvs->size() - 1>(*ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::Ainvs),
+                    resoid_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
+                    resoid_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
+                    );
+
             namespace scalar {
 
                 template<typename Head, typename Tail>
@@ -510,6 +521,18 @@ V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, int) \
 V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, bigint, int) \
 V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, bigint)
 
+#define AHEAD_AGGREGATE_SUM_GROUPED_AN(Result, Head, Tail)                                                                                                    \
+template<typename Result, typename Head, typename Tail>                                                                                                       \
+            std::tuple<BAT<v2_void_t, typename TypeMap<Result>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>         \
+            aggregate_sum_groupedAN(                                                                                                                          \
+                    BAT<Head, Tail> * bat,                                                                                                                    \
+                    BAT<v2_void_t, v2_resoid_t> * grouping,                                                                                                   \
+                    typename TypeMap<Result>::v2_encoded_t::type_t RA,                                                                                        \
+                    typename TypeMap<Result>::v2_encoded_t::type_t RAInv,                                                                                     \
+                    resoid_t AOID,                                                                                                                            \
+                    resoid_t AOIDinv                                                                                                                          \
+                    );
+
             namespace scalar {
                 AHEAD_AGGREGATE_MUL_SUM_AN
             }
@@ -518,9 +541,13 @@ V2_AGGREGATE_MUL_SUM_AN_SUB(resbigint, int, bigint)
                 AHEAD_AGGREGATE_MUL_SUM_AN
             }
 
+            AHEAD_AGGREGATE_SUM_GROUPED_AN(v2_resbigint_t, v2_oid_t, v2_int_t);
+            AHEAD_AGGREGATE_SUM_GROUPED_AN(v2_resbigint_t, v2_void_t, v2_int_t);
+
 #undef V2_AGGREGATE_MUL_SUM_AN_SUB
 #undef V2_AGGREGATE_MUL_SUM_AN
 #undef AHEAD_AGGREGATE_MUL_SUM_AN
+#undef AHEAD_AGGREGATE_SUM_GROUPED_AN
 
         }
     }

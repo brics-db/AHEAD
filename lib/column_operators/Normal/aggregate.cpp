@@ -63,6 +63,7 @@ template BAT<v2_void_t, V2RESULT> * sse::aggregate_mul_sum<V2RESULT, v2_oid_t, V
 template BAT<v2_void_t, Result> * aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping, size_t numGroups);
 
             V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_oid_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_void_t, v2_int_t)
 
         }
     }

@@ -42,9 +42,13 @@ namespace ahead {
                  */
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<
                         Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init =
-                        typename Result::type_t(0), typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 1>(*ANParametersSelector<ResEnc>::As), // use largest A for encoding by default
-                typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 1>(*ANParametersSelector<ResEnc>::Ainvs)) {
+                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*>
+                aggregate_mul_sumAN(
+                        BAT<Head1, Tail1>* arg1,
+                        BAT<Head2, Tail2>* arg2,
+                        typename Result::type_t init = typename Result::type_t(0),
+                        typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 1>(*ANParametersSelector<ResEnc>::As), // use largest A for encoding by default
+                        typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 1>(*ANParametersSelector<ResEnc>::Ainvs)) {
                     typedef typename Result::type_t result_t;
                     typedef typename T1Enc::type_t t1enc_t;
                     typedef typename T2Enc::type_t t2enc_t;
@@ -56,27 +60,29 @@ namespace ahead {
                     t2enc_t AT2inv = static_cast<t2enc_t>(arg2->tail.metaData.AN_Ainv);
                     t2enc_t AT2unencMaxU = static_cast<t2enc_t>(arg2->tail.metaData.AN_unencMaxU);
 
-                    const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
-                    const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
-                    const bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
+                    constexpr const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
+                    constexpr const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
+                    constexpr const bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
                     result_t total = init;
                     std::vector<bool>* vec1 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
                     std::vector<bool>* vec2 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
 
-                    size_t codeWidth = (sizeof(result_t) * 8);
-                    uint128_t AT1_ui128(AT1);
-                    uint128_t AT2_ui128(AT2);
-                    result_t AT1InvR(1);
-                    result_t AT2InvR(1);
-                    if (isTail1Encoded) {
-                        uint128_t temp = ext_euclidean(AT1_ui128, codeWidth);
-                        AT1InvR = v2convert<result_t>(temp);
-                    }
-                    if (isTail2Encoded) {
-                        uint128_t temp = ext_euclidean(AT2_ui128, codeWidth);
-                        AT2InvR = v2convert<result_t>(temp);
-                    }
-                    const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
+                    // size_t codeWidth = (sizeof(result_t) * 8);
+                    // uint128_t AT1_ui128(AT1);
+                    // uint128_t AT2_ui128(AT2);
+                    // result_t AT1InvR(1);
+                    // result_t AT2InvR(1);
+                    // if (isTail1Encoded) {
+                    //     uint128_t temp = ext_euclidean(AT1_ui128, codeWidth);
+                    //     AT1InvR = v2convert<result_t>(temp);
+                    // }
+                    // if (isTail2Encoded) {
+                    //     uint128_t temp = ext_euclidean(AT2_ui128, codeWidth);
+                    //     AT2InvR = v2convert<result_t>(temp);
+                    // }
+                    // const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
+                    const result_t AResultEncode = (isResultEncoded ? RA : result_t(1)) * (isTail1Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT1), sizeof(result_t) * 8))) : result_t(1))
+                            * (isTail2Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT2), sizeof(result_t) * 8))) : result_t(1));
 #ifdef AN_TEST_ARITH
                     const result_t ATempResultTest = AT1InvR * AT2InvR;
 #endif
@@ -94,13 +100,13 @@ namespace ahead {
 #ifdef AN_TEST_ARITH
                         if (isTail1Encoded || isTail2Encoded) {
                             result_t dTemp = static_cast<result_t>(t1) * static_cast<result_t>(t2);
-                            // try 3 times to get a valid result
+                            // try at most 3 times to get a valid result
                             for (size_t i = 0; (static_cast<result_t>(dTemp * ATempResultTest) > static_cast<result_t>(Result::UNENC_MAX_U)) && (i < 3); ++i) {
                                 dTemp = static_cast<result_t>(t1) * static_cast<result_t>(t2);
                             }
                             result_t cTemp = dTemp * AResultEncode;
                             result_t totalTemp = total + cTemp;
-                            // try 3 times to get a valid result
+                            // try at most 3 times to get a valid result
                             for (size_t i = 0; (static_cast<result_t>(totalTemp * RAInv) > static_cast<result_t>(Result::UNENC_MAX_U)) && (i < 3); ++i) {
                                 totalTemp = total + cTemp;
                             }

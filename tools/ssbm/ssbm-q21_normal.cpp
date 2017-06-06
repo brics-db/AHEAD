@@ -128,17 +128,27 @@ int main(int argc, char** argv) {
         delete batY;
         MEASURE_OP(batAY, matchjoin(batI, batDY)); // OID lineorder | d_year
         delete batI;
+        auto batAY2 = batAY->clear_head();
+        delete batAY;
         MEASURE_OP(batAB, matchjoin(batZ, batPB)); // OID lineorder | p_brand
         delete batZ;
-        MEASURE_OP(batAR, matchjoin(batW, batLR)); // OID lineorder | lo_revenue (where ...)
-        delete batW;
-        MEASURE_OP_PAIR(pairGY, groupby(batAY));
-        MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY)));
-        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
-        auto batAY2 = batAY->clear_head();
         auto batAB2 = batAB->clear_head();
+        delete batAB;
+        MEASURE_OP(batAR, matchjoin(batW, batLR)); // OID lineorder | lo_revenue (where ...)
+        auto batAR2 = batAR->clear_head();
+        delete batAR;
+        delete batW;
+        MEASURE_OP_PAIR(pairGY, groupby(batAY2));
+        MEASURE_OP_PAIR(pairGB, groupby(batAB2, std::get<0>(pairGY)));
+        delete std::get<0>(pairGY);
+        delete std::get<1>(pairGY);
+        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR2, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
         MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY2));
+        delete batAY2;
         MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB2));
+        delete batAB2;
+        delete std::get<0>(pairGB);
+        delete std::get<1>(pairGB);
 
         auto szResult = batRR->size();
 
@@ -165,16 +175,7 @@ int main(int argc, char** argv) {
             delete iter3;
         }
 
-        delete batAY;
-        delete batAB;
-        delete batAR;
-        delete std::get<0>(pairGY);
-        delete std::get<1>(pairGY);
-        delete std::get<0>(pairGB);
-        delete std::get<1>(pairGB);
         delete batRR;
-        delete batAY2;
-        delete batAB2;
         delete batRY;
         delete batRB;
     }

@@ -164,7 +164,7 @@ namespace ahead {
 
     enum type_t {
 
-        type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
+        type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint, type_resbigint, type_resstring
     };
 
     typedef void empty_t;

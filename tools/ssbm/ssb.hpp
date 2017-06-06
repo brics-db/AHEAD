@@ -134,16 +134,8 @@ namespace ssb {
         fout << '\n';
         for (; iter->hasNext(); ++i, ++*iter) {
             fout << std::setw(wOID) << i;
-            if (isHeadLT16) {
-                fout << " | " << std::setw(wHead) << static_cast<uint16_t>(iter->head());
-            } else {
-                fout << " | " << std::setw(wHead) << iter->head();
-            }
-            if (isTailLT16) {
-                fout << " | " << std::setw(wTail) << static_cast<uint16_t>(iter->tail());
-            } else {
-                fout << " | " << std::setw(wTail) << iter->tail();
-            }
+            fout << " | " << std::setw(wHead) << iter->head();
+            fout << " | " << std::setw(wTail) << iter->tail();
             fout << '\n';
         }
         fout << std::flush;
