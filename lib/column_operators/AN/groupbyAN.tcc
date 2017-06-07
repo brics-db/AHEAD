@@ -92,7 +92,7 @@ namespace ahead {
                     typedef ahead::bat::ops::Private::equals<tail_t> comparator;
 
                     static
-                    std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, std::vector<bool>*, std::vector<bool>*>
+                    std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, AN_indicator_vector *, AN_indicator_vector *>
                     unary(
                             BAT<Head, Tail>* bat,
                             resoid_t AOID,
@@ -104,8 +104,10 @@ namespace ahead {
                         head_t HUnencMaxU = groupbyANconverter<Head, uint64_t>::getValue(bat->head.metaData.AN_unencMaxU);
                         tail_t TAInv = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_Ainv);
                         tail_t TUnencMaxU = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_unencMaxU);
-                        std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(bat->size()) : nullptr);
-                        std::vector<bool> *vec2 = (isTailEncoded ? new std::vector<bool>(bat->size()) : nullptr);
+                        AN_indicator_vector *vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
+                        vec1->reserve(32);
+                        AN_indicator_vector *vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
+                        vec2->reserve(32);
 
                         google::dense_hash_map<tunenc_t, oid_t, hasher, comparator> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
@@ -144,7 +146,7 @@ namespace ahead {
                     typedef typename v2_largerTail_t::type_t largerTail_t;
 
                     static
-                    std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, std::vector<bool>*, std::vector<bool>*>
+                    std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
                     binary(
                             BAT<Head, Tail>* bat,
                             BAT<v2_void_t, v2_resoid_t> * grouping,
@@ -161,8 +163,14 @@ namespace ahead {
                         head_t HUnencMaxU = groupbyANconverter<Head, uint64_t>::getValue(bat->head.metaData.AN_unencMaxU);
                         tail_t TAInv = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_Ainv);
                         tail_t TUnencMaxU = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_unencMaxU);
-                        std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(bat->size()) : nullptr);
-                        std::vector<bool> *vec2 = (isTailEncoded ? new std::vector<bool>(bat->size()) : nullptr);
+                        AN_indicator_vector *vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
+                        if (isHeadEncoded) {
+                            vec1->reserve(32);
+                        }
+                        AN_indicator_vector *vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
+                        if (isTailEncoded) {
+                            vec2->reserve(32);
+                        }
 
                         const size_t numExistingGroups = grouping->size();
                         auto batHashToRGID = new TempBAT<v2_largerTail_t, v2_resoid_t>();
@@ -214,7 +222,7 @@ namespace ahead {
              * 4) Bitmap Tail: position -> error detected (true) or not (false)
              */
             template<typename Head, typename Tail>
-            std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
             groupbyAN(
                     BAT<Head, Tail> * bat,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
@@ -236,7 +244,7 @@ namespace ahead {
              * 4) Bitmap Tail: position -> error detected (true) or not (false)
              */
             template<typename Head, typename Tail>
-            std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
             groupbyAN(
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,

@@ -42,10 +42,9 @@ namespace ahead {
                     run(
                             BAT<Head, Tail> * bat,
                             BAT<v2_void_t, v2_resoid_t> * grouping,
-                            typename result_t AResult,
-                            typename result_t AResultInv,
-                            resoid_t AOID,
-                            resoid_t AOIDInv
+                            typename Result::type_t AResult,
+                            typename Result::type_t AResultInv,
+                            resoid_t AOID
                             ) {
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
@@ -54,19 +53,21 @@ namespace ahead {
                             throw std::runtime_error("bat and grouping must have the same size!");
                         }
 
-                        henc_t AH = static_cast<henc_t>(bat->head.metaData.AN_A);
-                        henc_t AHinv = static_cast<henc_t>(bat->head.metaData.AN_Ainv);
-                        henc_t AHunencMaxU = static_cast<henc_t>(bat->head.metaData.AN_unencMaxU);
-                        tenc_t AT = static_cast<tenc_t>(bat->tail.metaData.AN_A);
-                        tenc_t ATinv = static_cast<tenc_t>(bat->tail.metaData.AN_Ainv);
-                        tenc_t ATunencMaxU = static_cast<tenc_t>(bat->tail.metaData.AN_unencMaxU);
+                        const henc_t AHinv = static_cast<henc_t>(bat->head.metaData.AN_Ainv);
+                        const henc_t AHunencMaxU = static_cast<henc_t>(bat->head.metaData.AN_unencMaxU);
+                        const tenc_t AT = static_cast<tenc_t>(bat->tail.metaData.AN_A);
+                        const tenc_t ATinv = static_cast<tenc_t>(bat->tail.metaData.AN_Ainv);
+                        const tenc_t ATunencMaxU = static_cast<tenc_t>(bat->tail.metaData.AN_unencMaxU);
 
                         typedef typename TempBAT<v2_void_t, Result>::coldesc_head_t cd_head_t;
                         typedef typename TempBAT<v2_void_t, Result>::coldesc_tail_t cd_tail_t;
                         auto batResult = new TempBAT<v2_void_t, Result>(cd_head_t(), cd_tail_t(ColumnMetaData(sizeof(result_t), AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN)));
-                        AN_indicator_vector * vecHead = isHeadEncoded ? new AN_indicator_vector(32) : nullptr;
-                        AN_indicator_vector * vecTail = isTailEncoded ? new AN_indicator_vector(32) : nullptr;
-                        AN_indicator_vector * vecGrouping = new AN_indicator_vector(32);
+                        AN_indicator_vector * vecHead = isHeadEncoded ? new AN_indicator_vector() : nullptr;
+                        vecHead->reserve(32);
+                        AN_indicator_vector * vecTail = isTailEncoded ? new AN_indicator_vector() : nullptr;
+                        vecTail->reserve(32);
+                        AN_indicator_vector * vecGrouping = new AN_indicator_vector();
+                        vecGrouping->reserve(32);
 
                         const result_t AResultEncode = AResult * (isTailEncoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT), sizeof(result_t) * 8))) : result_t(1));
 #ifdef AN_TEST_ARITH
@@ -113,17 +114,16 @@ namespace ahead {
             }
 
             template<typename Result, typename Head, typename Tail>
-            std::tuple<BAT<v2_void_t, typename TypeMap<Result>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
+            std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
             aggregate_sum_groupedAN(
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,
-                    typename TypeMap<Result>::v2_encoded_t::type_t AResult,
-                    typename TypeMap<Result>::v2_encoded_t::type_t AResultInv,
-                    resoid_t AOID,
-                    resoid_t AOIDInv
+                    typename Result::type_t AResult,
+                    typename Result::type_t AResultInv,
+                    resoid_t AOID
                     ) {
                 static_assert(std::is_base_of<v2_anencoded_t, Result>::value, "Result type must be a subtype of v2_anencoded_t!");
-                return Private::aggregate_sum_groupedAN<Result, Head, Tail>::run(bat, grouping, AResult, AResultInv, AOID, AOIDInv);
+                return Private::aggregate_sum_groupedAN<Result, Head, Tail>::run(bat, grouping, AResult, AResultInv, AOID);
             }
 
         }

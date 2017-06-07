@@ -112,7 +112,7 @@ namespace ahead {
                 BAT<v2_void_t, Result>*
                 aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0));
             }
-
+/*
 #define V2_COPY(V2TYPE) \
 extern template TempBAT<v2_void_t, V2TYPE>* copy(BAT<v2_void_t, V2TYPE>* arg); \
 extern template TempBAT<v2_oid_t, V2TYPE>* copy(BAT<v2_oid_t, V2TYPE>* arg); \
@@ -391,7 +391,7 @@ extern template BAT<v2_void_t, Result> * aggregate_sum_grouped(BAT<Head, Tail> *
             V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_void_t, v2_int_t)
 
 #undef V2_AGGREGATE_SUM_GROUPED
-
+*/
         }
     }
 }

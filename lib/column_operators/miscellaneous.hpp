@@ -138,9 +138,9 @@ namespace ahead {
             }
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
-            TempBAT<TargetHead, TargetTail>*
+            TempBAT<TargetHead, TargetTail> *
             skeleton(
-                    BAT<Head, Tail>* arg
+                    BAT<Head, Tail> * arg
                     ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
@@ -149,9 +149,9 @@ namespace ahead {
             }
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
-            TempBAT<TargetHead, TargetTail>*
+            TempBAT<TargetHead, TargetTail> *
             skeletonHead(
-                    BAT<Head, Tail>* arg
+                    BAT<Head, Tail> * arg
                     ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
@@ -160,9 +160,9 @@ namespace ahead {
             }
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
-            TempBAT<TargetHead, TargetTail>*
+            TempBAT<TargetHead, TargetTail> *
             skeletonTail(
-                    BAT<Head, Tail>* arg
+                    BAT<Head, Tail> * arg
                     ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
@@ -171,10 +171,10 @@ namespace ahead {
             }
 
             template<typename TargetHead, typename TargetTail, typename Head1, typename Tail1, typename Head2, typename Tail2>
-            TempBAT<TargetHead, TargetTail>*
+            TempBAT<TargetHead, TargetTail> *
             skeletonJoin(
-                    BAT<Head1, Tail1>* arg1,
-                    BAT<Head2, Tail2>* arg2
+                    BAT<Head1, Tail1> * arg1,
+                    BAT<Head2, Tail2> * arg2
                     ) {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;

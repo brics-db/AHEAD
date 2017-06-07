@@ -307,14 +307,11 @@ SAVE_TYPE((std::get<0>(TUPLE)))
     }                                                                          \
 } while(false)
 
-///////////////////////
-// CLEAR_HASHJOIN_AN //
-///////////////////////
-#define CLEAR_HASHJOIN_AN(TUPLE)                                               \
+///////////////////
+// CLEAR_JOIN_AN //
+///////////////////
+#define CLEAR_JOIN_AN(TUPLE)                                                   \
 ;do {                                                                          \
-    if (std::get<1>(TUPLE) || std::get<2>(TUPLE) || std::get<3>(TUPLE)         \
-        || std::get<4>(TUPLE)) {                                               \
-    }                                                                          \
     if (std::get<1>(TUPLE)) {                                                  \
         delete std::get<1>(TUPLE);                                             \
     }                                                                          \
@@ -329,13 +326,21 @@ SAVE_TYPE((std::get<0>(TUPLE)))
     }                                                                          \
 } while (false)
 
+#define CLEAR_FETCHJOIN_AN(TUPLE)                                              \
+;do {                                                                          \
+    if (std::get<1>(TUPLE)) {                                                  \
+        delete std::get<1>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<2>(TUPLE)) {                                                  \
+        delete std::get<2>(TUPLE);                                             \
+    }                                                                          \
+} while (false)
+
 /////////////////////////////
 // CLEAR_CHECKANDDECODE_AN //
 /////////////////////////////
 #define CLEAR_CHECKANDDECODE_AN(TUPLE)                                         \
 ;do {                                                                          \
-    if (std::get<1>(TUPLE) || std::get<2>(TUPLE)) {                            \
-    }                                                                          \
     if (std::get<1>(TUPLE)) {                                                  \
         delete std::get<1>(TUPLE);                                             \
     }                                                                          \
@@ -349,8 +354,6 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 //////////////////////
 #define CLEAR_GROUPBY_AN(TUPLE)                                                \
 ;do {                                                                          \
-    if (std::get<2>(TUPLE) || std::get<3>(TUPLE))) {                           \
-    }                                                                          \
     if (std::get<2>(TUPLE)) {                                                  \
         delete std::get<2>(TUPLE);                                             \
     }                                                                          \
@@ -364,26 +367,11 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 /////////////////////////
 #define CLEAR_GROUPEDSUM_AN(TUPLE)                                             \
 ;do {                                                                          \
-    if (std::get<5>(TUPLE) || std::get<6>(TUPLE) || std::get<7>(TUPLE)         \
-        || std::get<8>(TUPLE) || std::get<9>(TUPLE) || std::get<10>(TUPLE)) {  \
+    if (std::get<2>(TUPLE)) {                                                  \
+        delete std::get<2>(TUPLE);                                             \
     }                                                                          \
-    if (std::get<5>(TUPLE)) {                                                  \
-        delete std::get<5>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<6>(TUPLE)) {                                                  \
-        delete std::get<6>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<7>(TUPLE)) {                                                  \
-        delete std::get<7>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<8>(TUPLE)) {                                                  \
-        delete std::get<8>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<9>(TUPLE)) {                                                  \
-        delete std::get<9>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<10>(TUPLE)) {                                                 \
-        delete std::get<10>(TUPLE);                                            \
+    if (std::get<3>(TUPLE)) {                                                  \
+        delete std::get<3>(TUPLE);                                             \
     }                                                                          \
 } while (false)
 

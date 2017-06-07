@@ -60,7 +60,7 @@ namespace ahead {
                             const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                             const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
                             const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
-                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector());
+                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                             result.first->reserve(arg->size() / 2);
                             if (reencode) {
@@ -146,7 +146,7 @@ namespace ahead {
                             const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                             const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
                             const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
-                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector());
+                            auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                             result.first->reserve(arg->size() / 2);
                             if (reencode) {

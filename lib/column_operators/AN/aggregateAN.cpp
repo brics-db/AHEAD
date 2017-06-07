@@ -93,11 +93,17 @@ V2_AGGREGATE_MUL_SUM_AN(CONCAT(v2_, Result, _t), CONCAT(v2_, Result, _t), v2_res
 
             V2_AGGREGATE_MUL_SUM_AN(v2_resbigint_t, v2_resbigint_t, v2_resoid_t, v2_resint_t, v2_resoid_t, v2_restiny_t)
 
-#define V2_AGGREGATE_SUM_GROUPED(Result, Head, Tail) \
-template std::tuple<BAT<v2_void_t, typename TypeMap<Result>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_resoid_t> * grouping);
+#define V2_AGGREGATE_SUM_GROUPED(Result, Head, Tail)                                                                                                 \
+template std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>                                   \
+    aggregate_sum_groupedAN(                                                                                                                         \
+            BAT<Head, Tail> * bat,                                                                                                                   \
+            BAT<v2_void_t, v2_resoid_t> * grouping,                                                                                                  \
+			typename Result::type_t AResult,                                                                                                         \
+			typename Result::type_t AResultInv,                                                                                                      \
+            resoid_t AOID);
 
-            V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_oid_t, v2_int_t)
-            V2_AGGREGATE_SUM_GROUPED(v2_bigint_t, v2_void_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_oid_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_void_t, v2_int_t)
 
         }
     }
