@@ -98,12 +98,17 @@ template std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicato
     aggregate_sum_groupedAN(                                                                                                                         \
             BAT<Head, Tail> * bat,                                                                                                                   \
             BAT<v2_void_t, v2_resoid_t> * grouping,                                                                                                  \
+            size_t numGroups,                                                                                                                        \
 			typename Result::type_t AResult,                                                                                                         \
 			typename Result::type_t AResultInv,                                                                                                      \
             resoid_t AOID);
 
             V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_oid_t, v2_int_t)
             V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_void_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_resoid_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_oid_t, v2_resint_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_void_t, v2_resint_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_resoid_t, v2_resint_t)
 
         }
     }

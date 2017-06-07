@@ -27,7 +27,7 @@ namespace ahead {
 
 #define V2_GROUPBY_SUB(Head, Tail) \
 template std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> groupby<Head, Tail>(BAT<Head, Tail> * bat); \
-template std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> groupby<Head, Tail>(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping);
+template std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> groupby<Head, Tail>(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping, size_t numGroups);
 
 #define V2_GROUPBY(Tail) \
 V2_GROUPBY_SUB(v2_void_t, Tail) \

@@ -21,14 +21,14 @@
 
 #include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
+#include "macros.hpp"
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Continuous Detection\n===================================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+    ssb::init(argc, argv, "SSBM Query 2.1 Continuous Detection\n===================================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.1:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"
             "    and lo_partkey = p_partkey\n"
             "    and lo_suppkey = s_suppkey\n"
@@ -120,21 +120,21 @@ int main(int argc, char** argv) {
         delete std::get<0>(tupleB);
 
         // join with date now!
-        auto batD = std::get<0>(tupleC)->mirror_head(); // OID lineorder | OID lineorder  (where ...)
+        auto batE = std::get<0>(tupleC)->mirror_head(); // OID lineorder | OID lineorder  (where ...)
         delete std::get<0>(tupleC);
-        MEASURE_OP_TUPLE(tupleE, matchjoinAN(batD, batLOenc)); // OID lineorder | lo_orderdate (where ...)
-        CLEAR_JOIN_AN(tupleE);
-        delete batD;
-        auto batF = batDDenc->reverse(); // d_datekey | OID date
-        MEASURE_OP_TUPLE(tupleG,
-                hashjoinAN(std::get<0>(tupleE), batF, std::get<0>(tupleE)->head.metaData.AN_A, std::get<0>(tupleE)->head.metaData.AN_Ainv, std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
+        MEASURE_OP_TUPLE(tupleF, matchjoinAN(batE, batLOenc)); // OID lineorder | lo_orderdate (where ...)
+        CLEAR_JOIN_AN(tupleF);
+        delete batE;
+        auto batH = batDDenc->reverse(); // d_datekey | OID date
+        MEASURE_OP_TUPLE(tupleI,
+                hashjoinAN(std::get<0>(tupleF), batH, std::get<0>(tupleF)->head.metaData.AN_A, std::get<0>(tupleF)->head.metaData.AN_Ainv, std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
                         std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
-        CLEAR_JOIN_AN(tupleG);
-        delete std::get<0>(tupleE);
-        delete batF;
+        CLEAR_JOIN_AN(tupleI);
+        delete std::get<0>(tupleF);
+        delete batH;
 
         // now prepare grouped sum and check inputs
-        auto batW = std::get<0>(tupleG)->mirror_head(); // OID lineorder | OID lineorder
+        auto batW = std::get<0>(tupleI)->mirror_head(); // OID lineorder | OID lineorder
         MEASURE_OP_TUPLE(tupleX, matchjoinAN(batW, batLPenc)); // OID lineorder | lo_partkey
         CLEAR_JOIN_AN(tupleX);
         auto batY = batPPenc->reverse(); // p_partkey | OID part
@@ -145,34 +145,36 @@ int main(int argc, char** argv) {
         CLEAR_JOIN_AN(tupleZ);
         delete std::get<0>(tupleX);
         delete batY;
-        MEASURE_OP_TUPLE(tupleAY, matchjoinAN(std::get<0>(tupleG), batDYenc)); // OID lineorder | d_year
-        CLEAR_JOIN_AN(tupleAY);
-        auto batAY2 = std::get<0>(tupleAY)->clear_head();
-        delete std::get<0>(tupleAY);
-        MEASURE_OP_TUPLE(tupleAB, matchjoinAN(std::get<0>(tupleZ), batPB)); // OID lineorder | p_brand
-        CLEAR_JOIN_AN(tupleAB);
+        auto batI = std::get<0>(tupleI)->clear_head();
+        delete std::get<0>(tupleI);
+        MEASURE_OP_TUPLE(tupleAY, fetchjoinAN(batI, batDYenc)); // OID lineorder | d_year
+        CLEAR_FETCHJOIN_AN(tupleAY);
+        delete batI;
+        auto batZ = std::get<0>(tupleZ)->clear_head();
         delete std::get<0>(tupleZ);
-        auto batAB2 = std::get<0>(tupleAB)->clear_head();
-        delete std::get<0>(tupleAB);
-        MEASURE_OP_TUPLE(tupleAR, matchjoinAN(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
-        CLEAR_JOIN_AN(tupleAR);
-        auto batAR2 = std::get<0>(tupleAR)->clear_head();
-        delete std::get<0>(tupleAR);
+        MEASURE_OP_TUPLE(tupleAB, fetchjoinAN(batZ, batPB)); // OID lineorder | p_brand
+        CLEAR_FETCHJOIN_AN(tupleAB);
+        delete batZ;
+        auto batW2 = batW->clear_head();
         delete batW;
-        MEASURE_OP_TUPLE(tupleGY, groupbyAN(batAY2));
-        CLEAR_GROUPBY_AN(tupleGY);
-        MEASURE_OP_TUPLE(tupleGB, groupbyAN(batAB2, std::get<0>(tupleGY)));
-        CLEAR_GROUPBY_AN(tupleGB);
+        MEASURE_OP_TUPLE(tupleAR, fetchjoinAN(batW2, batLRenc)); // OID lineorder | lo_revenue (where ...)
+        CLEAR_FETCHJOIN_AN(tupleAR);
+        delete batW2;
+        MEASURE_OP_TUPLE(tupleGY, groupbyAN(std::get<0>(tupleAY)));
+        CLEAR_GROUPBY_UNARY_AN(tupleGY);
+        MEASURE_OP_TUPLE(tupleGB, groupbyAN(std::get<0>(tupleAB), std::get<0>(tupleGY), std::get<1>(tupleGY)->size()));
+        CLEAR_GROUPBY_BINARY_AN(tupleGB);
         delete std::get<0>(tupleGY);
         delete std::get<1>(tupleGY);
-        MEASURE_OP_TUPLE(tupleRR, aggregate_sum_groupedAN<v2_resbigint_t>(batAR2, std::get<0>(tupleGB), std::get<1>(tupleGB)->size()));
+        MEASURE_OP_TUPLE(tupleRR, aggregate_sum_groupedAN<v2_resbigint_t>(std::get<0>(tupleAR), std::get<0>(tupleGB), std::get<1>(tupleGB)->size()));
         CLEAR_GROUPEDSUM_AN(tupleRR);
-        MEASURE_OP_TUPLE(tupleRY, fetchjoinAN(std::get<1>(tupleGB), batAY2));
+        delete std::get<0>(tupleAR);
+        MEASURE_OP_TUPLE(tupleRY, fetchjoinAN(std::get<1>(tupleGB), std::get<0>(tupleAY)));
         CLEAR_FETCHJOIN_AN(tupleRY);
-        delete batAY2;
-        MEASURE_OP_TUPLE(tupleRB, fetchjoinAN(std::get<1>(tupleGB), batAB2));
+        delete std::get<0>(tupleAY);
+        MEASURE_OP_TUPLE(tupleRB, fetchjoinAN(std::get<1>(tupleGB), std::get<0>(tupleAB)));
         CLEAR_FETCHJOIN_AN(tupleRB);
-        delete batAB2;
+        delete std::get<0>(tupleAB);
         delete std::get<0>(tupleGB);
         delete std::get<1>(tupleGB);
 
@@ -194,8 +196,8 @@ int main(int argc, char** argv) {
             std::cerr << "+============+========+===========+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail() * batRRAinv;
-                std::cerr << "| " << std::setw(10) << iter1->tail() * batRRAinv;
-                std::cerr << " | " << std::setw(6) << iter2->tail() * batRYAinv;
+                std::cerr << "| " << std::setw(10) << static_cast<revenue_tail_t>(iter1->tail() * batRRAinv);
+                std::cerr << " | " << std::setw(6) << static_cast<year_tail_t>(iter2->tail() * batRYAinv);
                 std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";

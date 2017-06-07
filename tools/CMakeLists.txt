@@ -149,9 +149,9 @@ FIND_PACKAGE(OpenMP)
 IF(OPENMP_FOUND)
 	MESSAGE("Generating OpenMP targets")
 	add_ssb("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
-	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt")
+	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
 	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q21_dmr_mt_seq \
-ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE")
+ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE ssbm-q21_dmr_mt_SSE")
 #	add_ssb("ssbm-q22_dmr_mt ssbm-q23_dmr_mt")
 #	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt")
 #	enable_openmp("ssbm-q22_dmr_mt_seq ssbm-q23_dmr_mt_seq \

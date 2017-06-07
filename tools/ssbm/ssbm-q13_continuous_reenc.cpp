@@ -21,10 +21,10 @@
 
 #include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
+#include "macros.hpp"
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.3 Continuous Detection With Reencoding\n===================================================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C",
-            "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P");
+    ssb::init(argc, argv, "SSBM Query 1.3 Continuous Detection With Reencoding\n===================================================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.3:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
         MEASURE_OP_PAIR(pair9, selectAN<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
         delete pair9.second;
         MEASURE_OP_TUPLE(tupleA,
-                matchjoinAN(bat8, pair9.first, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resshort_t::As), std::get<14>(*v2_resshort_t::Ainvs)));
+                matchjoinAN(bat8, pair9.first, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_restiny_t::As), std::get<14>(*v2_restiny_t::Ainvs)));
         delete bat8;
         delete pair9.first;
         CLEAR_JOIN_AN(tupleA);

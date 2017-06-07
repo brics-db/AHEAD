@@ -91,35 +91,35 @@ namespace ahead {
                     std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
                     binary(
                             BAT<Head, Tail> * bat,
-                            BAT<v2_void_t, v2_oid_t> * grouping
+                            BAT<v2_void_t, v2_oid_t> * grouping,
+                            size_t numGroups
                             ) {
                         if (bat->size() != grouping->size()) {
                             throw std::runtime_error("input BAT and existing grouping have different sizes!");
                         }
-                        const size_t numExistingGroups = grouping->size();
                         auto batHashToGID = new TempBAT<v2_largerTail_t, v2_oid_t>();
                         auto batVoidToGID = new TempBAT<v2_void_t, v2_oid_t>();
-                        auto batGIDtoOID = new TempBAT<v2_void_t, v2_oid_t>();
+                        auto batVGIDtoOID = new TempBAT<v2_void_t, v2_oid_t>();
                         auto iter = bat->begin();
-                        auto iter2 = grouping->begin();
-                        for (; iter->hasNext(); ++*iter, ++*iter2) {
-                            largerTail_t curHash = static_cast<largerTail_t>(hasher::get(iter->tail())) * static_cast<largerTail_t>(numExistingGroups) + static_cast<largerTail_t>(iter2->tail());
+                        auto iterG = grouping->begin();
+                        for (; iter->hasNext(); ++*iter, ++*iterG) {
+                            largerTail_t curHash = static_cast<largerTail_t>(hasher::get(iter->tail())) * static_cast<largerTail_t>(numGroups) + static_cast<largerTail_t>(iterG->tail());
                             // search this tail in our mapping
                             // idx is the void value of mapGIDtoTail, which starts at zero
                             auto opt = findFirstHead(batHashToGID, curHash);
                             if (opt) {
                                 batVoidToGID->append(opt.value());
                             } else {
-                                oid_t newGID = batGIDtoOID->size();
-                                batGIDtoOID->append(iter->head());
+                                oid_t newGID = batVGIDtoOID->size();
+                                batVGIDtoOID->append(iter->head());
                                 batHashToGID->append(std::make_pair(curHash, newGID));
                                 batVoidToGID->append(newGID);
                             }
                         }
                         delete iter;
-                        delete iter2;
+                        delete iterG;
                         delete batHashToGID;
-                        return std::make_pair(batVoidToGID, batGIDtoOID);
+                        return std::make_pair(batVoidToGID, batVGIDtoOID);
                     }
                 };
 
@@ -152,9 +152,10 @@ namespace ahead {
             std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
             groupby(
                     BAT<Head, Tail> * bat,
-                    BAT<v2_void_t, v2_oid_t> * grouping
+                    BAT<v2_void_t, v2_oid_t> * grouping,
+                    size_t numGroups
                     ) {
-                return Private::groupby<Head, Tail>::binary(bat, grouping);
+                return Private::groupby<Head, Tail>::binary(bat, grouping, numGroups);
             }
 
         }

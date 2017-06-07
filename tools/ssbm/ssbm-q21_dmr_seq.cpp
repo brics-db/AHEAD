@@ -20,13 +20,13 @@
  */
 
 #include "ssb.hpp"
+#include "macros.hpp"
 
 typedef typename std::tuple<BAT<v2_void_t, v2_bigint_t>*, BAT<v2_void_t, v2_shortint_t>*, BAT<v2_void_t, v2_str_t>*> result_tuple_t;
 typedef DMRValue<result_tuple_t> DMR;
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 DMR Sequential\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
-            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+    ssb::init(argc, argv, "SSBM Query 2.1 DMR Sequential\n=============================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.1:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
             delete batAR;
             delete batW;
             MEASURE_OP_PAIR(pairGY, groupby(batAY2));
-            MEASURE_OP_PAIR(pairGB, groupby(batAB2, std::get<0>(pairGY)));
+            MEASURE_OP_PAIR(pairGB, groupby(batAB2, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
             delete std::get<0>(pairGY);
             delete std::get<1>(pairGY);
             MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR2, std::get<0>(pairGB), std::get<1>(pairGB)->size()));

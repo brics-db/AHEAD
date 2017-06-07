@@ -27,40 +27,40 @@
 
 namespace ahead {
 
-#define DEFINE_BATS(BATTYPE, v2_type_t)                \
-extern template class BATTYPE<v2_type_t, v2_tinyint_t> ;    \
-extern template class BATTYPE<v2_type_t, v2_shortint_t> ;   \
-extern template class BATTYPE<v2_type_t, v2_int_t> ;        \
-extern template class BATTYPE<v2_type_t, v2_bigint_t> ;     \
-extern template class BATTYPE<v2_type_t, v2_char_t> ;       \
-extern template class BATTYPE<v2_type_t, v2_str_t> ;        \
-extern template class BATTYPE<v2_type_t, v2_fixed_t> ;      \
-extern template class BATTYPE<v2_type_t, v2_id_t> ;         \
-extern template class BATTYPE<v2_type_t, v2_size_t> ;       \
-extern template class BATTYPE<v2_type_t, v2_oid_t> ;        \
-extern template class BATTYPE<v2_type_t, v2_void_t> ;       \
-extern template class BATTYPE<v2_type_t, v2_restiny_t> ;    \
-extern template class BATTYPE<v2_type_t, v2_resshort_t> ;   \
-extern template class BATTYPE<v2_type_t, v2_resint_t> ;     \
-extern template class BATTYPE<v2_type_t, v2_resbigint_t> ;  \
-extern template class BATTYPE<v2_type_t, v2_resstr_t> ;     \
+#define DEFINE_BATS(v2_type_t)                \
+extern template class TempBAT<v2_type_t, v2_tinyint_t> ;    \
+extern template class TempBAT<v2_type_t, v2_shortint_t> ;   \
+extern template class TempBAT<v2_type_t, v2_int_t> ;        \
+extern template class TempBAT<v2_type_t, v2_bigint_t> ;     \
+extern template class TempBAT<v2_type_t, v2_char_t> ;       \
+extern template class TempBAT<v2_type_t, v2_str_t> ;        \
+extern template class TempBAT<v2_type_t, v2_fixed_t> ;      \
+extern template class TempBAT<v2_type_t, v2_id_t> ;         \
+extern template class TempBAT<v2_type_t, v2_size_t> ;       \
+extern template class TempBAT<v2_type_t, v2_oid_t> ;        \
+extern template class TempBAT<v2_type_t, v2_void_t> ;       \
+extern template class TempBAT<v2_type_t, v2_restiny_t> ;    \
+extern template class TempBAT<v2_type_t, v2_resshort_t> ;   \
+extern template class TempBAT<v2_type_t, v2_resint_t> ;     \
+extern template class TempBAT<v2_type_t, v2_resbigint_t> ;  \
+extern template class TempBAT<v2_type_t, v2_resstr_t> ;     \
 
-    DEFINE_BATS(TempBAT, v2_tinyint_t)
-    DEFINE_BATS(TempBAT, v2_shortint_t)
-    DEFINE_BATS(TempBAT, v2_int_t)
-    DEFINE_BATS(TempBAT, v2_bigint_t)
-    DEFINE_BATS(TempBAT, v2_char_t)
-    DEFINE_BATS(TempBAT, v2_str_t)
-    DEFINE_BATS(TempBAT, v2_fixed_t)
-    DEFINE_BATS(TempBAT, v2_id_t)
-    DEFINE_BATS(TempBAT, v2_size_t)
-    DEFINE_BATS(TempBAT, v2_oid_t)
-    DEFINE_BATS(TempBAT, v2_void_t)
-    DEFINE_BATS(TempBAT, v2_restiny_t)
-    DEFINE_BATS(TempBAT, v2_resshort_t)
-    DEFINE_BATS(TempBAT, v2_resint_t)
-    DEFINE_BATS(TempBAT, v2_resbigint_t)
-    DEFINE_BATS(TempBAT, v2_resstr_t)
+    DEFINE_BATS(v2_tinyint_t)
+    DEFINE_BATS(v2_shortint_t)
+    DEFINE_BATS(v2_int_t)
+    DEFINE_BATS(v2_bigint_t)
+    DEFINE_BATS(v2_char_t)
+    DEFINE_BATS(v2_str_t)
+    DEFINE_BATS(v2_fixed_t)
+    DEFINE_BATS(v2_id_t)
+    DEFINE_BATS(v2_size_t)
+    DEFINE_BATS(v2_oid_t)
+    DEFINE_BATS(v2_void_t)
+    DEFINE_BATS(v2_restiny_t)
+    DEFINE_BATS(v2_resshort_t)
+    DEFINE_BATS(v2_resint_t)
+    DEFINE_BATS(v2_resbigint_t)
+    DEFINE_BATS(v2_resstr_t)
 
 #undef DEFINE_BATS
 

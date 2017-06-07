@@ -20,13 +20,13 @@
  */
 
 #include "ssb.hpp"
+#include "macros.hpp"
 
 typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_shortint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> result_tuple_t;
 typedef DMRValue<result_tuple_t> DMR;
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.3 DMR Sequential\n=============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
-            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+    ssb::init(argc, argv, "SSBM Query 2.3 DMR Sequential\n=============================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.3:\n"
             "select sum(lo_revenue), d_year, p_brand\n"

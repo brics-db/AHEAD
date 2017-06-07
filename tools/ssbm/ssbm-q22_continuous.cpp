@@ -21,10 +21,10 @@
 
 #include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
+#include "macros.hpp"
 
 int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.2 Continuous Detection\n===================================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+    ssb::init(argc, argv, "SSBM Query 2.2 Continuous Detection\n===================================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.2:\n"
             "select sum(lo_revenue), d_year, p_brand\n"

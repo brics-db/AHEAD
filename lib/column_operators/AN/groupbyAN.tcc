@@ -78,7 +78,7 @@ namespace ahead {
                     }
                 };
 
-                template<typename V2T, typename U = typename V2T::type_t>
+                template<typename V2T, typename U>
                 struct groupbyANconverter : public groupbyANconverter0<typename V2T::type_t, U, std::is_base_of<v2_anencoded_t, V2T>::value> {
                 };
 
@@ -100,14 +100,18 @@ namespace ahead {
                             ) {
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
-                        head_t HAInv = groupbyANconverter<Head, uint64_t>::getValue(bat->head.metaData.AN_Ainv);
-                        head_t HUnencMaxU = groupbyANconverter<Head, uint64_t>::getValue(bat->head.metaData.AN_unencMaxU);
-                        tail_t TAInv = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_Ainv);
-                        tail_t TUnencMaxU = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_unencMaxU);
+                        head_t HAInv = groupbyANconverter<Head, decltype(bat->head.metaData.AN_Ainv)>::getValue(bat->head.metaData.AN_Ainv);
+                        head_t HUnencMaxU = groupbyANconverter<Head, decltype(bat->head.metaData.AN_unencMaxU)>::getValue(bat->head.metaData.AN_unencMaxU);
+                        tail_t TAInv = groupbyANconverter<Tail, decltype(bat->tail.metaData.AN_Ainv)>::getValue(bat->tail.metaData.AN_Ainv);
+                        tail_t TUnencMaxU = groupbyANconverter<Tail, decltype(bat->tail.metaData.AN_unencMaxU)>::getValue(bat->tail.metaData.AN_unencMaxU);
                         AN_indicator_vector *vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
-                        vec1->reserve(32);
+                        if (isHeadEncoded) {
+                            vec1->reserve(32);
+                        }
                         AN_indicator_vector *vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
-                        vec2->reserve(32);
+                        if (isTailEncoded) {
+                            vec2->reserve(32);
+                        }
 
                         google::dense_hash_map<tunenc_t, oid_t, hasher, comparator> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
@@ -115,15 +119,16 @@ namespace ahead {
                         batVOIDtoRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVGIDtoROID = new TempBAT<v2_void_t, v2_resoid_t>();
                         batVGIDtoROID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+
                         auto iter = bat->begin();
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
-                            head_t h = groupbyANconverter<Head>::decode(iter->head(), HAInv);
+                            head_t h = groupbyANconverter<Head, head_t>::decode(iter->head(), HAInv);
                             if (isHeadEncoded && (h > HUnencMaxU)) {
-                                (*vec1)[i] = true;
+                                vec1->push_back(i * AOID);
                             }
-                            tail_t t1 = groupbyANconverter<Tail>::decode(iter->tail(), TAInv);
+                            tail_t t1 = groupbyANconverter<Tail, tail_t>::decode(iter->tail(), TAInv);
                             if (isTailEncoded && (t1 > TUnencMaxU)) {
-                                (*vec2)[i] = true;
+                                vec2->push_back(i * AOID);
                             }
                             auto t2 = static_cast<tunenc_t>(t1); // use (potentially smaller) unencoded size
                             // search this tail in our mapping
@@ -146,10 +151,11 @@ namespace ahead {
                     typedef typename v2_largerTail_t::type_t largerTail_t;
 
                     static
-                    std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
+                    std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
                     binary(
                             BAT<Head, Tail>* bat,
                             BAT<v2_void_t, v2_resoid_t> * grouping,
+                            size_t numGroups,
                             resoid_t AOID,
                             resoid_t AOIDinv
                             ) {
@@ -159,38 +165,46 @@ namespace ahead {
 
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
-                        head_t HAInv = groupbyANconverter<Head, uint64_t>::getValue(bat->head.metaData.AN_Ainv);
-                        head_t HUnencMaxU = groupbyANconverter<Head, uint64_t>::getValue(bat->head.metaData.AN_unencMaxU);
-                        tail_t TAInv = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_Ainv);
-                        tail_t TUnencMaxU = groupbyANconverter<Tail, uint64_t>::getValue(bat->tail.metaData.AN_unencMaxU);
-                        AN_indicator_vector *vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
+                        head_t HAInv = groupbyANconverter<Head, decltype(bat->head.metaData.AN_Ainv)>::getValue(bat->head.metaData.AN_Ainv);
+                        head_t HUnencMaxU = groupbyANconverter<Head, decltype(bat->head.metaData.AN_unencMaxU)>::getValue(bat->head.metaData.AN_unencMaxU);
+                        tail_t TAInv = groupbyANconverter<Tail, decltype(bat->tail.metaData.AN_Ainv)>::getValue(bat->tail.metaData.AN_Ainv);
+                        tail_t TUnencMaxU = groupbyANconverter<Tail, decltype(bat->tail.metaData.AN_unencMaxU)>::getValue(bat->tail.metaData.AN_unencMaxU);
+                        resoid_t GAInv = groupbyANconverter<v2_resoid_t, decltype(grouping->tail.metaData.AN_Ainv)>::getValue(grouping->tail.metaData.AN_Ainv);
+                        resoid_t GUnencMaxU = groupbyANconverter<v2_resoid_t, decltype(grouping->tail.metaData.AN_unencMaxU)>::getValue(grouping->tail.metaData.AN_unencMaxU);
+                        AN_indicator_vector * vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
                         if (isHeadEncoded) {
                             vec1->reserve(32);
                         }
-                        AN_indicator_vector *vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
+                        AN_indicator_vector * vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
                         if (isTailEncoded) {
                             vec2->reserve(32);
                         }
+                        AN_indicator_vector * vecGrouping = new AN_indicator_vector;
+                        vecGrouping->reserve(32);
 
-                        const size_t numExistingGroups = grouping->size();
                         auto batHashToRGID = new TempBAT<v2_largerTail_t, v2_resoid_t>();
                         batHashToRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVOIDtoRGID = new TempBAT<v2_void_t, v2_resoid_t>();
                         batVOIDtoRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVGIDtoROID = new TempBAT<v2_void_t, v2_resoid_t>();
                         batVGIDtoROID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+
                         auto iter = bat->begin();
-                        auto iter2 = grouping->begin();
-                        for (size_t i = 0; iter->hasNext(); ++*iter, ++*iter2, ++i) {
-                            head_t h = groupbyANconverter<Head>::decode(iter->head(), HAInv);
+                        auto iterG = grouping->begin();
+                        for (size_t i = 0; iter->hasNext(); ++*iter, ++*iterG, ++i) {
+                            head_t h = groupbyANconverter<Head, head_t>::decode(iter->head(), HAInv);
                             if (isHeadEncoded && (h > HUnencMaxU)) {
-                                (*vec1)[i] = true;
+                                vec1->push_back(i * AOID);
                             }
-                            tail_t t = groupbyANconverter<Tail>::decode(iter->tail(), TAInv);
+                            tail_t t = groupbyANconverter<Tail, tail_t>::decode(iter->tail(), TAInv);
                             if (isTailEncoded && (t > TUnencMaxU)) {
-                                (*vec2)[i] = true;
+                                vec2->push_back(i * AOID);
                             }
-                            largerTail_t curHash = static_cast<largerTail_t>(hasher::get(t)) * static_cast<largerTail_t>(numExistingGroups) + static_cast<largerTail_t>(h);
+                            resoid_t g = groupbyANconverter<v2_resoid_t, resoid_t>::decode(iterG->tail(), GAInv);
+                            if (g > GUnencMaxU) {
+                                vecGrouping->push_back(i * AOID);
+                            }
+                            largerTail_t curHash = static_cast<largerTail_t>(hasher::get(t)) * static_cast<largerTail_t>(numGroups) + static_cast<largerTail_t>(g);
                             // search this tail in our mapping
                             // idx is the void value of mapGIDtoTail, which starts at zero
                             auto opt = findFirstHead(batHashToRGID, curHash);
@@ -204,7 +218,9 @@ namespace ahead {
                             }
                         }
                         delete iter;
-                        return std::make_tuple(batVOIDtoRGID, batVGIDtoROID, vec1, vec2);
+                        delete iterG;
+                        delete batHashToRGID;
+                        return std::make_tuple(batVOIDtoRGID, batVGIDtoROID, vec1, vec2, vecGrouping);
                     }
                 };
 
@@ -244,14 +260,15 @@ namespace ahead {
              * 4) Bitmap Tail: position -> error detected (true) or not (false)
              */
             template<typename Head, typename Tail>
-            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
+            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
             groupbyAN(
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,
+                    size_t numGroups,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
                     typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
                     ) {
-                return Private::groupbyAN<Head, Tail, false>::binary(bat, grouping, AOID, AOIDinv);
+                return Private::groupbyAN<Head, Tail, false>::binary(bat, grouping, numGroups, AOID, AOIDinv);
             }
 
         }

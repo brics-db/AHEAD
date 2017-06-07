@@ -42,6 +42,7 @@ namespace ahead {
                     run(
                             BAT<Head, Tail> * bat,
                             BAT<v2_void_t, v2_resoid_t> * grouping,
+                            size_t numGroups,
                             typename Result::type_t AResult,
                             typename Result::type_t AResultInv,
                             resoid_t AOID
@@ -58,14 +59,20 @@ namespace ahead {
                         const tenc_t AT = static_cast<tenc_t>(bat->tail.metaData.AN_A);
                         const tenc_t ATinv = static_cast<tenc_t>(bat->tail.metaData.AN_Ainv);
                         const tenc_t ATunencMaxU = static_cast<tenc_t>(bat->tail.metaData.AN_unencMaxU);
+                        const resoid_t AGinv = static_cast<resoid_t>(grouping->tail.metaData.AN_Ainv);
+                        const resoid_t AGunencMaxU = static_cast<resoid_t>(grouping->tail.metaData.AN_unencMaxU);
 
                         typedef typename TempBAT<v2_void_t, Result>::coldesc_head_t cd_head_t;
                         typedef typename TempBAT<v2_void_t, Result>::coldesc_tail_t cd_tail_t;
                         auto batResult = new TempBAT<v2_void_t, Result>(cd_head_t(), cd_tail_t(ColumnMetaData(sizeof(result_t), AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN)));
                         AN_indicator_vector * vecHead = isHeadEncoded ? new AN_indicator_vector() : nullptr;
-                        vecHead->reserve(32);
+                        if (isHeadEncoded) {
+                            vecHead->reserve(32);
+                        }
                         AN_indicator_vector * vecTail = isTailEncoded ? new AN_indicator_vector() : nullptr;
-                        vecTail->reserve(32);
+                        if (isTailEncoded) {
+                            vecTail->reserve(32);
+                        }
                         AN_indicator_vector * vecGrouping = new AN_indicator_vector();
                         vecGrouping->reserve(32);
 
@@ -75,7 +82,7 @@ namespace ahead {
 #endif
 
                         auto vec = batResult->tail.container.get();
-                        vec->resize(grouping->size(), result_t(0));
+                        vec->resize(numGroups, result_t(0));
                         auto iter = bat->begin();
                         auto iterGroup = grouping->begin();
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++*iterGroup, ++i) {
@@ -86,21 +93,26 @@ namespace ahead {
                             if (isTailEncoded && static_cast<tenc_t>(t * ATinv) > ATunencMaxU) {
                                 vecTail->push_back(i * AOID);
                             }
-#ifdef AN_TEST_ARITH
-                            if (isHeadEncoded || isTailEncoded) {
-                                const result_t base = (*vec)[iterGroup->tail()];
-                                result_t temp = base + t;
-                                // try at most 3 times to get a valid result
-                                for (size_t i = 0; (i < 3) && (static_cast<result_t>(temp * ATempResultTest)) > static_cast<result_t>(Result::UNENC_MAX_U); ++i) {
-                                    temp = base + t;
-                                }
-                                (*vec)[iterGroup->tail()] = temp;
+                            auto gID = iterGroup->tail() * AGinv;
+                            if (gID > AGunencMaxU) {
+                                vecGrouping->push_back(i * AOID);
                             } else {
-                                (*vec)[iterGroup->tail()] += t * AResultEncode;
-                            }
+#ifdef AN_TEST_ARITH
+                                if (isHeadEncoded || isTailEncoded) {
+                                    const result_t base = (*vec)[iterGroup->tail()];
+                                    result_t temp = base + t;
+                                    // try at most 3 times to get a valid result
+                                    for (size_t i = 0; (i < 3) && (static_cast<result_t>(temp * ATempResultTest)) > static_cast<result_t>(Result::UNENC_MAX_U); ++i) {
+                                        temp = base + t;
+                                    }
+                                    (*vec)[gID] = temp;
+                                } else {
+                                    (*vec)[gID] += t * AResultEncode;
+                                }
 #else
-                            (*vec)[iterGroup->tail()] += t * AResultEncode;
+                                (*vec)[gID] += t * AResultEncode;
 #endif
+                            }
                         }
 #ifdef AN_TEST_ARITH
                         for (auto & res : *vec) {
@@ -118,12 +130,13 @@ namespace ahead {
             aggregate_sum_groupedAN(
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,
+                    size_t numGroups,
                     typename Result::type_t AResult,
                     typename Result::type_t AResultInv,
                     resoid_t AOID
                     ) {
                 static_assert(std::is_base_of<v2_anencoded_t, Result>::value, "Result type must be a subtype of v2_anencoded_t!");
-                return Private::aggregate_sum_groupedAN<Result, Head, Tail>::run(bat, grouping, AResult, AResultInv, AOID);
+                return Private::aggregate_sum_groupedAN<Result, Head, Tail>::run(bat, grouping, numGroups, AResult, AResultInv, AOID);
             }
 
         }

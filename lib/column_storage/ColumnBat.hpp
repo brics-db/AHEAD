@@ -66,28 +66,67 @@ namespace ahead {
 
     public:
 
-        ColumnBAT(id_t columnId);
+        ColumnBAT(id_t columnId)
+                : mColumnId(columnId) {
+            this->tail.metaData = ColumnManager::getInstance()->getColumnMetaData(mColumnId);
+        }
 
-        ColumnBAT(const char *table_name, const char *attribute);
+        ColumnBAT(cstr_t table_name, cstr_t attribute)
+                : mColumnId(0) {
+            mColumnId = MetaRepositoryManager::getInstance()->getBatIdOfAttribute(table_name, attribute);
+            this->tail.metaData = ColumnManager::getInstance()->getColumnMetaData(mColumnId);
+        }
 
-        virtual ~ColumnBAT();
+        virtual ~ColumnBAT() {
+        }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail> * begin() override;
+        virtual BATIterator<Head, Tail> *
+        begin() override {
+            return new ColumnBatIterator<Head, Tail>(mColumnId);
+        }
 
-        virtual BAT<Tail, Head> * reverse() override;
+        virtual BAT<Tail, Head> *
+        reverse() override {
+            return nullptr;
+        }
 
-        virtual BAT<Head, Head> * mirror_head() override;
+        virtual BAT<Head, Head> *
+        mirror_head() override {
+            return nullptr;
+        }
 
-        virtual BAT<Tail, Tail> * mirror_tail() override;
+        virtual BAT<Tail, Tail> *
+        mirror_tail() override {
+            return nullptr;
+        }
 
-        virtual BAT<v2_void_t, Tail> * clear_head() override;
+        virtual BAT<v2_void_t, Tail> *
+        clear_head() override {
+            return this;
+        }
 
-        virtual oid_t size() override;
+        virtual oid_t size() override {
+            auto iter = begin();
+            unsigned size = iter->size();
+            delete iter;
+            return size;
+        }
 
-        virtual size_t consumption() override;
+        virtual size_t consumption() override {
+            auto iter = begin();
+            unsigned size = iter->consumption();
+            delete iter;
+            return size;
+        }
 
-        virtual size_t consumptionProjected() override;
+        virtual size_t consumptionProjected() override {
+            size_t szTail = BITS_SIZEOF(typename TypeMap<Tail>::v2_base_t::type_t);
+            if (std::is_base_of<v2_anencoded_t, Tail>::value) {
+                szTail += BITS_SIZEOF(this->tail.metaData.AN_A) - BITS_CLZ(this->tail.metaData.AN_A);
+            }
+            return BITS_TO_BYTES(size() * szTail);
+        }
     };
 
 }
