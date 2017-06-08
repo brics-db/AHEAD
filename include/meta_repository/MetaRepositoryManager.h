@@ -92,17 +92,18 @@ namespace ahead {
          *
          * Creates an entry for an attribute of a specified table into the meta repository.
          */
-        void createAttribute(char *name, char *datatype, unsigned BATId, unsigned table_id);
+        void createAttribute(cstr_t name, cstr_t datatype, unsigned BATId, unsigned table_id);
 
-        char* getDataTypeForAttribute(char *name);
+        char* getDataTypeForAttribute(cstr_t name);
 
-        unsigned getBatIdOfAttribute(const char *nameOfTable, const char *attribute);
+        unsigned getBatIdOfAttribute(cstr_t nameOfTable, cstr_t attribute);
 
     private:
         static MetaRepositoryManager *instance;
-        static char* strBaseDir;
 
         static void destroyInstance();
+
+        str_t strBaseDir;
 
         // all BATs for the "tables" table
         id_tmpbat_t *tables_id_pk;

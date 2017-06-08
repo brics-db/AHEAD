@@ -102,11 +102,6 @@ namespace ahead {
             friend class TransactionManager;
             friend class AHEAD;
 
-            static const id_t ID_BAT_COLNAMES;
-            static const id_t ID_BAT_COLTYPES;
-            static const id_t ID_BAT_COLIDENT;
-            static const id_t ID_BAT_FIRST_USER;
-
         public:
             /**
              * @author Julian Hollender

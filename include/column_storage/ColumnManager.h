@@ -43,6 +43,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <atomic>
 
 #include <ColumnStore.h>
 #include <column_storage/BucketManager.h>
@@ -58,6 +59,12 @@ namespace ahead {
     class ColumnManager {
 
     public:
+        static const size_t BAT_COLNAMES_MAXLEN;
+        static const id_t ID_BAT_COLNAMES;
+        static const id_t ID_BAT_COLTYPES;
+        static const id_t ID_BAT_COLIDENT;
+        static const id_t ID_BAT_FIRST_USER;
+
         friend class TransactionManager;
 
         /**
@@ -237,6 +244,13 @@ namespace ahead {
         ColumnMetaData getColumnMetaData(id_t id);
 
         /**
+         * @author Till Kolditz
+         *
+         * @return the next available column ID for inserting
+         */
+        id_t getNextColumnID();
+
+        /**
          * @author Julian Hollender
          *
          * Die Funktion legt eine leere Spalte mit der Identifikationsnummer id und Spaltenbreite width, d.h. die Größe eines enthaltenden Records, an. Falls bereits eine Spalte mit der Identifikationsnummer id existiert, wird keine Operation ausgeführt.
@@ -246,11 +260,14 @@ namespace ahead {
         ColumnMetaData & createColumn(id_t id, ColumnMetaData && column);
 
     private:
+
         static ColumnManager *instance;
 
         static void destroyInstance();
 
         std::unordered_map<id_t, ColumnMetaData> columnMetaData;
+
+        std::atomic<id_t> nextID;
 
         ColumnManager();
         ColumnManager(const ColumnManager &copy);

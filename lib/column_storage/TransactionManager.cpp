@@ -19,11 +19,6 @@ namespace ahead {
 
     TransactionManager* TransactionManager::instance = 0;
 
-    const id_t TransactionManager::Transaction::ID_BAT_COLNAMES = 0;
-    const id_t TransactionManager::Transaction::ID_BAT_COLTYPES = 1;
-    const id_t TransactionManager::Transaction::ID_BAT_COLIDENT = 2;
-    const id_t TransactionManager::Transaction::ID_BAT_FIRST_USER = 3;
-
     TransactionManager*
     TransactionManager::getInstance() {
         if (TransactionManager::instance == 0) {

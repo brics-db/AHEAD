@@ -20,6 +20,12 @@
 
 namespace ahead {
 
+    const size_t ColumnManager::BAT_COLNAMES_MAXLEN = 256;
+    const id_t ColumnManager::ID_BAT_COLNAMES = 0;
+    const id_t ColumnManager::ID_BAT_COLTYPES = 1;
+    const id_t ColumnManager::ID_BAT_COLIDENT = 2;
+    const id_t ColumnManager::ID_BAT_FIRST_USER = 3;
+
     ColumnManager* ColumnManager::instance = 0;
 
     ColumnManager*
@@ -39,7 +45,10 @@ namespace ahead {
     }
 
     ColumnManager::ColumnManager()
-            : columnMetaData() {
+            : columnMetaData(), nextID(ID_BAT_FIRST_USER) {
+        createColumn(ID_BAT_COLNAMES, sizeof(char) * BAT_COLNAMES_MAXLEN);
+        createColumn(ID_BAT_COLTYPES, sizeof(column_type_t));
+        createColumn(ID_BAT_COLIDENT, sizeof(id_t));
     }
 
     ColumnManager::~ColumnManager() {
@@ -56,7 +65,8 @@ namespace ahead {
         }
     }
 
-    std::unordered_set<id_t> ColumnManager::getColumnIDs() {
+    std::unordered_set<id_t>
+    ColumnManager::getColumnIDs() {
         std::unordered_set<id_t> list;
         list.reserve(columnMetaData.size());
 
@@ -77,14 +87,20 @@ namespace ahead {
         return result;
     }
 
-    ColumnMetaData ColumnManager::getColumnMetaData(id_t id) {
+    ColumnMetaData
+    ColumnManager::getColumnMetaData(id_t id) {
         auto iter = columnMetaData.find(id);
         if (iter == columnMetaData.end()) {
             std::stringstream ss;
-            ss << "ColumnManager::Column::getColumn(id_t) : id " << id << " is invalid!";
+            ss << "ColumnManager::Column::getColumnMetaData(@" << __LINE__ << ") : id " << id << " is invalid!";
             throw std::runtime_error(ss.str());
         }
         return iter->second;
+    }
+
+    id_t
+    ColumnManager::getNextColumnID() {
+        return nextID++;
     }
 
     ColumnMetaData &
@@ -92,13 +108,13 @@ namespace ahead {
         auto iter = columnMetaData.find(id);
         if (iter != columnMetaData.end()) {
             std::stringstream ss;
-            ss << "There is already a column with id " << id;
+            ss << "ColumnManager::createColumn(@" << __LINE__ << ") There is already a column with id " << id;
             throw std::runtime_error(ss.str());
         }
         auto pairIns = columnMetaData.emplace(id, width);
         if (!pairIns.second) {
             std::stringstream ss;
-            ss << "Could not create column with id " << id;
+            ss << "ColumnManager::createColumn(@" << __LINE__ << ") Could not create column with id " << id;
             throw std::runtime_error(ss.str());
         }
         return pairIns.first->second;
@@ -109,7 +125,7 @@ namespace ahead {
         auto iter = columnMetaData.find(id);
         if (iter != columnMetaData.end()) {
             std::stringstream ss;
-            ss << "There is already a column with id " << id;
+            ss << "ColumnManager::createColumn(@" << __LINE__ << ") There is already a column with id " << id;
             throw std::runtime_error(ss.str());
         }
         auto pairIns = columnMetaData.emplace(id, std::forward<ColumnMetaData>(column));

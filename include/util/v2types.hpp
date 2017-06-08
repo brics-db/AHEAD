@@ -162,7 +162,7 @@ namespace ahead {
         static const size_t digits10 = 20;
     };
 
-    enum type_t {
+    enum column_type_t {
 
         type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint, type_resbigint, type_resstring
     };

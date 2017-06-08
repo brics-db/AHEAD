@@ -21,7 +21,6 @@
 namespace ahead {
 
     MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
-    char* MetaRepositoryManager::strBaseDir = nullptr;
 
     auto PATH_INFORMATION_SCHEMA = "INFORMATION_SCHEMA";
 
@@ -40,7 +39,7 @@ namespace ahead {
     const size_t MAXLEN_STRING = 64;
 
     MetaRepositoryManager::MetaRepositoryManager()
-            : tables_id_pk(nullptr), tables_name(nullptr), attributes_id_pk(nullptr), attributes_name(nullptr), attributes_table_id_fk(nullptr), attributes_type_id_fk(nullptr),
+            : strBaseDir(nullptr), tables_id_pk(nullptr), tables_name(nullptr), attributes_id_pk(nullptr), attributes_name(nullptr), attributes_table_id_fk(nullptr), attributes_type_id_fk(nullptr),
                     attributes_column_id(nullptr), layout_id_pk(nullptr), layout_name(nullptr), layout_size(nullptr), operator_id_pk(nullptr), operator_name(nullptr), datatype_id_pk(nullptr),
                     datatype_name(nullptr), datatype_length(nullptr), datatype_category(nullptr), META_PATH(nullptr) {
         // creates the whole repository
@@ -48,8 +47,8 @@ namespace ahead {
         this->createDefaultDataTypes();
     }
 
-    MetaRepositoryManager::MetaRepositoryManager(const MetaRepositoryManager &copy)
-            : tables_id_pk(copy.tables_id_pk), tables_name(copy.tables_name), attributes_id_pk(copy.attributes_id_pk), attributes_name(copy.attributes_name),
+    MetaRepositoryManager::MetaRepositoryManager(const MetaRepositoryManager & copy)
+            : strBaseDir(copy.strBaseDir), tables_id_pk(copy.tables_id_pk), tables_name(copy.tables_name), attributes_id_pk(copy.attributes_id_pk), attributes_name(copy.attributes_name),
                     attributes_table_id_fk(copy.attributes_table_id_fk), attributes_type_id_fk(copy.attributes_type_id_fk), attributes_column_id(copy.attributes_column_id),
                     layout_id_pk(copy.layout_id_pk), layout_name(copy.layout_name), layout_size(copy.layout_size), operator_id_pk(copy.operator_id_pk), operator_name(copy.operator_name),
                     datatype_id_pk(copy.datatype_id_pk), datatype_name(copy.datatype_name), datatype_length(copy.datatype_length), datatype_category(copy.datatype_category), META_PATH(copy.META_PATH) {
@@ -91,11 +90,11 @@ namespace ahead {
     }
 
     void MetaRepositoryManager::init(cstr_t strBaseDir) {
-        if (MetaRepositoryManager::strBaseDir == nullptr) {
+        if (this->strBaseDir == nullptr) {
             getInstance(); // make sure that an instance exists
             size_t len = strlen(strBaseDir);
-            MetaRepositoryManager::strBaseDir = new char[len + 1];
-            memcpy(MetaRepositoryManager::strBaseDir, strBaseDir, len + 1); // includes NULL character
+            this->strBaseDir = new char[len + 1];
+            memcpy(this->strBaseDir, strBaseDir, len + 1); // includes NULL character
 
             size_t len3 = strlen(PATH_INFORMATION_SCHEMA);
             instance->META_PATH = new char[len + len3 + 1];
@@ -232,20 +231,20 @@ namespace ahead {
         return batNrPair.first;
     }
 
-    void MetaRepositoryManager::createAttribute(char *name, char *datatype, id_t columnID, id_t tableID) {
+    void MetaRepositoryManager::createAttribute(cstr_t name, cstr_t datatype, id_t columnID, id_t tableID) {
         id_t batIdOfDataType = selectBatId(datatype_name, datatype);
         id_t dataTypeID = selectPKId(datatype_id_pk, batIdOfDataType);
         id_t newAttributeID = getLastValue(attributes_id_pk).second + 1;
 
         attributes_id_pk->append(newAttributeID);
-        attributes_name->append(name);
+        attributes_name->append(const_cast<str_t>(name));
         attributes_table_id_fk->append(tableID);
         attributes_type_id_fk->append(dataTypeID);
         attributes_column_id->append(columnID);
     }
 
     char*
-    MetaRepositoryManager::getDataTypeForAttribute(__attribute__ ((unused)) char *name) {
+    MetaRepositoryManager::getDataTypeForAttribute(__attribute__ ((unused)) cstr_t name) {
         return nullptr;
     }
 
