@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.2:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"
             "    and lo_partkey = p_partkey\n"
             "    and lo_suppkey = s_suppkey\n"

@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
             "  from lineorder, date\n"
             "  where lo_orderdate = d_datekey\n"
-            "    and d_year = 1997\n"
+            "    and d_year = 1994\n"
             "    and lo_discount between 5 and 7\n"
             "    and lo_quantity between 26 and 35;");
 

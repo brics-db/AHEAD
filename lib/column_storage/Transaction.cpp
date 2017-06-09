@@ -103,8 +103,6 @@ namespace ahead {
 
         id_t newTableId(0); // unique id of the created table
         char datatype[LEN_VALUE];
-        id_t column_ID(0);
-        size_t columnWidth(0);
 
         const size_t DEFAULT_RESERVE(32);
         std::vector<id_t> column_IDs;
@@ -213,8 +211,8 @@ namespace ahead {
 
         while (buffer != nullptr) {
             size_t bufSlen = strlen(buffer);
-
             column_type_t columnType;
+            size_t columnWidth(0);
             if (std::strncmp(buffer, "INTEGER", 7) == 0 || std::strncmp(buffer, "INT", 3) == 0) {
                 columnType = type_int;
                 columnWidth = sizeof(int_t);
@@ -294,67 +292,75 @@ namespace ahead {
         ///////////////////////
         for (size_t i = 0; i < numColumns; ++i) {
             // find next free column ID
-            column_ID = cm->getNextColumnID();
+            auto column_ID = cm->getNextColumnID();
             column_IDs[i] = column_ID;
 
             bun = append(ColumnManager::ID_BAT_COLNAMES);
+            std::strncpy(static_cast<str_t>(bun.tail), column_names[i], strlen(column_names[i]) + 1);
+
             bool stdCreate = true;
             switch (column_types[i]) {
                 case type_tinyint:
                     std::strncpy(datatype, NAME_TINYINT, LEN_VALUE);
                     break;
+
                 case type_shortint:
                     std::strncpy(datatype, NAME_SHORTINT, LEN_VALUE);
                     break;
+
                 case type_int:
                     std::strncpy(datatype, NAME_INTEGER, LEN_VALUE);
-                    ;
                     break;
+
                 case type_largeint:
                     std::strncpy(datatype, NAME_LARGEINT, LEN_VALUE);
                     break;
+
                 case type_string:
                     std::strncpy(datatype, NAME_STRING, LEN_VALUE);
                     break;
+
                 case type_fixed:
                     std::strncpy(datatype, NAME_FIXED, LEN_VALUE);
                     break;
+
                 case type_char:
                     std::strncpy(datatype, NAME_CHAR, LEN_VALUE);
                     break;
+
                 case type_restiny:
                     std::strncpy(datatype, NAME_RESTINY, LEN_VALUE);
-                    cm->createColumn(column_ID, ColumnMetaData(columnWidth, std::get<7>(*v2_restiny_t::As), std::get<7>(*v2_restiny_t::Ainvs), v2_restiny_t::UNENC_MAX_U, v2_restiny_t::UNENC_MIN));
+                    cm->createColumn(column_ID,
+                            ColumnMetaData(column_widths[i], std::get<7>(*v2_restiny_t::As), std::get<7>(*v2_restiny_t::Ainvs), v2_restiny_t::UNENC_MAX_U, v2_restiny_t::UNENC_MIN));
                     stdCreate = false;
                     break;
+
                 case type_resshort:
                     std::strncpy(datatype, NAME_RESSHORT, LEN_VALUE);
                     cm->createColumn(column_ID,
-                            ColumnMetaData(columnWidth, std::get<15>(*v2_resshort_t::As), std::get<15>(*v2_resshort_t::Ainvs), v2_resshort_t::UNENC_MAX_U, v2_resshort_t::UNENC_MIN));
+                            ColumnMetaData(column_widths[i], std::get<15>(*v2_resshort_t::As), std::get<15>(*v2_resshort_t::Ainvs), v2_resshort_t::UNENC_MAX_U, v2_resshort_t::UNENC_MIN));
                     stdCreate = false;
                     break;
+
                 case type_resint:
                     std::strncpy(datatype, NAME_RESINT, LEN_VALUE);
-                    cm->createColumn(column_ID, ColumnMetaData(columnWidth, std::get<15>(*v2_resint_t::As), std::get<15>(*v2_resint_t::Ainvs), v2_resint_t::UNENC_MAX_U, v2_resint_t::UNENC_MIN));
+                    cm->createColumn(column_ID, ColumnMetaData(column_widths[i], std::get<15>(*v2_resint_t::As), std::get<15>(*v2_resint_t::Ainvs), v2_resint_t::UNENC_MAX_U, v2_resint_t::UNENC_MIN));
                     stdCreate = false;
                     break;
+
                 case type_resbigint:
                     [[fallthrough]];
                 case type_resstring:
                     sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type " << buffer << " in header currently unsupported for load" << std::endl;
                     throw std::runtime_error(sserr.str());
+
                 default:
                     sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type " << buffer << " in header unknown" << std::endl;
                     throw std::runtime_error(sserr.str());
             }
 
-            std::strncpy(static_cast<str_t>(bun.tail), value, strlen(datatype) + 1);
-
-            buffer = std::strtok(nullptr, actDelim);
-
-            auto columnID = column_IDs[i];
             if (stdCreate) {
-                cm->createColumn(columnID, column_widths[i]);
+                cm->createColumn(column_ID, column_widths[i]);
             }
 
             bun = append(ColumnManager::ID_BAT_COLTYPES);
@@ -362,17 +368,16 @@ namespace ahead {
 
             // Spaltenidentifikation einpflegen
             bun = append(ColumnManager::ID_BAT_COLIDENT);
-            *static_cast<id_t*>(bun.tail) = columnID;
+            *static_cast<id_t*>(bun.tail) = column_ID;
 
-            this->open(columnID);
-            columnIters.push_back(this->iterators[columnID]);
+            this->open(column_ID);
+            columnIters.push_back(this->iterators[column_ID]);
 
             // create attribute for specified table
             if (tableName) {
-                mrm->createAttribute(column_names.at(attributeNamesIndex), datatype, columnID, newTableId);
+                mrm->createAttribute(column_names.at(attributeNamesIndex), datatype, column_ID, newTableId);
             }
 
-            buffer = std::strtok(nullptr, actDelim);
             attributeNamesIndex++;
         }
 
@@ -390,7 +395,6 @@ namespace ahead {
                 areAllColumnsConverted &= attrIStream.is_open();
                 if (attrIStream) {
                     (*columnItersIterator)->read(attrIStream);
-                    delete[] buffer;
                     if (attrIStream.fail() | attrIStream.bad()) {
                         sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
                         throw std::runtime_error(sserr.str());
@@ -451,7 +455,7 @@ namespace ahead {
                                 break;
 
                             case type_int:
-                                *(static_cast<int_t*>(record.content)) = std::atol(buffer);
+                                *(static_cast<int_t*>(record.content)) = static_cast<int_t>(std::atol(buffer));
                                 break;
 
                             case type_largeint:
@@ -471,16 +475,22 @@ namespace ahead {
                                 break;
 
                             case type_restiny:
-                                *(static_cast<restiny_t*>(record.content)) = std::atol(buffer) * static_cast<restiny_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
+                                *(static_cast<restiny_t*>(record.content)) = static_cast<restiny_t>(std::atol(buffer)) * static_cast<restiny_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
                                 break;
 
                             case type_resshort:
-                                *(static_cast<resshort_t*>(record.content)) = std::atol(buffer) * static_cast<resshort_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
+                                *(static_cast<resshort_t*>(record.content)) = static_cast<resshort_t>(std::atol(buffer)) * static_cast<resshort_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
                                 break;
 
                             case type_resint:
-                                *(static_cast<resint_t*>(record.content)) = std::atoll(buffer) * static_cast<resint_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
+                                *(static_cast<resint_t*>(record.content)) = static_cast<resint_t>(std::atoll(buffer)) * static_cast<resint_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
                                 break;
+
+                            case type_resbigint:
+                                [[fallthrough]];
+                            case type_resstring:
+                                sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type " << buffer << " in header currently unsupported for load" << std::endl;
+                                throw std::runtime_error(sserr.str());
 
                             default:
                                 sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type unknown" << std::endl;

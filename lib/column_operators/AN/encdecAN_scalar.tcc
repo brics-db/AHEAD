@@ -166,7 +166,7 @@ namespace ahead {
 
                             typedef typename Tail::type_t tail_t;
 
-                            static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
+                            static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "Tail must be an AN-encoded type");
 
                             constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
                             tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);

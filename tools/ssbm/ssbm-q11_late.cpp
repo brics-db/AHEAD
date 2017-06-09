@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
     ssb::init(argc, argv, "SSBM Query 1.1 Late Detection\n=============================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.1:\n"
-            "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "select sum(lo_extendedprice * lo_discount) as revenue\n"
+            "  from lineorder, date\n"
             "  where lo_orderdate = d_datekey\n"
             "    and d_year = 1993\n"
             "    and lo_discount between 1 and 3\n"
