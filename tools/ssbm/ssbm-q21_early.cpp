@@ -159,7 +159,6 @@ int main(int argc, char** argv) {
         MEASURE_OP(batAR, fetchjoin(batW2, std::get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
         delete std::get<0>(tupleLR);
         delete batW2;
-        delete batW;
         MEASURE_OP_PAIR(pairGY, groupby(batAY));
         MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
         delete std::get<0>(pairGY);

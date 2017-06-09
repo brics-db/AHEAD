@@ -558,8 +558,7 @@ namespace ahead {
                     typename TypeMap<Head1>::v2_encoded_t::type_t AInvReenc,
                     hash_side_t hashside = hash_side_t::right
                     ) {
-                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true, false>::run(
-                        arg1, arg2, hashside, AReenc, AInvReenc);
+                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true, false>::run(arg1, arg2, hashside, AReenc, AInvReenc);
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>

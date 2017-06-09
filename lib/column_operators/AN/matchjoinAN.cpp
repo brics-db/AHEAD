@@ -73,7 +73,7 @@ V2_MATCHJOIN_AN_SUB2(H1, v2_resbigint_t)
 #define V2_FETCHJOIN_AN_SIMPLE(T2)                                                                 \
 template                                                                                           \
 std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *>                     \
-fetchjoinAN(                                                                                         \
+fetchjoinAN(                                                                                       \
         BAT<v2_void_t, v2_resoid_t> *arg1,                                                         \
         BAT<v2_void_t, T2> *arg2,                                                                  \
         resoid_t AOID                                                                              \
@@ -82,11 +82,11 @@ fetchjoinAN(                                                                    
 #define V2_FETCHJOIN_AN_REENC(T2)                                                                  \
 template                                                                                           \
 std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *>                     \
-fetchjoinAN(                                                                                         \
+fetchjoinAN(                                                                                       \
         BAT<v2_void_t, v2_resoid_t> *arg1,                                                         \
         BAT<v2_void_t, T2> *arg2,                                                                  \
-        typename TypeMap<T2>::v2_encoded_t::type_t ATail,                                                                 \
-        typename TypeMap<T2>::v2_encoded_t::type_t ATailInv,                                                              \
+        typename TypeMap<T2>::v2_encoded_t::type_t ATReencInv,                                     \
+        typename TypeMap<T2>::v2_encoded_t::type_t ATReencInvInv,                                  \
         resoid_t AOID                                                                              \
         );
 

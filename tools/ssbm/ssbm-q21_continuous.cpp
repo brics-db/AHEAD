@@ -92,9 +92,11 @@ int main(int argc, char** argv) {
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP_TUPLE(tuple5,
-                hashjoinAN(batLSenc, std::get<0>(tuple4), std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs),
-                        std::get<0>(tuple4)->tail.metaData.AN_A, std::get<0>(tuple4)->tail.metaData.AN_Ainv)); // OID lineorder | OID supplier
+        MEASURE_OP_TUPLE(tuple5, hashjoinAN(
+                batLSenc,
+                std::get<0>(tuple4),
+                std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
+                std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
         CLEAR_JOIN_AN(tuple5);
         delete std::get<0>(tuple4);
         // join with LO_PARTKEY to already reduce the join partners
@@ -126,9 +128,13 @@ int main(int argc, char** argv) {
         CLEAR_JOIN_AN(tupleF);
         delete batE;
         auto batH = batDDenc->reverse(); // d_datekey | OID date
-        MEASURE_OP_TUPLE(tupleI,
-                hashjoinAN(std::get<0>(tupleF), batH, std::get<0>(tupleF)->head.metaData.AN_A, std::get<0>(tupleF)->head.metaData.AN_Ainv, std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
-                        std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
+        MEASURE_OP_TUPLE(tupleI, hashjoinAN(
+                std::get<0>(tupleF),
+                batH,
+                std::get<0>(tupleF)->head.metaData.AN_A,
+                std::get<0>(tupleF)->head.metaData.AN_Ainv,
+                std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
+                std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
         CLEAR_JOIN_AN(tupleI);
         delete std::get<0>(tupleF);
         delete batH;
@@ -138,10 +144,13 @@ int main(int argc, char** argv) {
         MEASURE_OP_TUPLE(tupleX, matchjoinAN(batW, batLPenc)); // OID lineorder | lo_partkey
         CLEAR_JOIN_AN(tupleX);
         auto batY = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP_TUPLE(tupleZ,
-                hashjoinAN(std::get<0>(tupleX), batY, std::get<0>(tupleX)->head.metaData.AN_A, std::get<0>(tupleX)->head.metaData.AN_Ainv,
-                        std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As),
-                        std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs))); // OID lineorder | OID part
+        MEASURE_OP_TUPLE(tupleZ, hashjoinAN(
+                std::get<0>(tupleX),
+                batY,
+                std::get<0>(tupleX)->head.metaData.AN_A,
+                std::get<0>(tupleX)->head.metaData.AN_Ainv,
+                std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
+                std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID part
         CLEAR_JOIN_AN(tupleZ);
         delete std::get<0>(tupleX);
         delete batY;

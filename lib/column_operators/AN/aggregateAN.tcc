@@ -48,7 +48,7 @@ namespace ahead {
                             resoid_t AOID
                             ) {
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
-                        constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
+                        constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
 
                         if (bat->size() != grouping->size()) {
                             throw std::runtime_error("bat and grouping must have the same size!");
@@ -76,7 +76,8 @@ namespace ahead {
                         AN_indicator_vector * vecGrouping = new AN_indicator_vector();
                         vecGrouping->reserve(32);
 
-                        const result_t AResultEncode = AResult * (isTailEncoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT), sizeof(result_t) * 8))) : result_t(1));
+                        const result_t ATinvR = v2convert<result_t>(ext_euclidean(uint128_t(AT), sizeof(result_t) * 8));
+                        const result_t AResultEncode = AResult * (isTailEncoded ? (ATinvR) : result_t(1));
 #ifdef AN_TEST_ARITH
                         const result_t ATempResultTest = (isTailEncoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT), sizeof(result_t) * 8))) : result_t(1));
 #endif
@@ -93,7 +94,7 @@ namespace ahead {
                             if (isTailEncoded && static_cast<tenc_t>(t * ATinv) > ATunencMaxU) {
                                 vecTail->push_back(i * AOID);
                             }
-                            auto gID = iterGroup->tail() * AGinv;
+                            auto gID = static_cast<resoid_t>(iterGroup->tail() * AGinv);
                             if (gID > AGunencMaxU) {
                                 vecGrouping->push_back(i * AOID);
                             } else {

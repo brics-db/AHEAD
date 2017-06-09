@@ -38,12 +38,16 @@ CHECK_AND_DECODE_AN_SUB(v2_oid_t, V2Tail);
                 CHECK_AND_DECODE_AN(v2_restiny_t)
                 CHECK_AND_DECODE_AN(v2_resshort_t)
                 CHECK_AND_DECODE_AN(v2_resint_t)
+                CHECK_AND_DECODE_AN(v2_resoid_t)
+                CHECK_AND_DECODE_AN(v2_resbigint_t)
             }
 
             namespace sse {
                 CHECK_AND_DECODE_AN(v2_restiny_t)
                 CHECK_AND_DECODE_AN(v2_resshort_t)
                 CHECK_AND_DECODE_AN(v2_resint_t)
+                CHECK_AND_DECODE_AN(v2_resoid_t)
+                CHECK_AND_DECODE_AN(v2_resbigint_t)
             }
 
         }

@@ -92,7 +92,7 @@ namespace ahead {
             fetchjoinAN(
                     BAT<v2_void_t, v2_resoid_t> *arg1,
                     BAT<v2_void_t, T2> *arg2,
-                    resoid_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As)
+                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As)
                     );
 
             template<typename T2>
@@ -100,17 +100,17 @@ namespace ahead {
             fetchjoinAN(
                     BAT<v2_void_t, v2_resoid_t> *arg1,
                     BAT<v2_void_t, T2> *arg2,
-                    typename TypeMap<T2>::v2_encoded_t::type_t ATail,
-                    typename TypeMap<T2>::v2_encoded_t::type_t ATailInv,
-                    resoid_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As)
+                    typename TypeMap<T2>::v2_encoded_t::type_t ATReenc,
+                    typename TypeMap<T2>::v2_encoded_t::type_t ATReencInv,
+                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As)
                     );
 
             template<typename Head, typename Tail>
             std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
             groupbyAN(
                     BAT<Head, Tail>* bat,
-                    typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As),
-                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs)
+                    typename v2_resoid_t::type_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
+                    typename v2_resoid_t::type_t AOIDinv = std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs)
                     );
 
             template<typename Head, typename Tail>
@@ -119,8 +119,8 @@ namespace ahead {
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,
                     size_t numGroups,
-                    typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
-                    typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
+                    typename v2_resoid_t::type_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), // use largest A for encoding by default
+                    typename v2_resoid_t::type_t AOIDinv = std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs) // and the appropriate inverse
                     );
 
             template<typename Result, typename Head, typename Tail>
@@ -129,9 +129,9 @@ namespace ahead {
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,
                     size_t numGroups,
-                    typename Result::type_t RA = std::get<ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::As->size() - 1>(*ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::As), // use largest A for encoding by default
-                    typename Result::type_t RAInv = std::get<ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::Ainvs->size() - 1>(*ANParametersSelector<typename TypeMap<Result>::v2_encoded_t>::Ainvs),
-                    resoid_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As) // use largest A for encoding by default
+                    typename Result::type_t AResult = std::get<TypeMap<Result>::v2_encoded_t::As->size() - 1>(*TypeMap<Result>::v2_encoded_t::As), // use largest A for encoding by default
+                    typename Result::type_t AResultInv = std::get<TypeMap<Result>::v2_encoded_t::Ainvs->size() - 1>(*TypeMap<Result>::v2_encoded_t::Ainvs),
+                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As) // use largest A for encoding by default
                     );
 
             namespace scalar {
@@ -139,7 +139,7 @@ namespace ahead {
                 BAT<Head, typename TypeMap<Tail>::v2_encoded_t>*
                 encodeAN(
                         BAT<Head, Tail>* arg,
-                        typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<ANParametersSelector<Tail>::As->size() - 1>(*ANParametersSelector<Tail>::As)
+                        typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<Tail::As->size() - 1>(*Tail::As)
                         );
 
                 template<typename Head, typename ResTail>
@@ -201,8 +201,8 @@ namespace ahead {
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,
                         typename Result::type_t init = typename Result::type_t(0),
-                        typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 1>(*ANParametersSelector<ResEnc>::As),
-                        typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 1>(*ANParametersSelector<ResEnc>::Ainvs)
+                        typename ResEnc::type_t RA = std::get<ResEnc::As->size() - 1>(*ResEnc::As),
+                        typename ResEnc::type_t RAInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs)
                         );
             }
 
@@ -211,7 +211,7 @@ namespace ahead {
                 BAT<Head, typename TypeMap<Tail>::v2_encoded_t>*
                 encodeAN(
                         BAT<Head, Tail>* arg,
-                        typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<ANParametersSelector<Tail>::As->size() - 1>(*ANParametersSelector<Tail>::As)
+                        typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<Tail::As->size() - 1>(*Tail::As)
                         );
 
                 template<typename Head, typename ResTail>
@@ -253,8 +253,8 @@ namespace ahead {
                 selectAN(
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && threshold,
-                        typename Tail::v2_select_t::type_t ATR,
-                        typename Tail::v2_select_t::type_t ATInvR
+                        typename Tail::v2_select_t::type_t ATReenc,
+                        typename Tail::v2_select_t::type_t ATReencInv
                         );
 
                 template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
@@ -263,8 +263,8 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t&& threshold1,
                         typename Tail::type_t&& threshold2,
-                        typename Tail::v2_select_t::type_t ATR,
-                        typename Tail::v2_select_t::type_t ATInvR
+                        typename Tail::v2_select_t::type_t ATReenc,
+                        typename Tail::v2_select_t::type_t ATReencInv
                         );
 
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
@@ -273,8 +273,8 @@ namespace ahead {
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,
                         typename Result::type_t init = typename Result::type_t(0),
-                        typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 1>(*ANParametersSelector<ResEnc>::As),
-                        typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 1>(*ANParametersSelector<ResEnc>::Ainvs)
+                        typename ResEnc::type_t AResult = std::get<ResEnc::As->size() - 1>(*ResEnc::As),
+                        typename ResEnc::type_t AResultInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs)
                         );
             }
 

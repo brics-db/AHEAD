@@ -366,8 +366,8 @@ namespace ahead {
                             BAT<v2_void_t, v2_resoid_t> *arg1,
                             BAT<v2_void_t, T2> *arg2,
                             resoid_t AOID,
-                            tailenc_t ATail = tailenc_t(1),
-                            tailenc_t ATailInv = tailenc_t(1)
+                            tailenc_t ATReenc = tailenc_t(1),
+                            tailenc_t ATReencInv = tailenc_t(1)
                             ) {
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, T2>::value;
                         const resoid_t AT1inv = static_cast<resoid_t>(arg1->tail.metaData.AN_Ainv);
@@ -376,9 +376,10 @@ namespace ahead {
                         tailenc_t AT2Reenc(1);
                         auto result = skeletonJoin<ReturnHead, ReturnTail>(arg1, arg2);
                         if (reencode) {
-                            result->tail.metaData.AN_A = ATail;
-                            result->tail.metaData.AN_Ainv = ATailInv;
-                            AT2Reenc = isTailEncoded ? (v2convert<tailenc_t>(ext_euclidean(uint128_t(AT2inv), sizeof(tailenc_t) * 8)) * ATail) : ATail;
+                            result->tail.metaData.AN_A = ATReenc;
+                            result->tail.metaData.AN_Ainv = ATReencInv;
+                            const tailenc_t AT2invR = v2convert<tailenc_t>(ext_euclidean(uint128_t(arg2->tail.metaData.AN_A), sizeof(tailenc_t) * 8));
+                            AT2Reenc = isTailEncoded ? (AT2invR * ATReenc) : ATReenc;
                         }
                         result->reserve(arg1->size());
                         auto vec1 = new AN_indicator_vector;
@@ -493,11 +494,11 @@ namespace ahead {
             fetchjoinAN(
                     BAT<v2_void_t, v2_resoid_t> *arg1,
                     BAT<v2_void_t, T2> *arg2,
-                    typename TypeMap<T2>::v2_encoded_t::type_t ATail,
-                    typename TypeMap<T2>::v2_encoded_t::type_t ATailInv,
+                    typename TypeMap<T2>::v2_encoded_t::type_t ATReenc,
+                    typename TypeMap<T2>::v2_encoded_t::type_t ATReencInv,
                     resoid_t AOID
                     ) {
-                return Private::FetchjoinAN<T2, true>::run(arg1, arg2, AOID, ATail, ATailInv);
+                return Private::FetchjoinAN<T2, true>::run(arg1, arg2, AOID, ATReenc, ATReencInv);
             }
 
         }

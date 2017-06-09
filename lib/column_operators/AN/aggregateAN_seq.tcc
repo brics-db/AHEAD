@@ -46,9 +46,10 @@ namespace ahead {
                 aggregate_mul_sumAN(
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,
-                        typename Result::type_t init = typename Result::type_t(0),
-                        typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 1>(*ANParametersSelector<ResEnc>::As), // use largest A for encoding by default
-                        typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 1>(*ANParametersSelector<ResEnc>::Ainvs)) {
+                        typename Result::type_t init,
+                        typename ResEnc::type_t RA,
+                        typename ResEnc::type_t RAInv
+                        ) {
                     typedef typename Result::type_t result_t;
                     typedef typename T1Enc::type_t t1enc_t;
                     typedef typename T2Enc::type_t t2enc_t;
@@ -67,20 +68,6 @@ namespace ahead {
                     std::vector<bool>* vec1 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
                     std::vector<bool>* vec2 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
 
-                    // size_t codeWidth = (sizeof(result_t) * 8);
-                    // uint128_t AT1_ui128(AT1);
-                    // uint128_t AT2_ui128(AT2);
-                    // result_t AT1InvR(1);
-                    // result_t AT2InvR(1);
-                    // if (isTail1Encoded) {
-                    //     uint128_t temp = ext_euclidean(AT1_ui128, codeWidth);
-                    //     AT1InvR = v2convert<result_t>(temp);
-                    // }
-                    // if (isTail2Encoded) {
-                    //     uint128_t temp = ext_euclidean(AT2_ui128, codeWidth);
-                    //     AT2InvR = v2convert<result_t>(temp);
-                    // }
-                    // const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
                     const result_t AResultEncode = (isResultEncoded ? RA : result_t(1)) * (isTail1Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT1), sizeof(result_t) * 8))) : result_t(1))
                             * (isTail2Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT2), sizeof(result_t) * 8))) : result_t(1));
 #ifdef AN_TEST_ARITH
