@@ -63,7 +63,7 @@ namespace ssb {
               PRINT_RESULT(0),
               CONVERT_TABLE_FILES(true),
               parser(
-                      {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, 15), std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(ID_LENTYPES,
+                      {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, 1), std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(ID_LENTYPES,
                               alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, 16)}, {
                               std::forward_as_tuple(ID_DBPATH, alias_list_t {"--dbpath", "-d"}, ".")}, {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false),
                               std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false), std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files",
@@ -272,7 +272,7 @@ namespace ssb {
 
     void print_result() {
         for (size_t k = 0; k < ssb::opTimes.size(); ++k) {
-            std::cout << "\top" << std::setw(2) << k << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]) << "\t" << std::setw(ssb::ssb_config.LEN_SIZES)
+            std::cout << "\top" << std::setw(2) << (k + 1) << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]) << "\t" << std::setw(ssb::ssb_config.LEN_SIZES)
                     << ssb::batSizes[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptions[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptionsProj[k]
                     << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << (k == 0 ? (ssb::batRSS[k] - ssb::rssAfterCopy) : (ssb::batRSS[k] - ssb::batRSS[k - 1])) << "\t"
                     << std::setw(ssb::ssb_config.LEN_TYPES) << ssb::headTypes[k].pretty_name() << "\t" << std::setw(ssb::ssb_config.LEN_TYPES)
