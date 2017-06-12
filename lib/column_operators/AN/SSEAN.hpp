@@ -41,7 +41,12 @@ namespace ahead {
 
                 typedef typename v2_mm128_cmp<T, std::greater>::mask_t mask_t;
 
-                static inline mask_t detect(__m128i mmCol, __m128i mmInv, __m128i mmDMax, std::vector<bool> * vec, size_t pos) {
+                static inline mask_t detect(
+                        __m128i mmCol,
+                        __m128i mmInv,
+                        __m128i mmDMax,
+                        std::vector<bool> * vec,
+                        size_t pos) {
                     mask_t maskGT = v2_mm128_cmp<T, std::greater>::cmp_mask(v2_mm128<T>::mullo(mmCol, mmInv), mmDMax);
                     if (maskGT) {
                         // TODO we need a different bit vector implementation where we can store whole masks and not only single boolean values!
@@ -55,7 +60,13 @@ namespace ahead {
                     return maskGT;
                 }
 
-                static inline mask_t detect(__m128i mmCol, __m128i mmInv, __m128i mmDMax, AN_indicator_vector * vec, size_t pos, resoid_t Aoid) {
+                static inline mask_t detect(
+                        __m128i mmCol,
+                        __m128i mmInv,
+                        __m128i mmDMax,
+                        AN_indicator_vector * vec,
+                        size_t pos,
+                        resoid_t Aoid) {
                     mask_t maskGT = v2_mm128_cmp<T, std::greater>::cmp_mask(v2_mm128<T>::mullo(mmCol, mmInv), mmDMax);
                     if (maskGT) {
                         decltype(maskGT) test = 1;
@@ -68,7 +79,13 @@ namespace ahead {
                     return maskGT;
                 }
 
-                static inline mask_t detect(__m128i & mmDec, __m128i mmCol, __m128i mmInv, __m128i mmDMax, std::vector<bool> * vec, size_t pos) {
+                static inline mask_t detect(
+                        __m128i & mmDec,
+                        __m128i mmCol,
+                        __m128i mmInv,
+                        __m128i mmDMax,
+                        std::vector<bool> * vec,
+                        size_t pos) {
                     mmDec = v2_mm128<T>::mullo(mmCol, mmInv);
                     mask_t maskGT = v2_mm128_cmp<T, std::greater>::cmp_mask(mmDec, mmDMax);
                     if (maskGT) {
@@ -83,7 +100,14 @@ namespace ahead {
                     return maskGT;
                 }
 
-                static inline mask_t detect(__m128i & mmDec, __m128i mmCol, __m128i mmInv, __m128i mmDMax, AN_indicator_vector * vec, size_t pos, resoid_t Aoid) {
+                static inline mask_t detect(
+                        __m128i & mmDec,
+                        __m128i mmCol,
+                        __m128i mmInv,
+                        __m128i mmDMax,
+                        AN_indicator_vector * vec,
+                        size_t pos,
+                        resoid_t Aoid) {
                     mmDec = v2_mm128<T>::mullo(mmCol, mmInv);
                     mask_t maskGT = v2_mm128_cmp<T, std::greater>::cmp_mask(mmDec, mmDMax);
                     if (maskGT) {

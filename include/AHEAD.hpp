@@ -37,11 +37,14 @@ namespace ahead {
 
         bool doConvertTableFilesOnLoad;
 
-        AHEAD(const std::string& strBaseDir);
-        AHEAD(const AHEAD & other);
+        AHEAD(
+                const std::string& strBaseDir);
+        AHEAD(
+                const AHEAD & other);
         virtual ~AHEAD();
 
-        AHEAD & operator=(const AHEAD & other);
+        AHEAD & operator=(
+                const AHEAD & other);
 
     public:
         /**
@@ -55,17 +58,27 @@ namespace ahead {
          * Arguments:
          *  * strBaseDir: path to the database files
          */
-        static AHEAD * createInstance(const std::string & strBaseDir);
+        static AHEAD * createInstance(
+                const std::string & strBaseDir);
 
-        size_t loadTable(const std::string & tableName, const char * const prefix = nullptr, const size_t size = static_cast<size_t>(-1), const char * const delim = nullptr,
+        size_t loadTable(
+                const std::string & tableName,
+                const char * const prefix = nullptr,
+                const size_t size = static_cast<size_t>(-1),
+                const char * const delim = nullptr,
                 const bool ignoreMoreData = true);
 
-        size_t loadTable(const char * const tableName, const char * const prefix = nullptr, const size_t size = static_cast<size_t>(-1), const char * const delim = nullptr, const bool ignoreMoreData =
-                true);
+        size_t loadTable(
+                const char * const tableName,
+                const char * const prefix = nullptr,
+                const size_t size = static_cast<size_t>(-1),
+                const char * const delim = nullptr,
+                const bool ignoreMoreData = true);
 
         bool isConvertTableFilesOnLoad();
 
-        void setConverttableFilesOnLoad(bool newValue);
+        void setConverttableFilesOnLoad(
+                bool newValue);
     };
 
 }

@@ -6,7 +6,8 @@
 #include "../../include/util/stopwatch.hpp"
 
 template<typename T>
-void test(const size_t NUM) {
+void test(
+        const size_t NUM) {
     typedef typename ahead::bat::ops::v2_mm128<T>::mask_t mask_t;
     const size_t NUM128 = (NUM / (sizeof(__m128i ) / sizeof(T)));
 
@@ -54,7 +55,9 @@ void test(const size_t NUM) {
     delete[] pmmOutOrg;
 }
 
-int main(int argc, char ** argv) {
+int main(
+        int argc,
+        char ** argv) {
     if (argc != 2) {
         std::cout << "Usage: " << argv[0] << " <#values>" << std::endl;
         return 1;

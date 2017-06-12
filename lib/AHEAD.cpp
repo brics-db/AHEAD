@@ -30,13 +30,19 @@
 namespace ahead {
     AHEAD * AHEAD::instance;
 
-    AHEAD::AHEAD(const std::string & path)
-            : mgrMeta(MetaRepositoryManager::getInstance()), mgrTx(TransactionManager::getInstance()), doConvertTableFilesOnLoad(true) {
+    AHEAD::AHEAD(
+            const std::string & path)
+            : mgrMeta(MetaRepositoryManager::getInstance()),
+              mgrTx(TransactionManager::getInstance()),
+              doConvertTableFilesOnLoad(true) {
         mgrMeta->init(path);
     }
 
-    AHEAD::AHEAD(const AHEAD & other)
-            : mgrMeta(other.mgrMeta), mgrTx(other.mgrTx), doConvertTableFilesOnLoad(other.doConvertTableFilesOnLoad) {
+    AHEAD::AHEAD(
+            const AHEAD & other)
+            : mgrMeta(other.mgrMeta),
+              mgrTx(other.mgrTx),
+              doConvertTableFilesOnLoad(other.doConvertTableFilesOnLoad) {
     }
 
     AHEAD::~AHEAD() {
@@ -44,7 +50,8 @@ namespace ahead {
         mgrTx = nullptr;
     }
 
-    AHEAD & AHEAD::operator=(const AHEAD & other) {
+    AHEAD & AHEAD::operator=(
+            const AHEAD & other) {
         this->~AHEAD();
         new (this) AHEAD(other);
         return *this;
@@ -54,12 +61,18 @@ namespace ahead {
         return instance;
     }
 
-    AHEAD * AHEAD::createInstance(const std::string & path) {
+    AHEAD * AHEAD::createInstance(
+            const std::string & path) {
         AHEAD::instance = new AHEAD(path);
         return AHEAD::instance;
     }
 
-    size_t AHEAD::loadTable(const std::string & tableName, const char * const prefix, const size_t size, const char * const delim, const bool ignoreMoreData) {
+    size_t AHEAD::loadTable(
+            const std::string & tableName,
+            const char * const prefix,
+            const size_t size,
+            const char * const delim,
+            const bool ignoreMoreData) {
         TransactionManager::Transaction* t = mgrTx->beginTransaction(true);
         assert(t != nullptr);
         std::string path(mgrMeta->strBaseDir);
@@ -70,7 +83,12 @@ namespace ahead {
         return numBUNs;
     }
 
-    size_t AHEAD::loadTable(const char * const tableName, const char * const prefix, const size_t size, const char * const delim, const bool ignoreMoreData) {
+    size_t AHEAD::loadTable(
+            const char * const tableName,
+            const char * const prefix,
+            const size_t size,
+            const char * const delim,
+            const bool ignoreMoreData) {
         TransactionManager::Transaction* t = mgrTx->beginTransaction(true);
         assert(t != nullptr);
         std::string path(mgrMeta->strBaseDir);
@@ -85,7 +103,8 @@ namespace ahead {
         return this->doConvertTableFilesOnLoad;
     }
 
-    void AHEAD::setConverttableFilesOnLoad(bool newValue) {
+    void AHEAD::setConverttableFilesOnLoad(
+            bool newValue) {
         this->doConvertTableFilesOnLoad = newValue;
     }
 }

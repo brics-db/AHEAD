@@ -36,7 +36,7 @@ std::cout << QueryString << std::endl;
 #define SSBM_LOAD_PRINTQUERYSTRING2(tab1, QueryString) \
 std::cout << QueryString << std::endl;
 #define SSBM_LOAD(...)                                                         \
-;do {                                                                          \
+do {                                                                           \
     ssb::rssBeforeLoad = getPeakRSS(size_enum_t::B);                           \
     ssb::sw1.start();                                                          \
     VFUNC(SSBM_LOAD, __VA_ARGS__)                                              \
@@ -68,7 +68,7 @@ loadTable(tab1, ssb::ssb_config);
 // SAVE_TYPE //
 ///////////////
 #define SAVE_TYPE(BAT)                                                         \
-;do {                                                                          \
+do {                                                                           \
     ssb::headTypes.push_back(BAT->type_head());                                \
     ssb::tailTypes.push_back(BAT->type_tail());                                \
     ssb::hasTwoTypes.push_back(true);                                          \
@@ -89,7 +89,7 @@ do { \
 ssb::before_op();                                                              \
 TYPE VAR = OP;                                                                 \
 ssb::after_op();                                                               \
-;do {                                                                          \
+do {                                                                           \
     ssb::batSizes.push_back(STORE_SIZE_OP);                                    \
     ssb::batConsumptions.push_back(STORE_CONSUMPTION_OP);                      \
     ssb::batConsumptionsProj.push_back(STORE_PROJECTEDCONSUMPTION_OP);         \
@@ -97,7 +97,7 @@ ssb::after_op();                                                               \
 
 #define MEASURE_OP3(TYPE, VAR, OP)                                             \
 MEASURE_OP6(TYPE, VAR, OP, 1, sizeof(TYPE), sizeof(TYPE));                     \
-;do {                                                                          \
+do {                                                                           \
     ssb::headTypes.push_back(boost::typeindex::type_id<TYPE>().type_info());   \
     ssb::hasTwoTypes.push_back(false);                                         \
 } while (false)
@@ -119,7 +119,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 // CLEAR_SELECT_AN //
 /////////////////////
 #define CLEAR_SELECT_AN(PAIR)                                                  \
-;do {                                                                          \
+do {                                                                           \
     if (std::get<1>(PAIR)) {                                                   \
         delete std::get<1>(PAIR);                                              \
     }                                                                          \
@@ -129,7 +129,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 // CLEAR_JOIN_AN //
 ///////////////////
 #define CLEAR_JOIN_AN(TUPLE)                                                   \
-;do {                                                                          \
+do {                                                                           \
     if (std::get<1>(TUPLE)) {                                                  \
         delete std::get<1>(TUPLE);                                             \
     }                                                                          \
@@ -145,7 +145,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 } while (false)
 
 #define CLEAR_FETCHJOIN_AN(TUPLE)                                              \
-;do {                                                                          \
+do {                                                                           \
     if (std::get<1>(TUPLE)) {                                                  \
         delete std::get<1>(TUPLE);                                             \
     }                                                                          \
@@ -158,7 +158,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 // CLEAR_CHECKANDDECODE_AN //
 /////////////////////////////
 #define CLEAR_CHECKANDDECODE_AN(TUPLE)                                         \
-;do {                                                                          \
+do {                                                                           \
     if (std::get<1>(TUPLE)) {                                                  \
         delete std::get<1>(TUPLE);                                             \
     }                                                                          \
@@ -171,7 +171,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 // CLEAR_GROUPBY_AN //
 //////////////////////
 #define CLEAR_GROUPBY_UNARY_AN(TUPLE)                                          \
-;do {                                                                          \
+do {                                                                           \
     if (std::get<2>(TUPLE)) {                                                  \
         delete std::get<2>(TUPLE);                                             \
     }                                                                          \
@@ -180,7 +180,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
     }                                                                          \
 } while (false)
 #define CLEAR_GROUPBY_BINARY_AN(TUPLE)                                         \
-;do {                                                                          \
+do {                                                                           \
     if (std::get<2>(TUPLE)) {                                                  \
         delete std::get<2>(TUPLE);                                             \
     }                                                                          \
@@ -196,7 +196,7 @@ SAVE_TYPE((std::get<0>(TUPLE)))
 // CLEAR_GROUPEDSUM_AN //
 /////////////////////////
 #define CLEAR_GROUPEDSUM_AN(TUPLE)                                             \
-;do {                                                                          \
+do {                                                                           \
     if (std::get<2>(TUPLE)) {                                                  \
         delete std::get<2>(TUPLE);                                             \
     }                                                                          \

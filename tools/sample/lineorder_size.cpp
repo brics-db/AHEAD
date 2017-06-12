@@ -30,7 +30,10 @@ SSB_CONF CONFIG;
 const size_t NUM_RUNS = 10;
 
 template<typename Tail>
-void runTable(const char* strTable, const char* strTableAN, const char* strColumn) {
+void runTable(
+        const char* strTable,
+        const char* strTableAN,
+        const char* strColumn) {
     typedef typename TypeMap<Tail>::v2_base_t v2_base_t;
     typedef typename TypeMap<Tail>::v2_encoded_t v2_encoded_t;
 
@@ -94,7 +97,10 @@ void runTable(const char* strTable, const char* strTableAN, const char* strColum
 }
 
 template<typename Tail>
-void runTable2(const char* strTable, const char* strTableAN, const char* strColumn) {
+void runTable2(
+        const char* strTable,
+        const char* strTableAN,
+        const char* strColumn) {
     typedef typename TypeMap<Tail>::v2_base_t v2_base_t;
     typedef typename TypeMap<Tail>::v2_encoded_t v2_encoded_t;
 
@@ -166,7 +172,9 @@ void runTable2(const char* strTable, const char* strTableAN, const char* strColu
     delete batBc;
 }
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     CONFIG.init(argc, argv);
 
     std::cout << "lineorder_size\n==============" << std::endl;

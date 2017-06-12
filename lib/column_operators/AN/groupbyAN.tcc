@@ -42,44 +42,57 @@ namespace ahead {
 
                 template<typename T, typename U, bool>
                 struct groupbyANconverter0 {
-                    constexpr static T getValue(U const & value) {
+                    constexpr static T getValue(
+                            U const & value) {
                         return static_cast<T>(value);
                     }
 
-                    constexpr static T getValue(U const && value) {
+                    constexpr static T getValue(
+                            U const && value) {
                         return static_cast<T>(value);
                     }
 
-                    constexpr static T decode(U const & encoded, U const & AInv) {
+                    constexpr static T decode(
+                            U const & encoded,
+                            U const & AInv) {
                         return static_cast<T>(encoded * AInv);
                     }
 
-                    constexpr static T decode(U const && encoded, U const && AInv) {
+                    constexpr static T decode(
+                            U const && encoded,
+                            U const && AInv) {
                         return static_cast<T>(encoded * AInv);
                     }
                 };
 
                 template<typename T, typename U>
                 struct groupbyANconverter0<T, U, false> {
-                    constexpr static T getValue(__attribute__((unused)) U const & value) {
+                    constexpr static T getValue(
+                            __attribute__((unused))  U const & value) {
                         return T(0);
                     }
 
-                    constexpr static T getValue(__attribute__((unused)) U const && value) {
+                    constexpr static T getValue(
+                            __attribute__((unused))  U const && value) {
                         return T(0);
                     }
 
-                    constexpr static T decode(U const & unencoded, __attribute__((unused)) U const & AInv) {
+                    constexpr static T decode(
+                            U const & unencoded,
+                            __attribute__((unused))  U const & AInv) {
                         return static_cast<T>(unencoded);
                     }
 
-                    constexpr static T decode(U const && unencoded, __attribute__((unused)) U const && AInv) {
+                    constexpr static T decode(
+                            U const && unencoded,
+                            __attribute__((unused))  U const && AInv) {
                         return static_cast<T>(unencoded);
                     }
                 };
 
                 template<typename V2T, typename U>
-                struct groupbyANconverter : public groupbyANconverter0<typename V2T::type_t, U, std::is_base_of<v2_anencoded_t, V2T>::value> {
+                struct groupbyANconverter :
+                        public groupbyANconverter0<typename V2T::type_t, U, std::is_base_of<v2_anencoded_t, V2T>::value> {
                 };
 
                 template<typename Head, typename Tail, bool reencode>
@@ -91,13 +104,10 @@ namespace ahead {
                     typedef ahead::bat::ops::Private::hash<tail_t> hasher;
                     typedef ahead::bat::ops::Private::equals<tail_t> comparator;
 
-                    static
-                    std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, AN_indicator_vector *, AN_indicator_vector *>
-                    unary(
+                    static std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t>*, AN_indicator_vector *, AN_indicator_vector *> unary(
                             BAT<Head, Tail>* bat,
                             resoid_t AOID,
-                            resoid_t AOIDinv
-                            ) {
+                            resoid_t AOIDinv) {
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
                         head_t HAInv = groupbyANconverter<Head, decltype(bat->head.metaData.AN_Ainv)>::getValue(bat->head.metaData.AN_Ainv);
@@ -150,15 +160,12 @@ namespace ahead {
                     typedef typename Tail::v2_larger_t v2_largerTail_t;
                     typedef typename v2_largerTail_t::type_t largerTail_t;
 
-                    static
-                    std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
-                    binary(
+                    static std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> binary(
                             BAT<Head, Tail>* bat,
                             BAT<v2_void_t, v2_resoid_t> * grouping,
                             size_t numGroups,
                             resoid_t AOID,
-                            resoid_t AOIDinv
-                            ) {
+                            resoid_t AOIDinv) {
                         if (bat->size() != grouping->size()) {
                             throw std::runtime_error("input BAT and existing grouping have different sizes!");
                         }
@@ -238,12 +245,11 @@ namespace ahead {
              * 4) Bitmap Tail: position -> error detected (true) or not (false)
              */
             template<typename Head, typename Tail>
-            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
-            groupbyAN(
+            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *> groupbyAN(
                     BAT<Head, Tail> * bat,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
                     typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
-                    ) {
+                            ) {
                 return Private::groupbyAN<Head, Tail, false>::unary(bat, AOID, AOIDinv);
             }
 
@@ -260,14 +266,13 @@ namespace ahead {
              * 4) Bitmap Tail: position -> error detected (true) or not (false)
              */
             template<typename Head, typename Tail>
-            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
-            groupbyAN(
+            std::tuple<BAT<v2_void_t, v2_resoid_t> *, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> groupbyAN(
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,
                     size_t numGroups,
                     typename v2_resoid_t::type_t AOID = std::get<ANParametersSelector<v2_resoid_t>::As->size() - 1>(*ANParametersSelector<v2_resoid_t>::As), // use largest A for encoding by default
                     typename v2_resoid_t::type_t AOIDinv = std::get<ANParametersSelector<v2_resoid_t>::Ainvs->size() - 1>(*ANParametersSelector<v2_resoid_t>::Ainvs) // and the appropriate inverse
-                    ) {
+                            ) {
                 return Private::groupbyAN<Head, Tail, false>::binary(bat, grouping, numGroups, AOID, AOIDinv);
             }
 

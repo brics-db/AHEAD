@@ -30,7 +30,11 @@ namespace ahead {
 
     typedef enum size_e {
 
-        B = 0, KB, MB, GB, TB
+        B = 0,
+        KB,
+        MB,
+        GB,
+        TB
     } size_enum_t;
 
     /**
@@ -38,13 +42,15 @@ namespace ahead {
      * memory use) measured in bytes, or zero if the value cannot be
      * determined on this OS.
      */
-    size_t getPeakRSS(size_enum_t size_enum = size_enum_t::B);
+    size_t getPeakRSS(
+            size_enum_t size_enum = size_enum_t::B);
 
     /**
      * Returns the current resident set size (physical memory use) measured
      * in bytes, or zero if the value cannot be determined on this OS.
      */
-    size_t getCurrentRSS(size_enum_t size_enum = size_enum_t::B);
+    size_t getCurrentRSS(
+            size_enum_t size_enum = size_enum_t::B);
 
 }
 

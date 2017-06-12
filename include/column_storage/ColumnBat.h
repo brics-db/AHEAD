@@ -52,7 +52,8 @@
 namespace ahead {
 
     template<typename Tail>
-    class ColumnBAT : public BAT<v2_void_t, Tail> {
+    class ColumnBAT :
+            public BAT<v2_void_t, Tail> {
 
         typedef v2_void_t Head;
         using v2_head_t = typename BAT<Head, Tail>::v2_head_t;
@@ -66,9 +67,12 @@ namespace ahead {
 
     public:
 
-        ColumnBAT(id_t columnId);
+        ColumnBAT(
+                id_t columnId);
 
-        ColumnBAT(const char *table_name, const char *attribute);
+        ColumnBAT(
+                const char *table_name,
+                const char *attribute);
 
         virtual ~ColumnBAT();
 

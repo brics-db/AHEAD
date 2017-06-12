@@ -26,7 +26,9 @@
 typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_shortint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> result_tuple_t;
 typedef DMRValue<result_tuple_t> DMR;
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.3 DMR Parallel\n===========================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.3:\n"
@@ -153,7 +155,7 @@ int main(int argc, char** argv) {
             MEASURE_OP(batA3, matchjoin(batW, batLRs[k])); // OID lineorder | lo_revenue (where ...)
             delete batW;
 
-            MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(batA3, batA2, batA1));
+            MEASURE_OP_TUPLE(tupleK, groupedSum < v2_bigint_t > (batA3, batA2, batA1));
             delete batA1;
             delete batA2;
             delete batA3;

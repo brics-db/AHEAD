@@ -22,7 +22,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.2 Normal\n=====================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.2:\n"
@@ -95,7 +97,7 @@ int main(int argc, char** argv) {
         delete bat6;
 
         // p_category = 'MFGR#12'
-        MEASURE_OP(bat8, select(batPB, const_cast<str_t>("MFGR#2221"),  const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
+        MEASURE_OP(bat8, select(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         delete bat8;
         auto batA = batPP->reverse(); // p_partkey | OID part

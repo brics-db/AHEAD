@@ -50,7 +50,9 @@ namespace ahead {
                         typedef typename v2_mm128_cmp<tail_t, Op>::mask_t tail_mask_t;
                         typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                        static result_t* filter(BAT<v2_void_t, Tail>* arg, tail_t && th) {
+                        static result_t* filter(
+                                BAT<v2_void_t, Tail>* arg,
+                                tail_t && th) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto mmThreshold = v2_mm128<tail_t>::set1(th);
@@ -120,7 +122,9 @@ namespace ahead {
                         typedef typename v2_str_t::v2_select_t v2_tail_select_t;
                         typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                        static result_t* filter(BAT<v2_void_t, v2_str_t>* arg, str_t && threshold) {
+                        static result_t* filter(
+                                BAT<v2_void_t, v2_str_t>* arg,
+                                str_t && threshold) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -150,7 +154,10 @@ namespace ahead {
                         typedef typename v2_mm128_cmp<tail_t, Op1>::mask_t tail_mask_t;
                         typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                        static result_t* filter(BAT<v2_void_t, Tail>* arg, tail_t && th1, tail_t && th2) {
+                        static result_t* filter(
+                                BAT<v2_void_t, Tail>* arg,
+                                tail_t && th1,
+                                tail_t && th2) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto mmThreshold1 = v2_mm128<tail_t>::set1(th1);
@@ -223,7 +230,10 @@ namespace ahead {
                         typedef typename v2_tail_select_t::type_t tail_select_t;
                         typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                        static result_t* filter(BAT<v2_void_t, v2_str_t>* arg, tail_select_t && th1, tail_select_t && th2) {
+                        static result_t* filter(
+                                BAT<v2_void_t, v2_str_t>* arg,
+                                tail_select_t && th1,
+                                tail_select_t && th2) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();

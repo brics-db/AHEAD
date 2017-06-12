@@ -27,7 +27,8 @@
 
 namespace ssb {
 
-    void handler(int sig) {
+    void handler(
+            int sig) {
         constexpr const int BACKTRACE_SIZE = 64;
         void *array[BACKTRACE_SIZE];
         size_t size;
@@ -52,21 +53,33 @@ namespace ssb {
     constexpr const char * const SSB_CONF::ID_CONVERTTABLEFILES;
 
     SSB_CONF::SSB_CONF()
-            : NUM_RUNS(0), LEN_TIMES(0), LEN_TYPES(0), LEN_SIZES(0), LEN_PCM(0), DB_PATH(), VERBOSE(false), PRINT_RESULT(0), CONVERT_TABLE_FILES(true),
-                    parser(
-                            {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, 15), std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(
-                                    ID_LENTYPES, alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {
-                                    "--lenpcm"}, 16)}, {std::forward_as_tuple(ID_DBPATH, alias_list_t {"--dbpath", "-d"}, ".")},
-                            {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false),
-                                    std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files", "-c"}, true)}) {
+            : NUM_RUNS(0),
+              LEN_TIMES(0),
+              LEN_TYPES(0),
+              LEN_SIZES(0),
+              LEN_PCM(0),
+              DB_PATH(),
+              VERBOSE(false),
+              PRINT_RESULT(0),
+              CONVERT_TABLE_FILES(true),
+              parser(
+                      {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, 15), std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(ID_LENTYPES,
+                              alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, 16)}, {
+                              std::forward_as_tuple(ID_DBPATH, alias_list_t {"--dbpath", "-d"}, ".")}, {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false),
+                              std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false), std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files",
+                                      "-c"}, true)}) {
     }
 
-    SSB_CONF::SSB_CONF(int argc, char** argv)
+    SSB_CONF::SSB_CONF(
+            int argc,
+            char** argv)
             : SSB_CONF() {
         init(argc, argv);
     }
 
-    void SSB_CONF::init(int argc, char** argv) {
+    void SSB_CONF::init(
+            int argc,
+            char** argv) {
         signal(SIGSEGV, handler);
         parser.parse(argc, argv, 1);
         NUM_RUNS = parser.get_uint(ID_NUMRUNS);
@@ -80,7 +93,9 @@ namespace ssb {
         CONVERT_TABLE_FILES = parser.get_bool(ID_CONVERTTABLEFILES);
     }
 
-    StopWatch::rep loadTable(const char* const tableName, const SSB_CONF & CONFIG) {
+    StopWatch::rep loadTable(
+            const char* const tableName,
+            const SSB_CONF & CONFIG) {
         StopWatch sw;
         sw.start();
         size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
@@ -111,7 +126,10 @@ namespace ssb {
     std::vector<boost::typeindex::type_index> headTypes;
     std::vector<boost::typeindex::type_index> tailTypes;
 
-    void init(int argc, char ** argv, const char * strHeadline) {
+    void init(
+            int argc,
+            char ** argv,
+            const char * strHeadline) {
         set_signal_handlers();
 
         constexpr const size_t numOpsDefault = 64;
@@ -200,7 +218,9 @@ namespace ssb {
         ssb::sw2.start();
     }
 
-    void after_query(size_t index, size_t result) {
+    void after_query(
+            size_t index,
+            size_t result) {
         ssb::totalTimes[index] = ssb::sw2.stop();
         std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::sw2 << " ns.\n";
         ssb::print_headline();

@@ -39,8 +39,17 @@ namespace ahead {
 
                     template<typename tail1_t, typename tail2_t, typename result_t, bool isTail1Encoded, bool isTail2Encoded, size_t increment, size_t maxFactor, size_t factor>
                     struct partial_aggregate_mul_sumAN {
-                        static inline void doIt(__m128i & mmTotal, __m128i * & pmmT1, __m128i & mmAT1inv, __m128i & mmDMax1, std::vector<bool> * vec1, __m128i * & pmmT2, __m128i & mmAT2inv,
-                                __m128i & mmDMax2, std::vector<bool> * vec2, size_t & i) {
+                        static inline void doIt(
+                                __m128i & mmTotal,
+                                __m128i * & pmmT1,
+                                __m128i & mmAT1inv,
+                                __m128i & mmDMax1,
+                                std::vector<bool> * vec1,
+                                __m128i * & pmmT2,
+                                __m128i & mmAT2inv,
+                                __m128i & mmDMax2,
+                                std::vector<bool> * vec2,
+                                size_t & i) {
                             if (isTail1Encoded) {
                                 v2_mm128_AN<tail1_t>::detect(*pmmT1, mmAT1inv, mmDMax1, vec1, i);
                             }
@@ -65,8 +74,17 @@ namespace ahead {
 
                     template<typename tail1_t, typename tail2_t, typename result_t, bool isTail1Encoded, bool isTail2Encoded, size_t increment, size_t maxFactor>
                     struct partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, isTail1Encoded, isTail2Encoded, increment, maxFactor, 0> {
-                        static inline void doIt(__m128i & mmTotal, __m128i * & pmmT1, __m128i & mmAT1inv, __m128i & mmDMax1, std::vector<bool> * vec1, __m128i * & pmmT2, __m128i & mmAT2inv,
-                                __m128i & mmDMax2, std::vector<bool> * vec2, size_t & i) {
+                        static inline void doIt(
+                                __m128i & mmTotal,
+                                __m128i * & pmmT1,
+                                __m128i & mmAT1inv,
+                                __m128i & mmDMax1,
+                                std::vector<bool> * vec1,
+                                __m128i * & pmmT2,
+                                __m128i & mmAT2inv,
+                                __m128i & mmDMax2,
+                                std::vector<bool> * vec2,
+                                size_t & i) {
                             (void) mmTotal;
                             (void) pmmT1;
                             (void) mmAT1inv;
@@ -98,9 +116,12 @@ namespace ahead {
                  */
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<
                         Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init =
-                        typename Result::type_t(0), typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 8>(*ANParametersSelector<ResEnc>::As), // use largest A for encoding by default
-                typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 8>(*ANParametersSelector<ResEnc>::Ainvs)) {
+                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> aggregate_mul_sumAN(
+                        BAT<Head1, Tail1>* arg1,
+                        BAT<Head2, Tail2>* arg2,
+                        typename Result::type_t init = typename Result::type_t(0),
+                        typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 8>(*ANParametersSelector<ResEnc>::As), // use largest A for encoding by default
+                        typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 8>(*ANParametersSelector<ResEnc>::Ainvs)) {
                     typedef typename Tail1::type_t tail1_t;
                     typedef typename Tail2::type_t tail2_t;
                     typedef typename Result::type_t result_t;

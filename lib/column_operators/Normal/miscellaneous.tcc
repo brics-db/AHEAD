@@ -38,7 +38,8 @@ namespace ahead {
                     typedef typename Tail::v2_copy_t CTail;
 
                     static TempBAT<CHead, CTail> *
-                    run(BAT<Head, Tail> * arg) {
+                    run(
+                            BAT<Head, Tail> * arg) {
                         auto result = skeleton<CHead, CTail>(arg);
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
@@ -56,7 +57,8 @@ namespace ahead {
                     typedef typename Tail::v2_copy_t CTail;
 
                     static TempBAT<v2_void_t, CTail> *
-                    run(BAT<v2_void_t, Tail> * arg) {
+                    run(
+                            BAT<v2_void_t, Tail> * arg) {
                         auto result = skeleton<v2_void_t, CTail>(arg);
                         result->reserve(arg->size());
                         auto *iter = arg->begin();
@@ -72,7 +74,8 @@ namespace ahead {
 
             template<typename Head, typename Tail>
             TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t>*
-            copy(BAT<Head, Tail>* arg) {
+            copy(
+                    BAT<Head, Tail>* arg) {
                 return Private::copy<typename Head::v2_copy_t, typename Tail::v2_copy_t>::run(arg);
             }
         }

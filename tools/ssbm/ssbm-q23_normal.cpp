@@ -22,7 +22,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.3 Normal\n=====================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.3:\n"
@@ -132,7 +134,7 @@ int main(int argc, char** argv) {
         MEASURE_OP(batA3, matchjoin(batW, batLR)); // OID lineorder | lo_revenue (where ...)
         delete batW;
 
-        MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(batA3, batA2, batA1));
+        MEASURE_OP_TUPLE(tupleK, groupedSum < v2_bigint_t > (batA3, batA2, batA1));
         delete batA1;
         delete batA2;
         delete batA3;

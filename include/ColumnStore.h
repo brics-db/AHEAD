@@ -74,7 +74,8 @@ namespace ahead {
     class MetaRepositoryManager;
 
     typedef enum {
-        left, right
+        left,
+        right
     } hash_side_t;
 
     // Fast-Forward declare Bat, ColumnBAT, TempBat types
@@ -117,7 +118,8 @@ namespace ahead {
 
     template<size_t alignment, typename T>
     T*
-    align_to(T * const pT) {
+    align_to(
+            T * const pT) {
         size_t tmp = reinterpret_cast<size_t>(pT);
         return pT + (alignment - (tmp & (alignment - 1)));
     }

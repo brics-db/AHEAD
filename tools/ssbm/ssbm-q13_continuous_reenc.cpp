@@ -23,7 +23,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 1.3 Continuous Detection With Reencoding\n===================================================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.3:\n"
@@ -90,8 +92,7 @@ int main(int argc, char** argv) {
         delete pair7.first;
         MEASURE_OP_PAIR(pair9, selectAN<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
         delete pair9.second;
-        MEASURE_OP_TUPLE(tupleA,
-                matchjoinAN(bat8, pair9.first, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_restiny_t::As), std::get<14>(*v2_restiny_t::Ainvs)));
+        MEASURE_OP_TUPLE(tupleA, matchjoinAN(bat8, pair9.first, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_restiny_t::As), std::get<14>(*v2_restiny_t::Ainvs)));
         delete bat8;
         delete pair9.first;
         CLEAR_JOIN_AN(tupleA);

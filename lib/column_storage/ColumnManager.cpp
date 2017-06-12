@@ -45,7 +45,8 @@ namespace ahead {
     }
 
     ColumnManager::ColumnManager()
-            : columnMetaData(), nextID(ID_BAT_FIRST_USER) {
+            : columnMetaData(),
+              nextID(ID_BAT_FIRST_USER) {
         createColumn(ID_BAT_COLNAMES, sizeof(char) * BAT_COLNAMES_MAXLEN);
         createColumn(ID_BAT_COLTYPES, sizeof(column_type_t));
         createColumn(ID_BAT_COLIDENT, sizeof(id_t));
@@ -56,7 +57,9 @@ namespace ahead {
     }
 
     ColumnManager::ColumnIterator*
-    ColumnManager::openColumn(id_t id, version_t *version) {
+    ColumnManager::openColumn(
+            id_t id,
+            version_t *version) {
         if (columnMetaData.find(id) != columnMetaData.end()) {
             return new ColumnManager::ColumnIterator(columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version));
         } else {
@@ -65,8 +68,7 @@ namespace ahead {
         }
     }
 
-    std::unordered_set<id_t>
-    ColumnManager::getColumnIDs() {
+    std::unordered_set<id_t> ColumnManager::getColumnIDs() {
         std::unordered_set<id_t> list;
         list.reserve(columnMetaData.size());
 
@@ -87,8 +89,8 @@ namespace ahead {
         return result;
     }
 
-    ColumnMetaData
-    ColumnManager::getColumnMetaData(id_t id) {
+    ColumnMetaData ColumnManager::getColumnMetaData(
+            id_t id) {
         auto iter = columnMetaData.find(id);
         if (iter == columnMetaData.end()) {
             std::stringstream ss;
@@ -98,13 +100,14 @@ namespace ahead {
         return iter->second;
     }
 
-    id_t
-    ColumnManager::getNextColumnID() {
+    id_t ColumnManager::getNextColumnID() {
         return nextID++;
     }
 
     ColumnMetaData &
-    ColumnManager::createColumn(id_t id, uint32_t width) {
+    ColumnManager::createColumn(
+            id_t id,
+            uint32_t width) {
         auto iter = columnMetaData.find(id);
         if (iter != columnMetaData.end()) {
             std::stringstream ss;
@@ -121,7 +124,9 @@ namespace ahead {
     }
 
     ColumnMetaData &
-    ColumnManager::createColumn(id_t id, ColumnMetaData && column) {
+    ColumnManager::createColumn(
+            id_t id,
+            ColumnMetaData && column) {
         auto iter = columnMetaData.find(id);
         if (iter != columnMetaData.end()) {
             std::stringstream ss;
@@ -188,7 +193,8 @@ namespace ahead {
         }
     }
 
-    ColumnManager::Record ColumnManager::ColumnIterator::seek(oid_t index) {
+    ColumnManager::Record ColumnManager::ColumnIterator::seek(
+            oid_t index) {
         this->currentChunk = this->iterator->seek(index / this->recordsPerBucket);
 
         if (this->currentChunk != 0) {
@@ -255,7 +261,8 @@ namespace ahead {
         return rec;
     }
 
-    void ColumnManager::ColumnIterator::read(std::istream & inStream) {
+    void ColumnManager::ColumnIterator::read(
+            std::istream & inStream) {
         const size_t pos = inStream.tellg();
         inStream.seekg(0, std::ios_base::end);
         const size_t numBytesTotal = static_cast<size_t>(inStream.tellg()) - pos;
@@ -303,7 +310,8 @@ namespace ahead {
         }
     }
 
-    void ColumnManager::ColumnIterator::write(std::ostream & outStream) {
+    void ColumnManager::ColumnIterator::write(
+            std::ostream & outStream) {
         this->rewind();
         auto pChunk = this->iterator->next();
         while (pChunk != nullptr) {
@@ -320,22 +328,32 @@ namespace ahead {
         this->currentPosition = 0;
     }
 
-    ColumnManager::ColumnIterator::ColumnIterator(ColumnMetaData & columnMetaData, BucketManager::BucketIterator *iterator)
-            : iterator(iterator), columnMetaData(columnMetaData), currentChunk(nullptr), currentPosition(0),
-                    recordsPerBucket(static_cast<oid_t>((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / columnMetaData.width)) {
+    ColumnManager::ColumnIterator::ColumnIterator(
+            ColumnMetaData & columnMetaData,
+            BucketManager::BucketIterator *iterator)
+            : iterator(iterator),
+              columnMetaData(columnMetaData),
+              currentChunk(nullptr),
+              currentPosition(0),
+              recordsPerBucket(static_cast<oid_t>((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / columnMetaData.width)) {
         this->iterator->rewind();
     }
 
-    ColumnManager::ColumnIterator::ColumnIterator(const ColumnIterator & copy)
-            : iterator(new BucketManager::BucketIterator(*copy.iterator)), columnMetaData(copy.columnMetaData), currentChunk(copy.currentChunk), currentPosition(copy.currentPosition),
-                    recordsPerBucket(copy.recordsPerBucket) {
+    ColumnManager::ColumnIterator::ColumnIterator(
+            const ColumnIterator & copy)
+            : iterator(new BucketManager::BucketIterator(*copy.iterator)),
+              columnMetaData(copy.columnMetaData),
+              currentChunk(copy.currentChunk),
+              currentPosition(copy.currentPosition),
+              recordsPerBucket(copy.recordsPerBucket) {
     }
 
     ColumnManager::ColumnIterator::~ColumnIterator() {
         delete iterator;
     }
 
-    ColumnManager::ColumnIterator& ColumnManager::ColumnIterator::operator=(const ColumnManager::ColumnIterator &copy) {
+    ColumnManager::ColumnIterator& ColumnManager::ColumnIterator::operator=(
+            const ColumnManager::ColumnIterator &copy) {
         new (this) ColumnIterator(copy);
         return *this;
     }

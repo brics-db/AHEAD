@@ -47,7 +47,8 @@
 namespace ahead {
 
     template<typename Head, typename Tail>
-    class TempBATIterator : public BATIterator<Head, Tail> {
+    class TempBATIterator :
+            public BATIterator<Head, Tail> {
 
     private:
         using head_t = typename BAT<Head, Tail>::head_t;
@@ -69,18 +70,32 @@ namespace ahead {
     public:
         typedef TempBATIterator<Head, Tail> self_t;
 
-        TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
-                : cHead(head.container), cTail(tail.container), iterHead(cHead->begin()), iterHeadEnd(cHead->end()), iterTail(cTail->begin()), iterTailEnd(cTail->end()) {
+        TempBATIterator(
+                coldesc_head_t& head,
+                coldesc_tail_t & tail)
+                : cHead(head.container),
+                  cTail(tail.container),
+                  iterHead(cHead->begin()),
+                  iterHeadEnd(cHead->end()),
+                  iterTail(cTail->begin()),
+                  iterTailEnd(cTail->end()) {
         }
 
-        TempBATIterator(const TempBATIterator<Head, Tail> & iter)
-                : cHead(iter.cHead), cTail(iter.cTail), iterHead(iter.iterHead), iterHeadEnd(iter.iterHeadEnd), iterTail(iter.iterTail), iterTailEnd(iter.iterTailEnd) {
+        TempBATIterator(
+                const TempBATIterator<Head, Tail> & iter)
+                : cHead(iter.cHead),
+                  cTail(iter.cTail),
+                  iterHead(iter.iterHead),
+                  iterHeadEnd(iter.iterHeadEnd),
+                  iterTail(iter.iterTail),
+                  iterTailEnd(iter.iterTailEnd) {
         }
 
         virtual ~TempBATIterator() {
         }
 
-        TempBATIterator& operator=(const TempBATIterator & copy) {
+        TempBATIterator& operator=(
+                const TempBATIterator & copy) {
             new (this) TempBATIterator(copy);
             return *this;
         }
@@ -95,13 +110,15 @@ namespace ahead {
             return *this;
         }
 
-        virtual TempBATIterator& operator+=(oid_t i) override {
+        virtual TempBATIterator& operator+=(
+                oid_t i) override {
             std::advance(iterHead, i);
             std::advance(iterTail, i);
             return *this;
         }
 
-        virtual void position(oid_t index) override {
+        virtual void position(
+                oid_t index) override {
             iterHead = cHead->begin();
             iterTail = cTail->begin();
             std::advance(iterHead, index);
@@ -130,7 +147,8 @@ namespace ahead {
     };
 
     template<>
-    class TempBATIterator<v2_void_t, v2_void_t> : public BATIterator<v2_void_t, v2_void_t> {
+    class TempBATIterator<v2_void_t, v2_void_t> :
+            public BATIterator<v2_void_t, v2_void_t> {
 
     private:
         typedef v2_void_t Head, Tail;
@@ -149,18 +167,33 @@ namespace ahead {
     public:
         typedef TempBATIterator<v2_void_t, v2_void_t> self_t;
 
-        TempBATIterator(coldesc_head_t & head, coldesc_tail_t & tail, oid_t count)
-                : seqbase_head(head.metaData.seqbase), position_head(seqbase_head), seqbase_tail(tail.metaData.seqbase), position_tail(seqbase_tail), count(count), pos(0) {
+        TempBATIterator(
+                coldesc_head_t & head,
+                coldesc_tail_t & tail,
+                oid_t count)
+                : seqbase_head(head.metaData.seqbase),
+                  position_head(seqbase_head),
+                  seqbase_tail(tail.metaData.seqbase),
+                  position_tail(seqbase_tail),
+                  count(count),
+                  pos(0) {
         }
 
-        TempBATIterator(const TempBATIterator<v2_void_t, v2_void_t> & iter)
-                : seqbase_head(iter.seqbase_head), position_head(iter.position_head), seqbase_tail(iter.seqbase_tail), position_tail(iter.position_tail), count(iter.count), pos(iter.pos) {
+        TempBATIterator(
+                const TempBATIterator<v2_void_t, v2_void_t> & iter)
+                : seqbase_head(iter.seqbase_head),
+                  position_head(iter.position_head),
+                  seqbase_tail(iter.seqbase_tail),
+                  position_tail(iter.position_tail),
+                  count(iter.count),
+                  pos(iter.pos) {
         }
 
         virtual ~TempBATIterator() {
         }
 
-        TempBATIterator& operator=(const TempBATIterator & copy) {
+        TempBATIterator& operator=(
+                const TempBATIterator & copy) {
             new (this) TempBATIterator(copy);
             return *this;
         }
@@ -176,14 +209,16 @@ namespace ahead {
             return *this;
         }
 
-        virtual TempBATIterator& operator+=(oid_t i) override {
+        virtual TempBATIterator& operator+=(
+                oid_t i) override {
             position_head += i;
             position_tail += i;
             pos += i;
             return *this;
         }
 
-        virtual void position(oid_t index) override {
+        virtual void position(
+                oid_t index) override {
             position_head = seqbase_head + index;
             position_tail = seqbase_tail + index;
         }
@@ -210,7 +245,8 @@ namespace ahead {
     };
 
     template<typename Head>
-    class TempBATIterator<Head, v2_void_t> : public BATIterator<Head, v2_void_t> {
+    class TempBATIterator<Head, v2_void_t> :
+            public BATIterator<Head, v2_void_t> {
 
     private:
         typedef v2_void_t Tail;
@@ -230,18 +266,30 @@ namespace ahead {
     public:
         typedef TempBATIterator<Head, v2_void_t> self_t;
 
-        TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
-                : cHead(head.container), iterHead(cHead->begin()), iterHeadEnd(cHead->end()), seqbase(tail.metaData.seqbase), position_tail(seqbase) {
+        TempBATIterator(
+                coldesc_head_t& head,
+                coldesc_tail_t & tail)
+                : cHead(head.container),
+                  iterHead(cHead->begin()),
+                  iterHeadEnd(cHead->end()),
+                  seqbase(tail.metaData.seqbase),
+                  position_tail(seqbase) {
         }
 
-        TempBATIterator(const TempBATIterator<Head, v2_void_t> & iter)
-                : cHead(iter.cHead), iterHead(iter.iterHead), iterHeadEnd(iter.iterHeadEnd), seqbase(iter.seqbase), position_tail(iter.position_tail) {
+        TempBATIterator(
+                const TempBATIterator<Head, v2_void_t> & iter)
+                : cHead(iter.cHead),
+                  iterHead(iter.iterHead),
+                  iterHeadEnd(iter.iterHeadEnd),
+                  seqbase(iter.seqbase),
+                  position_tail(iter.position_tail) {
         }
 
         virtual ~TempBATIterator() {
         }
 
-        TempBATIterator& operator=(const TempBATIterator & copy) {
+        TempBATIterator& operator=(
+                const TempBATIterator & copy) {
             new (this) TempBATIterator(copy);
             return *this;
         }
@@ -256,13 +304,15 @@ namespace ahead {
             return *this;
         }
 
-        virtual TempBATIterator& operator+=(oid_t i) override {
+        virtual TempBATIterator& operator+=(
+                oid_t i) override {
             std::advance(iterHead, i);
             position_tail += i;
             return *this;
         }
 
-        virtual void position(oid_t index) override {
+        virtual void position(
+                oid_t index) override {
             iterHead = cHead->begin();
             std::advance(iterHead, index);
             position_tail = seqbase + index;
@@ -290,7 +340,8 @@ namespace ahead {
     };
 
     template<typename Tail>
-    class TempBATIterator<v2_void_t, Tail> : public BATIterator<v2_void_t, Tail> {
+    class TempBATIterator<v2_void_t, Tail> :
+            public BATIterator<v2_void_t, Tail> {
 
     private:
         typedef typename v2_void_t::type_t head_t;
@@ -309,18 +360,30 @@ namespace ahead {
     public:
         typedef TempBATIterator<v2_void_t, Tail> self_t;
 
-        TempBATIterator(coldesc_head_t& head, coldesc_tail_t & tail)
-                : cTail(tail.container), iterTail(cTail->begin()), iterTailEnd(cTail->end()), seqbase(head.metaData.seqbase), position_head(seqbase) {
+        TempBATIterator(
+                coldesc_head_t& head,
+                coldesc_tail_t & tail)
+                : cTail(tail.container),
+                  iterTail(cTail->begin()),
+                  iterTailEnd(cTail->end()),
+                  seqbase(head.metaData.seqbase),
+                  position_head(seqbase) {
         }
 
-        TempBATIterator(const TempBATIterator<v2_void_t, Tail> & iter)
-                : cTail(iter.cTail), iterTail(iter.iterTail), iterTailEnd(iter.iterTailEnd), seqbase(iter.seqbase), position_head(iter.position_head) {
+        TempBATIterator(
+                const TempBATIterator<v2_void_t, Tail> & iter)
+                : cTail(iter.cTail),
+                  iterTail(iter.iterTail),
+                  iterTailEnd(iter.iterTailEnd),
+                  seqbase(iter.seqbase),
+                  position_head(iter.position_head) {
         }
 
         virtual ~TempBATIterator() {
         }
 
-        TempBATIterator& operator=(const TempBATIterator & copy) {
+        TempBATIterator& operator=(
+                const TempBATIterator & copy) {
             new (this) TempBATIterator(copy);
             return *this;
         }
@@ -335,13 +398,15 @@ namespace ahead {
             return *this;
         }
 
-        virtual TempBATIterator& operator+=(oid_t i) override {
+        virtual TempBATIterator& operator+=(
+                oid_t i) override {
             position_head += i;
             std::advance(iterTail, i);
             return *this;
         }
 
-        virtual void position(oid_t index) override {
+        virtual void position(
+                oid_t index) override {
             iterTail = cTail->begin();
             std::advance(iterTail, index);
             position_head = seqbase + index;

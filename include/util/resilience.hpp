@@ -63,7 +63,8 @@ namespace ahead {
     struct v2_resoid_t;
     struct v2_resstr_t;
 
-    struct v2_restiny_t : public v2_anencoded_t {
+    struct v2_restiny_t :
+            public v2_anencoded_t {
 
         typedef restiny_t type_t;
         typedef v2_tinyint_t v2_unenc_t;
@@ -84,7 +85,8 @@ namespace ahead {
     };
     typedef v2_restiny_t v2_restinyint_t;
 
-    struct v2_resshort_t : public v2_anencoded_t {
+    struct v2_resshort_t :
+            public v2_anencoded_t {
 
         typedef resshort_t type_t;
         typedef v2_shortint_t v2_unenc_t;
@@ -105,7 +107,8 @@ namespace ahead {
     };
     typedef v2_resshort_t v2_resshortint_t;
 
-    struct v2_resint_t : public v2_anencoded_t {
+    struct v2_resint_t :
+            public v2_anencoded_t {
 
         typedef resint_t type_t;
         typedef v2_int_t v2_unenc_t;
@@ -125,7 +128,8 @@ namespace ahead {
         static constexpr const std::array<resint_t, 16> * Ainvs = &ANParameters::AintInv;
     };
 
-    struct v2_resbigint_t : public v2_anencoded_t {
+    struct v2_resbigint_t :
+            public v2_anencoded_t {
 
         typedef resbigint_t type_t;
         typedef v2_bigint_t v2_unenc_t;
@@ -145,7 +149,8 @@ namespace ahead {
         static constexpr const std::array<resbigint_t, 16> * Ainvs = &ANParameters::AintInv;
     };
 
-    struct v2_resoid_t : public v2_anencoded_t {
+    struct v2_resoid_t :
+            public v2_anencoded_t {
 
         typedef resoid_t type_t;
         typedef v2_oid_t v2_unenc_t;
@@ -165,7 +170,8 @@ namespace ahead {
         static constexpr const std::array<resoid_t, 16> * Ainvs = &ANParameters::AintInv;
     };
 
-    struct v2_resstr_t : public v2_anencoded_t {
+    struct v2_resstr_t :
+            public v2_anencoded_t {
 
         typedef str_t type_t;
         typedef v2_str_t v2_unenc_t;
@@ -378,7 +384,9 @@ namespace ahead {
     };
 
     template<typename T>
-    T ext_euclidean(T b0, size_t codewidth) {
+    T ext_euclidean(
+            T b0,
+            size_t codewidth) {
         T a0(1);
         a0 <<= codewidth;
         T a[20], b[20], q[20], r[20], s[20], t[20]; // 16 values is enough for 16-bit A's, let's add some space for larger A's

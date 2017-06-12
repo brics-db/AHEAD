@@ -23,7 +23,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 1.2 Late Detection\n=============================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.2:\n"

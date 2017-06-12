@@ -37,16 +37,13 @@ namespace ahead {
                     typedef typename HEnc::type_t henc_t;
                     typedef typename TEnc::type_t tenc_t;
 
-                    static
-                    std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
-                    run(
+                    static std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> run(
                             BAT<Head, Tail> * bat,
                             BAT<v2_void_t, v2_resoid_t> * grouping,
                             size_t numGroups,
                             typename Result::type_t AResult,
                             typename Result::type_t AResultInv,
-                            resoid_t AOID
-                            ) {
+                            resoid_t AOID) {
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
 
@@ -127,15 +124,13 @@ namespace ahead {
             }
 
             template<typename Result, typename Head, typename Tail>
-            std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
-            aggregate_sum_groupedAN(
+            std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> aggregate_sum_groupedAN(
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_resoid_t> * grouping,
                     size_t numGroups,
                     typename Result::type_t AResult,
                     typename Result::type_t AResultInv,
-                    resoid_t AOID
-                    ) {
+                    resoid_t AOID) {
                 static_assert(std::is_base_of<v2_anencoded_t, Result>::value, "Result type must be a subtype of v2_anencoded_t!");
                 return Private::aggregate_sum_groupedAN<Result, Head, Tail>::run(bat, grouping, numGroups, AResult, AResultInv, AOID);
             }

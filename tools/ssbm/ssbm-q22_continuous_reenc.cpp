@@ -23,7 +23,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.2 Continuous Detection With Reencoding\n===================================================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.2:\n"

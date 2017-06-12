@@ -36,8 +36,8 @@ namespace ahead {
                  * @return a single sum value
                  */
                 template<typename v2_result_t, typename Head, typename Tail>
-                typename v2_result_t::type_t
-                aggregate_sum(BAT<Head, Tail>* arg) {
+                typename v2_result_t::type_t aggregate_sum(
+                        BAT<Head, Tail>* arg) {
                     typedef typename v2_result_t::type_t result_t;
                     result_t sum = 0;
                     auto iter = arg->begin();
@@ -56,7 +56,10 @@ namespace ahead {
                  */
                 template<typename V2Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
                 BAT<v2_void_t, V2Result> *
-                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename V2Result::type_t init = typename V2Result::type_t(0)) {
+                aggregate_mul_sum(
+                        BAT<Head1, Tail1>* arg1,
+                        BAT<Head2, Tail2>* arg2,
+                        typename V2Result::type_t init = typename V2Result::type_t(0)) {
                     typedef typename V2Result::type_t result_t;
                     auto iter1 = arg1->begin();
                     auto iter2 = arg2->begin();

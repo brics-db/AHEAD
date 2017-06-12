@@ -36,11 +36,14 @@ namespace ahead {
     }
 
     TransactionManager::TransactionManager()
-            : currentVersion(0), transactions() {
+            : currentVersion(0),
+              transactions() {
     }
 
-    TransactionManager::TransactionManager(const TransactionManager& copy)
-            : currentVersion(copy.currentVersion), transactions(copy.transactions) {
+    TransactionManager::TransactionManager(
+            const TransactionManager& copy)
+            : currentVersion(copy.currentVersion),
+              transactions(copy.transactions) {
     }
 
     TransactionManager::~TransactionManager() {
@@ -54,7 +57,8 @@ namespace ahead {
     }
 
     TransactionManager::Transaction*
-    TransactionManager::beginTransaction(bool isUpdater) {
+    TransactionManager::beginTransaction(
+            bool isUpdater) {
         if (isUpdater) {
             // Atomic Block Start
             for (auto pT : this->transactions) {
@@ -69,7 +73,8 @@ namespace ahead {
         return result.second ? *result.first : nullptr;
     }
 
-    void TransactionManager::endTransaction(TransactionManager::Transaction *transaction) {
+    void TransactionManager::endTransaction(
+            TransactionManager::Transaction *transaction) {
         if (transaction->isUpdater) {
             *transaction->eotVersion = this->currentVersion + 1;
             this->currentVersion++;
@@ -82,7 +87,8 @@ namespace ahead {
         delete transaction;
     }
 
-    void TransactionManager::rollbackTransaction(TransactionManager::Transaction *transaction) {
+    void TransactionManager::rollbackTransaction(
+            TransactionManager::Transaction *transaction) {
         if (transaction->isUpdater) {
             transaction->rollback();
         }

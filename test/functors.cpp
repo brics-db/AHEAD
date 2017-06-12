@@ -34,12 +34,15 @@
 
 template<typename Op, typename ... _Types>
 constexpr
-auto function(_Types ... args) noexcept(noexcept(Op()(std::forward<_Types>(args)...)))
--> decltype(Op()(std::forward<_Types>(args)...)) {
+auto function(
+        _Types ... args) noexcept(noexcept(Op()(std::forward<_Types>(args)...)))
+        -> decltype(Op()(std::forward<_Types>(args)...)) {
     return Op()(std::forward<_Types>(args)...);
 }
 
-int main(int argc, char ** argv) {
+int main(
+        int argc,
+        char ** argv) {
     char* end;
     ssize_t a(5), b(4), c(3), d(2);
     if (argc > 1) {

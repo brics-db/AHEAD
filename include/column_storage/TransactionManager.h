@@ -82,11 +82,15 @@ namespace ahead {
             void *tail;
 
             BinaryUnit()
-                    : head( {nullptr}), tail(nullptr) {
+                    : head( {nullptr}),
+                      tail(nullptr) {
             }
 
-            BinaryUnit(void *head, void *tail)
-                    : head( {head}), tail(tail) {
+            BinaryUnit(
+                    void *head,
+                    void *tail)
+                    : head( {head}),
+                      tail(tail) {
             }
         };
 
@@ -120,8 +124,13 @@ namespace ahead {
              * der Identifikationsnummer 0, 1 und 2 ausschließlich durch die load()-Funktion verändert werden sollten, um eine korrekte
              * Arbeitsweise der Funktion zu sichern.
              */
-            size_t load(const char * const path, const char * const tableName = nullptr, const char * const prefix = nullptr, const size_t size = static_cast<size_t>(-1), const char * constdelim =
-                    nullptr, const bool ignoreMoreData = true);
+            size_t load(
+                    const char * const path,
+                    const char * const tableName = nullptr,
+                    const char * const prefix = nullptr,
+                    const size_t size = static_cast<size_t>(-1),
+                    const char * constdelim = nullptr,
+                    const bool ignoreMoreData = true);
 
             /**
              * @author Julian Hollender
@@ -141,7 +150,8 @@ namespace ahead {
              * Die Funktion öffnet die Spalte mit der übergebenen Identifikationsnummer. Falls die Spalte bereits geöffnet ist oder keine
              * Spalte zur übergebenen Identifikationsnummer existiert, wird keine Operation ausgeführt.
              */
-            std::pair<size_t, size_t> open(id_t id);
+            std::pair<size_t, size_t> open(
+                    id_t id);
             /**
              * @author Julian Hollender
              *
@@ -150,7 +160,8 @@ namespace ahead {
              * Die Funktion schließt die Spalte mit der übergebenen Identifikationsnummer. Falls die Spalte nicht geöffnet ist oder keine
              * Spalte zur übergebenen Identifikationsnummer existiert, wird keine Operation ausgeführt.
              */
-            void close(id_t id);
+            void close(
+                    id_t id);
 
             /**
              * @author Julian Hollender
@@ -164,7 +175,8 @@ namespace ahead {
              * werden darf. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder das Ende
              * der Spalte erreicht wurde, wird ein NULL-Zeiger zurückgegeben.
              */
-            BinaryUnit next(id_t id);
+            BinaryUnit next(
+                    id_t id);
             /**
              * @author Julian Hollender
              *
@@ -178,7 +190,9 @@ namespace ahead {
              * verändert werden darf. Falls die Spalte nicht geöffnet ist, keine Spalte zur übergebenen Identifikationsnummer existiert oder
              * die Position innerhalb der Spalte nicht belegt ist, wird ein NULL-Zeiger zurückgegeben.
              */
-            BinaryUnit get(id_t id, oid_t index);
+            BinaryUnit get(
+                    id_t id,
+                    oid_t index);
 
             /**
              * @author Julian Hollender
@@ -191,7 +205,8 @@ namespace ahead {
              * Komponente der BinaryUnit auf die Speicherstelle des Wertes verzeigert. Falls die Spalte nicht geöffnet ist, keine Spalte zur
              * übergebenen Identifikationsnummer existiert oder das Ende der Spalte erreicht wurde, wird ein NULL-Zeiger zurückgegeben.
              */
-            BinaryUnit edit(id_t id);
+            BinaryUnit edit(
+                    id_t id);
             /**
              * @author Julian Hollender
              *
@@ -204,7 +219,8 @@ namespace ahead {
              * der Funktion edit() würde also einen BinaryUnit mit gleichem Inhalt liefern. Falls die Spalte nicht geöffnet ist oder keine Spalte
              * zur übergebenen Identifikationsnummer existiert, wird ein NULL-Zeiger zurückgegeben.
              */
-            BinaryUnit append(id_t id);
+            BinaryUnit append(
+                    id_t id);
 
         private:
             unsigned int botVersion;
@@ -222,11 +238,15 @@ namespace ahead {
             std::vector<ColumnManager::ColumnIterator*> iterators;
             std::vector<ssize_t> iteratorPositions;
 
-            Transaction(bool isUpdater, unsigned int currentVersion);
-            Transaction(const Transaction &copy);
+            Transaction(
+                    bool isUpdater,
+                    unsigned int currentVersion);
+            Transaction(
+                    const Transaction &copy);
             virtual ~Transaction();
 
-            Transaction& operator=(const Transaction &copy);
+            Transaction& operator=(
+                    const Transaction &copy);
 
             void rollback();
         };
@@ -254,7 +274,8 @@ namespace ahead {
          * Änderungsberechtigung geben. Bei dem Versuch eine weitere Transaktion mit Änderungsberechtigung zu erzeugen, wird ein NULL-Zeiger
          * zurückgeben. Die Transaktionverwaltung übernimmt alle Synchronisation zwischen den Transaktionen.
          */
-        Transaction* beginTransaction(bool isUpdater);
+        Transaction* beginTransaction(
+                bool isUpdater);
         /**
          * @author Julian Hollender
          *
@@ -263,7 +284,8 @@ namespace ahead {
          * Die Funktion beendet die übergebene Transaktion und macht ihre Änderungen zum aktuellen konsistenten Zustand. Eine erfolgreiche
          * Ausführung der Funktion entspricht einem Commit.
          */
-        void endTransaction(Transaction *transaction);
+        void endTransaction(
+                Transaction *transaction);
         /**
          * @author Julian Hollender
          *
@@ -271,7 +293,8 @@ namespace ahead {
          *
          * Die Funktion setzt die übergebene Transaktion zurück und macht all ihre Änderungen rückgängig.
          */
-        void rollbackTransaction(Transaction *transaction);
+        void rollbackTransaction(
+                Transaction *transaction);
 
     private:
         static TransactionManager *instance;
@@ -284,7 +307,8 @@ namespace ahead {
         std::unordered_set<Transaction*> transactions;
 
         TransactionManager();
-        TransactionManager(const TransactionManager &copy);
+        TransactionManager(
+                const TransactionManager &copy);
         virtual ~TransactionManager();
 
     public:

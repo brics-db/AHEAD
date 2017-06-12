@@ -42,14 +42,12 @@ namespace ahead {
                  */
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<
                         Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*>
-                aggregate_mul_sumAN(
+                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> aggregate_mul_sumAN(
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,
                         typename Result::type_t init,
                         typename ResEnc::type_t RA,
-                        typename ResEnc::type_t RAInv
-                        ) {
+                        typename ResEnc::type_t RAInv) {
                     typedef typename Result::type_t result_t;
                     typedef typename T1Enc::type_t t1enc_t;
                     typedef typename T2Enc::type_t t2enc_t;

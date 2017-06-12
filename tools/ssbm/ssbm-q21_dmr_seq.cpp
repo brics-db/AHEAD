@@ -25,7 +25,9 @@
 typedef typename std::tuple<BAT<v2_void_t, v2_bigint_t>*, BAT<v2_void_t, v2_shortint_t>*, BAT<v2_void_t, v2_str_t>*> result_tuple_t;
 typedef DMRValue<result_tuple_t> DMR;
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.1 DMR Sequential\n=============================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.1:\n"

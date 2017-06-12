@@ -127,7 +127,8 @@ namespace ahead {
                         typedef typename v2_mm128_AN<larger_t>::mask_t larger_mask_t;
                         typedef typename std::tuple<BAT<v2_head_unenc_t, v2_tail_unenc_t>*, std::vector<bool>*, std::vector<bool>*> result_t;
 
-                        static result_t doIt(BAT<Head, Tail>* arg) {
+                        static result_t doIt(
+                                BAT<Head, Tail>* arg) {
                             static_assert(std::is_base_of<v2_anencoded_t, Head>::value || std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
 
                             constexpr const bool isHeadSmaller = larger_type<head_t, tail_t>::isSecondLarger;
@@ -240,7 +241,8 @@ namespace ahead {
                         typedef typename v2_mm128_AN<tail_t>::mask_t tail_mask_t;
                         typedef typename std::tuple<BAT<v2_void_t, v2_tail_unenc_t>*, std::vector<bool>*, std::vector<bool>*> result_t;
 
-                        static result_t doIt(BAT<Head, Tail>* arg) {
+                        static result_t doIt(
+                                BAT<Head, Tail>* arg) {
                             static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "Tail must be an AN-encoded type");
 
                             constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_t);
@@ -292,8 +294,8 @@ namespace ahead {
                 }
 
                 template<typename Head, typename Tail>
-                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
-                checkAndDecodeAN(BAT<Head, Tail>* arg) {
+                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*> checkAndDecodeAN(
+                        BAT<Head, Tail>* arg) {
                     return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg);
                 }
 

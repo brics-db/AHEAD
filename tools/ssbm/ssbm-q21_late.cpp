@@ -23,7 +23,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.1 Late Detection\n=============================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.1:\n"
@@ -139,11 +141,9 @@ int main(int argc, char** argv) {
         auto batARenc2 = batARenc->clear_head();
         delete batARenc;
         delete batW;
-        MEASURE_OP_TUPLE(tupleAY2, checkAndDecodeAN(batAYenc2));
-        CLEAR_CHECKANDDECODE_AN(tupleAY2);
+        MEASURE_OP_TUPLE(tupleAY2, checkAndDecodeAN(batAYenc2));CLEAR_CHECKANDDECODE_AN(tupleAY2);
         delete batAYenc2;
-        MEASURE_OP_TUPLE(tupleAR2, checkAndDecodeAN(batARenc2));
-        CLEAR_CHECKANDDECODE_AN(tupleAR2);
+        MEASURE_OP_TUPLE(tupleAR2, checkAndDecodeAN(batARenc2));CLEAR_CHECKANDDECODE_AN(tupleAR2);
         delete batARenc2;
 
         MEASURE_OP_PAIR(pairGY, groupby(std::get<0>(tupleAY2)));

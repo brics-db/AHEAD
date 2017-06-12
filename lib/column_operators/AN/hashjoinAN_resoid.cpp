@@ -25,7 +25,7 @@ namespace ahead {
     namespace bat {
         namespace ops {
 
-        V2_HASHJOIN_AN(v2_resoid_t)
+            V2_HASHJOIN_AN(v2_resoid_t)
 
         }
     }

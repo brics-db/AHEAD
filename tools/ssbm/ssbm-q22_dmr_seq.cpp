@@ -22,10 +22,12 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_shortint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> result_tuple_t;
+typedef typename std::tuple<BAT<v2_void_t, v2_bigint_t>*, BAT<v2_void_t, v2_shortint_t>*, BAT<v2_void_t, v2_str_t>*> result_tuple_t;
 typedef DMRValue<result_tuple_t> DMR;
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.2 DMR Sequential\n=============================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.2:\n"
@@ -141,22 +143,32 @@ int main(int argc, char** argv) {
             MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
             delete batX;
             delete batY;
-            MEASURE_OP(batA1, hashjoin(batZ, bat8)); // OID lineorder | p_brand
-            delete batZ;
-            delete bat8;
-
-            MEASURE_OP(batA2, hashjoin(batI, batDYs[k])); // OID lineorder | d_year
+            auto batI2 = batI->clear_head();
             delete batI;
-
-            MEASURE_OP(batA3, matchjoin(batW, batLRs[k])); // OID lineorder | lo_revenue (where ...)
+            MEASURE_OP(batAY, fetchjoin(batI2, batDYs[k])); // OID lineorder | d_year
+            delete batI2;
+            auto batZ2 = batZ->clear_head();
+            delete batZ;
+            MEASURE_OP(batAB, fetchjoin(batZ2, batPBs[k])); // OID lineorder | p_brand
+            delete batZ2;
+            auto batW2 = batW->clear_head();
             delete batW;
+            MEASURE_OP(batAR, fetchjoin(batW2, batLRs[k])); // OID lineorder | lo_revenue (where ...)
+            delete batW2;
+            MEASURE_OP_PAIR(pairGY, groupby(batAY));
+            MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
+            delete std::get<0>(pairGY);
+            delete std::get<1>(pairGY);
+            MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+            delete batAR;
+            MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY));
+            delete batAY;
+            MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB));
+            delete batAB;
+            delete std::get<0>(pairGB);
+            delete std::get<1>(pairGB);
 
-            MEASURE_OP_TUPLE(tupleK, groupedSum < v2_bigint_t > (batA3, batA2, batA1));
-            delete batA1;
-            delete batA2;
-            delete batA3;
-
-            results[k] = tupleK;
+            results[k] = {batRR, batRY, batRB};
         }
 
         // 5) Voting
@@ -183,20 +195,6 @@ int main(int argc, char** argv) {
             }
             delete iter31;
             delete iter32;
-            auto iter41 = std::get<3>(results[0])->begin();
-            auto iter42 = std::get<3>(results[1])->begin();
-            for (; iter41->hasNext() && iter42->hasNext(); ++*iter41, ++*iter42) {
-                isSame &= iter41->tail() == iter42->tail();
-            }
-            delete iter41;
-            delete iter42;
-            auto iter51 = std::get<4>(results[0])->begin();
-            auto iter52 = std::get<4>(results[1])->begin();
-            for (; iter51->hasNext() && iter52->hasNext(); ++*iter51, ++*iter52) {
-                isSame &= iter51->tail() == iter52->tail();
-            }
-            delete iter51;
-            delete iter52;
         }
 
         auto szResult = std::get<0>(results[0])->size();
@@ -208,34 +206,26 @@ int main(int argc, char** argv) {
             auto iter1 = std::get<0>(results[0])->begin();
             auto iter2 = std::get<1>(results[0])->begin();
             auto iter3 = std::get<2>(results[0])->begin();
-            auto iter4 = std::get<3>(results[0])->begin();
-            auto iter5 = std::get<4>(results[0])->begin();
             std::cerr << "+------------+--------+-----------+\n";
             std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
-            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
+            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail();
                 std::cerr << "| " << std::setw(10) << iter1->tail();
-                iter3->position(iter2->tail());
-                std::cerr << " | " << std::setw(6) << iter3->tail();
-                iter5->position(iter4->tail());
-                std::cerr << " | " << std::setw(9) << iter5->tail() << " |\n";
+                std::cerr << " | " << std::setw(6) << iter2->tail();
+                std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;
-            delete iter4;
-            delete iter5;
         }
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
             delete std::get<0>(results[k]);
             delete std::get<1>(results[k]);
             delete std::get<2>(results[k]);
-            delete std::get<3>(results[k]);
-            delete std::get<4>(results[k]);
         }
     }
 

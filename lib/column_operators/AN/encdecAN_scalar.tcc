@@ -35,7 +35,9 @@ namespace ahead {
 
                 template<typename Head, typename Tail>
                 BAT<Head, typename TypeMap<Tail>::v2_encoded_t>*
-                encodeAN(BAT<Head, Tail>* arg, typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<ANParametersSelector<Tail>::As->size() - 1>(*ANParametersSelector<Tail>::As)) {
+                encodeAN(
+                        BAT<Head, Tail>* arg,
+                        typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<ANParametersSelector<Tail>::As->size() - 1>(*ANParametersSelector<Tail>::As)) {
 
                     typedef typename TypeMap<Tail>::v2_encoded_t enctail_t;
                     typedef typename enctail_t::type_t tail_t;
@@ -58,7 +60,10 @@ namespace ahead {
 
                 template<typename Head, typename ResTail>
                 std::vector<bool>*
-                checkAN(BAT<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
+                checkAN(
+                        BAT<Head, ResTail>* arg,
+                        typename ResTail::type_t aInv = ResTail::A_INV,
+                        typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
 
                     typedef typename ResTail::type_t res_t;
 
@@ -79,8 +84,8 @@ namespace ahead {
                 }
 
                 template<typename Head, typename ResTail>
-                std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*>
-                decodeAN(BAT<Head, ResTail>* arg) {
+                std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*> decodeAN(
+                        BAT<Head, ResTail>* arg) {
 
                     typedef typename ResTail::type_t restail_t;
                     typedef typename ResTail::v2_unenc_t Tail;
@@ -117,7 +122,8 @@ namespace ahead {
                         typedef typename v2_tail_unenc_t::type_t tail_unenc_t;
                         typedef std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*> result_t;
 
-                        static result_t doIt(BAT<Head, Tail>* arg) {
+                        static result_t doIt(
+                                BAT<Head, Tail>* arg) {
 
                             typedef typename Head::type_t head_t;
                             typedef typename Tail::type_t tail_t;
@@ -162,7 +168,8 @@ namespace ahead {
                         typedef typename v2_tail_unenc_t::type_t tail_unenc_t;
                         typedef std::tuple<BAT<v2_void_t, v2_tail_unenc_t>*, std::vector<bool>*, std::vector<bool>*> result_t;
 
-                        static result_t doIt(BAT<v2_void_t, Tail>* arg) {
+                        static result_t doIt(
+                                BAT<v2_void_t, Tail>* arg) {
 
                             typedef typename Tail::type_t tail_t;
 
@@ -190,8 +197,8 @@ namespace ahead {
                 }
 
                 template<typename Head, typename Tail>
-                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
-                checkAndDecodeAN(BAT<Head, Tail>* arg) {
+                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*> checkAndDecodeAN(
+                        BAT<Head, Tail>* arg) {
                     return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg);
                 }
 

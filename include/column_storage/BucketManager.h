@@ -85,10 +85,13 @@ namespace ahead {
             void *content;
 
             Chunk();
-            Chunk(void* content);
-            Chunk(const Chunk &);
+            Chunk(
+                    void* content);
+            Chunk(
+                    const Chunk &);
 
-            Chunk& operator=(const Chunk &);
+            Chunk& operator=(
+                    const Chunk &);
         };
 
         /**
@@ -105,10 +108,18 @@ namespace ahead {
             Chunk *chunk;
 
             Bucket();
-            Bucket(id_t number, version_t *version, Bucket *next, Bucket *older, Bucket* newer, Chunk *chunk);
-            Bucket(const Bucket &);
+            Bucket(
+                    id_t number,
+                    version_t *version,
+                    Bucket *next,
+                    Bucket *older,
+                    Bucket* newer,
+                    Chunk *chunk);
+            Bucket(
+                    const Bucket &);
 
-            Bucket& operator=(const Bucket &);
+            Bucket& operator=(
+                    const Bucket &);
         };
 
         /**
@@ -125,10 +136,16 @@ namespace ahead {
             size_t size;
 
             BucketStream();
-            BucketStream(Bucket *head, Bucket *tail, std::vector<Bucket*> & index, size_t size);
-            BucketStream(const BucketStream &);
+            BucketStream(
+                    Bucket *head,
+                    Bucket *tail,
+                    std::vector<Bucket*> & index,
+                    size_t size);
+            BucketStream(
+                    const BucketStream &);
 
-            BucketStream& operator=(const BucketStream &);
+            BucketStream& operator=(
+                    const BucketStream &);
         };
 
         /**
@@ -198,7 +215,8 @@ namespace ahead {
              * der Positionen innerhalb eines Bucket-Streams bei 0 beginnt. Falls zur übergebenen Position kein entsprechender Bucket gefunden wurde, wird
              * ein NULL-Zeiger zurückgegeben. Um die Datenintegrität zu erhalten, darf der Inhalt des Buckets nicht verändert werden.
              */
-            Chunk* seek(size_t number);
+            Chunk* seek(
+                    size_t number);
 
             /**
              * @author Julian Hollender
@@ -249,11 +267,15 @@ namespace ahead {
              */
             std::stack<Bucket*> log;
 
-            BucketIterator(BucketStream *stream, version_t *version);
-            BucketIterator(const BucketIterator &copy);
+            BucketIterator(
+                    BucketStream *stream,
+                    version_t *version);
+            BucketIterator(
+                    const BucketIterator &copy);
             virtual ~BucketIterator();
 
-            BucketIterator& operator=(const BucketIterator& copy);
+            BucketIterator& operator=(
+                    const BucketIterator& copy);
 
             friend class ColumnManager;
         };
@@ -283,7 +305,9 @@ namespace ahead {
          * BucketStream angelegt. Es ist darauf zu achten, dass zu einem festen Zeitpunkt maximal einen Iterator der Änderung durchgeführt
          * hat oder Änderungen durchführen wird pro BucketStream gibt.
          */
-        BucketIterator* openStream(id_t id, version_t *version);
+        BucketIterator* openStream(
+                id_t id,
+                version_t *version);
 
 #ifdef DEBUG
         void printDebugInformation ();
@@ -297,7 +321,8 @@ namespace ahead {
         std::unordered_map<id_t, BucketStream> streams;
 
         BucketManager();
-        BucketManager(const BucketManager &copy);
+        BucketManager(
+                const BucketManager &copy);
         virtual ~BucketManager();
     };
 

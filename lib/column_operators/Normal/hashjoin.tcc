@@ -35,7 +35,10 @@ namespace ahead {
 
             template<typename H1, typename T1, typename H2, typename T2>
             BAT<typename H1::v2_select_t, typename T2::v2_select_t>*
-            hashjoin(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, hash_side_t side = hash_side_t::right) {
+            hashjoin(
+                    BAT<H1, T1> *arg1,
+                    BAT<H2, T2> *arg2,
+                    hash_side_t side = hash_side_t::right) {
                 typedef typename H1::type_t h1_t;
                 typedef typename T1::type_t t1_t;
                 typedef typename H2::type_t h2_t;

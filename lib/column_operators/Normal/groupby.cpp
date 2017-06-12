@@ -46,8 +46,8 @@ V2_GROUPBY_SUB(v2_oid_t, Tail)
             V2_GROUPBY(v2_restiny_t)
             V2_GROUPBY(v2_resshort_t)
             V2_GROUPBY(v2_resint_t)
-            // V2_GROUPBY(v2_resbigint_t)
-            // V2_GROUPBY(v2_resstr_t)
+        // V2_GROUPBY(v2_resbigint_t)
+        // V2_GROUPBY(v2_resstr_t)
 
         }
     }

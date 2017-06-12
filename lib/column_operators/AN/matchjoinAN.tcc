@@ -77,9 +77,7 @@ namespace ahead {
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    static
-                    std::tuple<BAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-                    run(
+                    static std::tuple<BAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(
                             BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2,
                             h1enc_t AH1R = 1, // for reencode
@@ -184,16 +182,13 @@ namespace ahead {
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    static
-                    std::tuple<BAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-                    run(
+                    static std::tuple<BAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(
                             BAT<Head1, Tail1>* arg1,
                             BAT<Head2, v2_str_t>* arg2,
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
-                            __attribute__((unused)) str_t dummy1 = nullptr,
-                            __attribute__((unused)) str_t dummy2 = nullptr
-                            ) {
+                            __attribute__((unused))  str_t dummy1 = nullptr,
+                            __attribute__((unused))  str_t dummy2 = nullptr) {
                         constexpr const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         constexpr const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
                         constexpr const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
@@ -211,7 +206,9 @@ namespace ahead {
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
                             bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(
                                     bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
-                                    bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, arg2->tail.metaData.AN_A, arg2->tail.metaData.AN_Ainv, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
+                                    bat_coldesc_tail_t(
+                                            ColumnMetaData(arg2->tail.metaData.width, arg2->tail.metaData.AN_A, arg2->tail.metaData.AN_Ainv, arg2->tail.metaData.AN_unencMaxU,
+                                                    arg2->tail.metaData.AN_unencMinS)));
                         } else {
                             bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
                         }
@@ -282,16 +279,14 @@ namespace ahead {
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
 
-                    static
-                    std::tuple<BAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-                    run(
+                    static std::tuple<BAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(
                             BAT<Head1, v2_void_t>* arg1,
                             BAT<v2_void_t, Tail2>* arg2,
                             h1enc_t AH1R = h1enc_t(1), // for reencode
                             h1enc_t AH1InvR = h1enc_t(1), // for reencode
                             t2enc_t AT2R = t2enc_t(1), // for reencode
                             t2enc_t AT2InvR = t2enc_t(1) // for reencode
-                            ) {
+                                    ) {
                         constexpr const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         constexpr const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
                         const h1enc_t AH1Inv = isHead1Encoded ? arg1->head.metaData.AN_Ainv : 1;
@@ -360,15 +355,12 @@ namespace ahead {
                     typedef typename TailEncoded::type_t tailenc_t;
                     typedef typename TailEncoded::v2_select_t ReturnTail;
 
-                    static
-                    std::tuple<BAT<ReturnHead, ReturnTail> *, AN_indicator_vector *, AN_indicator_vector *>
-                    run(
+                    static std::tuple<BAT<ReturnHead, ReturnTail> *, AN_indicator_vector *, AN_indicator_vector *> run(
                             BAT<v2_void_t, v2_resoid_t> *arg1,
                             BAT<v2_void_t, T2> *arg2,
                             resoid_t AOID,
                             tailenc_t ATReenc = tailenc_t(1),
-                            tailenc_t ATReencInv = tailenc_t(1)
-                            ) {
+                            tailenc_t ATReencInv = tailenc_t(1)) {
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, T2>::value;
                         const resoid_t AT1inv = static_cast<resoid_t>(arg1->tail.metaData.AN_Ainv);
                         const tailenc_t AT2inv = static_cast<tailenc_t>(arg2->tail.metaData.AN_Ainv);
@@ -415,13 +407,10 @@ namespace ahead {
                 template<bool reencode>
                 struct FetchjoinAN<v2_str_t, reencode> {
 
-                    static
-                    std::tuple<BAT<v2_void_t, v2_str_t> *, AN_indicator_vector *, AN_indicator_vector *>
-                    run(
+                    static std::tuple<BAT<v2_void_t, v2_str_t> *, AN_indicator_vector *, AN_indicator_vector *> run(
                             BAT<v2_void_t, v2_resoid_t> *arg1,
                             BAT<v2_void_t, v2_str_t> *arg2,
-                            resoid_t AOID
-                            ) {
+                            resoid_t AOID) {
                         const resoid_t AT1inv = static_cast<resoid_t>(arg1->tail.metaData.AN_Ainv);
                         auto result = skeletonJoin<v2_void_t, v2_str_t>(arg1, arg2);
                         result->reserve(arg1->size());
@@ -447,57 +436,47 @@ namespace ahead {
             }
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            matchjoinAN(
+            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> matchjoinAN(
                     BAT<H1, T1> *arg1,
-                    BAT<H2, T2> *arg2
-                    ) {
+                    BAT<H2, T2> *arg2) {
                 return Private::MatchjoinAN<H1, T1, H2, T2, false>::run(arg1, arg2);
             }
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            matchjoinAN(
+            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> matchjoinAN(
                     BAT<H1, T1> *arg1,
                     BAT<H2, T2> *arg2,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc,
-                    typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc
-                    ) {
+                    typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc) {
                 return Private::MatchjoinAN<H1, T1, H2, T2, true>::run(arg1, arg2, AH1reenc, AH1InvReenc);
             }
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
-            matchjoinAN(
+            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> matchjoinAN(
                     BAT<H1, T1> *arg1,
                     BAT<H2, T2> *arg2,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc,
                     typename TypeMap<T2>::v2_encoded_t::type_t AT2Reenc,
-                    typename TypeMap<T2>::v2_encoded_t::type_t AT2InvReenc
-                    ) {
+                    typename TypeMap<T2>::v2_encoded_t::type_t AT2InvReenc) {
                 return Private::MatchjoinAN<H1, T1, H2, T2, true>::run(arg1, arg2, AH1reenc, AH1InvReenc, AT2Reenc, AT2InvReenc);
             }
 
             template<typename T2>
-            std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *>
-            fetchjoinAN(
+            std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *> fetchjoinAN(
                     BAT<v2_void_t, v2_resoid_t> *arg1,
                     BAT<v2_void_t, T2> *arg2,
-                    resoid_t AOID
-                    ) {
+                    resoid_t AOID) {
                 return Private::FetchjoinAN<T2, false>::run(arg1, arg2, AOID);
             }
 
             template<typename T2>
-            std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *>
-            fetchjoinAN(
+            std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *> fetchjoinAN(
                     BAT<v2_void_t, v2_resoid_t> *arg1,
                     BAT<v2_void_t, T2> *arg2,
                     typename TypeMap<T2>::v2_encoded_t::type_t ATReenc,
                     typename TypeMap<T2>::v2_encoded_t::type_t ATReencInv,
-                    resoid_t AOID
-                    ) {
+                    resoid_t AOID) {
                 return Private::FetchjoinAN<T2, true>::run(arg1, arg2, AOID, ATReenc, ATReencInv);
             }
 

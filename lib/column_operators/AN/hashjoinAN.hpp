@@ -112,5 +112,4 @@ V2_HASHJOIN_SUB_AN2(v2_resoid_t, V2TAIL)
     }
 }
 
-
 #endif /* LIB_COLUMN_OPERATORS_AN_HASHJOINAN_HPP_ */

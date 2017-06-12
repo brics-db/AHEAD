@@ -47,70 +47,103 @@ namespace ahead {
 
             template<typename Head, typename Tail>
             TempBAT<typename Head::v2_copy_t, typename Tail::v2_copy_t> *
-            copy(BAT<Head, Tail> * arg);
+            copy(
+                    BAT<Head, Tail> * arg);
 
             template<typename H1, typename T1, typename H2, typename T2>
             BAT<typename H1::v2_select_t, typename T2::v2_select_t> *
-            matchjoin(BAT<H1, T1> * arg1, BAT<H2, T2> * arg2);
+            matchjoin(
+                    BAT<H1, T1> * arg1,
+                    BAT<H2, T2> * arg2);
 
             template<typename T2>
             BAT<v2_void_t, typename T2::v2_select_t> *
-            fetchjoin(BAT<v2_void_t, v2_oid_t> * arg1, BAT<v2_void_t, T2> * arg2);
+            fetchjoin(
+                    BAT<v2_void_t, v2_oid_t> * arg1,
+                    BAT<v2_void_t, T2> * arg2);
 
             template<typename H1, typename T1, typename H2, typename T2>
             BAT<typename H1::v2_select_t, typename T2::v2_select_t> *
-            hashjoin(BAT<H1, T1> * arg1, BAT<H2, T2> * arg2, hash_side_t side = hash_side_t::right);
+            hashjoin(
+                    BAT<H1, T1> * arg1,
+                    BAT<H2, T2> * arg2,
+                    hash_side_t side = hash_side_t::right);
 
             template<typename Head, typename Tail>
             std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
-            groupby(BAT<Head, Tail>* bat);
+            groupby(
+                    BAT<Head, Tail>* bat);
 
             template<typename Head, typename Tail>
             std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
-            groupby(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping, size_t numGroups);
+            groupby(
+                    BAT<Head, Tail> * bat,
+                    BAT<v2_void_t, v2_oid_t> * grouping,
+                    size_t numGroups);
 
             template<typename V2Result, typename Head, typename Tail>
             BAT<v2_void_t, V2Result> *
-            aggregate_sum_grouped(BAT<Head, Tail> * bat, BAT<v2_void_t, v2_oid_t> * grouping, size_t numGroups);
+            aggregate_sum_grouped(
+                    BAT<Head, Tail> * bat,
+                    BAT<v2_void_t, v2_oid_t> * grouping,
+                    size_t numGroups);
 
             namespace scalar {
                 // SELECT
                 template<template<typename > class Op, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
-                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1);
+                select(
+                        BAT<Head, Tail>* arg,
+                        typename Tail::type_t && th1);
 
                 template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
-                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1, typename Tail::type_t && th2);
+                select(
+                        BAT<Head, Tail>* arg,
+                        typename Tail::type_t && th1,
+                        typename Tail::type_t && th2);
 
                 // AGGREGATE
                 template<typename v2_result_t, typename Head, typename Tail>
                 typename v2_result_t::type_t
-                aggregate_sum(BAT<Head, Tail>* arg);
+                aggregate_sum(
+                        BAT<Head, Tail>* arg);
 
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
                 BAT<v2_void_t, Result>*
-                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0));
+                aggregate_mul_sum(
+                        BAT<Head1, Tail1>* arg1,
+                        BAT<Head2, Tail2>* arg2,
+                        typename Result::type_t init = typename Result::type_t(0));
             }
 
             namespace sse {
                 // SELECT
                 template<template<typename > class Op, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
-                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1);
+                select(
+                        BAT<Head, Tail>* arg,
+                        typename Tail::type_t && th1);
 
                 template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
-                select(BAT<Head, Tail>* arg, typename Tail::type_t && th1, typename Tail::type_t && th2);
+                select(
+                        BAT<Head, Tail>* arg,
+                        typename Tail::type_t && th1,
+                        typename Tail::type_t && th2);
 
                 // AGGREGATE
                 template<typename v2_result_t, typename Head, typename Tail>
                 typename v2_result_t::type_t
-                aggregate_sum(BAT<Head, Tail>* arg);
+                aggregate_sum(
+                        BAT<Head, Tail>* arg);
 
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
                 BAT<v2_void_t, Result>*
-                aggregate_mul_sum(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init = typename Result::type_t(0));
+                aggregate_mul_sum(
+                        BAT<Head1, Tail1>* arg1,
+                        BAT<Head2, Tail2>* arg2,
+                        typename Result::type_t init = typename Result::type_t(0));
             }
 
         }

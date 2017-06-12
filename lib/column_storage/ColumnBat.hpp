@@ -52,7 +52,8 @@
 namespace ahead {
 
     template<typename Tail>
-    class ColumnBAT : public BAT<v2_void_t, Tail> {
+    class ColumnBAT :
+            public BAT<v2_void_t, Tail> {
 
         typedef v2_void_t Head;
         using v2_head_t = typename BAT<Head, Tail>::v2_head_t;
@@ -66,12 +67,15 @@ namespace ahead {
 
     public:
 
-        ColumnBAT(id_t columnId)
+        ColumnBAT(
+                id_t columnId)
                 : mColumnId(columnId) {
             this->tail.metaData = ColumnManager::getInstance()->getColumnMetaData(mColumnId);
         }
 
-        ColumnBAT(cstr_t table_name, cstr_t attribute)
+        ColumnBAT(
+                cstr_t table_name,
+                cstr_t attribute)
                 : mColumnId(0) {
             mColumnId = MetaRepositoryManager::getInstance()->getBatIdOfAttribute(table_name, attribute);
             this->tail.metaData = ColumnManager::getInstance()->getColumnMetaData(mColumnId);

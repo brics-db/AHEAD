@@ -34,11 +34,18 @@
 
 namespace ahead {
 
-    TransactionManager::Transaction::Transaction(bool isUpdater, version_t currentVersion)
-            : botVersion(currentVersion), eotVersion(isUpdater ? (new id_t(std::numeric_limits<id_t>::max())) : (&this->botVersion)), isUpdater(isUpdater), iterators(), iteratorPositions() {
+    TransactionManager::Transaction::Transaction(
+            bool isUpdater,
+            version_t currentVersion)
+            : botVersion(currentVersion),
+              eotVersion(isUpdater ? (new id_t(std::numeric_limits<id_t>::max())) : (&this->botVersion)),
+              isUpdater(isUpdater),
+              iterators(),
+              iteratorPositions() {
     }
 
-    TransactionManager::Transaction::Transaction(const Transaction &copy)
+    TransactionManager::Transaction::Transaction(
+            const Transaction &copy)
             : Transaction(copy.isUpdater, copy.botVersion) {
     }
 
@@ -50,12 +57,18 @@ namespace ahead {
         }
     }
 
-    TransactionManager::Transaction& TransactionManager::Transaction::operator=(const Transaction &copy) {
+    TransactionManager::Transaction& TransactionManager::Transaction::operator=(
+            const Transaction &copy) {
         new (this) Transaction(copy);
         return *this;
     }
 
-    size_t TransactionManager::Transaction::load(const char * const path, const char * const tableName, const char * const prefix, const size_t size, const char * const delim,
+    size_t TransactionManager::Transaction::load(
+            const char * const path,
+            const char * const tableName,
+            const char * const prefix,
+            const size_t size,
+            const char * const delim,
             const bool ignoreMoreData) {
         std::stringstream sserr;
         if (!this->isUpdater) {
@@ -555,7 +568,8 @@ namespace ahead {
         return ColumnManager::getInstance()->getColumnIDs();
     }
 
-    std::pair<size_t, size_t> TransactionManager::Transaction::open(id_t id) {
+    std::pair<size_t, size_t> TransactionManager::Transaction::open(
+            id_t id) {
         bool isOK = false;
         if (id >= this->iterators.size()) {
             this->iterators.resize(id + 1);
@@ -589,7 +603,8 @@ namespace ahead {
         return isOK ? std::make_pair<size_t, size_t>(this->iterators[id]->size(), this->iterators[id]->consumption()) : std::make_pair<size_t, size_t>(0, 0);
     }
 
-    void TransactionManager::Transaction::close(id_t id) {
+    void TransactionManager::Transaction::close(
+            id_t id) {
         if (id >= this->iterators.size() || (id < this->iterators.size() && this->iterators[id] == nullptr)) {
             // Problem : Spalte nicht geoeffnet
         } else {
@@ -597,7 +612,8 @@ namespace ahead {
         }
     }
 
-    TransactionManager::BinaryUnit TransactionManager::Transaction::next(id_t id) {
+    TransactionManager::BinaryUnit TransactionManager::Transaction::next(
+            id_t id) {
         if (id < this->iterators.size() && this->iterators[id] != nullptr && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->next();
 
@@ -616,7 +632,9 @@ namespace ahead {
         }
     }
 
-    TransactionManager::BinaryUnit TransactionManager::Transaction::get(id_t id, oid_t index) {
+    TransactionManager::BinaryUnit TransactionManager::Transaction::get(
+            id_t id,
+            oid_t index) {
         if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->seek(index);
 
@@ -636,7 +654,8 @@ namespace ahead {
         }
     }
 
-    TransactionManager::BinaryUnit TransactionManager::Transaction::edit(id_t id) {
+    TransactionManager::BinaryUnit TransactionManager::Transaction::edit(
+            id_t id) {
         if (this->isUpdater) {
             if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
                 const ColumnManager::Record &record = this->iterators[id]->edit();
@@ -660,7 +679,8 @@ namespace ahead {
         }
     }
 
-    TransactionManager::BinaryUnit TransactionManager::Transaction::append(id_t id) {
+    TransactionManager::BinaryUnit TransactionManager::Transaction::append(
+            id_t id) {
         if (this->isUpdater) {
             if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
                 const ColumnManager::Record &record = this->iterators[id]->append();

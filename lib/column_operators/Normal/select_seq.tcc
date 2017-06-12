@@ -48,7 +48,9 @@ namespace ahead {
                         typedef BAT<head_select_t, tail_select_t> bat_t;
 
                         static bat_t*
-                        filter(BAT<v2_void_t, Tail>* arg, tail_t && th) {
+                        filter(
+                                BAT<v2_void_t, Tail>* arg,
+                                tail_t && th) {
                             auto result = skeleton<head_select_t, tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -71,7 +73,9 @@ namespace ahead {
                         typedef typename v2_str_t::v2_select_t v2_tail_select_t;
                         typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                        static result_t* filter(BAT<v2_void_t, v2_str_t>* arg, str_t && threshold) {
+                        static result_t* filter(
+                                BAT<v2_void_t, v2_str_t>* arg,
+                                str_t && threshold) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -98,7 +102,10 @@ namespace ahead {
                         typedef typename Tail::v2_select_t v2_tail_select_t;
                         typedef BAT<v2_head_select_t, v2_tail_select_t> result_t;
 
-                        static result_t* filter(BAT<v2_void_t, Tail>* arg, tail_t && th1, tail_t && th2) {
+                        static result_t* filter(
+                                BAT<v2_void_t, Tail>* arg,
+                                tail_t && th1,
+                                tail_t && th2) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -123,7 +130,10 @@ namespace ahead {
                         typedef typename v2_tail_select_t::type_t tail_select_t;
                         typedef BAT<v2_oid_t, v2_str_t> result_t;
 
-                        static result_t* filter(BAT<v2_void_t, v2_str_t>* arg, tail_select_t && th1, tail_select_t && th2) {
+                        static result_t* filter(
+                                BAT<v2_void_t, v2_str_t>* arg,
+                                tail_select_t && th1,
+                                tail_select_t && th2) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();

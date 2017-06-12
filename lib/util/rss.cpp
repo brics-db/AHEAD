@@ -59,7 +59,8 @@ namespace ahead {
      * memory use) measured in bytes, or zero if the value cannot be
      * determined on this OS.
      */
-    size_t getPeakRSS(size_enum_t size_enum) {
+    size_t getPeakRSS(
+            size_enum_t size_enum) {
         size_t result = 0ull;
 #if defined(_WIN32)
         /* Windows -------------------------------------------------- */
@@ -115,7 +116,8 @@ namespace ahead {
      * Returns the current resident set size (physical memory use) measured
      * in bytes, or zero if the value cannot be determined on this OS.
      */
-    size_t getCurrentRSS(size_enum_t size_enum) {
+    size_t getCurrentRSS(
+            size_enum_t size_enum) {
         size_t result = 0ull;
 #if defined(_WIN32)
         /* Windows -------------------------------------------------- */

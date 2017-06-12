@@ -29,9 +29,11 @@ namespace ahead {
             struct add {
                 template<typename _Tp, typename ... _Types>
                 constexpr
-                auto operator()(_Tp&& __t, _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) + _Op().operator()(args...)))
-                -> decltype(std::forward<_Tp>(__t) + _Op().operator()(args...))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) + _Op().operator()(args...)))
+                        -> decltype(std::forward<_Tp>(__t) + _Op().operator()(args...))
+                        {
                     return std::forward<_Tp>(__t) + _Op().operator()(args...);
                 }
             };
@@ -40,9 +42,11 @@ namespace ahead {
             struct add<void> {
                 template<typename _Tp, typename _Up>
                 constexpr
-                auto operator()(_Tp&& __t, _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) + std::forward<_Up>(__u)))
-                -> decltype(std::forward<_Tp>(__t) + std::forward<_Up>(__u))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) + std::forward<_Up>(__u)))
+                        -> decltype(std::forward<_Tp>(__t) + std::forward<_Up>(__u))
+                        {
                     return std::forward<_Tp>(__t) + std::forward<_Up>(__u);
                 }
             };
@@ -51,9 +55,11 @@ namespace ahead {
             struct sub {
                 template<typename _Tp, typename ... _Types>
                 constexpr
-                auto operator()(_Tp&& __t, _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) - _Op().operator()(args...)))
-                -> decltype(std::forward<_Tp>(__t) - _Op().operator()(args...))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) - _Op().operator()(args...)))
+                        -> decltype(std::forward<_Tp>(__t) - _Op().operator()(args...))
+                        {
                     return std::forward<_Tp>(__t) - _Op().operator()(args...);
                 }
             };
@@ -62,9 +68,11 @@ namespace ahead {
             struct sub<void> {
                 template<typename _Tp, typename _Up>
                 constexpr
-                auto operator()(_Tp&& __t, _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) - std::forward<_Up>(__u)))
-                -> decltype(std::forward<_Tp>(__t) - std::forward<_Up>(__u))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) - std::forward<_Up>(__u)))
+                        -> decltype(std::forward<_Tp>(__t) - std::forward<_Up>(__u))
+                        {
                     return std::forward<_Tp>(__t) - std::forward<_Up>(__u);
                 }
             };
@@ -73,9 +81,11 @@ namespace ahead {
             struct mul {
                 template<typename _Tp, typename ... _Types>
                 constexpr
-                auto operator()(_Tp&& __t, _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) * _Op().operator()(args...)))
-                -> decltype(std::forward<_Tp>(__t) * _Op().operator()(args...))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) * _Op().operator()(args...)))
+                        -> decltype(std::forward<_Tp>(__t) * _Op().operator()(args...))
+                        {
                     return std::forward<_Tp>(__t) * _Op().operator()(args...);
                 }
             };
@@ -84,9 +94,11 @@ namespace ahead {
             struct mul<void> {
                 template<typename _Tp, typename _Up>
                 constexpr
-                auto operator()(_Tp&& __t, _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) * std::forward<_Up>(__u)))
-                -> decltype(std::forward<_Tp>(__t) * std::forward<_Up>(__u))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) * std::forward<_Up>(__u)))
+                        -> decltype(std::forward<_Tp>(__t) * std::forward<_Up>(__u))
+                        {
                     return std::forward<_Tp>(__t) * std::forward<_Up>(__u);
                 }
             };
@@ -95,9 +107,11 @@ namespace ahead {
             struct div {
                 template<typename _Tp, typename ... _Types>
                 constexpr
-                auto operator()(_Tp&& __t, _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) / _Op().operator()(args...)))
-                -> decltype(std::forward<_Tp>(__t) / _Op().operator()(args...))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) / _Op().operator()(args...)))
+                        -> decltype(std::forward<_Tp>(__t) / _Op().operator()(args...))
+                        {
                     return std::forward<_Tp>(__t) / _Op().operator()(args...);
                 }
             };
@@ -106,9 +120,11 @@ namespace ahead {
             struct div<void> {
                 template<typename _Tp, typename _Up>
                 constexpr
-                auto operator()(_Tp&& __t, _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) / std::forward<_Up>(__u)))
-                -> decltype(std::forward<_Tp>(__t) / std::forward<_Up>(__u))
-                {
+                auto operator()(
+                        _Tp&& __t,
+                        _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) / std::forward<_Up>(__u)))
+                        -> decltype(std::forward<_Tp>(__t) / std::forward<_Up>(__u))
+                        {
                     return std::forward<_Tp>(__t) / std::forward<_Up>(__u);
                 }
             };

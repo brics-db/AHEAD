@@ -24,7 +24,9 @@
 
 typedef DMRValue<bigint_t> DMR;
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 1.1 DMR Sequential\n=============================");
 
     SSBM_LOAD("date", "lineorder", "SSBM Q1.1:\n"

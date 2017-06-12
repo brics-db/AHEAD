@@ -53,11 +53,8 @@ namespace ahead {
                     /**
                      * Unary group by
                      */
-                    static
-                    std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
-                    unary(
-                            BAT<Head, Tail> * bat
-                            ) {
+                    static std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> unary(
+                            BAT<Head, Tail> * bat) {
                         google::dense_hash_map<tail_t, oid_t, hasher, comparator> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
                         auto batVoidToGID = new TempBAT<v2_void_t, v2_oid_t>();
@@ -87,13 +84,10 @@ namespace ahead {
                     /**
                      * Binary group by
                      */
-                    static
-                    std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
-                    binary(
+                    static std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> binary(
                             BAT<Head, Tail> * bat,
                             BAT<v2_void_t, v2_oid_t> * grouping,
-                            size_t numGroups
-                            ) {
+                            size_t numGroups) {
                         if (bat->size() != grouping->size()) {
                             throw std::runtime_error("input BAT and existing grouping have different sizes!");
                         }
@@ -133,10 +127,8 @@ namespace ahead {
              * 2) GroupID -> Value
              */
             template<typename Head, typename Tail>
-            std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
-            groupby(
-                    BAT<Head, Tail> * bat
-                    ) {
+            std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> groupby(
+                    BAT<Head, Tail> * bat) {
                 return Private::groupby<Head, Tail>::unary(bat);
             }
 
@@ -149,12 +141,10 @@ namespace ahead {
              * 2) GroupID -> Value
              */
             template<typename Head, typename Tail>
-            std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *>
-            groupby(
+            std::pair<BAT<v2_void_t, v2_oid_t> *, BAT<v2_void_t, v2_oid_t> *> groupby(
                     BAT<Head, Tail> * bat,
                     BAT<v2_void_t, v2_oid_t> * grouping,
-                    size_t numGroups
-                    ) {
+                    size_t numGroups) {
                 return Private::groupby<Head, Tail>::binary(bat, grouping, numGroups);
             }
 

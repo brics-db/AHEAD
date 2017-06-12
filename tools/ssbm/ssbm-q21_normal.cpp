@@ -22,7 +22,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.1 Normal\n=====================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.1:\n"

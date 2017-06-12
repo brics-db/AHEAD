@@ -34,7 +34,8 @@ namespace ahead {
 
             namespace Private {
 
-                inline uint8_t v2_mm128_compact_mask_uint16_t(uint16_t && mask) {
+                inline uint8_t v2_mm128_compact_mask_uint16_t(
+                        uint16_t && mask) {
                     mask = mask & 0x5555;
                     mask = ((mask >> 1) | mask) & 0x3333;
                     mask = ((mask >> 2) | mask) & 0x0F0F;
@@ -52,11 +53,15 @@ namespace ahead {
 
                 typedef uint16_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmplt_epi8(b, a);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
@@ -66,12 +71,16 @@ namespace ahead {
 
                 typedef uint16_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     auto mm = v2_mm128<uint8_t>::max(a, b);
                     return _mm_cmpeq_epi8(a, mm);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
@@ -81,11 +90,15 @@ namespace ahead {
 
                 typedef uint16_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmplt_epi8(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
@@ -95,12 +108,16 @@ namespace ahead {
 
                 typedef uint16_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     auto mm = v2_mm128<uint8_t>::min(a, b);
                     return _mm_cmpeq_epi8(a, mm);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
@@ -110,11 +127,15 @@ namespace ahead {
 
                 typedef uint16_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpeq_epi8(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
@@ -124,11 +145,15 @@ namespace ahead {
 
                 typedef uint16_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_or_si128(_mm_cmplt_epi8(a, b), _mm_cmpgt_epi8(a, b));
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
                 }
             };
@@ -138,11 +163,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmplt_epi16(b, a);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
@@ -152,12 +181,16 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     auto mm = v2_mm128<uint16_t>::max(a, b);
                     return _mm_cmpeq_epi16(a, mm);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
@@ -167,11 +200,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmplt_epi16(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
@@ -181,12 +218,16 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     auto mm = v2_mm128<uint16_t>::min(a, b);
                     return _mm_cmpeq_epi16(a, mm);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
@@ -196,11 +237,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpeq_epi16(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
@@ -210,11 +255,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_or_si128(_mm_cmplt_epi16(a, b), _mm_cmpgt_epi16(a, b));
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
@@ -224,11 +273,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpeq_epi32(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
                 }
             };
@@ -238,11 +291,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_or_si128(_mm_cmplt_epi32(a, b), _mm_cmpgt_epi32(a, b));
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
                 }
             };
@@ -252,11 +309,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpeq_epi32(a, v2_mm128<uint32_t>::max(a, b));
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
                 }
             };
@@ -266,11 +327,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpgt_epi32(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
                 }
             };
@@ -280,11 +345,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpeq_epi32(a, v2_mm128<uint32_t>::min(a, b));
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
                 }
             };
@@ -294,11 +363,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpgt_epi32(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
                 }
             };
@@ -308,11 +381,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpgt_epi64(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };
@@ -322,12 +399,16 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     auto mm = v2_mm128<uint64_t>::max(a, b);
                     return _mm_cmpeq_epi64(a, mm);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };
@@ -337,11 +418,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpgt_epi64(b, a);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };
@@ -351,12 +436,16 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     auto mm = v2_mm128<uint64_t>::min(a, b);
                     return _mm_cmpeq_epi64(a, mm);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };
@@ -366,11 +455,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_cmpeq_epi64(a, b);
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };
@@ -380,11 +473,15 @@ namespace ahead {
 
                 typedef uint8_t mask_t;
 
-                static inline __m128i cmp(__m128i a, __m128i b) {
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
                     return _mm_or_si128(_mm_cmpgt_epi64(a, b), _mm_cmpgt_epi64(b, a));
                 }
 
-                static inline mask_t cmp_mask(__m128i a, __m128i b) {
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
                     return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
                 }
             };

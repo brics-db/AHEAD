@@ -53,7 +53,8 @@
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
 namespace boost {
 
-    void throw_exception(std::exception const & e) { // user defined
+    void throw_exception(
+            std::exception const & e) { // user defined
         throw e;
     }
 }
@@ -101,15 +102,25 @@ namespace ssb {
     public:
 
         SSB_CONF();
-        SSB_CONF(int argc, char** argv);
+        SSB_CONF(
+                int argc,
+                char** argv);
 
-        void init(int argc, char** argv);
+        void init(
+                int argc,
+                char** argv);
     };
 
-    StopWatch::rep loadTable(const char* const tableName, const SSB_CONF & CONFIG);
+    StopWatch::rep loadTable(
+            const char* const tableName,
+            const SSB_CONF & CONFIG);
 
     template<typename Head, typename Tail>
-    void printBat(StopWatch & sw, BAT<Head, Tail> *bat, const char* filename, const char* message = nullptr) {
+    void printBat(
+            StopWatch & sw,
+            BAT<Head, Tail> *bat,
+            const char* filename,
+            const char* message = nullptr) {
         sw.stop();
         std::ofstream fout(filename);
         typedef typename Head::type_t head_t;
@@ -177,14 +188,19 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     extern std::vector<boost::typeindex::type_index> headTypes;
     extern std::vector<boost::typeindex::type_index> tailTypes;
 
-    void init(int argc, char ** argv, const char * strHeadline);
+    void init(
+            int argc,
+            char ** argv,
+            const char * strHeadline);
     void init_pcm();
     void clear_stats();
     void after_create_columnbats();
     void before_queries();
     void after_queries();
     void before_query();
-    void after_query(size_t index, size_t result);
+    void after_query(
+            size_t index,
+            size_t result);
     void before_op();
     void after_op();
     void finalize();

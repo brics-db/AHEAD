@@ -66,11 +66,15 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(ColumnMetaData(sizeof(typename Head::type_t))), tail(sizeof(typename Tail::type_t)) {
+                : head(ColumnMetaData(sizeof(typename Head::type_t))),
+                  tail(sizeof(typename Tail::type_t)) {
         }
 
-        BAT(coldesc_head_t head, coldesc_tail_t tail)
-                : head(std::move(head)), tail(std::move(tail)) {
+        BAT(
+                coldesc_head_t head,
+                coldesc_tail_t tail)
+                : head(std::move(head)),
+                  tail(std::move(tail)) {
         }
 
         virtual ~BAT() {
@@ -123,15 +127,22 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(), tail() {
+                : head(),
+                  tail() {
         }
 
-        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-                : head(head), tail(tail) {
+        BAT(
+                coldesc_head_t& head,
+                coldesc_tail_t& tail)
+                : head(head),
+                  tail(tail) {
         }
 
-        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        BAT(
+                coldesc_head_t&& head,
+                coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)),
+                  tail(std::forward<coldesc_tail_t>(tail)) {
         }
 
         virtual ~BAT() {
@@ -183,15 +194,22 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(), tail() {
+                : head(),
+                  tail() {
         }
 
-        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-                : head(head), tail(tail) {
+        BAT(
+                coldesc_head_t& head,
+                coldesc_tail_t& tail)
+                : head(head),
+                  tail(tail) {
         }
 
-        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        BAT(
+                coldesc_head_t&& head,
+                coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)),
+                  tail(std::forward<coldesc_tail_t>(tail)) {
         }
 
         virtual ~BAT() {
@@ -243,15 +261,22 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(), tail() {
+                : head(),
+                  tail() {
         }
 
-        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-                : head(head), tail(tail) {
+        BAT(
+                coldesc_head_t& head,
+                coldesc_tail_t& tail)
+                : head(head),
+                  tail(tail) {
         }
 
-        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        BAT(
+                coldesc_head_t&& head,
+                coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)),
+                  tail(std::forward<coldesc_tail_t>(tail)) {
         }
 
         virtual ~BAT() {

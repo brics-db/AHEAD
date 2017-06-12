@@ -106,12 +106,12 @@ V2_HASHJOIN_SUB_AN0(v2_resoid_t, V2TAIL) \
 V2_HASHJOIN_SUB_AN1(v2_resoid_t, V2TAIL) \
 V2_HASHJOIN_SUB_AN2(v2_resoid_t, V2TAIL)
 
-        V2_HASHJOIN_AN(v2_void_t)
-        V2_HASHJOIN_AN(v2_oid_t)
-        V2_HASHJOIN_AN(v2_resoid_t)
-        V2_HASHJOIN_AN(v2_restiny_t)
-        V2_HASHJOIN_AN(v2_resshort_t)
-        V2_HASHJOIN_AN(v2_str_t)
+            V2_HASHJOIN_AN(v2_void_t)
+            V2_HASHJOIN_AN(v2_oid_t)
+            V2_HASHJOIN_AN(v2_resoid_t)
+            V2_HASHJOIN_AN(v2_restiny_t)
+            V2_HASHJOIN_AN(v2_resshort_t)
+            V2_HASHJOIN_AN(v2_str_t)
 
         }
     }

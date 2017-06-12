@@ -23,7 +23,9 @@
 #include "ssb.hpp"
 #include "macros.hpp"
 
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.1 Continuous Detection\n===================================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.1:\n"
@@ -92,11 +94,7 @@ int main(int argc, char** argv) {
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP_TUPLE(tuple5, hashjoinAN(
-                batLSenc,
-                std::get<0>(tuple4),
-                std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
-                std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
+        MEASURE_OP_TUPLE(tuple5, hashjoinAN(batLSenc, std::get<0>(tuple4), std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
         CLEAR_JOIN_AN(tuple5);
         delete std::get<0>(tuple4);
         // join with LO_PARTKEY to already reduce the join partners
@@ -128,13 +126,9 @@ int main(int argc, char** argv) {
         CLEAR_JOIN_AN(tupleF);
         delete batE;
         auto batH = batDDenc->reverse(); // d_datekey | OID date
-        MEASURE_OP_TUPLE(tupleI, hashjoinAN(
-                std::get<0>(tupleF),
-                batH,
-                std::get<0>(tupleF)->head.metaData.AN_A,
-                std::get<0>(tupleF)->head.metaData.AN_Ainv,
-                std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
-                std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
+        MEASURE_OP_TUPLE(tupleI,
+                hashjoinAN(std::get<0>(tupleF), batH, std::get<0>(tupleF)->head.metaData.AN_A, std::get<0>(tupleF)->head.metaData.AN_Ainv, std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
+                        std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID date (where ..., joined with date)
         CLEAR_JOIN_AN(tupleI);
         delete std::get<0>(tupleF);
         delete batH;
@@ -144,13 +138,9 @@ int main(int argc, char** argv) {
         MEASURE_OP_TUPLE(tupleX, matchjoinAN(batW, batLPenc)); // OID lineorder | lo_partkey
         CLEAR_JOIN_AN(tupleX);
         auto batY = batPPenc->reverse(); // p_partkey | OID part
-        MEASURE_OP_TUPLE(tupleZ, hashjoinAN(
-                std::get<0>(tupleX),
-                batY,
-                std::get<0>(tupleX)->head.metaData.AN_A,
-                std::get<0>(tupleX)->head.metaData.AN_Ainv,
-                std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
-                std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID part
+        MEASURE_OP_TUPLE(tupleZ,
+                hashjoinAN(std::get<0>(tupleX), batY, std::get<0>(tupleX)->head.metaData.AN_A, std::get<0>(tupleX)->head.metaData.AN_Ainv, std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As),
+                        std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID part
         CLEAR_JOIN_AN(tupleZ);
         delete std::get<0>(tupleX);
         delete batY;
@@ -169,20 +159,15 @@ int main(int argc, char** argv) {
         MEASURE_OP_TUPLE(tupleAR, fetchjoinAN(batW2, batLRenc)); // OID lineorder | lo_revenue (where ...)
         CLEAR_FETCHJOIN_AN(tupleAR);
         delete batW2;
-        MEASURE_OP_TUPLE(tupleGY, groupbyAN(std::get<0>(tupleAY)));
-        CLEAR_GROUPBY_UNARY_AN(tupleGY);
-        MEASURE_OP_TUPLE(tupleGB, groupbyAN(std::get<0>(tupleAB), std::get<0>(tupleGY), std::get<1>(tupleGY)->size()));
-        CLEAR_GROUPBY_BINARY_AN(tupleGB);
+        MEASURE_OP_TUPLE(tupleGY, groupbyAN(std::get<0>(tupleAY)));CLEAR_GROUPBY_UNARY_AN(tupleGY);
+        MEASURE_OP_TUPLE(tupleGB, groupbyAN(std::get<0>(tupleAB), std::get<0>(tupleGY), std::get<1>(tupleGY)->size()));CLEAR_GROUPBY_BINARY_AN(tupleGB);
         delete std::get<0>(tupleGY);
         delete std::get<1>(tupleGY);
-        MEASURE_OP_TUPLE(tupleRR, aggregate_sum_groupedAN<v2_resbigint_t>(std::get<0>(tupleAR), std::get<0>(tupleGB), std::get<1>(tupleGB)->size()));
-        CLEAR_GROUPEDSUM_AN(tupleRR);
+        MEASURE_OP_TUPLE(tupleRR, aggregate_sum_groupedAN<v2_resbigint_t>(std::get<0>(tupleAR), std::get<0>(tupleGB), std::get<1>(tupleGB)->size()));CLEAR_GROUPEDSUM_AN(tupleRR);
         delete std::get<0>(tupleAR);
-        MEASURE_OP_TUPLE(tupleRY, fetchjoinAN(std::get<1>(tupleGB), std::get<0>(tupleAY)));
-        CLEAR_FETCHJOIN_AN(tupleRY);
+        MEASURE_OP_TUPLE(tupleRY, fetchjoinAN(std::get<1>(tupleGB), std::get<0>(tupleAY)));CLEAR_FETCHJOIN_AN(tupleRY);
         delete std::get<0>(tupleAY);
-        MEASURE_OP_TUPLE(tupleRB, fetchjoinAN(std::get<1>(tupleGB), std::get<0>(tupleAB)));
-        CLEAR_FETCHJOIN_AN(tupleRB);
+        MEASURE_OP_TUPLE(tupleRB, fetchjoinAN(std::get<1>(tupleGB), std::get<0>(tupleAB)));CLEAR_FETCHJOIN_AN(tupleRB);
         delete std::get<0>(tupleAB);
         delete std::get<0>(tupleGB);
         delete std::get<1>(tupleGB);

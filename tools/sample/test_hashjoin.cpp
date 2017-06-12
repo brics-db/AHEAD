@@ -24,7 +24,9 @@
 /*
  * 
  */
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     SSB_CONF CONFIG(argc, argv);
     StopWatch sw1;
     StopWatch::rep totalTime = 0;
