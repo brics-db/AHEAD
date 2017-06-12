@@ -32,6 +32,7 @@
 #include <column_storage/Storage.hpp>
 #include <column_operators/ANbase.hpp>
 #include "../miscellaneous.hpp"
+#include "ANhelper.tcc"
 #include <util/v2typeconversion.hpp>
 
 using boost::multiprecision::uint128_t;
@@ -42,18 +43,6 @@ namespace ahead {
 
             namespace Private {
 
-                template<typename T, bool>
-                struct ReturnTypeSelector {
-
-                    typedef typename T::v2_select_t v2_select_t;
-                };
-
-                template<typename T>
-                struct ReturnTypeSelector<T, true> {
-
-                    typedef typename TypeMap<T>::v2_encoded_t::v2_select_t v2_select_t;
-                };
-
                 template<typename Head1, typename Tail1, typename Head2, typename Tail2, bool reencode>
                 struct MatchjoinAN {
 
@@ -61,8 +50,8 @@ namespace ahead {
                     typedef typename Tail1::type_t tail1_t;
                     typedef typename Head2::type_t head2_t;
                     typedef typename Tail2::type_t tail2_t;
-                    typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
-                    typedef typename ReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
+                    typedef typename ANReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
+                    typedef typename ANReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
                     typedef typename H1Enc::type_t h1enc_t;
                     typedef typename TypeMap<Tail1>::v2_encoded_t T1Enc;
@@ -110,6 +99,7 @@ namespace ahead {
                         } else {
                             bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
                         }
+                        bat->reserve(arg1->size());
                         std::vector<bool> *vec1 = (isHead1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
                         std::vector<bool> *vec2 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
                         std::vector<bool> *vec3 = (isHead2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
@@ -169,8 +159,8 @@ namespace ahead {
                     typedef typename Tail1::type_t tail1_t;
                     typedef typename Head2::type_t head2_t;
                     typedef typename v2_str_t::type_t tail2_t;
-                    typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
-                    typedef typename ReturnTypeSelector<v2_str_t, reencode>::v2_select_t v2_t2_select_t;
+                    typedef typename ANReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
+                    typedef typename ANReturnTypeSelector<v2_str_t, reencode>::v2_select_t v2_t2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
                     typedef typename H1Enc::type_t h1enc_t;
                     typedef typename TypeMap<Tail1>::v2_encoded_t T1Enc;
@@ -187,8 +177,10 @@ namespace ahead {
                             BAT<Head2, v2_str_t>* arg2,
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
-                            __attribute__((unused))  str_t dummy1 = nullptr,
-                            __attribute__((unused))  str_t dummy2 = nullptr) {
+                            str_t dummy1 = nullptr,
+                            str_t dummy2 = nullptr) {
+                        (void) dummy1;
+                        (void) dummy2;
                         constexpr const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         constexpr const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
                         constexpr const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
@@ -263,8 +255,8 @@ namespace ahead {
 
                     typedef typename Head1::type_t head1_t;
                     typedef typename Tail2::type_t tail2_t;
-                    typedef typename ReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
-                    typedef typename ReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
+                    typedef typename ANReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
+                    typedef typename ANReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
                     typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
                     typedef typename H1Enc::type_t h1enc_t;
                     typedef typename TypeMap<v2_void_t>::v2_encoded_t T1Enc;
@@ -306,6 +298,7 @@ namespace ahead {
                         } else {
                             bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
                         }
+                        bat->reserve(arg1->size());
                         std::vector<bool> *vec1 = (isHead1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
                         std::vector<bool> *vec4 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
                         auto iter1 = arg1->begin();
@@ -345,6 +338,97 @@ namespace ahead {
                         delete iter1;
                         delete iter2;
                         return make_tuple(bat, vec1, nullptr, nullptr, vec4);
+                    }
+                };
+
+                template<typename Head1, typename Tail2, bool reencode>
+                struct MatchjoinAN<Head1, v2_resoid_t, v2_void_t, Tail2, reencode> {
+
+                    typedef v2_resoid_t Tail1;
+                    typedef v2_void_t Head2;
+                    typedef typename Head1::type_t head1_t;
+                    typedef typename Tail1::type_t tail1_t;
+                    typedef typename Head2::type_t head2_t;
+                    typedef typename Tail2::type_t tail2_t;
+                    typedef typename ANReturnTypeSelector<Head1, reencode>::v2_select_t v2_h1_select_t;
+                    typedef typename ANReturnTypeSelector<Tail2, reencode>::v2_select_t v2_t2_select_t;
+                    typedef typename TypeMap<Head1>::v2_encoded_t H1Enc;
+                    typedef typename H1Enc::type_t h1enc_t;
+                    typedef typename TypeMap<Tail1>::v2_encoded_t T1Enc;
+                    typedef typename T1Enc::type_t t1enc_t;
+                    typedef typename TypeMap<Head2>::v2_encoded_t H2Enc;
+                    typedef typename H2Enc::type_t h2enc_t;
+                    typedef typename TypeMap<Tail2>::v2_encoded_t T2Enc;
+                    typedef typename T2Enc::type_t t2enc_t;
+                    typedef typename TypeMap<Head1>::v2_base_t::type_t h1unenc_t;
+                    typedef typename TypeMap<Tail1>::v2_base_t::type_t t1unenc_t;
+                    typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
+                    typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
+                    typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+
+                    static std::tuple<BAT<v2_h1_select_t, v2_t2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> run(
+                            BAT<Head1, Tail1>* arg1,
+                            BAT<Head2, Tail2>* arg2,
+                            h1enc_t AH1R = 1, // for reencode
+                            h1enc_t AH1InvR = 1, // for reencode
+                            t2enc_t AT2R = 1, // for reencode
+                            t2enc_t AT2InvR = 1 // for reencode
+                            ) {
+                        constexpr const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
+                        constexpr const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
+                        constexpr const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
+                        constexpr const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
+                        const h1enc_t AH1Inv = isHead1Encoded ? arg1->head.metaData.AN_Ainv : 1;
+                        const h1enc_t AH1UnencMaxU = arg1->head.metaData.AN_unencMaxU;
+                        const t1enc_t AT1Inv = isTail1Encoded ? arg1->tail.metaData.AN_Ainv : 1;
+                        const t1enc_t AT1UnencMaxU = arg1->tail.metaData.AN_unencMaxU;
+                        const h2enc_t AH2Inv = isHead2Encoded ? arg2->head.metaData.AN_Ainv : 1;
+                        const h2enc_t AH2UnencMaxU = arg2->head.metaData.AN_unencMaxU;
+                        const t2enc_t AT2Inv = isTail2Encoded ? arg2->tail.metaData.AN_Ainv : 1;
+                        const t2enc_t AT2UnencMaxU = arg2->tail.metaData.AN_unencMaxU;
+                        // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
+                        const h1enc_t reencFactorH1 = AH1R * AH1Inv;
+                        const t2enc_t reencFactorT2 = AT2R * AT2Inv;
+                        TempBAT<v2_h1_select_t, v2_t2_select_t> * bat = nullptr;
+                        if (reencode) {
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
+                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(
+                                    bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
+                                    bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
+                        } else {
+                            bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
+                        }
+                        bat->reserve(arg1->size());
+                        std::vector<bool> *vec1 = (isHead1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
+                        std::vector<bool> *vec2 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
+                        std::vector<bool> *vec3 = (isHead2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
+                        std::vector<bool> *vec4 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
+                        auto iter1 = arg1->begin();
+                        auto vec = arg2->tail.container.get();
+                        size_t pos1 = 0;
+                        const resoid_t szArg1 = arg1->size();
+                        while (iter1->hasNext()) {
+                            h1enc_t h1 = iter1->head();
+                            if (isHead1Encoded && ((h1 * AH1Inv) > AH1UnencMaxU)) {
+                                (*vec1)[pos1] = true;
+                            }
+                            t1enc_t t1 = iter1->tail();
+                            resoid_t pos2 = t1 * AT1Inv;
+                            if (pos2 > szArg1) {
+                                (*vec2)[pos1] = true;
+                            } else {
+                                t2enc_t t2 = (*vec)[pos2];
+                                if (isTail2Encoded && ((t2 * AT2Inv) > AT2UnencMaxU)) {
+                                    (*vec4)[pos2] = true;
+                                } else {
+                                    bat->append(h1, t2);
+                                }
+                            }
+                        }
+
+                        delete iter1;
+                        return make_tuple(bat, vec1, vec2, vec3, vec4);
                     }
                 };
 
