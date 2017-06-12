@@ -96,7 +96,7 @@ int main(
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        DMR results( {nullptr, nullptr, nullptr, nullptr, nullptr});
+        DMR results( {nullptr, nullptr, nullptr});
 
 #pragma omp parallel for
         for (size_t k = 0; k < DMR::modularity; ++k) {
@@ -145,39 +145,39 @@ int main(
             MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
             delete batX;
             delete batY;
-            auto batI2 = batI->clear_head();
+            MEASURE_OP(batAY, matchjoin(batI, batDYs[k])); // OID lineorder | d_year
             delete batI;
-            MEASURE_OP(batAY, fetchjoin(batI2, batDYs[k])); // OID lineorder | d_year
-            delete batI2;
-            auto batZ2 = batZ->clear_head();
+            auto batAY2 = batAY->clear_head();
+            delete batAY;
+            MEASURE_OP(batAB, matchjoin(batZ, batPBs[k])); // OID lineorder | p_brand
             delete batZ;
-            MEASURE_OP(batAB, fetchjoin(batZ2, batPBs[k])); // OID lineorder | p_brand
-            delete batZ2;
-            auto batW2 = batW->clear_head();
+            auto batAB2 = batAB->clear_head();
+            delete batAB;
+            MEASURE_OP(batAR, matchjoin(batW, batLRs[k])); // OID lineorder | lo_revenue (where ...)
+            auto batAR2 = batAR->clear_head();
+            delete batAR;
             delete batW;
-            MEASURE_OP(batAR, fetchjoin(batW2, batLRs[k])); // OID lineorder | lo_revenue (where ...)
-            delete batW2;
-            MEASURE_OP_PAIR(pairGY, groupby(batAY));
-            MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
+            MEASURE_OP_PAIR(pairGY, groupby(batAY2));
+            MEASURE_OP_PAIR(pairGB, groupby(batAB2, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
             delete std::get<0>(pairGY);
             delete std::get<1>(pairGY);
-            MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
-            delete batAR;
-            MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY));
-            delete batAY;
-            MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB));
-            delete batAB;
+            MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR2, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+            MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY2));
+            delete batAY2;
+            MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB2));
+            delete batAB2;
             delete std::get<0>(pairGB);
             delete std::get<1>(pairGB);
 
 #pragma omp critical
             {
-                results[k] = {batRR, batRY, batRB};
+                results[k] = std::make_tuple(batRR, batRY, batRB);
             }
         }
 
         // 5) Voting
-        bool isSame = true;
+        bool isSame = std::get<0>(results[0])->size() == std::get<0>(results[1])->size() && std::get<1>(results[0])->size() == std::get<1>(results[1])->size()
+                && std::get<2>(results[0])->size() == std::get<2>(results[1])->size();
         {
             auto iter11 = std::get<0>(results[0])->begin();
             auto iter12 = std::get<0>(results[1])->begin();
