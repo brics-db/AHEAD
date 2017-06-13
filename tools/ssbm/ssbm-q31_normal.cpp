@@ -27,7 +27,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Query 3.1 Normal\n=====================");
 
-    SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q2.1:\n"
+    SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.1:\n"
             "select c_nation, s_nation, d_year, sum(lo_revenue)\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"
@@ -35,8 +35,6 @@ int main(
             "    and lo_orderdate = d_datekey\n"
             "    and c_region = 'ASIA'\n"
             "    and s_region = 'ASIA'\n"
-            "    and p_category = 'MFGR#12'\n"
-            "    and s_region = 'AMERICA'\n"
             "    and d_year >= 1992 and d_year <= 1997\n"
             "  group by c_nation, s_nation, d_year;");
 
@@ -110,7 +108,7 @@ int main(
         delete bat8;
         delete bat9;
         // reduce number of l_custkey joinpartners
-        MEASURE_OP(bat11, hashjoin(bat6, batLC)); // OID lineorder | l_custkey
+        MEASURE_OP(bat11, matchjoin(bat6, batLC)); // OID lineorder | l_custkey
         delete bat6;
         // lo_custkey = c_custkey
         MEASURE_OP(bat12, hashjoin(bat11, bat10)); // OID lineorder | OID customer
@@ -127,32 +125,61 @@ int main(
         auto bat17 = bat12->mirror_head(); // OID lineorder | OID lineorder
         delete bat12;
         MEASURE_OP(bat18, matchjoin(bat17, batLO)); // OID lineorder | lo_orderdate
-        delete batLO;
         delete bat17;
         // lo_orderdate = d_datekey
         MEASURE_OP(bat19, hashjoin(bat18, bat16)); // OID lineorder | OID date
-        delete bat16;
         delete bat18;
 
-        // now prepare grouped sum
+        // prepare grouping
         auto bat20 = bat19->mirror_head(); // OID lineorder | OID lineorder
+        delete bat19;
         auto bat21 = bat20->clear_head(); // VOID | OID lineorder
-        MEASURE_OP(batAR, fetchjoin(bat21, batLR)); // VOID | lo_revenue
-        delete batLR;
+        delete bat20;
+        MEASURE_OP(batAR, fetchjoin(bat21, batLR)); // VOID | lo_revenue !!!
         MEASURE_OP(bat22, fetchjoin(bat21, batLS)); // VOID | lo_suppkey
-        delete batLS;
         MEASURE_OP(bat23, hashjoin(bat22, bat4)); // OID | OID supplier
         delete bat4;
         delete bat22;
         auto bat24 = bat23->clear_head(); // VOID | OID supplier
         delete bat23;
-        MEASURE_OP(batAN, fetchjoin(bat24, batSN)); // VOID | s_nation
-        delete batSN;
+        MEASURE_OP(batAS, fetchjoin(bat24, batSN)); // VOID | s_nation !!!
         delete bat24;
         MEASURE_OP(bat25, fetchjoin(bat21, batLC)); // VOID | lo_custkey
-        delete batLC;
         MEASURE_OP(bat26, hashjoin(bat25, bat10)); // OID | OID customer
-        MEASURE_OP(batAD, fetchjoin(bat21, batLO)); // VOID | lo_orderdate
+        delete bat10;
+        delete bat25;
+        auto bat27 = bat26->clear_head(); // VOID | OID customer
+        delete bat26;
+        MEASURE_OP(batAC, fetchjoin(bat27, batCN)); // VOID | c_nation !!!
+        delete bat27;
+        MEASURE_OP(bat28, fetchjoin(bat21, batLO)); // VOID | lo_orderdate
+        delete bat21;
+        MEASURE_OP(bat29, hashjoin(bat28, bat16)); // OID | OID date
+        delete bat16;
+        delete bat28;
+        auto bat30 = bat29->clear_head(); // VOID | OID date
+        delete bat29;
+        MEASURE_OP(batAD, fetchjoin(bat30, batDY)); // VOID | d_year !!!
+        delete bat30;
+
+        // grouping
+        MEASURE_OP_PAIR(pairGD, groupby(batAD));
+        MEASURE_OP_PAIR(pairGS, groupby(batAS, std::get<0>(pairGD), std::get<1>(pairGD)->size()));
+        delete std::get<0>(pairGD);
+        delete std::get<1>(pairGD);
+        MEASURE_OP_PAIR(pairGC, groupby(batAC, std::get<0>(pairGS), std::get<1>(pairGS)->size()));
+        delete std::get<0>(pairGS);
+        delete std::get<1>(pairGS);
+        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
+        delete batAR;
+        MEASURE_OP(batRD, fetchjoin(std::get<1>(pairGC), batAD));
+        delete batAD;
+        MEASURE_OP(batRC, fetchjoin(std::get<1>(pairGC), batAC));
+        delete batAC;
+        MEASURE_OP(batRS, fetchjoin(std::get<1>(pairGC), batAS));
+        delete batAS;
+        delete std::get<0>(pairGC);
+        delete std::get<1>(pairGC);
 
         auto szResult = batRR->size();
 
@@ -160,43 +187,48 @@ int main(
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
             size_t sum = 0;
-            auto iter1 = batRR->begin();
-            auto iter2 = batRY->begin();
-            auto iter3 = batRB->begin();
-            std::cerr << "+------------+--------+-----------+\n";
-            std::cerr << "| lo_revenue | d_year | p_brand   |\n";
-            std::cerr << "+============+========+===========+\n";
-            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
-                sum += iter1->tail();
-                std::cerr << "| " << std::setw(10) << iter1->tail();
-                std::cerr << " | " << std::setw(6) << iter2->tail();
-                std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
+            auto iter1 = batRC->begin();
+            auto iter2 = batRS->begin();
+            auto iter3 = batRD->begin();
+            auto iter4 = batRR->begin();
+            std::cerr << "+-----------------+-----------------+--------+------------+\n";
+            std::cerr << "+        c_nation +        s_nation | d_year | lo_revenue |\n";
+            std::cerr << "+=================+=================+========+============+\n";
+            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
+                sum += iter4->tail();
+                std::cerr << "| " << std::setw(15) << iter1->tail();
+                std::cerr << " | " << std::setw(15) << iter2->tail();
+                std::cerr << " | " << std::setw(6) << iter3->tail();
+                std::cerr << " | " << std::setw(10) << iter4->tail() << " |\n";
             }
-            std::cerr << "+============+========+===========+\n";
+            std::cerr << "+=================+=================+========+============+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;
+            delete iter4;
         }
 
+        delete batRC;
+        delete batRS;
+        delete batRD;
         delete batRR;
-        delete batRY;
-        delete batRB;
     }
 
     ssb::after_queries();
 
+    delete batCC;
+    delete batCR;
+    delete batCN;
     delete batDD;
     delete batDY;
-    delete batLP;
+    delete batLC;
     delete batLS;
     delete batLO;
     delete batLR;
-    delete batPP;
-    delete batPC;
-    delete batPB;
     delete batSS;
     delete batSR;
+    delete batSN;
 
     ssb::finalize();
 
