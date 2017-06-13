@@ -54,9 +54,9 @@ ENDIF(LIBPCM)
 ### SSB Shared Library ###
 ##########################
 MACRO( add_shared_lib target_name arg_source_files )
+    MESSAGE(STATUS "Add shared library ${LIBNAME}")
     SET(LIBNAME "${target_name}")
     STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
-    MESSAGE(STATUS "Add shared library ${LIBNAME}")
     ADD_LIBRARY(${LIBNAME} SHARED ${SOURCE_FILES})
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 14)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -70,6 +70,7 @@ add_shared_lib(SSB "ssbm/ssb.cpp")
 ######################
 
 MACRO( add_algorithm arg_name arg_path target_name )
+    MESSAGE(STATUS "Add executable ${target_name}")
     FILE(GLOB SOURCE_FILES
         "${arg_path}/${arg_name}.cpp")
     ADD_EXECUTABLE(${target_name} ${SOURCE_FILES})
@@ -77,7 +78,6 @@ MACRO( add_algorithm arg_name arg_path target_name )
     SET_PROPERTY(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED ON)
 	TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC "${PCMDIR}")
     TARGET_LINK_LIBRARIES(${target_name} ${LIBPCM} AHEAD SSB)
-    MESSAGE(STATUS "Add executable ${target_name}")
 ENDMACRO( add_algorithm )
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
@@ -121,11 +121,16 @@ ENDMACRO(add_ssb_SSE)
 add_ssb("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
-ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
+ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc \
+ssbm-q22_normal ssbm-q22_dmr_seq ssbm-q22_early ssbm-q22_late ssbm-q22_continuous ssbm-q22_continuous_reenc \
+ssbm-q23_normal ssbm-q23_dmr_seq ssbm-q23_early ssbm-q23_late ssbm-q23_continuous ssbm-q23_continuous_reenc \
+ssbm-q31_normal")
 add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
-ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc")
+ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc \
+ssbm-q22_normal ssbm-q22_dmr_seq ssbm-q22_early ssbm-q22_late ssbm-q22_continuous ssbm-q22_continuous_reenc \
+ssbm-q23_normal ssbm-q23_dmr_seq ssbm-q23_early ssbm-q23_late ssbm-q23_continuous ssbm-q23_continuous_reenc")
 
 ##############
 ### OPENMP ###
@@ -143,11 +148,10 @@ FIND_PACKAGE(OpenMP)
 
 IF(OPENMP_FOUND)
 	MESSAGE("Generating OpenMP targets")
-	add_ssb("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
-	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt")
-	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q21_dmr_mt_seq \
-ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE ssbm-q21_dmr_mt_SSE")
+	add_ssb("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt")
+	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt")
+	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q21_dmr_mt_seq ssbm-q22_dmr_mt_seq ssbm-q23_dmr_mt_seq \
+ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE ssbm-q23_dmr_mt_SSE")
 ELSE(OPENMP_FOUND)
 	MESSAGE(WARNING "OpenMP not found!")
 ENDIF(OPENMP_FOUND)
-

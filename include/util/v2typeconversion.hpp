@@ -38,7 +38,8 @@ namespace ahead {
 
         template<typename T>
         struct v2converter<T, uint128_t> {
-            static T doIt(uint128_t & source) {
+            static T doIt(
+                    const uint128_t source) {
                 constexpr const unsigned nBitsLimb = sizeof(boost::multiprecision::limb_type) * CHAR_BIT; // size of limb in bits
                 boost::multiprecision::limb_type target = 0;
                 const unsigned nLimbs = source.backend().size(); // number of limbs
@@ -53,7 +54,8 @@ namespace ahead {
     }
 
     template<typename T, typename S>
-    T v2convert(S & source) {
+    T v2convert(
+            const S source) {
         return Private::v2converter<T, S>::doIt(source);
     }
 

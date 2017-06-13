@@ -43,7 +43,9 @@
  * @param argv
  * @return 
  */
-int main(int argc, char** argv) {
+int main(
+        int argc,
+        char** argv) {
     SSB_CONF CONFIG(argc, argv);
     StopWatch sw1;
     StopWatch::rep totalTime = 0;
@@ -161,7 +163,7 @@ int main(int argc, char** argv) {
         auto bat4 = ahead::bat::ops::hashjoin(tbLO_PK, bat3);
         auto bat5 = ahead::bat::ops::hashjoin(bat2, tbD_Y);
         auto bat6 = ahead::bat::ops::hashjoin(bat4, tbP_B);
-        auto tuple = ahead::bat::ops::groupedSum<v2_bigint_t>(tbLO_R, bat5, bat6);
+        auto tuple = ahead::bat::ops::groupedSum < v2_bigint_t > (tbLO_R, bat5, bat6);
         allTimes[i] = sw1.stop();
         totalTime += allTimes[i];
         std::cout << get<0>(tuple)->size() << " " << get<1>(tuple)->size() << " " << get<2>(tuple)->size() << " " << get<3>(tuple)->size() << " " << get<4>(tuple)->size() << std::endl;

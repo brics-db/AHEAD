@@ -20,16 +20,18 @@
  */
 
 #include "ssb.hpp"
+#include "macros.hpp"
 
 typedef DMRValue<bigint_t> DMR;
 
-int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.1 DMR Sequential\n=============================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
-            "N", "O", "P");
+int main(
+        int argc,
+        char** argv) {
+    ssb::init(argc, argv, "SSBM Query 1.1 DMR Sequential\n=============================");
 
     SSBM_LOAD("date", "lineorder", "SSBM Q1.1:\n"
-            "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "select sum(lo_extendedprice * lo_discount) as revenue\n"
+            "  from lineorder, date\n"
             "  where lo_orderdate = d_datekey\n"
             "    and d_year = 1993\n"
             "    and lo_discount between 1 and 3\n"

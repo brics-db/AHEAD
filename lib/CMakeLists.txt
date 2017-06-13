@@ -31,9 +31,10 @@ MACRO( add_static_lib arg_name arg_source_files arg_dep_libs )
 
     MESSAGE(STATUS "Add static library ${LIBNAME}")
     ADD_LIBRARY(${LIBNAME} STATIC ${SOURCE_FILES})
-    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
+    cotire(${LIBNAME})
 ENDMACRO( add_static_lib )
 
 MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
@@ -43,11 +44,11 @@ MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
 
     MESSAGE(STATUS "Add shared library ${LIBNAME}")
     ADD_LIBRARY(${LIBNAME} SHARED ${SOURCE_FILES})
-    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
+    cotire(${LIBNAME})
 ENDMACRO( add_shared_lib )
-
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
@@ -66,14 +67,52 @@ column_storage/Transaction.cpp \
 column_storage/TransactionManager.cpp \
 column_operators/Normal/aggregate.cpp \
 column_operators/Normal/groupby.cpp \
-column_operators/Normal/hashjoin.cpp \
-column_operators/Normal/matchjoin.cpp \
+column_operators/Normal/hashjoin_void.cpp \
+column_operators/Normal/hashjoin_oid.cpp \
+column_operators/Normal/hashjoin_id.cpp \
+column_operators/Normal/hashjoin_size.cpp \
+column_operators/Normal/hashjoin_tinyint.cpp \
+column_operators/Normal/hashjoin_shortint.cpp \
+column_operators/Normal/hashjoin_int.cpp \
+column_operators/Normal/hashjoin_bigint.cpp \
+column_operators/Normal/hashjoin_str.cpp \
+column_operators/Normal/hashjoin_restiny.cpp \
+column_operators/Normal/hashjoin_resshort.cpp \
+column_operators/Normal/hashjoin_resint.cpp \
+column_operators/Normal/hashjoin_resbigint.cpp \
+column_operators/Normal/matchjoin_oid.cpp \
+column_operators/Normal/matchjoin_id.cpp \
+column_operators/Normal/matchjoin_size.cpp \
+column_operators/Normal/matchjoin_tinyint.cpp \
+column_operators/Normal/matchjoin_shortint.cpp \
+column_operators/Normal/matchjoin_int.cpp \
+column_operators/Normal/matchjoin_bigint.cpp \
+column_operators/Normal/matchjoin_str.cpp \
+column_operators/Normal/matchjoin_restiny.cpp \
+column_operators/Normal/matchjoin_resshort.cpp \
+column_operators/Normal/matchjoin_resint.cpp \
+column_operators/Normal/matchjoin_resbigint.cpp \
 column_operators/Normal/miscellaneous.cpp \
 column_operators/Normal/select.cpp \
 column_operators/AN/aggregateAN.cpp \
+column_operators/AN/encdecAN.cpp \
 column_operators/AN/groupbyAN.cpp \
-column_operators/AN/hashjoinAN.cpp \
+column_operators/AN/hashjoinAN_void.cpp \
+column_operators/AN/hashjoinAN_oid.cpp \
+column_operators/AN/hashjoinAN_id.cpp \
+column_operators/AN/hashjoinAN_size.cpp \
+column_operators/AN/hashjoinAN_tinyint.cpp \
+column_operators/AN/hashjoinAN_shortint.cpp \
+column_operators/AN/hashjoinAN_int.cpp \
+column_operators/AN/hashjoinAN_bigint.cpp \
+column_operators/AN/hashjoinAN_str.cpp \
+column_operators/AN/hashjoinAN_resoid.cpp \
+column_operators/AN/hashjoinAN_restiny.cpp \
+column_operators/AN/hashjoinAN_resshort.cpp \
+column_operators/AN/hashjoinAN_resint.cpp \
+column_operators/AN/hashjoinAN_resbigint.cpp \
 column_operators/AN/matchjoinAN.cpp \
 column_operators/AN/selectAN.cpp \
 column_operators/SSE.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
+

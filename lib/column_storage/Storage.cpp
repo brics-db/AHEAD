@@ -19,59 +19,61 @@
  *      Author: Till Kolditz <till.kolditz@gmail.com>
  */
 
-#include <column_storage/Storage.hpp>
+#include <column_storage/TempStorage.hpp>
+#include "ColumnBat.hpp"
 
 namespace ahead {
 
-    template class ColumnBAT<v2_tinyint_t> ;
-    template class ColumnBAT<v2_shortint_t> ;
-    template class ColumnBAT<v2_int_t> ;
-    template class ColumnBAT<v2_bigint_t> ;
-    template class ColumnBAT<v2_char_t> ;
-    template class ColumnBAT<v2_str_t> ;
-    template class ColumnBAT<v2_fixed_t> ;
-    template class ColumnBAT<v2_id_t> ;
-    template class ColumnBAT<v2_oid_t> ;
-    template class ColumnBAT<v2_restiny_t> ;
-    template class ColumnBAT<v2_resshort_t> ;
-    template class ColumnBAT<v2_resint_t> ;
-    template class ColumnBAT<v2_resbigint_t> ;
+#define COLUMNBAT(Tail)                                              \
+template class ColumnBAT<Tail>;
 
-#define DEFINE_BATS(v2_type_t)                         \
-template class TempBAT<v2_type_t, v2_tinyint_t> ;    \
-template class TempBAT<v2_type_t, v2_shortint_t> ;   \
-template class TempBAT<v2_type_t, v2_int_t> ;        \
-template class TempBAT<v2_type_t, v2_bigint_t> ;     \
-template class TempBAT<v2_type_t, v2_char_t> ;       \
-template class TempBAT<v2_type_t, v2_str_t> ;        \
-template class TempBAT<v2_type_t, v2_fixed_t> ;      \
-template class TempBAT<v2_type_t, v2_id_t> ;         \
-template class TempBAT<v2_type_t, v2_size_t> ;       \
-template class TempBAT<v2_type_t, v2_oid_t> ;        \
-template class TempBAT<v2_type_t, v2_void_t> ;       \
-template class TempBAT<v2_type_t, v2_restiny_t> ;    \
-template class TempBAT<v2_type_t, v2_resshort_t> ;   \
-template class TempBAT<v2_type_t, v2_resint_t> ;     \
-template class TempBAT<v2_type_t, v2_resbigint_t> ;  \
-template class TempBAT<v2_type_t, v2_resstr_t> ;     \
+    COLUMNBAT(v2_tinyint_t)
+    COLUMNBAT(v2_shortint_t)
+    COLUMNBAT(v2_int_t)
+    COLUMNBAT(v2_bigint_t)
+    COLUMNBAT(v2_char_t)
+    COLUMNBAT(v2_str_t)
+    COLUMNBAT(v2_fixed_t)
+    COLUMNBAT(v2_id_t)
+    COLUMNBAT(v2_oid_t)
+    COLUMNBAT(v2_restiny_t)
+    COLUMNBAT(v2_resshort_t)
+    COLUMNBAT(v2_resint_t)
+    COLUMNBAT(v2_resbigint_t)
 
-    DEFINE_BATS(v2_tinyint_t)
-    DEFINE_BATS(v2_shortint_t)
-    DEFINE_BATS(v2_int_t)
-    DEFINE_BATS(v2_bigint_t)
-    DEFINE_BATS(v2_char_t)
-    DEFINE_BATS(v2_str_t)
-    DEFINE_BATS(v2_fixed_t)
-    DEFINE_BATS(v2_id_t)
-    DEFINE_BATS(v2_size_t)
-    DEFINE_BATS(v2_oid_t)
-    DEFINE_BATS(v2_void_t)
-    DEFINE_BATS(v2_restiny_t)
-    DEFINE_BATS(v2_resshort_t)
-    DEFINE_BATS(v2_resint_t)
-    DEFINE_BATS(v2_resbigint_t)
-    DEFINE_BATS(v2_resstr_t)
+#define TEMPBAT(V2Head) \
+template class TempBAT<V2Head, v2_void_t> ; \
+template class TempBAT<V2Head, v2_tinyint_t> ; \
+template class TempBAT<V2Head, v2_shortint_t> ; \
+template class TempBAT<V2Head, v2_int_t> ; \
+template class TempBAT<V2Head, v2_bigint_t> ; \
+template class TempBAT<V2Head, v2_char_t> ; \
+template class TempBAT<V2Head, v2_str_t> ; \
+template class TempBAT<V2Head, v2_fixed_t> ; \
+template class TempBAT<V2Head, v2_id_t> ; \
+template class TempBAT<V2Head, v2_size_t> ; \
+template class TempBAT<V2Head, v2_oid_t> ; \
+template class TempBAT<V2Head, v2_restiny_t> ; \
+template class TempBAT<V2Head, v2_resshort_t> ; \
+template class TempBAT<V2Head, v2_resint_t> ; \
+template class TempBAT<V2Head, v2_resbigint_t> ; \
+template class TempBAT<V2Head, v2_resstr_t> ;
 
-#undef DEFINE_BATS
+    TEMPBAT(v2_void_t)
+    TEMPBAT(v2_tinyint_t)
+    TEMPBAT(v2_shortint_t)
+    TEMPBAT(v2_int_t)
+    TEMPBAT(v2_bigint_t)
+    TEMPBAT(v2_char_t)
+    TEMPBAT(v2_str_t)
+    TEMPBAT(v2_fixed_t)
+    TEMPBAT(v2_id_t)
+    TEMPBAT(v2_size_t)
+    TEMPBAT(v2_oid_t)
+    TEMPBAT(v2_restiny_t)
+    TEMPBAT(v2_resshort_t)
+    TEMPBAT(v2_resint_t)
+    TEMPBAT(v2_resbigint_t)
+    TEMPBAT(v2_resstr_t)
 
 }

@@ -19,7 +19,8 @@
  * Created on 10-04-2017 22:11
  */
 
-#include <column_operators/AN/aggregateAN.tcc>
+#include <column_operators/ANbase.hpp>
+#include "aggregateAN.tcc"
 
 namespace ahead {
     namespace bat {
@@ -92,8 +93,22 @@ V2_AGGREGATE_MUL_SUM_AN(CONCAT(v2_, Result, _t), CONCAT(v2_, Result, _t), v2_res
 
             V2_AGGREGATE_MUL_SUM_AN(v2_resbigint_t, v2_resbigint_t, v2_resoid_t, v2_resint_t, v2_resoid_t, v2_restiny_t)
 
-#undef V2_AGGREGATE_MUL_SUM_AN_SUB
-#undef V2_AGGREGATE_MUL_SUM_AN
+#define V2_AGGREGATE_SUM_GROUPED(Result, Head, Tail)                                                                                                 \
+template std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>                                   \
+    aggregate_sum_groupedAN(                                                                                                                         \
+            BAT<Head, Tail> * bat,                                                                                                                   \
+            BAT<v2_void_t, v2_resoid_t> * grouping,                                                                                                  \
+            size_t numGroups,                                                                                                                        \
+			typename Result::type_t AResult,                                                                                                         \
+			typename Result::type_t AResultInv,                                                                                                      \
+            resoid_t AOID);
+
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_oid_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_void_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_resoid_t, v2_int_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_oid_t, v2_resint_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_void_t, v2_resint_t)
+            V2_AGGREGATE_SUM_GROUPED(v2_resbigint_t, v2_resoid_t, v2_resint_t)
 
         }
     }

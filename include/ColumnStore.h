@@ -73,6 +73,11 @@ namespace ahead {
     // meta_repository
     class MetaRepositoryManager;
 
+    typedef enum {
+        left,
+        right
+    } hash_side_t;
+
     // Fast-Forward declare Bat, ColumnBAT, TempBat types
     typedef ColumnBAT<v2_tinyint_t> tinyint_colbat_t;
     typedef ColumnBAT<v2_shortint_t> shortint_colbat_t;
@@ -113,7 +118,8 @@ namespace ahead {
 
     template<size_t alignment, typename T>
     T*
-    align_to(T * const pT) {
+    align_to(
+            T * const pT) {
         size_t tmp = reinterpret_cast<size_t>(pT);
         return pT + (alignment - (tmp & (alignment - 1)));
     }

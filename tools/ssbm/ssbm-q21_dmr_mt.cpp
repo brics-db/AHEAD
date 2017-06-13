@@ -21,17 +21,19 @@
 
 #include <omp.h>
 #include "ssb.hpp"
+#include "macros.hpp"
 
-typedef typename std::tuple<TempBAT<v2_void_t, v2_bigint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_shortint_t>*, TempBAT<v2_void_t, v2_oid_t>*, TempBAT<v2_void_t, v2_str_t>*> result_tuple_t;
+typedef typename std::tuple<BAT<v2_void_t, v2_bigint_t>*, BAT<v2_void_t, v2_shortint_t>*, BAT<v2_void_t, v2_str_t>*> result_tuple_t;
 typedef DMRValue<result_tuple_t> DMR;
 
-int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 DMR Parallel\n===========================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
-            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+int main(
+        int argc,
+        char** argv) {
+    ssb::init(argc, argv, "SSBM Query 2.1 DMR Parallel\n===========================");
 
     SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.1:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"
             "    and lo_partkey = p_partkey\n"
             "    and lo_suppkey = s_suppkey\n"
@@ -98,7 +100,7 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        DMR results( {nullptr, nullptr, nullptr, nullptr, nullptr});
+        DMR results( {nullptr, nullptr, nullptr});
 
 #pragma omp parallel for
         for (size_t k = 0; k < DMR::modularity; ++k) {
@@ -150,28 +152,39 @@ int main(int argc, char** argv) {
             MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
             delete batX;
             delete batY;
-            MEASURE_OP(batA1, hashjoin(batZ, batPBs[k])); // OID lineorder | p_brand
-            delete batZ;
-
-            MEASURE_OP(batA2, hashjoin(batI, batDYs[k])); // OID lineorder | d_year
+            MEASURE_OP(batAY, matchjoin(batI, batDYs[k])); // OID lineorder | d_year
             delete batI;
-
-            MEASURE_OP(batA3, matchjoin(batW, batLRs[k])); // OID lineorder | lo_revenue (where ...)
+            auto batAY2 = batAY->clear_head();
+            delete batAY;
+            MEASURE_OP(batAB, matchjoin(batZ, batPBs[k])); // OID lineorder | p_brand
+            delete batZ;
+            auto batAB2 = batAB->clear_head();
+            delete batAB;
+            MEASURE_OP(batAR, matchjoin(batW, batLRs[k])); // OID lineorder | lo_revenue (where ...)
+            auto batAR2 = batAR->clear_head();
+            delete batAR;
             delete batW;
-
-            MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(batA3, batA2, batA1));
-            delete batA1;
-            delete batA2;
-            delete batA3;
+            MEASURE_OP_PAIR(pairGY, groupby(batAY2));
+            MEASURE_OP_PAIR(pairGB, groupby(batAB2, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
+            delete std::get<0>(pairGY);
+            delete std::get<1>(pairGY);
+            MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR2, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+            MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY2));
+            delete batAY2;
+            MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB2));
+            delete batAB2;
+            delete std::get<0>(pairGB);
+            delete std::get<1>(pairGB);
 
 #pragma omp critical
             {
-                results[k] = tupleK;
+                results[k] = std::make_tuple(batRR, batRY, batRB);
             }
         }
 
         // 5) Voting
-        bool isSame = true;
+        bool isSame = std::get<0>(results[0])->size() == std::get<0>(results[1])->size() && std::get<1>(results[0])->size() == std::get<1>(results[1])->size()
+                && std::get<2>(results[0])->size() == std::get<2>(results[1])->size();
         {
             auto iter11 = std::get<0>(results[0])->begin();
             auto iter12 = std::get<0>(results[1])->begin();
@@ -194,20 +207,6 @@ int main(int argc, char** argv) {
             }
             delete iter31;
             delete iter32;
-            auto iter41 = std::get<3>(results[0])->begin();
-            auto iter42 = std::get<3>(results[1])->begin();
-            for (; iter41->hasNext() && iter42->hasNext(); ++*iter41, ++*iter42) {
-                isSame &= iter41->tail() == iter42->tail();
-            }
-            delete iter41;
-            delete iter42;
-            auto iter51 = std::get<4>(results[0])->begin();
-            auto iter52 = std::get<4>(results[1])->begin();
-            for (; iter51->hasNext() && iter52->hasNext(); ++*iter51, ++*iter52) {
-                isSame &= iter51->tail() == iter52->tail();
-            }
-            delete iter51;
-            delete iter52;
         }
 
         auto szResult = std::get<0>(results[0])->size();
@@ -219,34 +218,26 @@ int main(int argc, char** argv) {
             auto iter1 = std::get<0>(results[0])->begin();
             auto iter2 = std::get<1>(results[0])->begin();
             auto iter3 = std::get<2>(results[0])->begin();
-            auto iter4 = std::get<3>(results[0])->begin();
-            auto iter5 = std::get<4>(results[0])->begin();
             std::cerr << "+------------+--------+-----------+\n";
             std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
-            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
+            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail();
                 std::cerr << "| " << std::setw(10) << iter1->tail();
-                iter3->position(iter2->tail());
-                std::cerr << " | " << std::setw(6) << iter3->tail();
-                iter5->position(iter4->tail());
-                std::cerr << " | " << std::setw(9) << iter5->tail() << " |\n";
+                std::cerr << " | " << std::setw(6) << iter2->tail();
+                std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;
-            delete iter4;
-            delete iter5;
         }
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
             delete std::get<0>(results[k]);
             delete std::get<1>(results[k]);
             delete std::get<2>(results[k]);
-            delete std::get<3>(results[k]);
-            delete std::get<4>(results[k]);
         }
     }
 

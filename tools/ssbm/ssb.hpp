@@ -53,7 +53,8 @@
 // boost::throw_exception(std::runtime_error("Type name demangling failed"));
 namespace boost {
 
-    void throw_exception(std::exception const & e) { // user defined
+    void throw_exception(
+            std::exception const & e) { // user defined
         throw e;
     }
 }
@@ -101,15 +102,25 @@ namespace ssb {
     public:
 
         SSB_CONF();
-        SSB_CONF(int argc, char** argv);
+        SSB_CONF(
+                int argc,
+                char** argv);
 
-        void init(int argc, char** argv);
+        void init(
+                int argc,
+                char** argv);
     };
 
-    StopWatch::rep loadTable(const char* const tableName, const SSB_CONF & CONFIG);
+    StopWatch::rep loadTable(
+            const char* const tableName,
+            const SSB_CONF & CONFIG);
 
     template<typename Head, typename Tail>
-    void printBat(StopWatch & sw, BAT<Head, Tail> *bat, const char* filename, const char* message = nullptr) {
+    void printBat(
+            StopWatch & sw,
+            BAT<Head, Tail> *bat,
+            const char* filename,
+            const char* message = nullptr) {
         sw.stop();
         std::ofstream fout(filename);
         typedef typename Head::type_t head_t;
@@ -134,16 +145,8 @@ namespace ssb {
         fout << '\n';
         for (; iter->hasNext(); ++i, ++*iter) {
             fout << std::setw(wOID) << i;
-            if (isHeadLT16) {
-                fout << " | " << std::setw(wHead) << static_cast<uint16_t>(iter->head());
-            } else {
-                fout << " | " << std::setw(wHead) << iter->head();
-            }
-            if (isTailLT16) {
-                fout << " | " << std::setw(wTail) << static_cast<uint16_t>(iter->tail());
-            } else {
-                fout << " | " << std::setw(wTail) << iter->tail();
-            }
+            fout << " | " << std::setw(wHead) << iter->head();
+            fout << " | " << std::setw(wTail) << iter->tail();
             fout << '\n';
         }
         fout << std::flush;
@@ -176,7 +179,6 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     extern size_t I;
     extern StopWatch sw1, sw2;
 
-    extern std::vector<cstr_t> opNames;
     extern std::vector<StopWatch::rep> opTimes;
     extern std::vector<size_t> batSizes;
     extern std::vector<size_t> batConsumptions;
@@ -186,214 +188,27 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     extern std::vector<boost::typeindex::type_index> headTypes;
     extern std::vector<boost::typeindex::type_index> tailTypes;
 
-    void init(int argc, char ** argv, const char * strHeadline, size_t numOps);
+    void init(
+            int argc,
+            char ** argv,
+            const char * strHeadline);
     void init_pcm();
     void clear_stats();
     void after_create_columnbats();
     void before_queries();
     void after_queries();
     void before_query();
-    void after_query(size_t index, size_t result);
+    void after_query(
+            size_t index,
+            size_t result);
     void before_op();
     void after_op();
     void finalize();
 
     void print_headline();
     void print_result();
-    void print_result(std::vector<cstr_t> const & opNames);
 
 }
-
-/////////////////////////////
-// SSBM_REQUIRED_VARIABLES //
-/////////////////////////////
-#define SSBM_REQUIRED_VARIABLES(Headline, OpsNum, ...) \
-ssb::opNames = {__VA_ARGS__}; \
-ssb::init(argc, argv, Headline, OpsNum)
-
-///////////////
-// SSBM_LOAD //
-///////////////
-#define SSBM_LOAD_PRINTQUERYSTRING(...) VFUNC(SSBM_LOAD_PRINTQUERYSTRING, __VA_ARGS__)
-#define SSBM_LOAD_PRINTQUERYSTRING6(tab1, tab2, tab3, tab4, tab5, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING5(tab1, tab2, tab3, tab4, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING4(tab1, tab2, tab3,  QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING3(tab1, tab2, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING2(tab1, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD(...)                                                         \
-;do {                                                                          \
-    ssb::rssBeforeLoad = getPeakRSS(size_enum_t::B);                           \
-    ssb::sw1.start();                                                          \
-    VFUNC(SSBM_LOAD, __VA_ARGS__)                                              \
-    ssb::sw1.stop();                                                           \
-    ssb::rssAfterLoad = getPeakRSS(size_enum_t::B);                            \
-    std::cout << "Total loading time: " << ssb::sw1 << " ns.\n" << std::endl;       \
-    if (ssb::ssb_config.VERBOSE) {                                             \
-        SSBM_LOAD_PRINTQUERYSTRING(__VA_ARGS__);                               \
-    }                                                                          \
-} while (false)
-#define SSBM_LOAD6(tab1, tab2, tab3, tab4, tab5, QueryString)                  \
-loadTable(tab1, ssb::ssb_config);                                                       \
-loadTable(tab2, ssb::ssb_config);                                                       \
-loadTable(tab3, ssb::ssb_config);                                                       \
-loadTable(tab4, ssb::ssb_config);                                                       \
-loadTable(tab5, ssb::ssb_config);
-#define SSBM_LOAD5(tab1, tab2, tab3, tab4, QueryString)                        \
-loadTable(tab1, ssb::ssb_config);                                                       \
-loadTable(tab2, ssb::ssb_config);                                                       \
-loadTable(tab3, ssb::ssb_config);                                                       \
-loadTable(tab4, ssb::ssb_config);
-#define SSBM_LOAD3(tab1, tab2, QueryString)                                    \
-loadTable(tab1, ssb::ssb_config);                                                       \
-loadTable(tab2, ssb::ssb_config);
-#define SSBM_LOAD2(tab1, QueryString)                                          \
-loadTable(tab1, ssb::ssb_config);
-
-///////////////
-// SAVE_TYPE //
-///////////////
-#define SAVE_TYPE(BAT)                                                         \
-;do {                                                                          \
-	ssb::headTypes.push_back(BAT->type_head());                                \
-	ssb::tailTypes.push_back(BAT->type_tail());                                \
-	ssb::hasTwoTypes.push_back(true);                                          \
-} while (false)
-
-////////////////
-// MEASURE_OP //
-////////////////
-#define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
-
-#define MEASURE_OP4(VAR, IDX, OP, TYPE) \
-MEASURE_OP6(VAR, IDX, OP, VAR IDX ->size(), VAR IDX ->consumption(), VAR IDX ->consumptionProjected()); \
-do { \
-    SAVE_TYPE(TYPE); \
-} while (false)
-
-#define MEASURE_OP6(TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP, STORE_PROJECTEDCONSUMPTION_OP) \
-ssb::before_op();                                                              \
-TYPE VAR = OP;                                                                 \
-ssb::after_op();                                                               \
-;do {                                                                          \
-    ssb::batSizes.push_back(STORE_SIZE_OP);                                    \
-    ssb::batConsumptions.push_back(STORE_CONSUMPTION_OP);                      \
-    ssb::batConsumptionsProj.push_back(STORE_PROJECTEDCONSUMPTION_OP);         \
-} while (false)
-
-#define MEASURE_OP3(TYPE, VAR, OP)                                             \
-MEASURE_OP6(TYPE, VAR, OP, 1, sizeof(TYPE), sizeof(TYPE));                     \
-;do {                                                                          \
-	ssb::headTypes.push_back(boost::typeindex::type_id<TYPE>().type_info());   \
-	ssb::hasTwoTypes.push_back(false);                                         \
-} while (false)
-
-#define MEASURE_OP2(BAT, OP)                                                               \
-MEASURE_OP6(auto, BAT, OP, BAT->size(), BAT->consumption(), BAT->consumptionProjected());  \
-SAVE_TYPE(BAT)
-
-#define MEASURE_OP_PAIR(PAIR, OP)                                              \
-MEASURE_OP6(auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption(),     \
-    PAIR.first->consumptionProjected());                                       \
-SAVE_TYPE(PAIR.first);
-
-#define MEASURE_OP_TUPLE(TUPLE, OP)                                            \
-MEASURE_OP6(auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption(), std::get<0>(TUPLE)->consumptionProjected());  \
-SAVE_TYPE((std::get<0>(TUPLE)))
-
-/////////////////////
-// CLEAR_SELECT_AN //
-/////////////////////
-#define CLEAR_SELECT_AN(PAIR)                                                  \
-;do {                                                                          \
-    if (std::get<1>(PAIR)) {                                                   \
-        delete std::get<1>(PAIR);                                              \
-    }                                                                          \
-} while(false)
-
-///////////////////////
-// CLEAR_HASHJOIN_AN //
-///////////////////////
-#define CLEAR_HASHJOIN_AN(TUPLE)                                               \
-;do {                                                                          \
-    if (std::get<1>(TUPLE) || std::get<2>(TUPLE) || std::get<3>(TUPLE)         \
-        || std::get<4>(TUPLE)) {                                               \
-    }                                                                          \
-    if (std::get<1>(TUPLE)) {                                                  \
-        delete std::get<1>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<2>(TUPLE)) {                                                  \
-        delete std::get<2>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<3>(TUPLE)) {                                                  \
-        delete std::get<3>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<4>(TUPLE)) {                                                  \
-        delete std::get<4>(TUPLE);                                             \
-    }                                                                          \
-} while (false)
-
-/////////////////////////////
-// CLEAR_CHECKANDDECODE_AN //
-/////////////////////////////
-#define CLEAR_CHECKANDDECODE_AN(TUPLE)                                         \
-;do {                                                                          \
-    if (std::get<1>(TUPLE) || std::get<2>(TUPLE)) {                            \
-    }                                                                          \
-    if (std::get<1>(TUPLE)) {                                                  \
-        delete std::get<1>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<2>(TUPLE)) {                                                  \
-        delete std::get<2>(TUPLE);                                             \
-    }                                                                          \
-} while (false)
-
-//////////////////////
-// CLEAR_GROUPBY_AN //
-//////////////////////
-#define CLEAR_GROUPBY_AN(TUPLE)                                                \
-;do {                                                                          \
-    if (std::get<2>(TUPLE) || std::get<3>(TUPLE))) {                           \
-    }                                                                          \
-    if (std::get<2>(TUPLE)) {                                                  \
-        delete std::get<2>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<3>(TUPLE)) {                                                  \
-        delete std::get<3>(TUPLE);                                             \
-    }                                                                          \
-} while (false)
-
-/////////////////////////
-// CLEAR_GROUPEDSUM_AN //
-/////////////////////////
-#define CLEAR_GROUPEDSUM_AN(TUPLE)                                             \
-;do {                                                                          \
-    if (std::get<5>(TUPLE) || std::get<6>(TUPLE) || std::get<7>(TUPLE)         \
-        || std::get<8>(TUPLE) || std::get<9>(TUPLE) || std::get<10>(TUPLE)) {  \
-    }                                                                          \
-    if (std::get<5>(TUPLE)) {                                                  \
-        delete std::get<5>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<6>(TUPLE)) {                                                  \
-        delete std::get<6>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<7>(TUPLE)) {                                                  \
-        delete std::get<7>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<8>(TUPLE)) {                                                  \
-        delete std::get<8>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<9>(TUPLE)) {                                                  \
-        delete std::get<9>(TUPLE);                                             \
-    }                                                                          \
-    if (std::get<10>(TUPLE)) {                                                 \
-        delete std::get<10>(TUPLE);                                            \
-    }                                                                          \
-} while (false)
 
 #endif /* SSBM_HPP */
 

@@ -57,8 +57,10 @@ namespace ahead {
 
         virtual void next() = 0;
         virtual BATIterator& operator++() = 0;
-        virtual BATIterator& operator+=(oid_t i) = 0;
-        virtual void position(oid_t index) = 0;
+        virtual BATIterator& operator+=(
+                oid_t i) = 0;
+        virtual void position(
+                oid_t index) = 0;
         virtual bool hasNext() = 0;
 
         virtual head_t head() = 0;

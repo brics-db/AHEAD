@@ -21,16 +21,18 @@
 
 #include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
+#include "macros.hpp"
 
-int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 1.3 Late Detection\n=============================", 24, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M",
-            "N", "O", "P");
+int main(
+        int argc,
+        char** argv) {
+    ssb::init(argc, argv, "SSBM Query 1.3 Late Detection\n=============================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.3:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
             "  from lineorder, date\n"
             "  where lo_orderdate = d_datekey\n"
-            "    and d_year = 1997\n"
+            "    and d_year = 1994\n"
             "    and lo_discount between 5 and 7\n"
             "    and lo_quantity between 26 and 35;");
 

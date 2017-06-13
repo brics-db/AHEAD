@@ -43,6 +43,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <atomic>
 
 #include <ColumnStore.h>
 #include <column_storage/BucketManager.h>
@@ -58,6 +59,12 @@ namespace ahead {
     class ColumnManager {
 
     public:
+        static const size_t BAT_COLNAMES_MAXLEN;
+        static const id_t ID_BAT_COLNAMES;
+        static const id_t ID_BAT_COLTYPES;
+        static const id_t ID_BAT_COLIDENT;
+        static const id_t ID_BAT_FIRST_USER;
+
         friend class TransactionManager;
 
         /**
@@ -67,7 +74,8 @@ namespace ahead {
 
             void *content;
 
-            Record(void* content)
+            Record(
+                    void* content)
                     : content(content) {
             }
         };
@@ -131,7 +139,8 @@ namespace ahead {
              * wird rewind() aufgerufen und ein NULL-Zeiger zurückgegeben. Um die Datenintegrität zu erhalten, darf der Inhalt des Records
              * nicht verändert werden.
              */
-            Record seek(oid_t index);
+            Record seek(
+                    oid_t index);
             /**
              * @author Julian Hollender
              *
@@ -172,12 +181,14 @@ namespace ahead {
              *
              * BULK inserts the storage and automatically splits it into bucket sizes.
              */
-            void read(std::istream & istream);
+            void read(
+                    std::istream & istream);
 
             /**
              * @author Till Kolditz
              */
-            void write(std::ostream & ostream);
+            void write(
+                    std::ostream & ostream);
 
             /**
              * @author Julian Hollender
@@ -195,12 +206,16 @@ namespace ahead {
             oid_t currentPosition;
             const oid_t recordsPerBucket;
 
-            ColumnIterator(ColumnMetaData & columnMetaData, BucketManager::BucketIterator *iterator);
-            ColumnIterator(const ColumnIterator & copy);
+            ColumnIterator(
+                    ColumnMetaData & columnMetaData,
+                    BucketManager::BucketIterator *iterator);
+            ColumnIterator(
+                    const ColumnIterator & copy);
 
         public:
             virtual ~ColumnIterator();
-            ColumnIterator& operator=(const ColumnIterator & copy);
+            ColumnIterator& operator=(
+                    const ColumnIterator & copy);
         };
 
         /**
@@ -221,7 +236,9 @@ namespace ahead {
          *
          * Die Funktion erzeugt ein Objekt der Klasse ColumnIterator zum Bearbeiten einer Spalte mit der Identifikationsnummer id. Hierbei sind nur die Records mit der größten Versionsnummer kleiner oder gleich dem Inhalt des Zeigers version sichtbar. Bei jeder Änderung am Datenbestand durch den erzeugten ColumnIterator, wird der Zeiger version in die Verwaltungsstrukturen der Spalte kopiert. Daher darf der Speicher, auf den der Zeiger version zeigt, nach Änderungen an der Datenbasis nicht mehr freigegeben werden. Falls eine Spalte mit der übergebenen Identifikationsnummer nicht existiert, wird ein NULL-Zeiger zurückgegeben. Es ist darauf zu achten, dass zu einem festen Zeitpunkt maximal einen Iterator der Änderung durchgeführt hat oder Änderungen durchführen wird pro Spalte gibt.
          */
-        ColumnIterator* openColumn(id_t id, version_t *version);
+        ColumnIterator* openColumn(
+                id_t id,
+                version_t *version);
 
         /**
          * @author Julian Hollender
@@ -234,26 +251,42 @@ namespace ahead {
 
         std::unordered_map<id_t, ColumnMetaData> * getColumnMetaData();
 
-        ColumnMetaData getColumnMetaData(id_t id);
+        ColumnMetaData getColumnMetaData(
+                id_t id);
+
+        /**
+         * @author Till Kolditz
+         *
+         * @return the next available column ID for inserting
+         */
+        id_t getNextColumnID();
 
         /**
          * @author Julian Hollender
          *
          * Die Funktion legt eine leere Spalte mit der Identifikationsnummer id und Spaltenbreite width, d.h. die Größe eines enthaltenden Records, an. Falls bereits eine Spalte mit der Identifikationsnummer id existiert, wird keine Operation ausgeführt.
          */
-        ColumnMetaData & createColumn(id_t id, uint32_t width);
+        ColumnMetaData & createColumn(
+                id_t id,
+                uint32_t width);
 
-        ColumnMetaData & createColumn(id_t id, ColumnMetaData && column);
+        ColumnMetaData & createColumn(
+                id_t id,
+                ColumnMetaData && column);
 
     private:
+
         static ColumnManager *instance;
 
         static void destroyInstance();
 
         std::unordered_map<id_t, ColumnMetaData> columnMetaData;
 
+        std::atomic<id_t> nextID;
+
         ColumnManager();
-        ColumnManager(const ColumnManager &copy);
+        ColumnManager(
+                const ColumnManager &copy);
         virtual ~ColumnManager();
     };
 

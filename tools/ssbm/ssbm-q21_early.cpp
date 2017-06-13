@@ -21,14 +21,16 @@
 
 #include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
+#include "macros.hpp"
 
-int main(int argc, char** argv) {
-    SSBM_REQUIRED_VARIABLES("SSBM Query 2.1 Early Detection\n==============================", 34, "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L",
-            "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+int main(
+        int argc,
+        char** argv) {
+    ssb::init(argc, argv, "SSBM Query 2.1 Early Detection\n==============================");
 
     SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.1:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
-            "  from lineorder, part, supplier, date\n"
+            "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"
             "    and lo_partkey = p_partkey\n"
             "    and lo_suppkey = s_suppkey\n"
@@ -145,57 +147,61 @@ int main(int argc, char** argv) {
         MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
-        MEASURE_OP(batA1, hashjoin(batZ, batPB)); // OID lineorder | p_brand
-        delete batZ;
-
-        MEASURE_OP(batA2, hashjoin(batI, std::get<0>(tupleDY))); // OID lineorder | d_year
+        auto batI2 = batI->clear_head();
         delete batI;
+        MEASURE_OP(batAY, fetchjoin(batI2, std::get<0>(tupleDY))); // OID lineorder | d_year
         delete std::get<0>(tupleDY);
-
-        MEASURE_OP(batA3, matchjoin(batW, std::get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
+        delete batI2;
+        auto batZ2 = batZ->clear_head();
+        delete batZ;
+        MEASURE_OP(batAB, fetchjoin(batZ2, batPB)); // OID lineorder | p_brand
+        delete batZ2;
+        auto batW2 = batW->clear_head();
         delete batW;
+        MEASURE_OP(batAR, fetchjoin(batW2, std::get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
         delete std::get<0>(tupleLR);
+        delete batW2;
+        MEASURE_OP_PAIR(pairGY, groupby(batAY));
+        MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
+        delete std::get<0>(pairGY);
+        delete std::get<1>(pairGY);
+        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+        delete batAR;
+        MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY));
+        delete batAY;
+        MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB));
+        delete batAB;
+        delete std::get<0>(pairGB);
+        delete std::get<1>(pairGB);
 
-        MEASURE_OP_TUPLE(tupleK, groupedSum<v2_bigint_t>(batA3, batA2, batA1));
-        delete batA1;
-        delete batA2;
-        delete batA3;
-
-        auto szResult = std::get<0>(tupleK)->size();
+        auto szResult = batRR->size();
 
         ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
             size_t sum = 0;
-            auto iter1 = std::get<0>(tupleK)->begin();
-            auto iter2 = std::get<1>(tupleK)->begin();
-            auto iter3 = std::get<2>(tupleK)->begin();
-            auto iter4 = std::get<3>(tupleK)->begin();
-            auto iter5 = std::get<4>(tupleK)->begin();
+            auto iter1 = batRR->begin();
+            auto iter2 = batRY->begin();
+            auto iter3 = batRB->begin();
             std::cerr << "+------------+--------+-----------+\n";
             std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
-            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter4) {
+            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail();
                 std::cerr << "| " << std::setw(10) << iter1->tail();
-                iter3->position(iter2->tail());
-                std::cerr << " | " << std::setw(6) << iter3->tail();
-                iter5->position(iter4->tail());
-                std::cerr << " | " << std::setw(9) << iter5->tail() << " |\n";
+                std::cerr << " | " << std::setw(6) << iter2->tail();
+                std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;
-            delete iter4;
-            delete iter5;
         }
-        delete std::get<0>(tupleK);
-        delete std::get<1>(tupleK);
-        delete std::get<2>(tupleK);
-        delete std::get<3>(tupleK);
-        delete std::get<4>(tupleK);
+
+        delete batRR;
+        delete batRY;
+        delete batRB;
     }
 
     ssb::after_queries();

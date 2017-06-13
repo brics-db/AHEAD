@@ -84,7 +84,8 @@ namespace ahead {
     };
 
     template<typename T, typename U>
-    struct larger_type : public type_selector<T, U, (sizeof(T) >= sizeof(U))> {
+    struct larger_type :
+            public type_selector<T, U, (sizeof(T) >= sizeof(U))> {
 
         using type_t = typename type_selector<T, U, (sizeof (T) >= sizeof (U))>::type_t;
 
@@ -94,7 +95,8 @@ namespace ahead {
     };
 
     template<typename T, typename U>
-    struct smaller_type : public type_selector<T, U, (sizeof(T) < sizeof(U))> {
+    struct smaller_type :
+            public type_selector<T, U, (sizeof(T) < sizeof(U))> {
 
         using type_t = typename type_selector<T, U, (sizeof (T) < sizeof (U))>::type_t;
 
@@ -116,7 +118,8 @@ namespace ahead {
     };
 
     template<typename T, typename U>
-    struct v2_larger_type : public type_selector<T, U, (sizeof(typename T::type_t) >= sizeof(typename U::type_t))> {
+    struct v2_larger_type :
+            public type_selector<T, U, (sizeof(typename T::type_t) >= sizeof(typename U::type_t))> {
         typedef typename T::type_t ttype_t;
         typedef typename U::type_t utype_t;
         using type_t = typename type_selector<T, U, (sizeof(ttype_t) >= sizeof(utype_t))>::type_t;
@@ -127,7 +130,8 @@ namespace ahead {
     };
 
     template<typename T, typename U>
-    struct v2_smaller_type : public type_selector<T, U, (sizeof(typename T::type_t) < sizeof(typename U::type_t))> {
+    struct v2_smaller_type :
+            public type_selector<T, U, (sizeof(typename T::type_t) < sizeof(typename U::type_t))> {
         typedef typename T::type_t ttype_t;
         typedef typename U::type_t utype_t;
         using type_t = typename type_selector<T, U, (sizeof (ttype_t) < sizeof (utype_t))>::type_t;
@@ -162,9 +166,21 @@ namespace ahead {
         static const size_t digits10 = 20;
     };
 
-    enum type_t {
+    enum column_type_t {
 
-        type_void = 0, type_tinyint, type_shortint, type_int, type_largeint, type_string, type_fixed, type_char, type_restiny, type_resshort, type_resint
+        type_void = 0,
+        type_tinyint,
+        type_shortint,
+        type_int,
+        type_largeint,
+        type_string,
+        type_fixed,
+        type_char,
+        type_restiny,
+        type_resshort,
+        type_resint,
+        type_resbigint,
+        type_resstring
     };
 
     typedef void empty_t;
@@ -186,7 +202,23 @@ namespace ahead {
     struct v2_base_t {
     };
 
-    struct v2_empty_t : public v2_base_t {
+    // forward declarations
+    struct v2_empty_t;
+    struct v2_tinyint_t;
+    struct v2_shortint_t;
+    struct v2_int_t;
+    struct v2_bigint_t;
+    struct v2_char_t;
+    struct v2_str_t;
+    struct v2_fixed_t;
+    struct v2_id_t;
+    struct v2_oid_t;
+    struct v2_void_t;
+    struct v2_version_t;
+    struct v2_size_t;
+
+    struct v2_empty_t :
+            public v2_base_t {
 
         typedef empty_t type_t;
         typedef v2_empty_t v2_unenc_t;
@@ -197,145 +229,169 @@ namespace ahead {
         // we do not define dhm_emptykey and dhm_deletedkey to get compile-time errorsif we use this type unintendedly
     };
 
-    struct v2_tinyint_t : public v2_base_t {
+    struct v2_tinyint_t :
+            public v2_base_t {
 
         typedef tinyint_t type_t;
         typedef v2_tinyint_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_shortint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_shortint_t : public v2_base_t {
+    struct v2_shortint_t :
+            public v2_base_t {
 
         typedef shortint_t type_t;
         typedef v2_shortint_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_int_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_int_t : public v2_base_t {
+    struct v2_int_t :
+            public v2_base_t {
 
         typedef int_t type_t;
         typedef v2_int_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_bigint_t : public v2_base_t {
+    struct v2_bigint_t :
+            public v2_base_t {
 
         typedef bigint_t type_t;
         typedef v2_bigint_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_char_t : public v2_base_t {
+    struct v2_char_t :
+            public v2_base_t {
 
         typedef char_t type_t;
         typedef v2_char_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_shortint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_str_t : public v2_base_t {
+    struct v2_str_t :
+            public v2_base_t {
 
         typedef str_t type_t;
         typedef v2_str_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_int_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_fixed_t : public v2_base_t {
+    struct v2_fixed_t :
+            public v2_base_t {
 
         typedef fixed_t type_t;
         typedef v2_fixed_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_fixed_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_id_t : public v2_base_t {
+    struct v2_id_t :
+            public v2_base_t {
 
         typedef id_t type_t;
         typedef v2_id_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_oid_t : public v2_base_t {
+    struct v2_oid_t :
+            public v2_base_t {
 
         typedef oid_t type_t;
         typedef v2_oid_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_void_t : public v2_base_t {
+    struct v2_void_t :
+            public v2_base_t {
 
         typedef oid_t type_t;
         typedef v2_void_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_oid_t v2_select_t;
         typedef v2_oid_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_version_t : public v2_base_t {
+    struct v2_version_t :
+            public v2_base_t {
 
         typedef version_t type_t;
         typedef v2_version_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_bigint_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;
     };
 
-    struct v2_size_t : public v2_base_t {
+    struct v2_size_t :
+            public v2_base_t {
 
         typedef size_t type_t;
         typedef v2_size_t v2_unenc_t;
         typedef v2_unenc_t v2_copy_t;
         typedef v2_unenc_t v2_select_t;
         typedef v2_unenc_t v2_compare_t;
+        typedef v2_size_t v2_larger_t;
 
         static const type_t dhm_emptykey;
         static const type_t dhm_deletedkey;

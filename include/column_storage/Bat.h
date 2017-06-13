@@ -66,28 +66,30 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(ColumnMetaData(sizeof(typename Head::type_t))), tail(sizeof(typename Tail::type_t)) {
+                : head(ColumnMetaData(sizeof(typename Head::type_t))),
+                  tail(sizeof(typename Tail::type_t)) {
         }
 
-        BAT(coldesc_head_t head, coldesc_tail_t tail)
-                : head(std::move(head)), tail(std::move(tail)) {
+        BAT(
+                coldesc_head_t head,
+                coldesc_tail_t tail)
+                : head(std::move(head)),
+                  tail(std::move(tail)) {
         }
 
         virtual ~BAT() {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
         virtual oid_t size() = 0;
@@ -125,35 +127,40 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(), tail() {
+                : head(),
+                  tail() {
         }
 
-        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-                : head(head), tail(tail) {
+        BAT(
+                coldesc_head_t& head,
+                coldesc_tail_t& tail)
+                : head(head),
+                  tail(tail) {
         }
 
-        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        BAT(
+                coldesc_head_t&& head,
+                coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)),
+                  tail(std::forward<coldesc_tail_t>(tail)) {
         }
 
         virtual ~BAT() {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
-        virtual unsigned size() = 0;
+        virtual oid_t size() = 0;
 
         /** Compute the actual memory consumption of the BAT */
         virtual size_t consumption() = 0;
@@ -187,37 +194,40 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(), tail() {
+                : head(),
+                  tail() {
         }
 
-        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-                : head(head), tail(tail) {
+        BAT(
+                coldesc_head_t& head,
+                coldesc_tail_t& tail)
+                : head(head),
+                  tail(tail) {
         }
 
-        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        BAT(
+                coldesc_head_t&& head,
+                coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)),
+                  tail(std::forward<coldesc_tail_t>(tail)) {
         }
 
         virtual ~BAT() {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-        virtual void append(head_t & t) = 0;
-        virtual void append(head_t && t) = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
-        virtual unsigned size() = 0;
+        virtual oid_t size() = 0;
 
         /** Compute the actual memory consumption of the BAT */
         virtual size_t consumption() = 0;
@@ -251,37 +261,40 @@ namespace ahead {
         coldesc_tail_t tail;
 
         BAT()
-                : head(), tail() {
+                : head(),
+                  tail() {
         }
 
-        BAT(coldesc_head_t& head, coldesc_tail_t& tail)
-                : head(head), tail(tail) {
+        BAT(
+                coldesc_head_t& head,
+                coldesc_tail_t& tail)
+                : head(head),
+                  tail(tail) {
         }
 
-        BAT(coldesc_head_t&& head, coldesc_tail_t&& tail)
-                : head(std::forward<coldesc_head_t>(head)), tail(std::forward<coldesc_tail_t>(tail)) {
+        BAT(
+                coldesc_head_t&& head,
+                coldesc_tail_t&& tail)
+                : head(std::forward<coldesc_head_t>(head)),
+                  tail(std::forward<coldesc_tail_t>(tail)) {
         }
 
         virtual ~BAT() {
         }
 
         /** returns an iterator pointing at the start of the column */
-        virtual BATIterator<Head, Tail>* begin() = 0;
+        virtual BATIterator<Head, Tail> * begin() = 0;
 
-        /** append an item */
-        virtual void append(std::pair<head_t, tail_t>& p) = 0;
-        virtual void append(std::pair<head_t, tail_t>&& p) = 0;
-        virtual void append(tail_t & t) = 0;
-        virtual void append(tail_t && t) = 0;
+        virtual BAT<Tail, Head> * reverse() = 0;
 
-        virtual BAT<Tail, Head>* reverse() = 0;
+        virtual BAT<Head, Head> * mirror_head() = 0;
 
-        virtual BAT<Head, Head>* mirror_head() = 0;
+        virtual BAT<Tail, Tail> * mirror_tail() = 0;
 
-        virtual BAT<Tail, Tail>* mirror_tail() = 0;
+        virtual BAT<v2_void_t, Tail> * clear_head() = 0;
 
         /** size of column, obtained through the iterator */
-        virtual unsigned size() = 0;
+        virtual oid_t size() = 0;
 
         /** Compute the actual memory consumption of the BAT */
         virtual size_t consumption() = 0;

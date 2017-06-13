@@ -19,11 +19,18 @@ namespace ahead {
     const bool OUTPUT_INSERT_DOT = true;
 
     StopWatch::StopWatch()
-            : startNS(), stopNS(), totalNS(std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count()) {
+            : startNS(),
+              stopNS(),
+              totalNS(std::chrono::duration_cast<std::chrono::nanoseconds>(stopNS - startNS).count()) {
     }
 
-    StopWatch::StopWatch(time_point startNS, time_point stopNS, rep totalNS)
-            : startNS(startNS), stopNS(stopNS), totalNS(totalNS) {
+    StopWatch::StopWatch(
+            time_point startNS,
+            time_point stopNS,
+            rep totalNS)
+            : startNS(startNS),
+              stopNS(stopNS),
+              totalNS(totalNS) {
     }
 
     void StopWatch::start() {
@@ -45,11 +52,14 @@ namespace ahead {
         return totalNS;
     }
 
-    hrc_duration::hrc_duration(StopWatch::rep dura)
+    hrc_duration::hrc_duration(
+            StopWatch::rep dura)
             : dura(dura) {
     }
 
-    std::ostream& operator<<(std::ostream& stream, hrc_duration hrcd) {
+    std::ostream& operator<<(
+            std::ostream& stream,
+            hrc_duration hrcd) {
         std::chrono::high_resolution_clock::rep dura = hrcd.dura;
         std::stringstream ss;
         if (OUTPUT_INSERT_DOT) {
@@ -72,7 +82,9 @@ namespace ahead {
         return stream;
     }
 
-    std::ostream& operator<<(std::ostream& stream, StopWatch sw) {
+    std::ostream& operator<<(
+            std::ostream& stream,
+            StopWatch sw) {
         return stream << hrc_duration(sw.duration());
     }
 

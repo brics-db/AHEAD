@@ -47,7 +47,8 @@
 namespace ahead {
 
     template<typename Head, typename Tail>
-    class ColumnBatIteratorBase : public BATIterator<Head, Tail> {
+    class ColumnBatIteratorBase :
+            public BATIterator<Head, Tail> {
 
         typedef typename Head::type_t head_t;
         typedef typename Tail::type_t tail_t;
@@ -64,8 +65,15 @@ namespace ahead {
     public:
 
         /** default constructor */
-        ColumnBatIteratorBase(id_t columnId)
-                : ta(nullptr), bu(), buNext(), mColumnId(columnId), Csize(0), Cconsumption(0), mPosition(-1) {
+        ColumnBatIteratorBase(
+                id_t columnId)
+                : ta(nullptr),
+                  bu(),
+                  buNext(),
+                  mColumnId(columnId),
+                  Csize(0),
+                  Cconsumption(0),
+                  mPosition(-1) {
             TransactionManager* tm = TransactionManager::getInstance();
             if (tm == nullptr) {
                 std::stringstream ss;
@@ -83,8 +91,15 @@ namespace ahead {
             next(); // init to first
         }
 
-        ColumnBatIteratorBase(const ColumnBatIteratorBase<Head, Tail> &iter)
-                : ta(iter.ta), bu(iter.bu), buNext(iter.buNext), mColumnId(iter.mColumnId), Csize(iter.Csize), Cconsumption(iter.Cconsumption), mPosition(iter.mPosition) {
+        ColumnBatIteratorBase(
+                const ColumnBatIteratorBase<Head, Tail> &iter)
+                : ta(iter.ta),
+                  bu(iter.bu),
+                  buNext(iter.buNext),
+                  mColumnId(iter.mColumnId),
+                  Csize(iter.Csize),
+                  Cconsumption(iter.Cconsumption),
+                  mPosition(iter.mPosition) {
         }
 
         virtual ~ColumnBatIteratorBase() {
@@ -95,12 +110,14 @@ namespace ahead {
             }
         }
 
-        ColumnBatIteratorBase& operator=(const ColumnBatIteratorBase &copy) {
+        ColumnBatIteratorBase& operator=(
+                const ColumnBatIteratorBase &copy) {
             new (this) ColumnBatIteratorBase(copy);
             return *this;
         }
 
-        virtual void position(oid_t index) override {
+        virtual void position(
+                oid_t index) override {
             bu = ta->get(mColumnId, index);
             mPosition = index;
             buNext = ta->next(mColumnId);
@@ -118,7 +135,8 @@ namespace ahead {
             return *this;
         }
 
-        virtual ColumnBatIteratorBase<Head, Tail>& operator+=(oid_t i) override {
+        virtual ColumnBatIteratorBase<Head, Tail>& operator+=(
+                oid_t i) override {
             for (; i; --i) {
                 next();
             }
@@ -148,7 +166,8 @@ namespace ahead {
     };
 
     template<typename Head, typename Tail>
-    class ColumnBatIterator : public ColumnBatIteratorBase<Head, Tail> {
+    class ColumnBatIterator :
+            public ColumnBatIteratorBase<Head, Tail> {
 
     public:
         typedef ColumnBatIterator<Head, Tail> self_t;
@@ -160,7 +179,8 @@ namespace ahead {
     };
 
     template<typename Head>
-    class ColumnBatIterator<Head, v2_str_t> : public ColumnBatIteratorBase<Head, v2_str_t> {
+    class ColumnBatIterator<Head, v2_str_t> :
+            public ColumnBatIteratorBase<Head, v2_str_t> {
 
     public:
         typedef ColumnBatIterator<Head, v2_str_t> self_t;

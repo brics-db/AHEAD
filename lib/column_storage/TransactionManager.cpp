@@ -19,11 +19,6 @@ namespace ahead {
 
     TransactionManager* TransactionManager::instance = 0;
 
-    const id_t TransactionManager::Transaction::ID_BAT_COLNAMES = 0;
-    const id_t TransactionManager::Transaction::ID_BAT_COLTYPES = 1;
-    const id_t TransactionManager::Transaction::ID_BAT_COLIDENT = 2;
-    const id_t TransactionManager::Transaction::ID_BAT_FIRST_USER = 3;
-
     TransactionManager*
     TransactionManager::getInstance() {
         if (TransactionManager::instance == 0) {
@@ -41,11 +36,14 @@ namespace ahead {
     }
 
     TransactionManager::TransactionManager()
-            : currentVersion(0), transactions() {
+            : currentVersion(0),
+              transactions() {
     }
 
-    TransactionManager::TransactionManager(const TransactionManager& copy)
-            : currentVersion(copy.currentVersion), transactions(copy.transactions) {
+    TransactionManager::TransactionManager(
+            const TransactionManager& copy)
+            : currentVersion(copy.currentVersion),
+              transactions(copy.transactions) {
     }
 
     TransactionManager::~TransactionManager() {
@@ -59,7 +57,8 @@ namespace ahead {
     }
 
     TransactionManager::Transaction*
-    TransactionManager::beginTransaction(bool isUpdater) {
+    TransactionManager::beginTransaction(
+            bool isUpdater) {
         if (isUpdater) {
             // Atomic Block Start
             for (auto pT : this->transactions) {
@@ -74,7 +73,8 @@ namespace ahead {
         return result.second ? *result.first : nullptr;
     }
 
-    void TransactionManager::endTransaction(TransactionManager::Transaction *transaction) {
+    void TransactionManager::endTransaction(
+            TransactionManager::Transaction *transaction) {
         if (transaction->isUpdater) {
             *transaction->eotVersion = this->currentVersion + 1;
             this->currentVersion++;
@@ -87,7 +87,8 @@ namespace ahead {
         delete transaction;
     }
 
-    void TransactionManager::rollbackTransaction(TransactionManager::Transaction *transaction) {
+    void TransactionManager::rollbackTransaction(
+            TransactionManager::Transaction *transaction) {
         if (transaction->isUpdater) {
             transaction->rollback();
         }

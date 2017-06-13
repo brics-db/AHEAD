@@ -14,7 +14,9 @@
 
 #include "../ssbm/ssb.hpp"
 
-int main(int argc, char ** argv) {
+int main(
+        int argc,
+        char ** argv) {
     SSB_CONF CONFIG(argc, argv);
 
     boost::filesystem::path p(CONFIG.DB_PATH);
@@ -34,13 +36,13 @@ int main(int argc, char ** argv) {
     // Test Query
     int_colbat_t batCustKey("customer", "custkey");
     sw.start();
-    auto bat0 = ahead::bat::ops::select<less>(&batCustKey, static_cast<int_t>(12345));
+    auto bat0 = ahead::bat::ops::select < less > (&batCustKey, static_cast<int_t>(12345));
     sw.stop();
     cout << "[customer] Selection over " << batCustKey.size() << " tuples took " << sw << " ns" << endl;
 
     int_colbat_t batLineOrderKey("lineorder", "orderkey");
     sw.start();
-    auto bat1 = ahead::bat::ops::select<std::less>(&batLineOrderKey, static_cast<int_t>(123450));
+    auto bat1 = ahead::bat::ops::select < std::less > (&batLineOrderKey, static_cast<int_t>(123450));
     sw.stop();
     cout << "[lineorder] Selection over " << batLineOrderKey.size() << " tuples took " << sw << " ns" << endl;
 
