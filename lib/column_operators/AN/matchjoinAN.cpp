@@ -27,12 +27,12 @@ namespace ahead {
         namespace ops {
 
 #define V2_MATCHJOIN_AN_SUB4(H1, T1, H2, T2) \
-template std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-    matchjoinAN(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2); \
-template std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-    matchjoinAN(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc); \
-template std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-    matchjoinAN(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc, typename TypeMap<T2>::v2_encoded_t::type_t AT2Reenc, typename TypeMap<T2>::v2_encoded_t::type_t AT2InvReenc);
+template std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> \
+    matchjoinAN(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, resoid_t AOID); \
+template std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> \
+    matchjoinAN(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc, resoid_t AOID); \
+template std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> \
+    matchjoinAN(BAT<H1, T1> *arg1, BAT<H2, T2> *arg2, typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc, typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc, typename TypeMap<T2>::v2_encoded_t::type_t AT2Reenc, typename TypeMap<T2>::v2_encoded_t::type_t AT2InvReenc, resoid_t AOID);
 
 #define V2_MATCHJOIN_AN_SUB2(H1, T1) \
 V2_MATCHJOIN_AN_SUB4(H1, T1, T1, v2_oid_t) \

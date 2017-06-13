@@ -110,12 +110,6 @@ namespace ahead {
                         std::vector<bool> *vec4 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
                         auto iter1 = arg1->begin();
                         auto iter2 = arg2->begin();
-#ifdef DEBUG
-                        std::cout << "head1 [" << arg1->head.metaData.width << ", " << arg1->head.metaData.seqbase << ", " << (arg1->head.metaData.isEncoded ? "enc" : "unenc") << ", " << arg1->head.metaData.AN_A << ", " << AH1Inv << ", " << static_cast<uint64_t>(static_cast<h1unenc_t>(arg1->head.metaData.AN_A * AH1Inv)) << ", " << arg1->head.metaData.AN_unencMaxU << ", " << arg1->head.metaData.AN_unencMinS << "]\n";
-                        std::cout << "tail1 [" << arg1->tail.metaData.width << ", " << arg1->tail.metaData.seqbase << ", " << (arg1->tail.metaData.isEncoded ? "enc" : "unenc") << ", " << arg1->tail.metaData.AN_A << ", " << AT1Inv << ", " << static_cast<uint64_t>(static_cast<t1unenc_t>(arg1->tail.metaData.AN_A * AT1Inv)) << ", " << arg1->tail.metaData.AN_unencMaxU << ", " << arg1->tail.metaData.AN_unencMinS << "]\n";
-                        std::cout << "head2 [" << arg2->head.metaData.width << ", " << arg2->head.metaData.seqbase << ", " << (arg2->head.metaData.isEncoded ? "enc" : "unenc") << ", " << arg2->head.metaData.AN_A << ", " << AH2Inv << ", " << static_cast<uint64_t>(static_cast<h2unenc_t>(arg2->head.metaData.AN_A * AH2Inv)) << ", " << arg2->head.metaData.AN_unencMaxU << ", " << arg2->head.metaData.AN_unencMinS << "]\n";
-                        std::cout << "tail2 [" << arg2->tail.metaData.width << ", " << arg2->tail.metaData.seqbase << ", " << (arg2->tail.metaData.isEncoded ? "enc" : "unenc") << ", " << arg2->tail.metaData.AN_A << ", " << AT2Inv << ", " << static_cast<uint64_t>(static_cast<t2unenc_t>(arg2->tail.metaData.AN_A * AT2Inv)) << ", " << arg2->tail.metaData.AN_unencMaxU << ", " << arg2->tail.metaData.AN_unencMinS << "]\n";
-#endif
                         if (iter1->hasNext() && iter2->hasNext()) { // only really continue when both BATs are not empty
                             size_t pos = 0;
                             if (hashside == hash_side_t::left) {
@@ -231,8 +225,8 @@ namespace ahead {
                             hash_side_t hashside = hash_side_t::right,
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
-                            __attribute__((unused))  t2enc_t AT2R = nullptr, // dummy
-                            __attribute__((unused))  t2enc_t AT2InvR = nullptr // dummy
+                            __attribute__((unused))   t2enc_t AT2R = nullptr, // dummy
+                            __attribute__((unused))   t2enc_t AT2InvR = nullptr // dummy
                             ) {
                         const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;

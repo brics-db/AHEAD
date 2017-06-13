@@ -44,8 +44,10 @@ namespace ahead {
                 template<typename Head, typename Tail, bool reencode>
                 struct groupbyAN {
 
-                    typedef typename Head::type_t head_t;
-                    typedef typename Tail::type_t tail_t;
+                    typedef ANhelper<Head> HeadHelper;
+                    typedef ANhelper<Tail> TailHelper;
+                    typedef typename HeadHelper::type_t head_t;
+                    typedef typename TailHelper::type_t tail_t;
                     typedef typename TypeMap<Tail>::v2_base_t::type_t tunenc_t;
                     typedef ahead::bat::ops::Private::hash<tail_t> hasher;
                     typedef ahead::bat::ops::Private::equals<tail_t> comparator;
@@ -54,18 +56,16 @@ namespace ahead {
                             BAT<Head, Tail>* bat,
                             resoid_t AOID,
                             resoid_t AOIDinv) {
-                        constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
-                        constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
-                        head_t HAInv = ANhelper<Head, decltype(bat->head.metaData.AN_Ainv)>::getValue(bat->head.metaData.AN_Ainv);
-                        head_t HUnencMaxU = ANhelper<Head, decltype(bat->head.metaData.AN_unencMaxU)>::getValue(bat->head.metaData.AN_unencMaxU);
-                        tail_t TAInv = ANhelper<Tail, decltype(bat->tail.metaData.AN_Ainv)>::getValue(bat->tail.metaData.AN_Ainv);
-                        tail_t TUnencMaxU = ANhelper<Tail, decltype(bat->tail.metaData.AN_unencMaxU)>::getValue(bat->tail.metaData.AN_unencMaxU);
-                        AN_indicator_vector *vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
-                        if (isHeadEncoded) {
+                        head_t const HAInv = HeadHelper::getIfEncoded(bat->head.metaData.AN_Ainv);
+                        head_t const HUnencMaxU = HeadHelper::getIfEncoded(bat->head.metaData.AN_unencMaxU);
+                        tail_t const TAInv = TailHelper::getIfEncoded(bat->tail.metaData.AN_Ainv);
+                        tail_t const TUnencMaxU = TailHelper::getIfEncoded(bat->tail.metaData.AN_unencMaxU);
+                        AN_indicator_vector *vec1 = (HeadHelper::isEncoded ? new AN_indicator_vector : nullptr);
+                        if (HeadHelper::isEncoded) {
                             vec1->reserve(32);
                         }
-                        AN_indicator_vector *vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
-                        if (isTailEncoded) {
+                        AN_indicator_vector *vec2 = (TailHelper::isEncoded ? new AN_indicator_vector : nullptr);
+                        if (TailHelper::isEncoded) {
                             vec2->reserve(32);
                         }
 
@@ -78,12 +78,12 @@ namespace ahead {
 
                         auto iter = bat->begin();
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
-                            head_t h = ANhelper<Head, head_t>::decode(iter->head(), HAInv);
-                            if (isHeadEncoded && (h > HUnencMaxU)) {
+                            head_t h = HeadHelper::mulIfEncoded(iter->head(), HAInv);
+                            if (HeadHelper::isEncoded && (h > HUnencMaxU)) {
                                 vec1->push_back(i * AOID);
                             }
-                            tail_t t1 = ANhelper<Tail, tail_t>::decode(iter->tail(), TAInv);
-                            if (isTailEncoded && (t1 > TUnencMaxU)) {
+                            tail_t t1 = TailHelper::mulIfEncoded(iter->tail(), TAInv);
+                            if (TailHelper::isEncoded && (t1 > TUnencMaxU)) {
                                 vec2->push_back(i * AOID);
                             }
                             auto t2 = static_cast<tunenc_t>(t1); // use (potentially smaller) unencoded size
@@ -118,12 +118,12 @@ namespace ahead {
 
                         constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                         constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
-                        head_t HAInv = ANhelper<Head, decltype(bat->head.metaData.AN_Ainv)>::getValue(bat->head.metaData.AN_Ainv);
-                        head_t HUnencMaxU = ANhelper<Head, decltype(bat->head.metaData.AN_unencMaxU)>::getValue(bat->head.metaData.AN_unencMaxU);
-                        tail_t TAInv = ANhelper<Tail, decltype(bat->tail.metaData.AN_Ainv)>::getValue(bat->tail.metaData.AN_Ainv);
-                        tail_t TUnencMaxU = ANhelper<Tail, decltype(bat->tail.metaData.AN_unencMaxU)>::getValue(bat->tail.metaData.AN_unencMaxU);
-                        resoid_t GAInv = ANhelper<v2_resoid_t, decltype(grouping->tail.metaData.AN_Ainv)>::getValue(grouping->tail.metaData.AN_Ainv);
-                        resoid_t GUnencMaxU = ANhelper<v2_resoid_t, decltype(grouping->tail.metaData.AN_unencMaxU)>::getValue(grouping->tail.metaData.AN_unencMaxU);
+                        head_t const HAInv = HeadHelper::getIfEncoded(bat->head.metaData.AN_Ainv);
+                        head_t const HUnencMaxU = HeadHelper::getIfEncoded(bat->head.metaData.AN_unencMaxU);
+                        tail_t const TAInv = TailHelper::getIfEncoded(bat->tail.metaData.AN_Ainv);
+                        tail_t const TUnencMaxU = TailHelper::getIfEncoded(bat->tail.metaData.AN_unencMaxU);
+                        resoid_t GAInv = static_cast<resoid_t>(grouping->tail.metaData.AN_Ainv);
+                        resoid_t GUnencMaxU = static_cast<resoid_t>(grouping->tail.metaData.AN_unencMaxU);
                         AN_indicator_vector * vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
                         if (isHeadEncoded) {
                             vec1->reserve(32);
@@ -145,15 +145,15 @@ namespace ahead {
                         auto iter = bat->begin();
                         auto iterG = grouping->begin();
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++*iterG, ++i) {
-                            head_t h = ANhelper<Head, head_t>::decode(iter->head(), HAInv);
+                            head_t h = HeadHelper::mulIfEncoded(iter->head(), HAInv);
                             if (isHeadEncoded && (h > HUnencMaxU)) {
                                 vec1->push_back(i * AOID);
                             }
-                            tail_t t = ANhelper<Tail, tail_t>::decode(iter->tail(), TAInv);
+                            tail_t t = TailHelper::mulIfEncoded(iter->tail(), TAInv);
                             if (isTailEncoded && (t > TUnencMaxU)) {
                                 vec2->push_back(i * AOID);
                             }
-                            resoid_t g = ANhelper<v2_resoid_t, resoid_t>::decode(iterG->tail(), GAInv);
+                            resoid_t g = ANhelper<v2_resoid_t, resoid_t>::mulIfEncoded(iterG->tail(), GAInv);
                             if (g > GUnencMaxU) {
                                 vecGrouping->push_back(i * AOID);
                             }

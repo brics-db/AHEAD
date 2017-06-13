@@ -42,24 +42,28 @@ do {                                                                           \
     VFUNC(SSBM_LOAD, __VA_ARGS__)                                              \
     ssb::sw1.stop();                                                           \
     ssb::rssAfterLoad = getPeakRSS(size_enum_t::B);                            \
-    std::cout << "Total loading time: " << ssb::sw1 << " ns.\n" << std::endl;       \
+    std::cout << "Total loading time: " << ssb::sw1 << " ns.\n" << std::endl;  \
     if (ssb::ssb_config.VERBOSE) {                                             \
         SSBM_LOAD_PRINTQUERYSTRING(__VA_ARGS__);                               \
     }                                                                          \
 } while (false)
 #define SSBM_LOAD6(tab1, tab2, tab3, tab4, tab5, QueryString)                  \
-loadTable(tab1, ssb::ssb_config);                                                       \
-loadTable(tab2, ssb::ssb_config);                                                       \
-loadTable(tab3, ssb::ssb_config);                                                       \
-loadTable(tab4, ssb::ssb_config);                                                       \
+loadTable(tab1, ssb::ssb_config);                                              \
+loadTable(tab2, ssb::ssb_config);                                              \
+loadTable(tab3, ssb::ssb_config);                                              \
+loadTable(tab4, ssb::ssb_config);                                              \
 loadTable(tab5, ssb::ssb_config);
 #define SSBM_LOAD5(tab1, tab2, tab3, tab4, QueryString)                        \
-loadTable(tab1, ssb::ssb_config);                                                       \
-loadTable(tab2, ssb::ssb_config);                                                       \
-loadTable(tab3, ssb::ssb_config);                                                       \
+loadTable(tab1, ssb::ssb_config);                                              \
+loadTable(tab2, ssb::ssb_config);                                              \
+loadTable(tab3, ssb::ssb_config);                                              \
 loadTable(tab4, ssb::ssb_config);
+#define SSBM_LOAD4(tab1, tab2, tab3, QueryString)                              \
+loadTable(tab1, ssb::ssb_config);                                              \
+loadTable(tab2, ssb::ssb_config);                                              \
+loadTable(tab3, ssb::ssb_config);
 #define SSBM_LOAD3(tab1, tab2, QueryString)                                    \
-loadTable(tab1, ssb::ssb_config);                                                       \
+loadTable(tab1, ssb::ssb_config);                                              \
 loadTable(tab2, ssb::ssb_config);
 #define SSBM_LOAD2(tab1, QueryString)                                          \
 loadTable(tab1, ssb::ssb_config);

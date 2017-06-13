@@ -30,28 +30,31 @@ namespace ahead {
         namespace ops {
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
             matchjoinAN(
                     BAT<H1, T1> *arg1,
-                    BAT<H2, T2> *arg2);
+                    BAT<H2, T2> *arg2,
+                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
             matchjoinAN(
                     BAT<H1, T1> *arg1,
                     BAT<H2, T2> *arg2,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc,
-                    typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc);
+                    typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc,
+                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
 
             template<typename H1, typename T1, typename H2, typename T2>
-            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
             matchjoinAN(
                     BAT<H1, T1> *arg1,
                     BAT<H2, T2> *arg2,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc,
                     typename TypeMap<T2>::v2_encoded_t::type_t AT2Reenc,
-                    typename TypeMap<T2>::v2_encoded_t::type_t AT2InvReenc);
+                    typename TypeMap<T2>::v2_encoded_t::type_t AT2InvReenc,
+                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
             std::tuple<TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
