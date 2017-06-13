@@ -39,7 +39,8 @@
 #ifndef OPERATORS_HPP
 #define OPERATORS_HPP
 
-#include <column_storage/Storage.hpp>
+#include <column_storage/TempStorage.hpp>
+#include <column_operators/functors.hpp>
 
 namespace ahead {
     namespace bat {
@@ -96,7 +97,7 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine = AND, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
                 select(
                         BAT<Head, Tail>* arg,
@@ -125,7 +126,7 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine = AND, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
                 select(
                         BAT<Head, Tail>* arg,

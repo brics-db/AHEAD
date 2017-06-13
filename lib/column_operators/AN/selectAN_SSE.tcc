@@ -204,12 +204,12 @@ namespace ahead {
                         }
                     };
 
-                    template<template<typename > class Op1, template<typename > class Op2, typename Head, typename Tail, bool reencode>
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail, bool reencode>
                     struct SelectionAN2 {
                     };
 
-                    template<template<typename > class Op1, template<typename > class Op2, typename Tail, bool reencode>
-                    struct SelectionAN2<Op1, Op2, v2_void_t, Tail, reencode> {
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Tail, bool reencode>
+                    struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, Tail, reencode> {
 
                         typedef v2_void_t Head;
                         typedef typename Head::type_t head_t;
@@ -223,14 +223,15 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, Tail> * arg,
-                                tail_t && th1,
-                                tail_t && th2,
+                                tail_t && threshold1,
+                                tail_t && threshold2,
                                 tail_select_t ATR = 1, // for reencoding
                                 tail_select_t ATInvR = 1 // for reencoding
                                 ) {
                             // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                             static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
+                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                             // always encode head (will usually be a conversion from void -> oid)
                             const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
@@ -251,8 +252,8 @@ namespace ahead {
                             auto mmATInv = v2_mm128<tail_select_t>::set1(ATailInv);
                             auto mmATReenc = v2_mm128<tail_select_t>::set1(Areenc);
                             auto mmDMax = v2_mm128<tail_select_t>::set1(TailUnencMaxU);
-                            auto mmThreshold1 = v2_mm128<tail_t>::set1(th1);
-                            auto mmThreshold2 = v2_mm128<tail_t>::set1(th2);
+                            auto mmThreshold1 = v2_mm128<tail_t>::set1(threshold1);
+                            auto mmThreshold2 = v2_mm128<tail_t>::set1(threshold2);
                             auto szTail = arg->tail.container->size();
                             auto pT = arg->tail.container->data();
                             auto pTEnd = pT + szTail;
@@ -275,7 +276,7 @@ namespace ahead {
                                     constexpr const tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     v2_mm128_AN<tail_t>::detect(mm, mmATInv, mmDMax, result.second, pos, Aoid); // we only need to check the tail types since the head is virtual anyways
                                     // comparison on encoded values
-                                    auto mask = v2_mm128_cmp<tail_t, Op1>::cmp_mask(mm, mmThreshold1) & v2_mm128_cmp<tail_t, Op2>::cmp_mask(mm, mmThreshold2);
+                                    auto mask = v2_mm128_cmp<tail_t, OpCombine>::cmp_mask(v2_mm128_cmp<tail_t, Op1>::cmp(mm, mmThreshold1), v2_mm128_cmp<tail_t, Op2>::cmp(mm, mmThreshold2));
                                     if (mask) {
                                         auto maskTmp = mask;
                                         for (size_t i = 0; i < factor; ++i) {
@@ -322,7 +323,7 @@ namespace ahead {
                                 if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
                                     result.second->push_back(pos * Aoid);
                                 }
-                                if (op1(t, th1) & op2(t, th2)) {
+                                if (OpCombine<void>()(op1(t, std::forward<tail_t>(threshold1)), op2(t, std::forward<tail_t>(threshold2)))) {
                                     if (reencode) {
                                         t *= Areenc;
                                     }
@@ -335,25 +336,27 @@ namespace ahead {
                         }
                     };
 
-                    template<template<typename > class Op1, template<typename > class Op2>
-                    struct SelectionAN2<Op1, Op2, v2_void_t, v2_str_t, false> {
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine>
+                    struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, v2_str_t, false> {
 
                         typedef v2_void_t Head;
                         typedef typename Head::type_t head_t;
                         typedef typename TypeMap<Head>::v2_encoded_t::v2_select_t v2_head_select_t;
                         typedef typename v2_head_select_t::type_t head_select_t;
-                        typedef v2_str_t v2_tail_select_t;
+                        typedef typename v2_str_t::v2_select_t v2_tail_select_t;
+                        typedef typename v2_tail_select_t::type_t tail_select_t;
                         typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, AN_indicator_vector*> result_t;
 
                         static result_t filter(
                                 BAT<Head, v2_str_t> * arg,
-                                str_t&& threshold1,
-                                str_t&& threshold2,
-                                __attribute__((unused))  str_t ATR = nullptr, // cuurently only to match the signature
-                                __attribute__((unused))  str_t ATInvR = nullptr // cuurently only to match the signature
+                                tail_select_t && threshold1,
+                                tail_select_t && threshold2,
+                                __attribute__((unused)) tail_select_t ATR = nullptr, // cuurently only to match the signature
+                                __attribute__((unused)) tail_select_t ATInvR = nullptr // cuurently only to match the signature
                                 ) {
                             // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
+                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                             // always encode head (will usually be a conversion from void -> oid)
                             const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
@@ -366,7 +369,7 @@ namespace ahead {
                             Op2<int> op2;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
-                                if (op1(strcmp(t, threshold1), 0) && op2(strcmp(t, threshold2), 0)) {
+                                if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(threshold1)), 0), op2(strcmp(t, std::forward<tail_select_t>(threshold2)), 0))) {
                                     result.first->append(std::make_pair(iter->head() * AHead, t));
                                 }
                             }

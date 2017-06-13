@@ -21,16 +21,7 @@
 
 #include <iostream>
 
-#include "functors.hpp"
-
-/*
- template<template<typename> typename Op, typename T>
- constexpr
- auto function(T a, T b) noexcept(noexcept(Op<void>()(a,b)))
- -> decltype(Op<void>()(a, b)) {
- return Op<void>()(a, b);
- }
- */
+#include <column_operators/functors.hpp>
 
 template<typename Op, typename ... _Types>
 constexpr
@@ -54,10 +45,13 @@ int main(
     if (argc > 3) {
         c = strtoll(argv[3], &end, 10);
     }
-    std::cout << "a+b=" << function<ahead::bat::ops::add<>>(a, b) << std::endl;
-    std::cout << "a-b=" << function<ahead::bat::ops::sub<>>(a, b) << std::endl;
-    std::cout << "a*b=" << function<ahead::bat::ops::mul<>>(a, b) << std::endl;
-    std::cout << "a/b=" << function<ahead::bat::ops::div<>>(a, b) << std::endl;
-    std::cout << "a+b+c=" << function<ahead::bat::ops::add<ahead::bat::ops::add<>>>(a, b, c) << std::endl;
-    std::cout << "a+(b*(c/d))=" << function<ahead::bat::ops::add<ahead::bat::ops::mul<ahead::bat::ops::div<>>> >(a, b, c, d) << std::endl;
+    if (argc > 4) {
+        d = strtoll(argv[4], &end, 10);
+    }
+    std::cout << "a+b=" << function<ahead::bat::ops::ADD<>>(a, b) << std::endl;
+    std::cout << "a-b=" << function<ahead::bat::ops::SUB<>>(a, b) << std::endl;
+    std::cout << "a*b=" << function<ahead::bat::ops::MUL<>>(a, b) << std::endl;
+    std::cout << "a/b=" << function<ahead::bat::ops::DIV<>>(a, b) << std::endl;
+    std::cout << "a+b+c=" << function<ahead::bat::ops::ADD<ahead::bat::ops::ADD<>>>(a, b, c) << std::endl;
+    std::cout << "a+(b*(c/d))=" << function<ahead::bat::ops::ADD<ahead::bat::ops::MUL<ahead::bat::ops::DIV<>>> >(a, b, c, d) << std::endl;
 }

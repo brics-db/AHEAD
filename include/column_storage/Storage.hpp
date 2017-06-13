@@ -28,10 +28,8 @@
 #ifndef COLUMN_STORAGE_STORAGE_HPP_
 #define COLUMN_STORAGE_STORAGE_HPP_
 
-#include <ColumnStore.h>
-#include <column_storage/Bat.h>
-#include <column_storage/ColumnBat.h>
 #include <column_storage/TempStorage.hpp>
+#include <column_storage/ColumnBat.h>
 
 namespace ahead {
 

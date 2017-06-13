@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
-    PROJECT(SSBQueries VERSION 1.0 LANGUAGES CXX)
+    PROJECT(SSBQueries VERSION 0.9 LANGUAGES CXX)
 ELSE()
     PROJECT(SSBQueries LANGUAGES CXX)
 ENDIF()
@@ -58,7 +58,7 @@ MACRO( add_shared_lib target_name arg_source_files )
     SET(LIBNAME "${target_name}")
     STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
     ADD_LIBRARY(${LIBNAME} SHARED ${SOURCE_FILES})
-    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC "${PCMDIR}")
     TARGET_LINK_LIBRARIES(${LIBNAME} AHEAD "${LIBPCM}" ffi dl pthread curses boost_system boost_filesystem)
@@ -74,7 +74,7 @@ MACRO( add_algorithm arg_name arg_path target_name )
     FILE(GLOB SOURCE_FILES
         "${arg_path}/${arg_name}.cpp")
     ADD_EXECUTABLE(${target_name} ${SOURCE_FILES})
-    SET_PROPERTY(TARGET ${target_name} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${target_name} PROPERTY CXX_STANDARD 17)
     SET_PROPERTY(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED ON)
 	TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC "${PCMDIR}")
     TARGET_LINK_LIBRARIES(${target_name} ${LIBPCM} AHEAD SSB)

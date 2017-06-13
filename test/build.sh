@@ -3,9 +3,9 @@
 rm -Rf ./build
 
 g++ -std=c++14 -O3 -march=native -o createshufflemaskarrays createshufflemaskarrays.cpp &>createshufflemaskarrays.build &
-g++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask testshufflemask.cpp ../util/stopwatch.cpp SSE.cpp -I../../include -I.. -fopenmp &>testshufflemask.build &
-g++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_dbg testshufflemask.cpp ../util/stopwatch.cpp SSE.cpp -I../../include -I.. -fopenmp &>testshufflemask_dbg.build &
-g++ -std=c++14 -O3 -march=native -o functors -I../../include/column_operators functors.cpp &>functors.build &
+g++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask testshufflemask.cpp ../lib/util/stopwatch.cpp ../lib/column_operators/SSE.cpp -I../include -I../lib/column_operators -fopenmp &>testshufflemask.build &
+g++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_dbg testshufflemask.cpp ../lib/util/stopwatch.cpp ../lib/column_operators/SSE.cpp -I../include -I../lib/column_operators -fopenmp &>testshufflemask_dbg.build &
+g++ -std=c++14 -O3 -march=native -o functors -I../include functors.cpp &>functors.build &
 
 wait $(jobs -p)
 

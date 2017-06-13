@@ -42,13 +42,13 @@ namespace ahead {
                     return Private::Selection1<Op, Head, Tail>::filter(arg, std::forward<typename Tail::type_t>(th1));
                 }
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
                 select(
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1,
                         typename Tail::type_t && th2) {
-                    return Private::Selection2<Op1, Op2, Head, Tail>::filter(arg, std::forward<typename Tail::type_t>(th1), std::forward<typename Tail::type_t>(th2));
+                    return Private::Selection2<Op1, Op2, OpCombine, Head, Tail>::filter(arg, std::forward<typename Tail::type_t>(th1), std::forward<typename Tail::type_t>(th2));
                 }
             }
 
@@ -61,13 +61,13 @@ namespace ahead {
                     return Private::Selection1<Op, Head, Tail>::filter(arg, std::forward<typename Tail::type_t>(th1));
                 }
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
                 select(
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1,
                         typename Tail::type_t && th2) {
-                    return Private::Selection2<Op1, Op2, Head, Tail>::filter(arg, std::forward<typename Tail::type_t>(th1), std::forward<typename Tail::type_t>(th2));
+                    return Private::Selection2<Op1, Op2, OpCombine, Head, Tail>::filter(arg, std::forward<typename Tail::type_t>(th1), std::forward<typename Tail::type_t>(th2));
                 }
             }
 

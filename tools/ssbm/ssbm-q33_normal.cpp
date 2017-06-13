@@ -13,10 +13,10 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q32.cpp
+ * File:   ssbm-q33.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 13. June 2017, 16:12
+ * Created on 13. June 2017, 22:35
  */
 
 #include "ssb.hpp"
@@ -25,16 +25,16 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.2 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 3.3 Normal\n=====================");
 
-    SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.2:\n"
+    SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.3:\n"
             "select c_city, s_city, d_year, sum(lo_revenue)\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"
             "    and lo_suppkey = s_suppkey\n"
             "    and lo_orderdate = d_datekey\n"
-            "    and c_nation = 'UNITED STATES'\n"
-            "    and s_nation = 'UNITED STATES'\n"
+            "    and (c_city = 'UNITED KI1' or c_city = 'UNITED KI5')\n"
+            "    and (s_city = 'UNITED KI1' or s_city = 'UNITED KI5')\n"
             "    and d_year >= 1992 and d_year <= 1997\n"
             "  group by c_city, s_city, d_year;");
 

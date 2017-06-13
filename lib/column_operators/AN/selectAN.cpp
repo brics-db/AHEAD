@@ -20,6 +20,7 @@
  */
 
 #include <column_operators/ANbase.hpp>
+#include <column_operators/functors.hpp>
 #include "selectAN.tcc"
 
 namespace ahead {
@@ -47,7 +48,14 @@ selectAN<Operator>( \
 #define SELECT2_AN(Head, Tail, Operator1, Operator2) \
 template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
-selectAN<Operator1, Operator2, Head, Tail>( \
+selectAN<Operator1, Operator2, AND, Head, Tail>( \
+        BAT<Head, Tail> *, \
+        typename Tail::type_t &&, \
+        typename Tail::type_t && \
+        ); \
+template \
+std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
+selectAN<Operator1, Operator2, OR, Head, Tail>( \
         BAT<Head, Tail> *, \
         typename Tail::type_t &&, \
         typename Tail::type_t && \
@@ -56,7 +64,16 @@ selectAN<Operator1, Operator2, Head, Tail>( \
 #define SELECT2_AN_REENC(Head, Tail, Operator1, Operator2) \
 template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
-selectAN<Operator1, Operator2, Head, Tail>( \
+selectAN<Operator1, Operator2, AND, Head, Tail>( \
+        BAT<Head, Tail> *, \
+        typename Tail::type_t &&, \
+        typename Tail::type_t &&, \
+        typename Tail::v2_select_t::type_t, \
+        typename Tail::v2_select_t::type_t \
+        ); \
+template \
+std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
+selectAN<Operator1, Operator2, OR, Head, Tail>( \
         BAT<Head, Tail> *, \
         typename Tail::type_t &&, \
         typename Tail::type_t &&, \

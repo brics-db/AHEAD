@@ -27,6 +27,7 @@
 #include <immintrin.h>
 
 #include "SSE.hpp"
+#include <column_operators/functors.hpp>
 
 namespace ahead {
     namespace bat {
@@ -159,6 +160,42 @@ namespace ahead {
             };
 
             template<>
+            struct v2_mm128_cmp<uint8_t, ahead::bat::ops::AND> {
+
+                typedef uint16_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_and_si128(a, b);
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint8_t, ahead::bat::ops::OR> {
+
+                typedef uint16_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_or_si128(a, b);
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b)));
+                }
+            };
+
+            template<>
             struct v2_mm128_cmp<uint16_t, std::greater> {
 
                 typedef uint8_t mask_t;
@@ -265,6 +302,42 @@ namespace ahead {
                         __m128i a,
                         __m128i b) {
                     return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint16_t, ahead::bat::ops::AND> {
+
+                typedef uint8_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_and_si128(a, b);
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return Private::v2_mm128_compact_mask_uint16_t(static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint16_t, ahead::bat::ops::OR> {
+
+                typedef uint8_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_or_si128(a, b);
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return Private::v2_mm128_compact_mask_uint16_t(static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b))));
                 }
             };
 
@@ -377,6 +450,42 @@ namespace ahead {
             };
 
             template<>
+            struct v2_mm128_cmp<uint32_t, ahead::bat::ops::AND> {
+
+                typedef uint8_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_and_si128(a, b);
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint32_t, ahead::bat::ops::OR> {
+
+                typedef uint8_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_or_si128(a, b);
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return static_cast<mask_t>(_mm_movemask_ps(_mm_castsi128_ps(cmp(a, b))));
+                }
+            };
+
+            template<>
             struct v2_mm128_cmp<uint64_t, std::greater> {
 
                 typedef uint8_t mask_t;
@@ -477,6 +586,42 @@ namespace ahead {
                         __m128i a,
                         __m128i b) {
                     return _mm_or_si128(_mm_cmpgt_epi64(a, b), _mm_cmpgt_epi64(b, a));
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint64_t, ahead::bat::ops::AND> {
+
+                typedef uint8_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_and_si128(a, b);
+                }
+
+                static inline mask_t cmp_mask(
+                        __m128i a,
+                        __m128i b) {
+                    return static_cast<mask_t>(_mm_movemask_pd(_mm_castsi128_pd(cmp(a, b))));
+                }
+            };
+
+            template<>
+            struct v2_mm128_cmp<uint64_t, ahead::bat::ops::OR> {
+
+                typedef uint8_t mask_t;
+
+                static inline __m128i cmp(
+                        __m128i a,
+                        __m128i b) {
+                    return _mm_or_si128(a, b);
                 }
 
                 static inline mask_t cmp_mask(
