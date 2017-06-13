@@ -13,10 +13,10 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q31.cpp
+ * File:   ssbm-q32.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 12. June 2017, 10:49
+ * Created on 13. June 2017, 16:12
  */
 
 #include "ssb.hpp"
@@ -25,22 +25,22 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.1 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 3.2 Normal\n=====================");
 
     SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.1:\n"
-            "select c_nation, s_nation, d_year, sum(lo_revenue)\n"
+            "select c_city, s_city, d_year, sum(lo_revenue)\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"
             "    and lo_suppkey = s_suppkey\n"
             "    and lo_orderdate = d_datekey\n"
-            "    and c_region = 'ASIA'\n"
-            "    and s_region = 'ASIA'\n"
+            "    and c_nation = 'UNITED STATES'\n"
+            "    and s_nation = 'UNITED STATES'\n"
             "    and d_year >= 1992 and d_year <= 1997\n"
-            "  group by c_nation, s_nation, d_year;");
+            "  group by c_city, s_city, d_year;");
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(batCCcb, new int_colbat_t("customer", "custkey"));
-    MEASURE_OP(batCRcb, new str_colbat_t("customer", "region"));
+    MEASURE_OP(batCKcb, new int_colbat_t("customer", "custkey"));
+    MEASURE_OP(batCCcb, new str_colbat_t("customer", "city"));
     MEASURE_OP(batCNcb, new str_colbat_t("customer", "nation"));
     MEASURE_OP(batDDcb, new int_colbat_t("date", "datekey"));
     MEASURE_OP(batDYcb, new shortint_colbat_t("date", "year"));
@@ -49,14 +49,14 @@ int main(
     MEASURE_OP(batLOcb, new int_colbat_t("lineorder", "orderdate"));
     MEASURE_OP(batLRcb, new int_colbat_t("lineorder", "revenue"));
     MEASURE_OP(batSScb, new int_colbat_t("supplier", "suppkey"));
-    MEASURE_OP(batSRcb, new str_colbat_t("supplier", "region"));
+    MEASURE_OP(batSCcb, new str_colbat_t("supplier", "city"));
     MEASURE_OP(batSNcb, new str_colbat_t("supplier", "nation"));
 
     ssb::after_create_columnbats();
 
     /* Measure converting (copying) ColumnBats to TempBats */
+    MEASURE_OP(batCK, copy(batCKcb));
     MEASURE_OP(batCC, copy(batCCcb));
-    MEASURE_OP(batCR, copy(batCRcb));
     MEASURE_OP(batCN, copy(batCNcb));
     MEASURE_OP(batDD, copy(batDDcb));
     MEASURE_OP(batDY, copy(batDYcb));
@@ -65,11 +65,11 @@ int main(
     MEASURE_OP(batLO, copy(batLOcb));
     MEASURE_OP(batLR, copy(batLRcb));
     MEASURE_OP(batSS, copy(batSScb));
-    MEASURE_OP(batSR, copy(batSRcb));
+    MEASURE_OP(batSC, copy(batSCcb));
     MEASURE_OP(batSN, copy(batSNcb));
 
+    delete batCKcb;
     delete batCCcb;
-    delete batCRcb;
     delete batCNcb;
     delete batDDcb;
     delete batDYcb;
@@ -78,7 +78,7 @@ int main(
     delete batLOcb;
     delete batLRcb;
     delete batSScb;
-    delete batSRcb;
+    delete batSCcb;
     delete batSNcb;
 
     ssb::before_queries();
@@ -86,8 +86,8 @@ int main(
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        // s_region = 'ASIA'
-        MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("ASIA"))); // OID supplier | s_region
+        // s_nation = 'UNITED STATES'
+        MEASURE_OP(bat1, select<std::equal_to>(batSN, const_cast<str_t>("UNITED STATES"))); // OID supplier | s_nation
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batSS->reverse(); // s_suppkey | VOID supplier
@@ -100,10 +100,10 @@ int main(
         delete bat5;
 
         // c_region = 'ASIA'
-        MEASURE_OP(bat7, select<std::equal_to>(batCR, const_cast<str_t>("ASIA"))); // OID customer | c_region
+        MEASURE_OP(bat7, select<std::equal_to>(batCN, const_cast<str_t>("UNITED STATES"))); // OID customer | c_nation
         auto bat8 = bat7->mirror_head(); // OID customer | OID customer
         delete bat7;
-        auto bat9 = batCC->reverse(); // c_custkey | VOID customer
+        auto bat9 = batCK->reverse(); // c_custkey | VOID customer
         MEASURE_OP(bat10, matchjoin(bat9, bat8)); // c_custkey | OID customer
         delete bat8;
         delete bat9;
@@ -142,7 +142,7 @@ int main(
         delete bat22;
         auto bat24 = bat23->clear_head(); // VOID | OID supplier
         delete bat23;
-        MEASURE_OP(batAS, fetchjoin(bat24, batSN)); // VOID | s_nation !!!
+        MEASURE_OP(batAS, fetchjoin(bat24, batSC)); // VOID | s_city !!!
         delete bat24;
         MEASURE_OP(bat25, fetchjoin(bat21, batLC)); // VOID | lo_custkey
         MEASURE_OP(bat26, hashjoin(bat25, bat10)); // OID | OID customer
@@ -150,7 +150,7 @@ int main(
         delete bat25;
         auto bat27 = bat26->clear_head(); // VOID | OID customer
         delete bat26;
-        MEASURE_OP(batAC, fetchjoin(bat27, batCN)); // VOID | c_nation !!!
+        MEASURE_OP(batAC, fetchjoin(bat27, batCC)); // VOID | c_city !!!
         delete bat27;
         MEASURE_OP(bat28, fetchjoin(bat21, batLO)); // VOID | lo_orderdate
         delete bat21;
@@ -191,17 +191,17 @@ int main(
             auto iter2 = batRS->begin();
             auto iter3 = batRD->begin();
             auto iter4 = batRR->begin();
-            std::cerr << "+-----------------+-----------------+--------+------------+\n";
-            std::cerr << "+        c_nation |        s_nation | d_year | lo_revenue |\n";
-            std::cerr << "+=================+=================+========+============+\n";
+            std::cerr << "+------------+------------+--------+------------+\n";
+            std::cerr << "+     c_city |     s_city | d_year | lo_revenue |\n";
+            std::cerr << "+============+============+========+============+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                 sum += iter4->tail();
-                std::cerr << "| " << std::setw(15) << iter1->tail();
-                std::cerr << " | " << std::setw(15) << iter2->tail();
+                std::cerr << "| " << std::setw(10) << iter1->tail();
+                std::cerr << " | " << std::setw(10) << iter2->tail();
                 std::cerr << " | " << std::setw(6) << iter3->tail();
                 std::cerr << " | " << std::setw(10) << iter4->tail() << " |\n";
             }
-            std::cerr << "+=================+=================+========+============+\n";
+            std::cerr << "+============+============+========+============+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;
@@ -217,8 +217,8 @@ int main(
 
     ssb::after_queries();
 
+    delete batCK;
     delete batCC;
-    delete batCR;
     delete batCN;
     delete batDD;
     delete batDY;
@@ -227,7 +227,7 @@ int main(
     delete batLO;
     delete batLR;
     delete batSS;
-    delete batSR;
+    delete batSC;
     delete batSN;
 
     ssb::finalize();
