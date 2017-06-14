@@ -21,6 +21,8 @@
 #ifndef INCLUDE_COLUMN_OPERATORS_FUNCTORS_HPP_
 #define INCLUDE_COLUMN_OPERATORS_FUNCTORS_HPP_
 
+#include <util/v2types.hpp>
+
 namespace ahead {
     namespace bat {
         namespace ops {

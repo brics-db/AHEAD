@@ -66,6 +66,7 @@ column_storage/Storage.cpp \
 column_storage/Transaction.cpp \
 column_storage/TransactionManager.cpp \
 column_operators/Normal/aggregate.cpp \
+column_operators/Normal/arithmetic.cpp \
 column_operators/Normal/groupby.cpp \
 column_operators/Normal/hashjoin_void.cpp \
 column_operators/Normal/hashjoin_oid.cpp \

@@ -73,7 +73,7 @@ namespace ahead {
         std::stringstream sserr;
         if (!this->isUpdater) {
             // Problem : Transaktion darf keine Änderungen vornehmen
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Transaktion darf keine Änderungen vornehmen" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Transaktion darf keine Änderungen vornehmen" << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -82,12 +82,12 @@ namespace ahead {
         const size_t LEN_VALUE = 256;
 
         if (path == nullptr) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ")  You must provide a path!" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ")  You must provide a path!" << std::endl;
             throw std::runtime_error(sserr.str());
         }
         size_t pathLen = strnlen(path, LEN_PATH);
         if (pathLen == 0 || pathLen > LEN_PATH) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ") path is too long (>1024)!" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") path is too long (>1024)!" << std::endl;
             throw std::runtime_error(sserr.str());
         }
         const char* actDelim = delim == nullptr ? "|" : delim;
@@ -132,7 +132,7 @@ namespace ahead {
 
         if (!headerFile) {
             // Problem : Dateien konnten nicht geöffnet werden
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Header-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Header-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -160,7 +160,7 @@ namespace ahead {
         // Defer column creation until after we checked whether either the actual contents file or the converted data files are present
         std::memset(line, 0, LEN_LINE);
         if (std::fgets(line, LEN_LINE, headerFile) != line) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Error reading line!" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Error reading line!" << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -179,7 +179,7 @@ namespace ahead {
             size_t lenBuf = strlen(buffer);
             if (lenPrefix + lenBuf > (LEN_VALUE - 1)) {
                 // Problem : Name für Spalte (inkl. Prefix) zu lang
-                sserr << "TransactionManager::load(@" << __LINE__ << ") Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
+                sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
                 throw std::runtime_error(sserr.str());
             }
 
@@ -206,7 +206,7 @@ namespace ahead {
         // Zeile mit Spaltentypen einlesen aus Header-Datei
         std::memset(line, 0, LEN_LINE);
         if (std::fgets(line, LEN_LINE, headerFile) != line) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Error reading line" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Error reading line" << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -264,7 +264,7 @@ namespace ahead {
                 columnType = type_resbigint;
                 columnWidth = sizeof(resbigint_t);
             } else {
-                sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type " << buffer << " in header unknown" << std::endl;
+                sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") data type " << buffer << " in header unknown" << std::endl;
                 throw std::runtime_error(sserr.str());
             }
 
@@ -279,14 +279,16 @@ namespace ahead {
         ////////////////////////////////////////////////
         const size_t numColumns = column_names.size();
         bool areAllColumnFilesPresent = true;
+        std::vector<bool> vecColumnPresent(column_names.size());
         if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
             auto columnItersIterator = columnIters.begin();
             for (size_t i = 0; i < column_names.size(); ++i) {
-                std::string attrFilePath(path);
-                attrFilePath.append("_").append(column_names[i]).append(".ahead");
-                std::ifstream attrIStream(attrFilePath);
-                areAllColumnFilesPresent &= attrIStream.is_open();
-                attrIStream.close();
+                std::string columnFilePath(path);
+                columnFilePath.append("_").append(column_names[i]).append(".ahead");
+                std::ifstream columnIStream(columnFilePath);
+                vecColumnPresent[i] = columnIStream.is_open();
+                areAllColumnFilesPresent &= columnIStream.is_open();
+                columnIStream.close();
                 ++columnItersIterator;
             }
         }
@@ -296,7 +298,12 @@ namespace ahead {
         //////////////////////////////////////////////////////////////////////////////////////////
         if (!areAllColumnFilesPresent && !valuesFile) {
             // Problem : Dateien konnten nicht geöffnet werden
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Content-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
+            sserr << "TransactionManager::load(@" << __LINE__ << ") Content-Datei konnte nicht geöffnet werden (" << valuesPath << "). Fehlende Spalten sind:\n";
+            for (size_t i = 0; i < column_names.size(); ++i) {
+                if (!vecColumnPresent[i]) {
+                    sserr << '\t' << column_names[i] << '\n';
+                }
+            }
             throw std::runtime_error(sserr.str());
         }
 

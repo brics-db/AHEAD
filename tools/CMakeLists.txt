@@ -127,7 +127,8 @@ ssbm-q23_normal ssbm-q23_dmr_seq ssbm-q23_early ssbm-q23_late ssbm-q23_continuou
 ssbm-q31_normal \
 ssbm-q32_normal \
 ssbm-q33_normal \
-ssbm-q34_normal")
+ssbm-q34_normal \
+ssbm-q41_normal")
 add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
@@ -137,7 +138,8 @@ ssbm-q23_normal ssbm-q23_dmr_seq ssbm-q23_early ssbm-q23_late ssbm-q23_continuou
 ssbm-q31_normal \
 ssbm-q32_normal \
 ssbm-q33_normal \
-ssbm-q34_normal")
+ssbm-q34_normal \
+ssbm-q41_normal")
 
 ##############
 ### OPENMP ###

@@ -104,6 +104,13 @@ namespace ahead {
                         typename Tail::type_t && th1,
                         typename Tail::type_t && th2);
 
+                // ARITHMETIC
+                template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, Result> *
+                arithmetic(
+                        BAT<Head1, Tail1> * bat1,
+                        BAT<Head2, Tail2> * bat2);
+
                 // AGGREGATE
                 template<typename v2_result_t, typename Head, typename Tail>
                 typename v2_result_t::type_t
@@ -132,6 +139,13 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1,
                         typename Tail::type_t && th2);
+
+                // ARITHMETIC
+                template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, Result> *
+                arithmetic(
+                        BAT<Head1, Tail1> * bat1,
+                        BAT<Head2, Tail2> * bat2);
 
                 // AGGREGATE
                 template<typename v2_result_t, typename Head, typename Tail>

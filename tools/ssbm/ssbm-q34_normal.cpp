@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q34.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -120,6 +120,7 @@ int main(
         delete bat15;
         auto bat17 = bat12->mirror_head(); // OID lineorder | OID lineorder
         delete bat12;
+        // reduce number of lo_orderdate joinpartners
         MEASURE_OP(bat18, matchjoin(bat17, batLO)); // OID lineorder | lo_orderdate
         delete bat17;
         // lo_orderdate = d_datekey
