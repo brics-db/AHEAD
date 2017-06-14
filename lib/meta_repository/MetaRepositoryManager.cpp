@@ -15,8 +15,8 @@
 #include <cstring>
 
 #include <ColumnStore.h>
-#include <meta_repository/MetaRepositoryManager.h>
 #include <column_operators/Operators.hpp>
+#include "MetaRepositoryManager.h"
 
 namespace ahead {
 

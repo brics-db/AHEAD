@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   MetaRepositoryManager.h
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -74,9 +74,11 @@ namespace ahead {
          */
         static MetaRepositoryManager* getInstance();
 
-        void init(const char* strBaseDir);
+        void init(
+                const char* strBaseDir);
 
-        void init(const std::string & strBaseDir);
+        void init(
+                const std::string & strBaseDir);
 
         /**
          * @author Christian Vogel
@@ -85,18 +87,26 @@ namespace ahead {
          *
          * Creates an entry for a table into the meta repository.
          */
-        id_t createTable(const char *name);
+        id_t createTable(
+                const char *name);
 
         /**
          * @author Christian Vogel
          *
          * Creates an entry for an attribute of a specified table into the meta repository.
          */
-        void createAttribute(cstr_t name, cstr_t datatype, unsigned BATId, unsigned table_id);
+        void createAttribute(
+                cstr_t name,
+                cstr_t datatype,
+                unsigned BATId,
+                unsigned table_id);
 
-        char* getDataTypeForAttribute(cstr_t name);
+        char* getDataTypeForAttribute(
+                cstr_t name);
 
-        unsigned getBatIdOfAttribute(cstr_t nameOfTable, cstr_t attribute);
+        unsigned getBatIdOfAttribute(
+                cstr_t nameOfTable,
+                cstr_t attribute);
 
     private:
         static MetaRepositoryManager *instance;
@@ -140,38 +150,55 @@ namespace ahead {
         void createDefaultDataTypes();
 
         template<class Head, class Tail>
-        std::pair<typename Head::type_t, typename Tail::type_t> getLastValue(BAT<Head, Tail> *bat);
+        std::pair<typename Head::type_t, typename Tail::type_t> getLastValue(
+                BAT<Head, Tail> *bat);
 
         template<class Head, class Tail>
-        std::pair<typename Head::type_t, typename Tail::type_t> unique_selection(BAT<Head, Tail> *bat, typename Tail::type_t value);
+        std::pair<typename Head::type_t, typename Tail::type_t> unique_selection(
+                BAT<Head, Tail> *bat,
+                typename Tail::type_t value);
 
         template<class Head, class Tail>
-        bool isBatEmpty(BAT<Head, Tail> *bat);
+        bool isBatEmpty(
+                BAT<Head, Tail> *bat);
 
         template<class Head, class Tail>
-        id_t selectBatId(BAT<Head, Tail> *bat, cstr_t value);
+        id_t selectBatId(
+                BAT<Head, Tail> *bat,
+                cstr_t value);
 
         template<class Head, class Tail>
-        id_t selectBatId(BAT<Head, Tail> *bat, typename Tail::type_t value);
+        id_t selectBatId(
+                BAT<Head, Tail> *bat,
+                typename Tail::type_t value);
 
         template<class Head, class Tail>
-        typename Head::type_t selection(BAT<Head, Tail> *bat, typename Tail::type_t value);
+        typename Head::type_t selection(
+                BAT<Head, Tail> *bat,
+                typename Tail::type_t value);
 
         template<class Head, class Tail>
-        id_t selectPKId(BAT<Head, Tail> *bat, typename Head::type_t batId);
+        id_t selectPKId(
+                BAT<Head, Tail> *bat,
+                typename Head::type_t batId);
 
         template<class Head, class Tail>
-        bool dataAlreadyExists(BAT<Head, Tail> *bat, cstr_t name_value);
+        bool dataAlreadyExists(
+                BAT<Head, Tail> *bat,
+                cstr_t name_value);
 
         MetaRepositoryManager();
-        MetaRepositoryManager(const MetaRepositoryManager &copy);
+        MetaRepositoryManager(
+                const MetaRepositoryManager &copy);
         virtual
         ~MetaRepositoryManager();
-        MetaRepositoryManager& operator=(const MetaRepositoryManager &copy);
+        MetaRepositoryManager& operator=(
+                const MetaRepositoryManager &copy);
 
     public:
 
-        class TablesIterator : public BATIterator<v2_id_t, v2_str_t> {
+        class TablesIterator :
+                public BATIterator<v2_id_t, v2_str_t> {
 
             typedef TempBATIterator<v2_void_t, v2_id_t> table_key_iter_t;
             typedef TempBATIterator<v2_void_t, v2_str_t> table_name_iter_t;
@@ -183,19 +210,23 @@ namespace ahead {
 
             TablesIterator();
 
-            TablesIterator(const TablesIterator &iter);
+            TablesIterator(
+                    const TablesIterator &iter);
 
             virtual ~TablesIterator();
 
-            TablesIterator& operator=(const TablesIterator &copy);
+            TablesIterator& operator=(
+                    const TablesIterator &copy);
 
             virtual void next() override;
 
             virtual TablesIterator& operator++() override;
 
-            virtual TablesIterator& operator+=(oid_t i) override;
+            virtual TablesIterator& operator+=(
+                    oid_t i) override;
 
-            virtual void position(oid_t index) override;
+            virtual void position(
+                    oid_t index) override;
 
             virtual bool hasNext() override;
 
@@ -218,6 +249,6 @@ namespace ahead {
 
 }
 
-#include "meta_repository/MetaRepositoryManager.tcc"
+#include "MetaRepositoryManager.tcc"
 
 #endif

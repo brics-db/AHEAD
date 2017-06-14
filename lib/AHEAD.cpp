@@ -25,7 +25,7 @@
 #include <column_storage/Storage.hpp>
 #include <column_operators/Operators.hpp>
 #include <column_storage/TransactionManager.h>
-#include <meta_repository/MetaRepositoryManager.h>
+#include "meta_repository/MetaRepositoryManager.h"
 
 namespace ahead {
     AHEAD * AHEAD::instance;

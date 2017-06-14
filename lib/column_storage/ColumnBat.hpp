@@ -46,8 +46,8 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/ColumnManager.h>
-#include <meta_repository/MetaRepositoryManager.h>
 #include <column_storage/ColumnBatIterator.h>
+#include "../meta_repository/MetaRepositoryManager.h"
 
 namespace ahead {
 

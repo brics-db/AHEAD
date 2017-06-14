@@ -29,7 +29,7 @@
 #include <ColumnStore.h>
 #include <column_storage/TransactionManager.h>
 #include <column_storage/Storage.hpp>
-#include <meta_repository/MetaRepositoryManager.h>
+#include "../meta_repository/MetaRepositoryManager.h"
 #include <util/resilience.hpp>
 
 namespace ahead {

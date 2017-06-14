@@ -24,6 +24,7 @@
 #include <signal.h>
 
 #include "ssb.hpp"
+#include <column_storage/TransactionManager.h>
 
 namespace ssb {
 

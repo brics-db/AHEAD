@@ -41,53 +41,49 @@ int main(
     /* Measure loading ColumnBats */
     MEASURE_OP(batCKcb, new int_colbat_t("customer", "custkey"));
     MEASURE_OP(batCCcb, new str_colbat_t("customer", "city"));
-    MEASURE_OP(batCNcb, new str_colbat_t("customer", "nation"));
     MEASURE_OP(batDDcb, new int_colbat_t("date", "datekey"));
     MEASURE_OP(batDYcb, new shortint_colbat_t("date", "year"));
+    MEASURE_OP(batDMcb, new str_colbat_t("date", "yearmonth"));
     MEASURE_OP(batLCcb, new int_colbat_t("lineorder", "custkey"));
     MEASURE_OP(batLScb, new int_colbat_t("lineorder", "suppkey"));
     MEASURE_OP(batLOcb, new int_colbat_t("lineorder", "orderdate"));
     MEASURE_OP(batLRcb, new int_colbat_t("lineorder", "revenue"));
     MEASURE_OP(batSScb, new int_colbat_t("supplier", "suppkey"));
     MEASURE_OP(batSCcb, new str_colbat_t("supplier", "city"));
-    MEASURE_OP(batSNcb, new str_colbat_t("supplier", "nation"));
 
     ssb::after_create_columnbats();
 
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(batCK, copy(batCKcb));
     MEASURE_OP(batCC, copy(batCCcb));
-    MEASURE_OP(batCN, copy(batCNcb));
     MEASURE_OP(batDD, copy(batDDcb));
     MEASURE_OP(batDY, copy(batDYcb));
+    MEASURE_OP(batDM, copy(batDMcb));
     MEASURE_OP(batLC, copy(batLCcb));
     MEASURE_OP(batLS, copy(batLScb));
     MEASURE_OP(batLO, copy(batLOcb));
     MEASURE_OP(batLR, copy(batLRcb));
     MEASURE_OP(batSS, copy(batSScb));
     MEASURE_OP(batSC, copy(batSCcb));
-    MEASURE_OP(batSN, copy(batSNcb));
 
     delete batCKcb;
     delete batCCcb;
-    delete batCNcb;
     delete batDDcb;
-    delete batDYcb;
+    delete batDMcb;
     delete batLCcb;
     delete batLScb;
     delete batLOcb;
     delete batLRcb;
     delete batSScb;
     delete batSCcb;
-    delete batSNcb;
 
     ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        // s_nation = 'UNITED STATES'
-        MEASURE_OP(bat1, select<std::equal_to>(batSN, const_cast<str_t>("UNITED STATES"))); // OID supplier | s_nation
+        // s_city = 'UNITED KI1' or s_city = 'UNITED KI5'
+        MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batSC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batSS->reverse(); // s_suppkey | VOID supplier
@@ -99,8 +95,8 @@ int main(
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID lineorder
         delete bat5;
 
-        // c_region = 'ASIA'
-        MEASURE_OP(bat7, select<std::equal_to>(batCN, const_cast<str_t>("UNITED STATES"))); // OID customer | c_nation
+        // c_city = 'UNITED KI1' or c_city = 'UNITED KI5'
+        MEASURE_OP(bat7, (select<std::equal_to, std::equal_to, OR>(batCC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
         auto bat8 = bat7->mirror_head(); // OID customer | OID customer
         delete bat7;
         auto bat9 = batCK->reverse(); // c_custkey | VOID customer
@@ -114,8 +110,8 @@ int main(
         MEASURE_OP(bat12, hashjoin(bat11, bat10)); // OID lineorder | OID customer
         delete bat11;
 
-        // d_year >= 1992 and d_year <= 1997
-        MEASURE_OP(bat13, select(batDY, 1992, 1997)); // OID date | d_year
+        // d_yearmonth = 'Dec1997'
+        MEASURE_OP(bat13, select<std::equal_to>(batDM, const_cast<str_t>("Dec1997"))); // OID date | d_yearmonth
         auto bat14 = bat13->mirror_head(); // OID date | OID date
         delete bat13;
         MEASURE_OP(bat15, matchjoin(bat14, batDD)); // OID date | d_datekey
@@ -219,16 +215,15 @@ int main(
 
     delete batCK;
     delete batCC;
-    delete batCN;
     delete batDD;
     delete batDY;
+    delete batDM;
     delete batLC;
     delete batLS;
     delete batLO;
     delete batLR;
     delete batSS;
     delete batSC;
-    delete batSN;
 
     ssb::finalize();
 

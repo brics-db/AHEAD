@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <column_storage/TransactionManager.h>
-#include <meta_repository/MetaRepositoryManager.h>
+#include "../meta_repository/MetaRepositoryManager.h"
 
 namespace ahead {
 
