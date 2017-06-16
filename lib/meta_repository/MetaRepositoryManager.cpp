@@ -20,7 +20,7 @@
 
 namespace ahead {
 
-    MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
+    std::shared_ptr<MetaRepositoryManager> MetaRepositoryManager::instance;
 
     auto PATH_INFORMATION_SCHEMA = "INFORMATION_SCHEMA";
 
@@ -103,34 +103,28 @@ namespace ahead {
         delete datatype_category;
     }
 
-    MetaRepositoryManager*
-    MetaRepositoryManager::getInstance() {
-        if (MetaRepositoryManager::instance == nullptr) {
-            MetaRepositoryManager::instance = new MetaRepositoryManager();
+    std::shared_ptr<MetaRepositoryManager> MetaRepositoryManager::getInstance() {
+        if (!MetaRepositoryManager::instance) {
+            MetaRepositoryManager::instance.reset(new MetaRepositoryManager());
         }
-
         return MetaRepositoryManager::instance;
     }
 
     void MetaRepositoryManager::destroyInstance() {
-        if (MetaRepositoryManager::instance) {
-            delete MetaRepositoryManager::instance;
-            MetaRepositoryManager::instance = nullptr;
-        }
+        MetaRepositoryManager::instance.reset();
     }
 
     void MetaRepositoryManager::init(
             cstr_t strBaseDir) {
         if (this->strBaseDir == nullptr) {
-            getInstance(); // make sure that an instance exists
             size_t len = strlen(strBaseDir);
             this->strBaseDir = new char[len + 1];
             memcpy(this->strBaseDir, strBaseDir, len + 1); // includes NULL character
 
             size_t len3 = strlen(PATH_INFORMATION_SCHEMA);
-            instance->META_PATH = new char[len + len3 + 1];
-            memcpy(instance->META_PATH, strBaseDir, len); // excludes NULL character
-            memcpy(instance->META_PATH + len, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
+            META_PATH = new char[len + len3 + 1];
+            memcpy(META_PATH, strBaseDir, len); // excludes NULL character
+            memcpy(META_PATH + len, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
         }
     }
 
@@ -140,53 +134,53 @@ namespace ahead {
     }
 
     void MetaRepositoryManager::createDefaultDataTypes() {
-        datatype_id_pk->append(std::make_pair(0, 1));
-        datatype_id_pk->append(std::make_pair(1, 2));
-        datatype_id_pk->append(std::make_pair(2, 3));
-        datatype_id_pk->append(std::make_pair(3, 4));
-        datatype_id_pk->append(std::make_pair(4, 5));
-        datatype_id_pk->append(std::make_pair(5, 6));
-        datatype_id_pk->append(std::make_pair(6, 7));
-        datatype_id_pk->append(std::make_pair(7, 8));
-        datatype_id_pk->append(std::make_pair(8, 9));
-        datatype_id_pk->append(std::make_pair(9, 10));
-        datatype_id_pk->append(std::make_pair(10, 11));
+        datatype_id_pk->append(std::make_pair(0u, 1u));
+        datatype_id_pk->append(std::make_pair(1u, 2u));
+        datatype_id_pk->append(std::make_pair(2u, 3u));
+        datatype_id_pk->append(std::make_pair(3u, 4u));
+        datatype_id_pk->append(std::make_pair(4u, 5u));
+        datatype_id_pk->append(std::make_pair(5u, 6u));
+        datatype_id_pk->append(std::make_pair(6u, 7u));
+        datatype_id_pk->append(std::make_pair(7u, 8u));
+        datatype_id_pk->append(std::make_pair(8u, 9u));
+        datatype_id_pk->append(std::make_pair(9u, 10u));
+        datatype_id_pk->append(std::make_pair(10u, 11u));
 
-        datatype_name->append(std::make_pair(0, const_cast<str_t>(NAME_TINYINT)));
-        datatype_name->append(std::make_pair(1, const_cast<str_t>(NAME_SHORTINT)));
-        datatype_name->append(std::make_pair(2, const_cast<str_t>(NAME_INTEGER)));
-        datatype_name->append(std::make_pair(3, const_cast<str_t>(NAME_LARGEINT)));
-        datatype_name->append(std::make_pair(4, const_cast<str_t>(NAME_STRING)));
-        datatype_name->append(std::make_pair(5, const_cast<str_t>(NAME_FIXED)));
-        datatype_name->append(std::make_pair(6, const_cast<str_t>(NAME_CHAR)));
-        datatype_name->append(std::make_pair(7, const_cast<str_t>(NAME_RESTINY)));
-        datatype_name->append(std::make_pair(8, const_cast<str_t>(NAME_RESSHORT)));
-        datatype_name->append(std::make_pair(9, const_cast<str_t>(NAME_RESINT)));
-        datatype_name->append(std::make_pair(10, const_cast<str_t>(NAME_RESBIGINT)));
+        datatype_name->append(std::make_pair(0u, const_cast<str_t>(NAME_TINYINT)));
+        datatype_name->append(std::make_pair(1u, const_cast<str_t>(NAME_SHORTINT)));
+        datatype_name->append(std::make_pair(2u, const_cast<str_t>(NAME_INTEGER)));
+        datatype_name->append(std::make_pair(3u, const_cast<str_t>(NAME_LARGEINT)));
+        datatype_name->append(std::make_pair(4u, const_cast<str_t>(NAME_STRING)));
+        datatype_name->append(std::make_pair(5u, const_cast<str_t>(NAME_FIXED)));
+        datatype_name->append(std::make_pair(6u, const_cast<str_t>(NAME_CHAR)));
+        datatype_name->append(std::make_pair(7u, const_cast<str_t>(NAME_RESTINY)));
+        datatype_name->append(std::make_pair(8u, const_cast<str_t>(NAME_RESSHORT)));
+        datatype_name->append(std::make_pair(9u, const_cast<str_t>(NAME_RESINT)));
+        datatype_name->append(std::make_pair(10u, const_cast<str_t>(NAME_RESBIGINT)));
 
-        datatype_length->append(std::make_pair(0, sizeof(tinyint_t)));
-        datatype_length->append(std::make_pair(1, sizeof(shortint_t)));
-        datatype_length->append(std::make_pair(2, sizeof(int_t)));
-        datatype_length->append(std::make_pair(3, sizeof(bigint_t)));
-        datatype_length->append(std::make_pair(4, sizeof(char_t) * MAXLEN_STRING));
-        datatype_length->append(std::make_pair(5, sizeof(fixed_t)));
-        datatype_length->append(std::make_pair(6, sizeof(char_t)));
-        datatype_length->append(std::make_pair(7, sizeof(restiny_t)));
-        datatype_length->append(std::make_pair(8, sizeof(resshort_t)));
-        datatype_length->append(std::make_pair(9, sizeof(resint_t)));
-        datatype_length->append(std::make_pair(10, sizeof(resbigint_t)));
+        datatype_length->append(std::make_pair(0u, sizeof(tinyint_t)));
+        datatype_length->append(std::make_pair(1u, sizeof(shortint_t)));
+        datatype_length->append(std::make_pair(2u, sizeof(int_t)));
+        datatype_length->append(std::make_pair(3u, sizeof(bigint_t)));
+        datatype_length->append(std::make_pair(4u, sizeof(char_t) * MAXLEN_STRING));
+        datatype_length->append(std::make_pair(5u, sizeof(fixed_t)));
+        datatype_length->append(std::make_pair(6u, sizeof(char_t)));
+        datatype_length->append(std::make_pair(7u, sizeof(restiny_t)));
+        datatype_length->append(std::make_pair(8u, sizeof(resshort_t)));
+        datatype_length->append(std::make_pair(9u, sizeof(resint_t)));
+        datatype_length->append(std::make_pair(10u, sizeof(resbigint_t)));
 
-        datatype_category->append(std::make_pair(0, 'N'));
-        datatype_category->append(std::make_pair(1, 'N'));
-        datatype_category->append(std::make_pair(2, 'N'));
-        datatype_category->append(std::make_pair(3, 'N'));
-        datatype_category->append(std::make_pair(4, 'S'));
-        datatype_category->append(std::make_pair(5, 'N'));
-        datatype_category->append(std::make_pair(6, 'S'));
-        datatype_category->append(std::make_pair(7, 'N'));
-        datatype_category->append(std::make_pair(8, 'N'));
-        datatype_category->append(std::make_pair(9, 'N'));
-        datatype_category->append(std::make_pair(10, 'N'));
+        datatype_category->append(std::make_pair(0u, 'N'));
+        datatype_category->append(std::make_pair(1u, 'N'));
+        datatype_category->append(std::make_pair(2u, 'N'));
+        datatype_category->append(std::make_pair(3u, 'N'));
+        datatype_category->append(std::make_pair(4u, 'S'));
+        datatype_category->append(std::make_pair(5u, 'N'));
+        datatype_category->append(std::make_pair(6u, 'S'));
+        datatype_category->append(std::make_pair(7u, 'N'));
+        datatype_category->append(std::make_pair(8u, 'N'));
+        datatype_category->append(std::make_pair(9u, 'N'));
+        datatype_category->append(std::make_pair(10u, 'N'));
     }
 
     void MetaRepositoryManager::createRepository() {
@@ -276,7 +270,9 @@ namespace ahead {
         id_t newAttributeID = getLastValue(attributes_id_pk).second + 1;
 
         attributes_id_pk->append(newAttributeID);
-        attributes_name->append(const_cast<str_t>(name));
+        auto nameCopy = new char_t[strlen(name) + 1];
+        strcpy(nameCopy, name);
+        attributes_name->append(nameCopy);
         attributes_table_id_fk->append(tableID);
         attributes_type_id_fk->append(dataTypeID);
         attributes_column_id->append(columnID);

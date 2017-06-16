@@ -45,17 +45,6 @@ namespace ahead {
             : content(content) {
     }
 
-    BucketManager::Chunk::Chunk(
-            const Chunk &copy)
-            : content(copy.content) {
-    }
-
-    BucketManager::Chunk& BucketManager::Chunk::operator=(
-            const Chunk &copy) {
-        new (this) Chunk(copy);
-        return *this;
-    }
-
     BucketManager::Bucket::Bucket()
             : number(0),
               version(nullptr),
@@ -80,20 +69,24 @@ namespace ahead {
               chunk(chunk) {
     }
 
-    BucketManager::Bucket::Bucket(
-            const Bucket &copy)
-            : number(copy.number),
-              version(copy.version),
-              next(copy.next),
-              older(copy.older),
-              newer(copy.newer),
-              chunk(copy.chunk) {
-    }
-
-    BucketManager::Bucket& BucketManager::Bucket::operator=(
-            const Bucket &copy) {
-        new (this) Bucket(copy);
-        return *this;
+    BucketManager::Bucket::~Bucket() {
+        delete this->chunk;
+        if (this->older) {
+            if (this->older->newer == this) {
+                this->older->newer = nullptr;
+                delete this->older;
+            } else {
+                // ERROR: something weird is going on
+            }
+        }
+        if (this->newer) {
+            if (this->newer->older == this) {
+                this->newer->older = nullptr;
+                delete this->newer->older;
+            } else {
+                // ERROR: something weird is going on
+            }
+        }
     }
 
     BucketManager::BucketStream::BucketStream()
@@ -114,32 +107,16 @@ namespace ahead {
               size(size) {
     }
 
-    BucketManager::BucketStream::BucketStream(
-            const BucketStream &copy)
-            : head(copy.head),
-              tail(copy.tail),
-              index(copy.index),
-              size(copy.size) {
-    }
-
-    BucketManager::BucketStream& BucketManager::BucketStream::operator=(
-            const BucketStream &copy) {
-        new (this) BucketStream(copy);
-        return *this;
-    }
-
     BucketManager::BucketManager()
             : streams() {
     }
 
     BucketManager::~BucketManager() {
-        for (auto mypair : streams) {
-            for (auto pBucket : mypair.second.index) {
+        for (auto & mypair : streams) {
+            for (auto & pBucket : mypair.second.index) {
                 delete pBucket;
             }
-            mypair.second.index.clear();
         }
-        streams.clear();
     }
 
     BucketManager::BucketIterator*
@@ -395,8 +372,6 @@ namespace ahead {
             this->stream->tail = newBucket;
         }
 
-        // this->stream->index.resize(this->stream->size + 1, 0);
-        // this->stream->index[this->stream->size] = newBucket;
         this->stream->index.push_back(newBucket);
         this->stream->size++;
 

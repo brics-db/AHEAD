@@ -54,7 +54,7 @@ namespace ahead {
         typedef typename Tail::type_t tail_t;
 
     protected:
-        TransactionManager::Transaction* ta;
+        std::shared_ptr<TransactionManager::Transaction> ta;
         TransactionManager::BinaryUnit bu;
         TransactionManager::BinaryUnit buNext;
         id_t mColumnId;
@@ -74,16 +74,16 @@ namespace ahead {
                   Csize(0),
                   Cconsumption(0),
                   mPosition(-1) {
-            TransactionManager* tm = TransactionManager::getInstance();
-            if (tm == nullptr) {
+            auto tm = TransactionManager::getInstance();
+            if (!tm) {
                 std::stringstream ss;
-                ss << "TA manager is not available!" << std::endl;
+                ss << "ColumnBatIteratorBase::c'tor(" << __FILE__ << ':' << __LINE__ << "): TA manager is not available!" << std::endl;
                 throw std::runtime_error(ss.str());
             }
             ta = tm->beginTransaction(false);
-            if (ta == nullptr) {
+            if (!ta) {
                 std::stringstream ss;
-                ss << "Column is not available!" << std::endl;
+                ss << "ColumnBatIteratorBase::c'tor(" << __FILE__ << ':' << __LINE__ << "): Column is not available!" << std::endl;
                 throw std::runtime_error(ss.str());
             }
             std::tie(Csize, Cconsumption) = ta->open(columnId);
@@ -92,7 +92,7 @@ namespace ahead {
         }
 
         ColumnBatIteratorBase(
-                const ColumnBatIteratorBase<Head, Tail> &iter)
+                const ColumnBatIteratorBase<Head, Tail> & iter)
                 : ta(iter.ta),
                   bu(iter.bu),
                   buNext(iter.buNext),
@@ -104,9 +104,8 @@ namespace ahead {
 
         virtual ~ColumnBatIteratorBase() {
             if (ta) {
-                TransactionManager* tm = TransactionManager::getInstance();
-                tm->endTransaction(ta);
-                ta = nullptr;
+                auto tm = TransactionManager::getInstance();
+                tm->endTransaction(std::move(ta));
             }
         }
 

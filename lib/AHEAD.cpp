@@ -28,7 +28,7 @@
 #include "meta_repository/MetaRepositoryManager.h"
 
 namespace ahead {
-    AHEAD * AHEAD::instance;
+    std::shared_ptr<AHEAD> AHEAD::instance;
 
     AHEAD::AHEAD(
             const std::string & path)
@@ -46,8 +46,6 @@ namespace ahead {
     }
 
     AHEAD::~AHEAD() {
-        mgrMeta = nullptr;
-        mgrTx = nullptr;
     }
 
     AHEAD & AHEAD::operator=(
@@ -57,13 +55,13 @@ namespace ahead {
         return *this;
     }
 
-    AHEAD * AHEAD::getInstance() {
+    std::shared_ptr<AHEAD> AHEAD::getInstance() {
         return instance;
     }
 
-    AHEAD * AHEAD::createInstance(
+    std::shared_ptr<AHEAD> AHEAD::createInstance(
             const std::string & path) {
-        AHEAD::instance = new AHEAD(path);
+        AHEAD::instance.reset(new AHEAD(path));
         return AHEAD::instance;
     }
 
@@ -73,13 +71,17 @@ namespace ahead {
             const size_t size,
             const char * const delim,
             const bool ignoreMoreData) {
-        TransactionManager::Transaction* t = mgrTx->beginTransaction(true);
-        assert(t != nullptr);
+        auto tx = mgrTx->beginTransaction(true);
+        if (!tx) {
+            std::stringstream ss;
+            ss << "AHEAD::loadTable (" << __FILE__ << ':' << __LINE__ << ": Could not start a new transaction!";
+            throw std::runtime_error(ss.str());
+        }
         std::string path(mgrMeta->strBaseDir);
         path += "/";
         path += tableName;
-        size_t numBUNs = t->load(path.c_str(), tableName.c_str(), prefix, size, delim, ignoreMoreData);
-        mgrTx->endTransaction(t);
+        size_t numBUNs = tx->load(path.c_str(), tableName.c_str(), prefix, size, delim, ignoreMoreData);
+        mgrTx->endTransaction(std::move(tx));
         return numBUNs;
     }
 
@@ -89,13 +91,13 @@ namespace ahead {
             const size_t size,
             const char * const delim,
             const bool ignoreMoreData) {
-        TransactionManager::Transaction* t = mgrTx->beginTransaction(true);
-        assert(t != nullptr);
+        auto tx = mgrTx->beginTransaction(true);
+        assert(tx != nullptr);
         std::string path(mgrMeta->strBaseDir);
         path += "/";
         path += tableName;
-        size_t numBUNs = t->load(path.c_str(), tableName, prefix, size, delim, ignoreMoreData);
-        mgrTx->endTransaction(t);
+        size_t numBUNs = tx->load(path.c_str(), tableName, prefix, size, delim, ignoreMoreData);
+        mgrTx->endTransaction(std::move(tx));
         return numBUNs;
     }
 

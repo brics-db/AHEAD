@@ -85,8 +85,10 @@ namespace ahead {
             void *content;
 
             Chunk();
+
             Chunk(
                     void* content);
+
             Chunk(
                     const Chunk &);
 
@@ -108,6 +110,7 @@ namespace ahead {
             Chunk *chunk;
 
             Bucket();
+
             Bucket(
                     id_t number,
                     version_t *version,
@@ -115,8 +118,11 @@ namespace ahead {
                     Bucket *older,
                     Bucket* newer,
                     Chunk *chunk);
+
             Bucket(
                     const Bucket &);
+
+            virtual ~Bucket();
 
             Bucket& operator=(
                     const Bucket &);
@@ -136,11 +142,13 @@ namespace ahead {
             size_t size;
 
             BucketStream();
+
             BucketStream(
                     Bucket *head,
                     Bucket *tail,
                     std::vector<Bucket*> & index,
                     size_t size);
+
             BucketStream(
                     const BucketStream &);
 

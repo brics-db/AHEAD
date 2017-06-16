@@ -44,6 +44,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <atomic>
+#include <memory>
 
 #include <ColumnStore.h>
 #include <column_storage/BucketManager.h>
@@ -58,14 +59,14 @@ namespace ahead {
      */
     class ColumnManager {
 
+        friend class TransactionManager;
+
     public:
         static const size_t BAT_COLNAMES_MAXLEN;
         static const id_t ID_BAT_COLNAMES;
         static const id_t ID_BAT_COLTYPES;
         static const id_t ID_BAT_COLIDENT;
         static const id_t ID_BAT_FIRST_USER;
-
-        friend class TransactionManager;
 
         /**
          * Die Datenstruktur kapselt einen Zeiger auf den Speicherbereich fester Größe eines Records.
@@ -213,7 +214,9 @@ namespace ahead {
                     const ColumnIterator & copy);
 
         public:
+
             virtual ~ColumnIterator();
+
             ColumnIterator& operator=(
                     const ColumnIterator & copy);
         };
@@ -225,7 +228,7 @@ namespace ahead {
          *
          * Die Funktion liefert einen Zeiger auf das einzig existierende Objekt der Klasse. Falls noch kein Objekt der Klasse existiert, wird ein Objekt erzeugt und anschließend ein Zeiger auf das Objekt zurückgegeben.
          */
-        static ColumnManager* getInstance();
+        static std::shared_ptr<ColumnManager> getInstance();
 
         /**
          * @author Julian Hollender
@@ -236,7 +239,7 @@ namespace ahead {
          *
          * Die Funktion erzeugt ein Objekt der Klasse ColumnIterator zum Bearbeiten einer Spalte mit der Identifikationsnummer id. Hierbei sind nur die Records mit der größten Versionsnummer kleiner oder gleich dem Inhalt des Zeigers version sichtbar. Bei jeder Änderung am Datenbestand durch den erzeugten ColumnIterator, wird der Zeiger version in die Verwaltungsstrukturen der Spalte kopiert. Daher darf der Speicher, auf den der Zeiger version zeigt, nach Änderungen an der Datenbasis nicht mehr freigegeben werden. Falls eine Spalte mit der übergebenen Identifikationsnummer nicht existiert, wird ein NULL-Zeiger zurückgegeben. Es ist darauf zu achten, dass zu einem festen Zeitpunkt maximal einen Iterator der Änderung durchgeführt hat oder Änderungen durchführen wird pro Spalte gibt.
          */
-        ColumnIterator* openColumn(
+        std::unique_ptr<ColumnManager::ColumnIterator> openColumn(
                 id_t id,
                 version_t *version);
 
@@ -247,9 +250,9 @@ namespace ahead {
          *
          * Die Funktion liefert die Menge von Identifikationsnummern aller existierenden Spalten.
          */
-        std::unordered_set<id_t> getColumnIDs();
+        std::unique_ptr<std::unordered_set<id_t>> getColumnIDs();
 
-        std::unordered_map<id_t, ColumnMetaData> * getColumnMetaData();
+        std::unique_ptr<std::unordered_map<id_t, ColumnMetaData>> getColumnMetaData();
 
         ColumnMetaData getColumnMetaData(
                 id_t id);
@@ -276,7 +279,7 @@ namespace ahead {
 
     private:
 
-        static ColumnManager *instance;
+        static std::shared_ptr<ColumnManager> instance;
 
         static void destroyInstance();
 
@@ -287,6 +290,9 @@ namespace ahead {
         ColumnManager();
         ColumnManager(
                 const ColumnManager &copy);
+
+    public:
+
         virtual ~ColumnManager();
     };
 

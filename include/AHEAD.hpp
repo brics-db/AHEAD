@@ -22,6 +22,7 @@
 #define AHEAD_HPP_
 
 #include <string>
+#include <memory>
 
 #include <ColumnStore.h>
 #include <column_storage/Storage.hpp>
@@ -30,10 +31,10 @@
 namespace ahead {
 
     class AHEAD {
-        static AHEAD * instance;
+        static std::shared_ptr<AHEAD> instance;
 
-        MetaRepositoryManager * mgrMeta;
-        TransactionManager * mgrTx;
+        std::shared_ptr<MetaRepositoryManager> mgrMeta;
+        std::shared_ptr<TransactionManager> mgrTx;
 
         bool doConvertTableFilesOnLoad;
 
@@ -41,24 +42,25 @@ namespace ahead {
                 const std::string& strBaseDir);
         AHEAD(
                 const AHEAD & other);
+
+    public:
         virtual ~AHEAD();
 
         AHEAD & operator=(
                 const AHEAD & other);
 
-    public:
         /**
          * Unconditionally returns the instance pointer. Client code must assure that createInstance()
          * is called at least once before getInstance().
          */
-        static AHEAD * getInstance();
+        static std::shared_ptr<AHEAD> getInstance();
 
         /**
          * Creates a new instance of AHEAD column store.
          * Arguments:
          *  * strBaseDir: path to the database files
          */
-        static AHEAD * createInstance(
+        static std::shared_ptr<AHEAD> createInstance(
                 const std::string & strBaseDir);
 
         size_t loadTable(

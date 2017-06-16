@@ -38,7 +38,7 @@ namespace ahead {
             bool isUpdater,
             version_t currentVersion)
             : botVersion(currentVersion),
-              eotVersion(isUpdater ? (new id_t(std::numeric_limits<id_t>::max())) : (&this->botVersion)),
+              eotVersion(isUpdater ? (std::numeric_limits<id_t>::max()) : (currentVersion)),
               isUpdater(isUpdater),
               iterators(),
               iteratorPositions() {
@@ -50,11 +50,6 @@ namespace ahead {
     }
 
     TransactionManager::Transaction::~Transaction() {
-        for (auto pIter : iterators) {
-            if (pIter) {
-                delete pIter;
-            }
-        }
     }
 
     TransactionManager::Transaction& TransactionManager::Transaction::operator=(
@@ -92,12 +87,10 @@ namespace ahead {
         }
         const char* actDelim = delim == nullptr ? "|" : delim;
 
-        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
-        ColumnManager * cm = ColumnManager::getInstance();
+        auto mrm = MetaRepositoryManager::getInstance();
+        auto cm = ColumnManager::getInstance();
 
-        std::list<ColumnManager::ColumnIterator*> columnIters;
-
-        ColumnManager::ColumnIterator *ci;
+        std::list<std::shared_ptr<ColumnManager::ColumnIterator>> columnIters;
 
         std::string valuesPath(path);
         valuesPath.append(".tbl");
@@ -281,7 +274,6 @@ namespace ahead {
         bool areAllColumnFilesPresent = true;
         std::vector<bool> vecColumnPresent(column_names.size());
         if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
-            auto columnItersIterator = columnIters.begin();
             for (size_t i = 0; i < column_names.size(); ++i) {
                 std::string columnFilePath(path);
                 columnFilePath.append("_").append(column_names[i]).append(".ahead");
@@ -289,7 +281,6 @@ namespace ahead {
                 vecColumnPresent[i] = columnIStream.is_open();
                 areAllColumnFilesPresent &= columnIStream.is_open();
                 columnIStream.close();
-                ++columnItersIterator;
             }
         }
 
@@ -462,9 +453,7 @@ namespace ahead {
 
                     if (!vecIscolumnAlreadyLoaded[colIdx]) {
                         // Spaltentyp und Spaltenidentifikation bestimmen
-                        type = *typesIterator;
-                        ci = *columnItersIterator;
-                        auto record = ci->append();
+                        auto record = (*columnItersIterator)->append();
                         switch (type) {
                             case type_tinyint:
                                 *(static_cast<tinyint_t*>(record.content)) = static_cast<tinyint_t>(std::atoi(buffer));
@@ -528,7 +517,6 @@ namespace ahead {
                 std::memset(line, 0, LEN_LINE);
             }
         }
-        delete columnsMetaData;
 
         /////////////////////////////////////////
         // Write Yet Unconverted Contents File //
@@ -546,6 +534,11 @@ namespace ahead {
                 ++columnItersIterator;
             }
         }
+
+        for (auto & cn : column_names) {
+            delete cn;
+        }
+        column_names.clear();
 
         ////////////////////////////
         // Close metadata columns //
@@ -571,7 +564,7 @@ namespace ahead {
         return n;
     }
 
-    std::unordered_set<id_t> TransactionManager::Transaction::list() {
+    std::unique_ptr<std::unordered_set<id_t>> TransactionManager::Transaction::list() {
         return ColumnManager::getInstance()->getColumnIDs();
     }
 
@@ -581,19 +574,19 @@ namespace ahead {
         if (id >= this->iterators.size()) {
             this->iterators.resize(id + 1);
             this->iteratorPositions.resize(id + 1);
-            ColumnManager::ColumnIterator* cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
-            if (cm != 0) {
-                this->iterators[id] = cm;
+            auto ci = ColumnManager::getInstance()->openColumn(id, &this->eotVersion);
+            if (ci) {
+                this->iterators[id] = std::move(ci);
                 this->iteratorPositions[id] = 0;
                 isOK = true;
             } else {
                 // Problem : Spalte nicht existent
             }
-        } else if (id < this->iterators.size() && this->iterators[id] != nullptr) {
+        } else if (id < this->iterators.size() && this->iterators[id]) {
             if (this->iteratorPositions[id] != -1) {
-                ColumnManager::ColumnIterator* cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
-                if (cm != 0) {
-                    this->iterators[id] = cm;
+                auto ci = ColumnManager::getInstance()->openColumn(id, &this->eotVersion);
+                if (ci) {
+                    this->iterators[id] = std::move(ci);
                     this->iteratorPositions[id] = 0;
                     isOK = true;
                 } else {
@@ -612,7 +605,7 @@ namespace ahead {
 
     void TransactionManager::Transaction::close(
             id_t id) {
-        if (id >= this->iterators.size() || (id < this->iterators.size() && this->iterators[id] == nullptr)) {
+        if (id >= this->iterators.size() || (id < this->iterators.size() && !this->iterators[id])) {
             // Problem : Spalte nicht geoeffnet
         } else {
             this->iteratorPositions[id] = -1;
@@ -621,7 +614,7 @@ namespace ahead {
 
     TransactionManager::BinaryUnit TransactionManager::Transaction::next(
             id_t id) {
-        if (id < this->iterators.size() && this->iterators[id] != nullptr && this->iteratorPositions[id] != -1) {
+        if (id < this->iterators.size() && this->iterators[id] && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->next();
 
             if (record.content != nullptr) {
@@ -642,7 +635,7 @@ namespace ahead {
     TransactionManager::BinaryUnit TransactionManager::Transaction::get(
             id_t id,
             oid_t index) {
-        if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
+        if (id < this->iterators.size() && this->iterators[id] && this->iteratorPositions[id] != -1) {
             const ColumnManager::Record &record = this->iterators[id]->seek(index);
 
             if (record.content != nullptr) {
@@ -664,7 +657,7 @@ namespace ahead {
     TransactionManager::BinaryUnit TransactionManager::Transaction::edit(
             id_t id) {
         if (this->isUpdater) {
-            if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
+            if (id < this->iterators.size() && this->iterators[id] && this->iteratorPositions[id] != -1) {
                 const ColumnManager::Record &record = this->iterators[id]->edit();
 
                 if (record.content != nullptr) {
@@ -689,7 +682,7 @@ namespace ahead {
     TransactionManager::BinaryUnit TransactionManager::Transaction::append(
             id_t id) {
         if (this->isUpdater) {
-            if (id < this->iterators.size() && this->iterators[id] != 0 && this->iteratorPositions[id] != -1) {
+            if (id < this->iterators.size() && this->iterators[id] && this->iteratorPositions[id] != -1) {
                 const ColumnManager::Record &record = this->iterators[id]->append();
 
                 if (record.content != nullptr) {
@@ -713,9 +706,9 @@ namespace ahead {
 
     void TransactionManager::Transaction::rollback() {
         for (id_t id = 0; id < this->iterators.size(); id++) {
-            if (this->iterators[id] != 0) {
+            if (this->iterators[id]) {
                 this->iterators[id]->undo();
-                delete this->iterators[id];
+                this->iterators[id].reset();
             }
         }
     }

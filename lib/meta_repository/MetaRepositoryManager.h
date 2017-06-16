@@ -23,6 +23,7 @@
 #define METAREPOSITORYMANAGER_H
 
 #include <cstring>
+#include <memory>
 
 #include <ColumnStore.h>
 #include <column_storage/TempStorage.hpp>
@@ -72,7 +73,7 @@ namespace ahead {
          * The function returns a pointer of the one and only existing instance of the class. In the case that no instance
          * exists, it will be created and afterwards returned from the function.
          */
-        static MetaRepositoryManager* getInstance();
+        static std::shared_ptr<MetaRepositoryManager> getInstance();
 
         void init(
                 const char* strBaseDir);
@@ -109,7 +110,7 @@ namespace ahead {
                 cstr_t attribute);
 
     private:
-        static MetaRepositoryManager *instance;
+        static std::shared_ptr<MetaRepositoryManager> instance;
 
         static void destroyInstance();
 
@@ -190,12 +191,12 @@ namespace ahead {
         MetaRepositoryManager();
         MetaRepositoryManager(
                 const MetaRepositoryManager &copy);
-        virtual
-        ~MetaRepositoryManager();
-        MetaRepositoryManager& operator=(
-                const MetaRepositoryManager &copy);
 
     public:
+        virtual ~MetaRepositoryManager();
+
+        MetaRepositoryManager& operator=(
+                const MetaRepositoryManager &copy);
 
         class TablesIterator :
                 public BATIterator<v2_id_t, v2_str_t> {

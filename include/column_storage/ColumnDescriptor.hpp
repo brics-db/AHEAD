@@ -48,6 +48,7 @@ namespace ahead {
     template<>
     struct ColumnDescriptorContainerType<v2_void_t> {
 
+        typedef void type_t;
         typedef void container_t;
     };
 
@@ -65,7 +66,7 @@ namespace ahead {
 
         ColumnDescriptor()
                 : container(new Container),
-                  metaData(sizeof(typename V2Type::type_t)) {
+                  metaData(sizeof(type_t)) {
         }
 
         ColumnDescriptor(

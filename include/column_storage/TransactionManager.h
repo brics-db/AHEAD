@@ -75,10 +75,10 @@ namespace ahead {
         struct BinaryUnit {
 
             union {
-
                 void * pvoid;
                 oid_t oid;
             } head;
+
             void *tail;
 
             BinaryUnit()
@@ -139,7 +139,7 @@ namespace ahead {
              *
              * Die Funktion liefert die Menge von Identifikationsnummern aller existierenden Spalten.
              */
-            std::unordered_set<unsigned int> list();
+            std::unique_ptr<std::unordered_set<id_t>> list();
             /**
              * @author Julian Hollender
              *
@@ -223,8 +223,8 @@ namespace ahead {
                     id_t id);
 
         private:
-            unsigned int botVersion;
-            unsigned int *eotVersion;
+            id_t botVersion;
+            id_t eotVersion;
             bool isUpdater;
 
             /**
@@ -235,16 +235,19 @@ namespace ahead {
              * auf (-1) gesetzt, um ggf. ein Undo durchführen zu können.
              */
             //		std::map<unsigned int, std::pair<ColumnManager::ColumnIterator*, unsigned int> > iterators;
-            std::vector<ColumnManager::ColumnIterator*> iterators;
+            std::vector<std::shared_ptr<ColumnManager::ColumnIterator>> iterators;
             std::vector<ssize_t> iteratorPositions;
 
             Transaction(
                     bool isUpdater,
-                    unsigned int currentVersion);
+                    id_t currentVersion);
             Transaction(
                     const Transaction &copy);
+
+        public:
             virtual ~Transaction();
 
+        private:
             Transaction& operator=(
                     const Transaction &copy);
 
@@ -259,7 +262,7 @@ namespace ahead {
          * Die Funktion liefert einen Zeiger auf das einzig existierende Objekt der Klasse. Falls noch kein Objekt der Klasse existiert, wird
          * ein Objekt erzeugt und anschließend ein Zeiger auf das Objekt zurückgegeben.
          */
-        static TransactionManager* getInstance();
+        static std::shared_ptr<TransactionManager> getInstance();
 
         static void destroyInstance();
 
@@ -274,7 +277,7 @@ namespace ahead {
          * Änderungsberechtigung geben. Bei dem Versuch eine weitere Transaktion mit Änderungsberechtigung zu erzeugen, wird ein NULL-Zeiger
          * zurückgeben. Die Transaktionverwaltung übernimmt alle Synchronisation zwischen den Transaktionen.
          */
-        Transaction* beginTransaction(
+        std::shared_ptr<Transaction> beginTransaction(
                 bool isUpdater);
         /**
          * @author Julian Hollender
@@ -285,7 +288,7 @@ namespace ahead {
          * Ausführung der Funktion entspricht einem Commit.
          */
         void endTransaction(
-                Transaction *transaction);
+                std::shared_ptr<Transaction> && transaction);
         /**
          * @author Julian Hollender
          *
@@ -294,25 +297,26 @@ namespace ahead {
          * Die Funktion setzt die übergebene Transaktion zurück und macht all ihre Änderungen rückgängig.
          */
         void rollbackTransaction(
-                Transaction *transaction);
+                std::shared_ptr<Transaction> && transaction);
 
     private:
-        static TransactionManager *instance;
+        static std::shared_ptr<TransactionManager> instance;
 
         unsigned int currentVersion;
 
         /**
          * Die Menge enthält alle aktuell aktiven Transaktionen.
          */
-        std::unordered_set<Transaction*> transactions;
+        std::unordered_set<std::shared_ptr<Transaction>> transactions;
 
         TransactionManager();
         TransactionManager(
                 const TransactionManager &copy);
-        virtual ~TransactionManager();
 
     public:
         friend class AHEAD;
+
+        virtual ~TransactionManager();
     };
 
 }

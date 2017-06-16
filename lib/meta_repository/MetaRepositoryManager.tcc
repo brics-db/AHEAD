@@ -35,6 +35,7 @@ namespace ahead {
             delete iter;
             return std::make_pair(h, t);
         } else {
+            delete iter;
             return std::make_pair(-1, -1);
         }
     }

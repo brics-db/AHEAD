@@ -17,12 +17,11 @@
 
 namespace ahead {
 
-    TransactionManager* TransactionManager::instance = 0;
+    std::shared_ptr<TransactionManager> TransactionManager::instance;
 
-    TransactionManager*
-    TransactionManager::getInstance() {
-        if (TransactionManager::instance == 0) {
-            TransactionManager::instance = new TransactionManager();
+    std::shared_ptr<TransactionManager> TransactionManager::getInstance() {
+        if (!TransactionManager::instance) {
+            TransactionManager::instance.reset(new TransactionManager());
         }
 
         return TransactionManager::instance;
@@ -30,8 +29,7 @@ namespace ahead {
 
     void TransactionManager::destroyInstance() {
         if (TransactionManager::instance) {
-            delete TransactionManager::instance;
-            TransactionManager::instance = nullptr;
+            TransactionManager::instance.reset();
         }
     }
 
@@ -48,7 +46,7 @@ namespace ahead {
 
     TransactionManager::~TransactionManager() {
         for (auto pT : transactions) {
-            delete pT;
+            pT.reset();
         }
         transactions.clear();
         BucketManager::destroyInstance();
@@ -56,39 +54,36 @@ namespace ahead {
         MetaRepositoryManager::destroyInstance();
     }
 
-    TransactionManager::Transaction*
-    TransactionManager::beginTransaction(
+    std::shared_ptr<TransactionManager::Transaction> TransactionManager::beginTransaction(
             bool isUpdater) {
         if (isUpdater) {
             // Atomic Block Start
             for (auto pT : this->transactions) {
                 if (pT->isUpdater) {
                     // Problem : Another Active Updater
-                    return nullptr;
+                    return std::shared_ptr<TransactionManager::Transaction>(nullptr);
                 }
             }
             // Atomic Block Ende
         }
-        auto result = this->transactions.insert(new TransactionManager::Transaction(isUpdater, this->currentVersion));
-        return result.second ? *result.first : nullptr;
+        auto result = this->transactions.insert(std::shared_ptr<TransactionManager::Transaction>(new TransactionManager::Transaction(isUpdater, this->currentVersion)));
+        return result.second ? (*result.first) : (std::shared_ptr<TransactionManager::Transaction>(nullptr));
     }
 
     void TransactionManager::endTransaction(
-            TransactionManager::Transaction *transaction) {
+            std::shared_ptr<TransactionManager::Transaction> && transaction) {
         if (transaction->isUpdater) {
-            *transaction->eotVersion = this->currentVersion + 1;
+            transaction->eotVersion = this->currentVersion + 1;
             this->currentVersion++;
         }
 
         // Atomic Block Start
         this->transactions.erase(this->transactions.find(transaction));
         // Atomic Block Ende
-
-        delete transaction;
     }
 
     void TransactionManager::rollbackTransaction(
-            TransactionManager::Transaction *transaction) {
+            std::shared_ptr<TransactionManager::Transaction> && transaction) {
         if (transaction->isUpdater) {
             transaction->rollback();
         }
@@ -96,8 +91,6 @@ namespace ahead {
         // Atomic Block Start
         this->transactions.erase(this->transactions.find(transaction));
         // Atomic Block Ende
-
-        delete transaction;
     }
 
 }

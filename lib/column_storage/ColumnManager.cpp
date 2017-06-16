@@ -26,12 +26,11 @@ namespace ahead {
     const id_t ColumnManager::ID_BAT_COLIDENT = 2;
     const id_t ColumnManager::ID_BAT_FIRST_USER = 3;
 
-    ColumnManager* ColumnManager::instance = 0;
+    std::shared_ptr<ColumnManager> ColumnManager::instance;
 
-    ColumnManager*
-    ColumnManager::getInstance() {
-        if (ColumnManager::instance == 0) {
-            ColumnManager::instance = new ColumnManager();
+    std::shared_ptr<ColumnManager> ColumnManager::getInstance() {
+        if (!ColumnManager::instance) {
+            ColumnManager::instance.reset(new ColumnManager());
         }
 
         return ColumnManager::instance;
@@ -39,8 +38,7 @@ namespace ahead {
 
     void ColumnManager::destroyInstance() {
         if (ColumnManager::instance) {
-            delete ColumnManager::instance;
-            ColumnManager::instance = nullptr;
+            ColumnManager::instance.reset();
         }
     }
 
@@ -56,37 +54,35 @@ namespace ahead {
         columnMetaData.clear();
     }
 
-    ColumnManager::ColumnIterator*
-    ColumnManager::openColumn(
+    std::unique_ptr<ColumnManager::ColumnIterator> ColumnManager::openColumn(
             id_t id,
             version_t *version) {
         if (columnMetaData.find(id) != columnMetaData.end()) {
-            return new ColumnManager::ColumnIterator(columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version));
+            return std::unique_ptr<ColumnManager::ColumnIterator>(new ColumnManager::ColumnIterator(columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version)));
         } else {
             // Problem : Spalte existiert nicht
             return nullptr;
         }
     }
 
-    std::unordered_set<id_t> ColumnManager::getColumnIDs() {
-        std::unordered_set<id_t> list;
-        list.reserve(columnMetaData.size());
+    std::unique_ptr<std::unordered_set<id_t>> ColumnManager::getColumnIDs() {
+        auto list = new std::unordered_set<id_t>;
+        list->reserve(columnMetaData.size());
 
         for (auto it = this->columnMetaData.begin(); it != this->columnMetaData.end(); it++) {
-            list.insert(it->first);
+            list->insert(it->first);
         }
 
-        return list;
+        return std::unique_ptr<std::unordered_set<id_t>>(list);
     }
 
-    std::unordered_map<id_t, ColumnMetaData> *
-    ColumnManager::getColumnMetaData() {
+    std::unique_ptr<std::unordered_map<id_t, ColumnMetaData>> ColumnManager::getColumnMetaData() {
         auto result = new std::unordered_map<id_t, ColumnMetaData>;
         result->reserve(columnMetaData.size());
         for (auto p : columnMetaData) {
             (*result)[p.first] = p.second;
         }
-        return result;
+        return std::unique_ptr<std::unordered_map<id_t, ColumnMetaData>>(result);
     }
 
     ColumnMetaData ColumnManager::getColumnMetaData(
