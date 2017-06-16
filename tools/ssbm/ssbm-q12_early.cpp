@@ -67,17 +67,23 @@ int main(
         ssb::before_query();
 
         // 0) Eager Check
-        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));CLEAR_CHECKANDDECODE_AN(tupleDY);
-        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));CLEAR_CHECKANDDECODE_AN(tupleDD);
-        MEASURE_OP_TUPLE(tupleLQ, checkAndDecodeAN(batLQenc));CLEAR_CHECKANDDECODE_AN(tupleLQ);
-        MEASURE_OP_TUPLE(tupleLD, checkAndDecodeAN(batLDenc));CLEAR_CHECKANDDECODE_AN(tupleLD);
-        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));CLEAR_CHECKANDDECODE_AN(tupleLO);
-        MEASURE_OP_TUPLE(tupleLE, checkAndDecodeAN(batLEenc));CLEAR_CHECKANDDECODE_AN(tupleLE);
+        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDY);
+        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDD);
+        MEASURE_OP_TUPLE(tupleLQ, checkAndDecodeAN(batLQenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLQ);
+        MEASURE_OP_TUPLE(tupleLD, checkAndDecodeAN(batLDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLD);
+        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLO);
+        MEASURE_OP_TUPLE(tupleLE, checkAndDecodeAN(batLEenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLE);
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, select(std::get<0>(tupleLQ), 26, 35)); // lo_quantity between 26 and 35
+        MEASURE_OP(bat1, (select<std::greater_equal, std::less_equal, AND>(std::get<0>(tupleLQ), 26, 35))); // lo_quantity between 26 and 35
         delete std::get<0>(tupleLQ);
-        MEASURE_OP(bat2, select(std::get<0>(tupleLD), 4, 6)); // lo_discount between 4 and 6
+        MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(std::get<0>(tupleLD), 4, 6))); // lo_discount between 4 and 6
         delete std::get<0>(tupleLD);
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;

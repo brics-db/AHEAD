@@ -103,8 +103,8 @@ int main(
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = std::get<0>(tupleB)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete std::get<0>(tupleB);
-        MEASURE_OP_TUPLE(tupleD, (matchjoinAN(batC, batLEenc, std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs))));CLEAR_JOIN_AN(
-                tupleD);
+        MEASURE_OP_TUPLE(tupleD, (matchjoinAN(batC, batLEenc, std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs))));
+        CLEAR_JOIN_AN(tupleD);
         MEASURE_OP_TUPLE(tupleE,
                 (matchjoinAN(batC, std::get<0>(tuple4), std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As), std::get<3>(*v2_restiny_t::Ainvs))));
         delete batC;

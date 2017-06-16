@@ -125,33 +125,34 @@ int main(
         MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
-        MEASURE_OP(batAYenc, matchjoin(batI, batDYenc)); // OID lineorder | d_year
+        auto batI2 = batI->clear_head();
         delete batI;
-        auto batAYenc2 = batAYenc->clear_head();
-        delete batAYenc;
-        MEASURE_OP(batAB, matchjoin(batZ, batPB)); // OID lineorder | p_brand
+        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDY);
+        MEASURE_OP(batAY, fetchjoin(batI2, std::get<0>(tupleDY))); // OID lineorder | d_year
+        delete std::get<0>(tupleDY);
+        delete batI2;
+        auto batZ2 = batZ->clear_head();
         delete batZ;
-        auto batAB2 = batAB->clear_head();
-        delete batAB;
-        MEASURE_OP(batARenc, matchjoin(batW, batLRenc)); // OID lineorder | lo_revenue (where ...)
-        auto batARenc2 = batARenc->clear_head();
-        delete batARenc;
+        MEASURE_OP(batAB, fetchjoin(batZ2, batPB)); // OID lineorder | p_brand
+        delete batZ2;
+        auto batW2 = batW->clear_head();
         delete batW;
-        MEASURE_OP_TUPLE(tupleAY2, checkAndDecodeAN(batAYenc2));CLEAR_CHECKANDDECODE_AN(tupleAY2);
-        delete batAYenc2;
-        MEASURE_OP_TUPLE(tupleAR2, checkAndDecodeAN(batARenc2));CLEAR_CHECKANDDECODE_AN(tupleAR2);
-        delete batARenc2;
-
-        MEASURE_OP_PAIR(pairGY, groupby(std::get<0>(tupleAY2)));
-        MEASURE_OP_PAIR(pairGB, groupby(batAB2, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
+        MEASURE_OP_TUPLE(tupleLR, checkAndDecodeAN(batLRenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLR);
+        MEASURE_OP(batAR, fetchjoin(batW2, std::get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
+        delete std::get<0>(tupleLR);
+        delete batW2;
+        MEASURE_OP_PAIR(pairGY, groupby(batAY));
+        MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
         delete std::get<0>(pairGY);
         delete std::get<1>(pairGY);
-
-        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(std::get<0>(tupleAR2), std::get<0>(pairGB), std::get<1>(pairGB)->size()));
-        MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), std::get<0>(tupleAY2)));
-        delete std::get<0>(tupleAY2);
-        MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB2));
-        delete batAB2;
+        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+        delete batAR;
+        MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY));
+        delete batAY;
+        MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB));
+        delete batAB;
         delete std::get<0>(pairGB);
         delete std::get<1>(pairGB);
 

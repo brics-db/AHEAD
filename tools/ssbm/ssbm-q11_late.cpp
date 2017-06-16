@@ -70,7 +70,7 @@ int main(
 
         // 1) select from lineorder
         MEASURE_OP(bat1, select<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
-        MEASURE_OP(bat2, select(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
+        MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A))); // lo_discount between 1 and 3
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection
@@ -102,9 +102,11 @@ int main(
         delete bat4;
 
         // 4) lazy decode and result
-        MEASURE_OP_TUPLE(tupleF, checkAndDecodeAN(batD));CLEAR_CHECKANDDECODE_AN(tupleF);
+        MEASURE_OP_TUPLE(tupleF, checkAndDecodeAN(batD));
+        CLEAR_CHECKANDDECODE_AN(tupleF);
         delete batD;
-        MEASURE_OP_TUPLE(tupleG, checkAndDecodeAN(batE));CLEAR_CHECKANDDECODE_AN(tupleG);
+        MEASURE_OP_TUPLE(tupleG, checkAndDecodeAN(batE));
+        CLEAR_CHECKANDDECODE_AN(tupleG);
         delete batE;
         MEASURE_OP(batF, aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleF), std::get<0>(tupleG)));
         delete std::get<0>(tupleF);

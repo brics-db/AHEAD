@@ -28,7 +28,7 @@ int main(
     ssb::init(argc, argv, "SSBM Query 3.4 Normal\n=====================");
 
     SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.3:\n"
-            "select c_city, s_city, d_year, sum(lo_revenue)\n"
+            "select c_city, s_city, d_year, sum(lo_revenue) as revenue\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"
             "    and lo_suppkey = s_suppkey\n"
@@ -189,7 +189,7 @@ int main(
             auto iter3 = batRD->begin();
             auto iter4 = batRR->begin();
             std::cerr << "+------------+------------+--------+------------+\n";
-            std::cerr << "+     c_city |     s_city | d_year | lo_revenue |\n";
+            std::cerr << "+     c_city |     s_city | d_year |    revenue |\n";
             std::cerr << "+============+============+========+============+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                 sum += iter4->tail();
