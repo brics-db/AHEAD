@@ -115,6 +115,16 @@ namespace ssb {
             const char* const tableName,
             const SSB_CONF & CONFIG);
 
+    template<typename T>
+    struct PrintBatHelper {
+        typedef typename T::type_t print_type_t;
+    };
+
+    template<>
+    struct PrintBatHelper<v2_tinyint_t> {
+        typedef int print_type_t;
+    };
+
     template<typename Head, typename Tail>
     void printBat(
             StopWatch & sw,
@@ -143,10 +153,14 @@ namespace ssb {
         fout << " | " << std::setw(wHead) << "head";
         fout << " | " << std::setw(wTail) << "tail";
         fout << '\n';
+        fout << std::setw(wOID) << "oid_t";
+        fout << " | " << std::setw(wHead) << bat->type_head().pretty_name();
+        fout << " | " << std::setw(wTail) << bat->type_tail().pretty_name();
+        fout << '\n';
         for (; iter->hasNext(); ++i, ++*iter) {
             fout << std::setw(wOID) << i;
-            fout << " | " << std::setw(wHead) << iter->head();
-            fout << " | " << std::setw(wTail) << iter->tail();
+            fout << " | " << std::setw(wHead) << static_cast<typename PrintBatHelper<Head>::print_type_t>(iter->head());
+            fout << " | " << std::setw(wTail) << static_cast<typename PrintBatHelper<Tail>::print_type_t>(iter->tail());
             fout << '\n';
         }
         fout << std::flush;

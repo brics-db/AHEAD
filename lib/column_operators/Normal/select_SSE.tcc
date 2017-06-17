@@ -176,7 +176,9 @@ namespace ahead {
 
                             for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                 auto mm = _mm_lddqu_si128(pmmT);
-                                auto mask = v2_mm128_cmp<tail_t, OpCombine>::cmp_mask(v2_mm128_cmp<tail_t, Op1>::cmp(mm, mmThreshold1), v2_mm128_cmp<tail_t, Op2>::cmp(mm, mmThreshold2));
+                                auto res1 = v2_mm128_cmp<tail_t, Op1>::cmp(mm, mmThreshold1);
+                                auto res2 = v2_mm128_cmp<tail_t, Op2>::cmp(mm, mmThreshold2);
+                                auto mask = v2_mm128_cmp<tail_t, OpCombine>::cmp_mask(res1, res2);
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                     constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                     constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);

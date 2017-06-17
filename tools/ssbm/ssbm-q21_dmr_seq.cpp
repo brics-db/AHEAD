@@ -213,7 +213,7 @@ int main(
             auto iter2 = std::get<1>(results[0])->begin();
             auto iter3 = std::get<2>(results[0])->begin();
             std::cerr << "+------------+--------+-----------+\n";
-            std::cerr << "| lo_revenue | d_year | p_brand   |\n";
+            std::cerr << "| lo_revenue | d_year |   p_brand |\n";
             std::cerr << "+============+========+===========+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail();

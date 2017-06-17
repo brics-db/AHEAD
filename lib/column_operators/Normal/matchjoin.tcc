@@ -49,14 +49,17 @@ namespace ahead {
                         while (iter1->hasNext() && iter2->hasNext()) {
                             auto h2 = iter2->head();
                             auto t1 = iter1->tail();
-                            for (; iter1->hasNext() && t1 < h2; ++*iter1, t1 = iter1->tail()) {
+                            bool iterValid = false;
+                            for (; (iterValid = iter1->hasNext()) && t1 < h2; ++*iter1, t1 = iter1->tail()) {
                             }
-                            for (; iter2->hasNext() && t1 > h2; ++*iter2, h2 = iter2->head()) {
-                            }
-                            if (t1 == h2) {
-                                result->append(std::make_pair(iter1->head(), iter2->tail()));
-                                ++*iter1;
-                                ++*iter2;
+                            if (iterValid) {
+                                for (; (iterValid = iter2->hasNext()) && t1 > h2; ++*iter2, h2 = iter2->head()) {
+                                }
+                                if (iterValid && (t1 == h2)) {
+                                    result->append(std::make_pair(iter1->head(), iter2->tail()));
+                                    ++*iter1;
+                                    ++*iter2;
+                                }
                             }
                         }
                         delete iter1;

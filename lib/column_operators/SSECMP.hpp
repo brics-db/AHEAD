@@ -320,7 +320,7 @@ namespace ahead {
                     static inline mask_t cmp_mask(
                             __m128i a,
                             __m128i b) {
-                        return Private::v2_mm128_compact_mask_uint16_t(static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b))));
+                        return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                     }
                 };
 
@@ -338,7 +338,7 @@ namespace ahead {
                     static inline mask_t cmp_mask(
                             __m128i a,
                             __m128i b) {
-                        return Private::v2_mm128_compact_mask_uint16_t(static_cast<mask_t>(_mm_movemask_epi8(cmp(a, b))));
+                        return Private::v2_mm128_compact_mask_uint16_t(static_cast<uint16_t>(_mm_movemask_epi8(cmp(a, b))));
                     }
                 };
 
