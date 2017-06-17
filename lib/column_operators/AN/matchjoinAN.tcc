@@ -104,7 +104,8 @@ namespace ahead {
                                 vec4->push_back(pos2 * AOID);
                             }
                             t1_t t1 = Tail1Helper::mulIfEncoded(iter1->tail(), AT1Inv);
-                            for (; iter1->hasNext() && t1 < h2; ++*iter1, ++pos1, t1 = Tail1Helper::mulIfEncoded(iter1->tail(), AT1Inv)) {
+                            bool iterValid = false;
+                            for (; (iterValid = iter1->hasNext()) && t1 < h2; ++*iter1, ++pos1, t1 = Tail1Helper::mulIfEncoded(iter1->tail(), AT1Inv)) {
                                 if (Head1Helper::isEncoded && (Head1Helper::mulIfEncoded(iter1->head(), AH1Inv) > AH1UnencMaxU)) {
                                     vec1->push_back(pos1 * AOID);
                                 }
@@ -112,24 +113,26 @@ namespace ahead {
                                     vec2->push_back(pos1 * AOID);
                                 }
                             }
-                            for (; iter2->hasNext() && t1 > h2; ++*iter2, ++pos2, h2 = Head2Helper::mulIfEncoded(iter2->head(), AH2Inv)) {
-                                if (Head2Helper::isEncoded && (h2 > AH2UnencMaxU)) {
-                                    vec3->push_back(pos2 * AOID);
+                            if (iterValid) {
+                                for (; (iterValid = iter2->hasNext()) && t1 > h2; ++*iter2, ++pos2, h2 = Head2Helper::mulIfEncoded(iter2->head(), AH2Inv)) {
+                                    if (Head2Helper::isEncoded && (h2 > AH2UnencMaxU)) {
+                                        vec3->push_back(pos2 * AOID);
+                                    }
+                                    if (Tail2Helper::isEncoded && (Tail2Helper::mulIfEncoded(iter2->tail(), AT2Inv) > AT2UnencMaxU)) {
+                                        vec4->push_back(pos2 * AOID);
+                                    }
                                 }
-                                if (Tail2Helper::isEncoded && (Tail2Helper::mulIfEncoded(iter2->tail(), AT2Inv) > AT2UnencMaxU)) {
-                                    vec4->push_back(pos2 * AOID);
+                                if (iterValid && (t1 == h2)) {
+                                    if (reencode) {
+                                        bat->append(std::make_pair(Head1Helper::mulIfEncoded(iter1->head(), reencFactorH1), Tail2Helper::mulIfEncoded(iter2->tail(), reencFactorT2)));
+                                    } else {
+                                        bat->append(std::make_pair(iter1->head(), iter2->tail()));
+                                    }
+                                    ++*iter1;
+                                    ++pos1;
+                                    ++*iter2;
+                                    ++pos2;
                                 }
-                            }
-                            if (t1 == h2) {
-                                if (reencode) {
-                                    bat->append(std::make_pair(Head1Helper::mulIfEncoded(iter1->head(), reencFactorH1), Tail2Helper::mulIfEncoded(iter2->tail(), reencFactorT2)));
-                                } else {
-                                    bat->append(std::make_pair(iter1->head(), iter2->tail()));
-                                }
-                                ++*iter1;
-                                ++pos1;
-                                ++*iter2;
-                                ++pos2;
                             }
                         }
 

@@ -81,14 +81,22 @@ int main(
         ssb::before_query();
 
         // 0) Eager Check
-        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));CLEAR_CHECKANDDECODE_AN(tupleDD);
-        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));CLEAR_CHECKANDDECODE_AN(tupleDY);
-        MEASURE_OP_TUPLE(tupleLP, checkAndDecodeAN(batLPenc));CLEAR_CHECKANDDECODE_AN(tupleLP);
-        MEASURE_OP_TUPLE(tupleLS, checkAndDecodeAN(batLSenc));CLEAR_CHECKANDDECODE_AN(tupleLS);
-        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));CLEAR_CHECKANDDECODE_AN(tupleLO);
-        MEASURE_OP_TUPLE(tupleLR, checkAndDecodeAN(batLRenc));CLEAR_CHECKANDDECODE_AN(tupleLR);
-        MEASURE_OP_TUPLE(tuplePP, checkAndDecodeAN(batPPenc));CLEAR_CHECKANDDECODE_AN(tuplePP);
-        MEASURE_OP_TUPLE(tupleSS, checkAndDecodeAN(batSSenc));CLEAR_CHECKANDDECODE_AN(tupleSS);
+        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDD);
+        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDY);
+        MEASURE_OP_TUPLE(tupleLP, checkAndDecodeAN(batLPenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLP);
+        MEASURE_OP_TUPLE(tupleLS, checkAndDecodeAN(batLSenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLS);
+        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLO);
+        MEASURE_OP_TUPLE(tupleLR, checkAndDecodeAN(batLRenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLR);
+        MEASURE_OP_TUPLE(tuplePP, checkAndDecodeAN(batPPenc));
+        CLEAR_CHECKANDDECODE_AN(tuplePP);
+        MEASURE_OP_TUPLE(tupleSS, checkAndDecodeAN(batSSenc));
+        CLEAR_CHECKANDDECODE_AN(tupleSS);
 
         // s_region = 'EUROPE'
         MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("EUROPE"))); // OID supplier | s_region
@@ -112,6 +120,7 @@ int main(
         // p_brand = 'MFGR#2239'
         MEASURE_OP(bat8, select<std::equal_to>(batPB, const_cast<str_t>("MFGR#2239"))); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
+        delete bat8;
         auto batA = std::get<0>(tuplePP)->reverse(); // p_partkey | OID part
         MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
         delete batA;

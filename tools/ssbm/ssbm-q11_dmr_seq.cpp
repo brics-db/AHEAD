@@ -81,7 +81,7 @@ int main(
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // 1) select from lineorder
             MEASURE_OP(bat1, select<std::less>(batLQs[k], 25)); // lo_quantity < 25
-            MEASURE_OP(bat2, select(batLDs[k], 1, 3)); // lo_discount between 1 and 3
+            MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(batLDs[k], 1, 3))); // lo_discount between 1 and 3
             auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
             delete bat1;
             MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection

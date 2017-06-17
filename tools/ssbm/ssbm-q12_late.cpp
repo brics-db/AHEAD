@@ -69,8 +69,10 @@ int main(
         // LAZY MODE !!! NO AN-OPERATORS UNTIL DECODING !!!
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, select(batLQenc, static_cast<restiny_t>(26 * batLQenc->tail.metaData.AN_A), static_cast<restiny_t>(35 * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
-        MEASURE_OP(bat2, select(batLDenc, static_cast<restiny_t>(4 * batLDenc->tail.metaData.AN_A), static_cast<restiny_t>(6 * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
+        MEASURE_OP(bat1,
+                (select<std::greater_equal, std::less_equal, AND>(batLQenc, static_cast<restiny_t>(26 * batLQenc->tail.metaData.AN_A), static_cast<restiny_t>(35 * batLQenc->tail.metaData.AN_A)))); // lo_quantity between 26 and 35
+        MEASURE_OP(bat2,
+                (select<std::greater_equal, std::less_equal, AND>(batLDenc, static_cast<restiny_t>(4 * batLDenc->tail.metaData.AN_A), static_cast<restiny_t>(6 * batLDenc->tail.metaData.AN_A)))); // lo_discount between 4 and 6
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection
@@ -103,9 +105,11 @@ int main(
         delete bat4;
 
         // 4) lazy decode and result
-        MEASURE_OP_TUPLE(tupleF, checkAndDecodeAN(batD));CLEAR_CHECKANDDECODE_AN(tupleF);
+        MEASURE_OP_TUPLE(tupleF, checkAndDecodeAN(batD));
+        CLEAR_CHECKANDDECODE_AN(tupleF);
         delete batD;
-        MEASURE_OP_TUPLE(tupleG, checkAndDecodeAN(batE));CLEAR_CHECKANDDECODE_AN(tupleG);
+        MEASURE_OP_TUPLE(tupleG, checkAndDecodeAN(batE));
+        CLEAR_CHECKANDDECODE_AN(tupleG);
         delete batE;
         MEASURE_OP(batH, aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleF), std::get<0>(tupleG)));
         delete std::get<0>(tupleF);
