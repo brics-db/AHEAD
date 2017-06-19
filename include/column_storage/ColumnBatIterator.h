@@ -88,7 +88,7 @@ namespace ahead {
             }
             std::tie(Csize, Cconsumption) = ta->open(columnId);
             buNext = ta->next(mColumnId);
-            next(); // init to first
+            next(); // init to first so that we can serve an initial element
         }
 
         ColumnBatIteratorBase(
@@ -114,6 +114,13 @@ namespace ahead {
                 const ColumnBatIteratorBase &copy) {
             new (this) ColumnBatIteratorBase(copy);
             return *this;
+        }
+
+        virtual std::optional<oid_t> position() override {
+            if (hasNext()) {
+                return std::optional<oid_t>(static_cast<oid_t>(mPosition));
+            }
+            return std::optional<oid_t>();
         }
 
         virtual void position(

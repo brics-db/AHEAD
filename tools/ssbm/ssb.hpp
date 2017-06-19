@@ -43,7 +43,6 @@
 #endif
 
 #include <util/argumentparser.hpp>
-#include <util/ModularRedundant.hpp>
 #include <util/rss.hpp>
 #include <util/stopwatch.hpp>
 
@@ -215,6 +214,9 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     void after_query(
             size_t index,
             size_t result);
+    void after_query(
+            size_t index,
+            std::exception & ex);
     void before_op();
     void after_op();
     void finalize();

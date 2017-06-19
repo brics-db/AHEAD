@@ -26,7 +26,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 2.2 Continuous Detection With Reencoding\n===================================================");
+    ssb::init(argc, argv, "SSBM Query 2.2 Continuous Detection With Reencoding");
 
     SSBM_LOAD("dateAN", "lineorderAN", "partAN", "supplierAN", "SSBM Q2.2:\n"
             "select sum(lo_revenue), d_year, p_brand\n"

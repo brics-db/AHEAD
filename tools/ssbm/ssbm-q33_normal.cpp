@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q33.cpp
+ * File:   ssbm-q33_normal.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 13. June 2017, 22:35
@@ -25,7 +25,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.3 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 3.3 Normal");
 
     SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.3:\n"
             "select c_city, s_city, d_year, sum(lo_revenue) as revenue\n"

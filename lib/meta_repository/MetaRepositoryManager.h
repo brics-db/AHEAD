@@ -23,6 +23,7 @@
 #define METAREPOSITORYMANAGER_H
 
 #include <cstring>
+#include <optional>
 
 #include <ColumnStore.h>
 #include <column_storage/TempStorage.hpp>
@@ -224,6 +225,8 @@ namespace ahead {
 
             virtual TablesIterator& operator+=(
                     oid_t i) override;
+
+            virtual std::optional<oid_t> position() override;
 
             virtual void position(
                     oid_t index) override;

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /*
- * File:   ssbm-q42.cpp
+ * File:   ssbm-q42_normal.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 15. June 2017, 10:43
@@ -25,7 +25,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 4.2 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 4.2 Normal");
 
     SSBM_LOAD("date", "customer", "supplier", "part", "lineorder", "SSBM Q4.2:\n"
             "select d_year, s_nation, p_category, sum(lo_revenue - lo_supplycost) as profit\n"
@@ -115,7 +115,7 @@ int main(
         delete bat5;
 
         // s_region = 'AMERICA'
-        MEASURE_OP(bat7, select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
+        MEASURE_OP(bat7, select < std::equal_to > (batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
         auto bat8 = bat7->mirror_head(); // OID supplier | OID supplier
         delete bat7;
         auto bat9 = batSS->reverse(); // s_suppkey | VOID supplier
@@ -132,7 +132,7 @@ int main(
         delete bat12;
 
         // c_region = 'AMERICA'
-        MEASURE_OP(bat14, select<std::equal_to>(batCR, const_cast<str_t>("AMERICA"))); // OID customer | c_region
+        MEASURE_OP(bat14, select < std::equal_to > (batCR, const_cast<str_t>("AMERICA"))); // OID customer | c_region
         auto bat15 = bat14->mirror_head(); // OID customer | OID customer
         delete bat14;
         auto bat16 = batCC->reverse(); // c_custkey | VOID customer
@@ -212,7 +212,7 @@ int main(
         MEASURE_OP_PAIR(pairGC, groupby(batAC, std::get<0>(pairGN), std::get<1>(pairGN)->size()));
         delete std::get<0>(pairGN);
         delete std::get<1>(pairGN);
-        MEASURE_OP(batRP, aggregate_sum_grouped<v2_bigint_t>(batAP, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
+        MEASURE_OP(batRP, aggregate_sum_grouped < v2_bigint_t > (batAP, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
         delete batAP;
         MEASURE_OP(batRN, fetchjoin(std::get<1>(pairGC), batAN));
         delete batAN;

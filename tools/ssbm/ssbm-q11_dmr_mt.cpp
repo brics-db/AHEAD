@@ -22,13 +22,14 @@
 #include <omp.h>
 #include "ssb.hpp"
 #include "macros.hpp"
+#include <util/ModularRedundant.hpp>
 
 typedef DMRValue<bigint_t> DMR;
 
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.1 DMR Parallel\n===========================");
+    ssb::init(argc, argv, "SSBM Query 1.1 DMR Parallel");
 
     SSBM_LOAD("date", "lineorder", "SSBM Q1.1:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
@@ -82,7 +83,7 @@ int main(
 #pragma omp parallel for
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // 1) select from lineorder
-            MEASURE_OP(bat1, select<std::less>(batLQs[k], 25)); // lo_quantity < 25
+            MEASURE_OP(bat1, select < std::less > (batLQs[k], 25)); // lo_quantity < 25
             MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(batLDs[k], 1, 3))); // lo_discount between 1 and 3
             auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
             delete bat1;
@@ -94,7 +95,7 @@ int main(
             delete bat5;
 
             // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-            MEASURE_OP(bat7, select<std::equal_to>(batDYs[k], 1993)); // d_year = 1993
+            MEASURE_OP(bat7, select < std::equal_to > (batDYs[k], 1993)); // d_year = 1993
             auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_datekey
             delete bat7;
             MEASURE_OP(bat9, matchjoin(bat8, batDDs[k])); // only those d_datekey where d_year...
@@ -115,7 +116,7 @@ int main(
             delete bat4;
 
             // 4) result
-            MEASURE_OP(batF, aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
+            MEASURE_OP(batF, aggregate_mul_sum < v2_bigint_t > (batD, batE, 0));
             delete batD;
             delete batE;
             auto iter = batF->begin();
@@ -130,9 +131,12 @@ int main(
         }
 
         // 5) Voting
-        auto result = ahead::vote_majority(results);
-
-        ssb::after_query(i, result);
+        try {
+            auto result = vote_majority_value(results);
+            ssb::after_query(i, result);
+        } catch (std::exception & ex) {
+            ssb::after_query(i, ex);
+        }
     }
 
     ssb::after_queries();

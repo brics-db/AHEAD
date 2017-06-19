@@ -117,6 +117,13 @@ namespace ahead {
             return *this;
         }
 
+        virtual std::optional<oid_t> position() override {
+            if (hasNext()) {
+                return std::optional<oid_t>(static_cast<oid_t>(cHead->size() - (iterHeadEnd - iterHead)));
+            }
+            return std::optional<oid_t>();
+        }
+
         virtual void position(
                 oid_t index) override {
             iterHead = cHead->begin();
@@ -158,9 +165,9 @@ namespace ahead {
         using coldesc_tail_t = typename BAT<Head, Tail>::coldesc_tail_t;
 
         oid_t seqbase_head;
-        oid_t position_head;
+        oid_t oid_head;
         oid_t seqbase_tail;
-        oid_t position_tail;
+        oid_t oid_tail;
         oid_t count;
         oid_t pos;
 
@@ -172,9 +179,9 @@ namespace ahead {
                 coldesc_tail_t & tail,
                 oid_t count)
                 : seqbase_head(head.metaData.seqbase),
-                  position_head(seqbase_head),
+                  oid_head(seqbase_head),
                   seqbase_tail(tail.metaData.seqbase),
-                  position_tail(seqbase_tail),
+                  oid_tail(seqbase_tail),
                   count(count),
                   pos(0) {
         }
@@ -182,9 +189,9 @@ namespace ahead {
         TempBATIterator(
                 const TempBATIterator<v2_void_t, v2_void_t> & iter)
                 : seqbase_head(iter.seqbase_head),
-                  position_head(iter.position_head),
+                  oid_head(iter.oid_head),
                   seqbase_tail(iter.seqbase_tail),
-                  position_tail(iter.position_tail),
+                  oid_tail(iter.oid_tail),
                   count(iter.count),
                   pos(iter.pos) {
         }
@@ -199,8 +206,8 @@ namespace ahead {
         }
 
         virtual void next() override {
-            ++position_head;
-            ++position_tail;
+            ++oid_head;
+            ++oid_tail;
             ++pos;
         }
 
@@ -211,16 +218,23 @@ namespace ahead {
 
         virtual TempBATIterator& operator+=(
                 oid_t i) override {
-            position_head += i;
-            position_tail += i;
+            oid_head += i;
+            oid_tail += i;
             pos += i;
             return *this;
         }
 
+        virtual std::optional<oid_t> position() override {
+            if (hasNext()) {
+                return std::optional<oid_t>(static_cast<oid_t>(pos));
+            }
+            return std::optional<oid_t>();
+        }
+
         virtual void position(
                 oid_t index) override {
-            position_head = seqbase_head + index;
-            position_tail = seqbase_tail + index;
+            oid_head = seqbase_head + index;
+            oid_tail = seqbase_tail + index;
         }
 
         virtual bool hasNext() override {
@@ -228,11 +242,11 @@ namespace ahead {
         }
 
         virtual head_t head() override {
-            return position_head;
+            return oid_head;
         }
 
         virtual tail_t tail() override {
-            return position_tail;
+            return oid_tail;
         }
 
         virtual size_t size() override {
@@ -261,7 +275,7 @@ namespace ahead {
         iterator_head_t iterHead;
         iterator_head_t iterHeadEnd;
         oid_t seqbase;
-        oid_t position_tail;
+        oid_t oid_tail;
 
     public:
         typedef TempBATIterator<Head, v2_void_t> self_t;
@@ -273,7 +287,7 @@ namespace ahead {
                   iterHead(cHead->begin()),
                   iterHeadEnd(cHead->end()),
                   seqbase(tail.metaData.seqbase),
-                  position_tail(seqbase) {
+                  oid_tail(seqbase) {
         }
 
         TempBATIterator(
@@ -282,7 +296,7 @@ namespace ahead {
                   iterHead(iter.iterHead),
                   iterHeadEnd(iter.iterHeadEnd),
                   seqbase(iter.seqbase),
-                  position_tail(iter.position_tail) {
+                  oid_tail(iter.oid_tail) {
         }
 
         virtual ~TempBATIterator() {
@@ -296,7 +310,7 @@ namespace ahead {
 
         virtual void next() override {
             std::advance(iterHead, 1);
-            ++position_tail;
+            ++oid_tail;
         }
 
         virtual TempBATIterator& operator++() override {
@@ -307,15 +321,22 @@ namespace ahead {
         virtual TempBATIterator& operator+=(
                 oid_t i) override {
             std::advance(iterHead, i);
-            position_tail += i;
+            oid_tail += i;
             return *this;
+        }
+
+        virtual std::optional<oid_t> position() override {
+            if (hasNext()) {
+                return std::optional<oid_t>(iterHead - cHead->begin());
+            }
+            return std::optional<oid_t>();
         }
 
         virtual void position(
                 oid_t index) override {
             iterHead = cHead->begin();
             std::advance(iterHead, index);
-            position_tail = seqbase + index;
+            oid_tail = seqbase + index;
         }
 
         virtual bool hasNext() override {
@@ -327,7 +348,7 @@ namespace ahead {
         }
 
         virtual tail_t tail() override {
-            return position_tail;
+            return oid_tail;
         }
 
         virtual size_t size() override {
@@ -355,7 +376,7 @@ namespace ahead {
         iterator_tail_t iterTail;
         iterator_tail_t iterTailEnd;
         oid_t seqbase;
-        oid_t position_head;
+        oid_t oid_head;
 
     public:
         typedef TempBATIterator<v2_void_t, Tail> self_t;
@@ -367,7 +388,7 @@ namespace ahead {
                   iterTail(cTail->begin()),
                   iterTailEnd(cTail->end()),
                   seqbase(head.metaData.seqbase),
-                  position_head(seqbase) {
+                  oid_head(seqbase) {
         }
 
         TempBATIterator(
@@ -376,7 +397,7 @@ namespace ahead {
                   iterTail(iter.iterTail),
                   iterTailEnd(iter.iterTailEnd),
                   seqbase(iter.seqbase),
-                  position_head(iter.position_head) {
+                  oid_head(iter.oid_head) {
         }
 
         virtual ~TempBATIterator() {
@@ -390,7 +411,7 @@ namespace ahead {
 
         virtual void next() override {
             iterTail++;
-            ++position_head;
+            ++oid_head;
         }
 
         virtual TempBATIterator& operator++() override {
@@ -400,16 +421,23 @@ namespace ahead {
 
         virtual TempBATIterator& operator+=(
                 oid_t i) override {
-            position_head += i;
+            oid_head += i;
             std::advance(iterTail, i);
             return *this;
+        }
+
+        virtual std::optional<oid_t> position() override {
+            if (hasNext()) {
+                return std::optional<oid_t>(static_cast<oid_t>(iterTail - cTail->begin()));
+            }
+            return std::optional<oid_t>();
         }
 
         virtual void position(
                 oid_t index) override {
             iterTail = cTail->begin();
             std::advance(iterTail, index);
-            position_head = seqbase + index;
+            oid_head = seqbase + index;
         }
 
         virtual bool hasNext() override {
@@ -417,7 +445,7 @@ namespace ahead {
         }
 
         virtual head_t head() override {
-            return position_head;
+            return oid_head;
         }
 
         virtual tail_t tail() override {

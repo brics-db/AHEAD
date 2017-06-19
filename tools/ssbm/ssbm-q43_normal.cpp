@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /*
- * File:   ssbm-q43.cpp
+ * File:   ssbm-q43_normal.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 16. June 2017, 15:16
@@ -25,7 +25,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 4.3 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 4.3 Normal");
 
     SSBM_LOAD("date", "customer", "supplier", "part", "lineorder", "SSBM Q4.3:\n"
             "select d_year, s_city, p_brand, sum(lo_revenue - lo_supplycost) as profit\n"
@@ -97,7 +97,7 @@ int main(
         ssb::before_query();
 
         // p_category = 'MFGR#14'
-        MEASURE_OP(bat1, (select<std::equal_to>(batPC, const_cast<str_t>("MFGR#14")))); // OID part | p_mfgr
+        MEASURE_OP(bat1, (select < std::equal_to > (batPC, const_cast<str_t>("MFGR#14")))); // OID part | p_mfgr
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batPP->reverse(); // p_partkey | VOID part
@@ -111,7 +111,7 @@ int main(
         delete bat5;
 
         // s_nation = 'UNITED STATES'
-        MEASURE_OP(bat7, select<std::equal_to>(batSN, const_cast<str_t>("UNITED STATES"))); // OID supplier | s_region
+        MEASURE_OP(bat7, select < std::equal_to > (batSN, const_cast<str_t>("UNITED STATES"))); // OID supplier | s_region
         auto bat8 = bat7->mirror_head(); // OID supplier | OID supplier
         delete bat7;
         auto bat9 = batSS->reverse(); // s_suppkey | VOID supplier
@@ -190,7 +190,7 @@ int main(
         MEASURE_OP_PAIR(pairGB, groupby(batAC, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
         delete std::get<0>(pairGC);
         delete std::get<1>(pairGC);
-        MEASURE_OP(batRP, aggregate_sum_grouped<v2_bigint_t>(batAP, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+        MEASURE_OP(batRP, aggregate_sum_grouped < v2_bigint_t > (batAP, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
         delete batAP;
         MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGC), batAY));
         delete batAY;
@@ -215,7 +215,7 @@ int main(
             std::cerr << "+ d_year |     s_city |    p_brand |     profit |\n";
             std::cerr << "+========+============+============+------------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
-                sum += iter3->tail();
+                sum += iter4->tail();
                 std::cerr << "| " << std::setw(6) << iter1->tail();
                 std::cerr << " | " << std::setw(10) << iter2->tail();
                 std::cerr << " | " << std::setw(10) << iter3->tail();

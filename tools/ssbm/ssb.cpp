@@ -146,7 +146,9 @@ namespace ssb {
         ssb::ssb_config.init(argc, argv);
         ssb::totalTimes.reserve(ssb::ssb_config.NUM_RUNS);
         ssb::init_pcm();
-        std::cout << strHeadline << std::endl;
+        std::cout << strHeadline << '\n';
+        auto fillChar = std::cout.fill('=');
+        std::cout << std::setw(strlen(strHeadline)) << "=" << std::setfill(fillChar) << std::endl;
         ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH.c_str());
     }
 
@@ -224,6 +226,15 @@ namespace ssb {
             size_t result) {
         ssb::totalTimes[index] = ssb::sw2.stop();
         std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::sw2 << " ns.\n";
+        ssb::print_headline();
+        ssb::print_result();
+    }
+
+    void after_query(
+            size_t index,
+            std::exception & ex) {
+        ssb::totalTimes[index] = ssb::sw2.stop();
+        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << ex.what() << "\n\t  time: " << ssb::sw2 << " ns.\n";
         ssb::print_headline();
         ssb::print_result();
     }

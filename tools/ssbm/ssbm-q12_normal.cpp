@@ -25,7 +25,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.2 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 1.2 Normal");
 
     SSBM_LOAD("date", "lineorder", "SSBM Q1.2:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /*
- * File:   ssbm-q34.cpp
+ * File:   ssbm-q34_normal.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 14. June 2017, 00:29
@@ -25,7 +25,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.4 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 3.4 Normal");
 
     SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.3:\n"
             "select c_city, s_city, d_year, sum(lo_revenue) as revenue\n"
@@ -111,7 +111,7 @@ int main(
         delete bat11;
 
         // d_yearmonth = 'Dec1997'
-        MEASURE_OP(bat13, select<std::equal_to>(batDM, const_cast<str_t>("Dec1997"))); // OID date | d_yearmonth
+        MEASURE_OP(bat13, select < std::equal_to > (batDM, const_cast<str_t>("Dec1997"))); // OID date | d_yearmonth
         auto bat14 = bat13->mirror_head(); // OID date | OID date
         delete bat13;
         MEASURE_OP(bat15, matchjoin(bat14, batDD)); // OID date | d_datekey
@@ -167,7 +167,7 @@ int main(
         MEASURE_OP_PAIR(pairGC, groupby(batAC, std::get<0>(pairGS), std::get<1>(pairGS)->size()));
         delete std::get<0>(pairGS);
         delete std::get<1>(pairGS);
-        MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
+        MEASURE_OP(batRR, aggregate_sum_grouped < v2_bigint_t > (batAR, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
         delete batAR;
         MEASURE_OP(batRD, fetchjoin(std::get<1>(pairGC), batAD));
         delete batAD;

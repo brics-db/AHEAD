@@ -21,13 +21,14 @@
 
 #include "ssb.hpp"
 #include "macros.hpp"
+#include <util/ModularRedundant.hpp>
 
 typedef DMRValue<bigint_t> DMR;
 
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.2 DMR Sequential\n=============================");
+    ssb::init(argc, argv, "SSBM Query 1.2 DMR Sequential");
 
     SSBM_LOAD("date", "lineorder", "SSBM Q1.2:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
@@ -126,9 +127,12 @@ int main(
         }
 
         // 5) Voting
-        auto result = vote_majority(results);
-
-        ssb::after_query(i, result);
+        try {
+            auto result = vote_majority_value(results);
+            ssb::after_query(i, result);
+        } catch (std::exception & ex) {
+            ssb::after_query(i, ex);
+        }
     }
 
     ssb::after_queries();

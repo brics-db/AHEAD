@@ -26,7 +26,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.3 Continuous Detection\n===================================");
+    ssb::init(argc, argv, "SSBM Query 1.3 Continuous Detection");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.3:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
