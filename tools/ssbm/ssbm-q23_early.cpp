@@ -116,7 +116,6 @@ int main(
         delete bat3;
         // lo_suppkey = s_suppkey
         MEASURE_OP(bat5, hashjoin(batLS, bat4)); // OID lineorder | OID supplier
-        delete batLS;
         delete bat4;
         // join with LO_PARTKEY to already reduce the join partners
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID Lineorder

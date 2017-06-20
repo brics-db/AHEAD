@@ -48,7 +48,7 @@ namespace ahead {
                             if (bat1->size() != bat2->size()) {
                                 throw std::runtime_error("arithmetic: bat1->size() != bat2->size()");
                             }
-                            auto result = new TempBAT<v2_void_t, Result>;
+                            auto result = skeleton<v2_void_t, Result>(bat1); // apply meta data from first BAT
                             result->reserve(bat1->size());
                             auto iter1 = bat1->begin();
                             auto iter2 = bat2->begin();

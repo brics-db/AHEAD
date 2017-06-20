@@ -198,21 +198,21 @@ int main(
         MEASURE_OP_PAIR(pairGC, groupby(batAC, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
         delete std::get<0>(pairGY);
         delete std::get<1>(pairGY);
-        MEASURE_OP_PAIR(pairGB, groupby(batAC, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
+        MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
         delete std::get<0>(pairGC);
         delete std::get<1>(pairGC);
 
         // result
         MEASURE_OP(batRP, aggregate_sum_grouped<v2_bigint_t>(batAP, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
         delete batAP;
-        MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGC), batAY));
+        MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY));
         delete batAY;
-        MEASURE_OP(batRC, fetchjoin(std::get<1>(pairGC), batAC));
+        MEASURE_OP(batRC, fetchjoin(std::get<1>(pairGB), batAC));
         delete batAC;
-        MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGC), batAB));
+        MEASURE_OP(batRB, fetchjoin(std::get<1>(pairGB), batAB));
         delete batAB;
-        delete std::get<0>(pairGC);
-        delete std::get<1>(pairGC);
+        delete std::get<0>(pairGB);
+        delete std::get<1>(pairGB);
 
         auto szResult = batRP->size();
 

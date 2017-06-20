@@ -261,7 +261,7 @@ namespace ahead {
         return rec;
     }
 
-    void ColumnManager::ColumnIterator::read(
+    size_t ColumnManager::ColumnIterator::read(
             std::istream & inStream) {
         const size_t pos = inStream.tellg();
         inStream.seekg(0, std::ios_base::end);
@@ -269,7 +269,7 @@ namespace ahead {
         inStream.seekg(pos, std::ios_base::beg);
         // char * buffer = new char[numBytesTotal];
         // istream.read(buffer, numBytesTotal);
-        ssize_t totalValues = static_cast<ssize_t>(numBytesTotal / this->columnMetaData.width);
+        size_t numTotalValues = numBytesTotal / this->columnMetaData.width;
         // char * pSrc = buffer;
         oid_t * elementCounter = nullptr;
 
@@ -291,23 +291,26 @@ namespace ahead {
         }
 
         // now read in the contents and split it into bucket sizes
-        while (totalValues > 0) {
+        ssize_t tmpNumTotalValues = static_cast<ssize_t>(numTotalValues);
+        while (tmpNumTotalValues > 0) {
             this->currentPosition = *elementCounter;
             size_t numValuesToInsert = this->recordsPerBucket - this->currentPosition;
-            if (numValuesToInsert > static_cast<size_t>(totalValues)) {
-                numValuesToInsert = totalValues;
+            if (numValuesToInsert > static_cast<size_t>(tmpNumTotalValues)) {
+                numValuesToInsert = tmpNumTotalValues;
             }
             size_t numBytesToInsert = numValuesToInsert * this->columnMetaData.width;
             *elementCounter = this->currentPosition + numValuesToInsert;
             char * pDest = reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width;
             // std::memcpy(pDest, pSrc, numValuesToInsert * this->columnMetaData.width);
             inStream.read(pDest, numBytesToInsert);
-            totalValues -= numValuesToInsert;
-            if (totalValues > 0) {
+            tmpNumTotalValues -= numValuesToInsert;
+            if (tmpNumTotalValues > 0) {
                 this->currentChunk = this->iterator->append();
                 elementCounter = static_cast<oid_t *>(this->currentChunk->content);
             }
         }
+
+        return numTotalValues;
     }
 
     void ColumnManager::ColumnIterator::write(

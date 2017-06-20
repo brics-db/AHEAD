@@ -190,7 +190,7 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     extern std::string emptyString;
     extern std::vector<StopWatch::rep> totalTimes;
     extern size_t I;
-    extern StopWatch sw1, sw2;
+    extern StopWatch swOperator, swTotalTime;
 
     extern std::vector<StopWatch::rep> opTimes;
     extern std::vector<size_t> batSizes;
@@ -219,6 +219,8 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
             std::exception & ex);
     void before_op();
     void after_op();
+    void lock_for_stats();
+    void unlock_for_stats();
     void finalize();
 
     void print_headline();

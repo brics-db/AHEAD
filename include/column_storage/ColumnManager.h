@@ -178,10 +178,11 @@ namespace ahead {
              * @param content Pointer to the contents
              * @param lenContent length of the content array in BYTES
              * @param dataSizeInBits length of one data item in BYTES
+             * @return number of read values
              *
              * BULK inserts the storage and automatically splits it into bucket sizes.
              */
-            void read(
+            size_t read(
                     std::istream & istream);
 
             /**
