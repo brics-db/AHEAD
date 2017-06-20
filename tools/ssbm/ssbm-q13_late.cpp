@@ -110,16 +110,20 @@ int main(
         delete batF;
         delete bat4;
 
-        // 4) lazy decode and result
+        // 4) check and decode
         MEASURE_OP_TUPLE(tupleI, checkAndDecodeAN(batG));
         CLEAR_CHECKANDDECODE_AN(tupleI);
+        auto batI = std::get<0>(tupleI);
         delete batG;
         MEASURE_OP_TUPLE(tupleJ, checkAndDecodeAN(batH));
         CLEAR_CHECKANDDECODE_AN(tupleJ);
+        auto batJ = std::get<0>(tupleJ);
         delete batH;
-        MEASURE_OP(batK, aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleI), std::get<0>(tupleJ)));
-        delete std::get<0>(tupleI);
-        delete std::get<0>(tupleJ);
+
+        // result
+        MEASURE_OP(batK, aggregate_mul_sum<v2_bigint_t>(batI, batJ));
+        delete batI;
+        delete batJ;
         auto iter = batK->begin();
         auto result = iter->tail();
         delete iter;

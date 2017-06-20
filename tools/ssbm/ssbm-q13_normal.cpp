@@ -80,7 +80,7 @@ int main(
         MEASURE_OP(bat6, matchjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
 
-        // 1) select from date (join inbetween to reduce the number of lines we touch in total)
+        // 2) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP(bat7, select<std::equal_to>(batDY, 1994)); // d_year = 1994
         auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_weeknuminyear
         delete bat7;

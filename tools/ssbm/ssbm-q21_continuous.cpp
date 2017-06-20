@@ -159,12 +159,16 @@ int main(
         MEASURE_OP_TUPLE(tupleAR, fetchjoinAN(batW2, batLRenc)); // OID lineorder | lo_revenue (where ...)
         CLEAR_FETCHJOIN_AN(tupleAR);
         delete batW2;
+
+        // grouping
         MEASURE_OP_TUPLE(tupleGY, groupbyAN(std::get<0>(tupleAY)));
         CLEAR_GROUPBY_UNARY_AN(tupleGY);
         MEASURE_OP_TUPLE(tupleGB, groupbyAN(std::get<0>(tupleAB), std::get<0>(tupleGY), std::get<1>(tupleGY)->size()));
         CLEAR_GROUPBY_BINARY_AN(tupleGB);
         delete std::get<0>(tupleGY);
         delete std::get<1>(tupleGY);
+
+        // result
         MEASURE_OP_TUPLE(tupleRR, aggregate_sum_groupedAN<v2_resbigint_t>(std::get<0>(tupleAR), std::get<0>(tupleGB), std::get<1>(tupleGB)->size()));
         CLEAR_GROUPEDSUM_AN(tupleRR);
         delete std::get<0>(tupleAR);

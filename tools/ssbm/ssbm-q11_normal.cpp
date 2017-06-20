@@ -98,7 +98,7 @@ int main(
         delete batC;
         delete bat4;
 
-        // 4) result
+        // result
         MEASURE_OP(batF, aggregate_mul_sum<v2_bigint_t>(batD, batE, 0));
         delete batD;
         delete batE;

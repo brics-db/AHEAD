@@ -13,21 +13,22 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q41_normal.cpp
+ * File:   ssbm-q41_late.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 14. June 2017, 14:46
+ * Created on 20. June 2017, 14:48
  */
 
+#include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
 #include "macros.hpp"
 
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 4.1 Normal");
+    ssb::init(argc, argv, "SSBM Query 4.1 Late Detection");
 
-    SSBM_LOAD("date", "customer", "supplier", "part", "lineorder", "SSBM Q4.1:\n"
+    SSBM_LOAD("dateAN", "customerAN", "supplierAN", "partAN", "lineorderAN", "SSBM Q4.1:\n"
             "select d_year, c_nation, sum(lo_revenue - lo_supplycost) as profit\n"
             "  from date, customer, supplier, part, lineorder\n"
             "  where lo_custkey = c_custkey\n"
@@ -40,39 +41,39 @@ int main(
             "  group by d_year, c_nation;");
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(batCCcb, new int_colbat_t("customer", "custkey"));
-    MEASURE_OP(batCRcb, new str_colbat_t("customer", "region"));
-    MEASURE_OP(batCNcb, new str_colbat_t("customer", "nation"));
-    MEASURE_OP(batDDcb, new int_colbat_t("date", "datekey"));
-    MEASURE_OP(batDYcb, new shortint_colbat_t("date", "year"));
-    MEASURE_OP(batLCcb, new int_colbat_t("lineorder", "custkey"));
-    MEASURE_OP(batLScb, new int_colbat_t("lineorder", "suppkey"));
-    MEASURE_OP(batLPcb, new int_colbat_t("lineorder", "partkey"));
-    MEASURE_OP(batLOcb, new int_colbat_t("lineorder", "orderdate"));
-    MEASURE_OP(batLRcb, new int_colbat_t("lineorder", "revenue"));
-    MEASURE_OP(batLSCcb, new int_colbat_t("lineorder", "supplycost"));
-    MEASURE_OP(batPPcb, new int_colbat_t("part", "partkey"));
-    MEASURE_OP(batPMcb, new str_colbat_t("part", "mfgr"));
-    MEASURE_OP(batSScb, new int_colbat_t("supplier", "suppkey"));
-    MEASURE_OP(batSRcb, new str_colbat_t("supplier", "region"));
+    MEASURE_OP(batCCcb, new resint_colbat_t("customerAN", "custkey"));
+    MEASURE_OP(batCRcb, new str_colbat_t("customerAN", "region"));
+    MEASURE_OP(batCNcb, new str_colbat_t("customerAN", "nation"));
+    MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
+    MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(batLCcb, new resint_colbat_t("lineorderAN", "custkey"));
+    MEASURE_OP(batLScb, new resint_colbat_t("lineorderAN", "suppkey"));
+    MEASURE_OP(batLPcb, new resint_colbat_t("lineorderAN", "partkey"));
+    MEASURE_OP(batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
+    MEASURE_OP(batLRcb, new resint_colbat_t("lineorderAN", "revenue"));
+    MEASURE_OP(batLSCcb, new resint_colbat_t("lineorderAN", "supplycost"));
+    MEASURE_OP(batPPcb, new resint_colbat_t("partAN", "partkey"));
+    MEASURE_OP(batPMcb, new str_colbat_t("partAN", "mfgr"));
+    MEASURE_OP(batSScb, new resint_colbat_t("supplierAN", "suppkey"));
+    MEASURE_OP(batSRcb, new str_colbat_t("supplierAN", "region"));
 
     ssb::after_create_columnbats();
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(batCC, copy(batCCcb));
+    MEASURE_OP(batCCenc, copy(batCCcb));
     MEASURE_OP(batCR, copy(batCRcb));
     MEASURE_OP(batCN, copy(batCNcb));
-    MEASURE_OP(batDD, copy(batDDcb));
-    MEASURE_OP(batDY, copy(batDYcb));
-    MEASURE_OP(batLC, copy(batLCcb));
-    MEASURE_OP(batLS, copy(batLScb));
-    MEASURE_OP(batLP, copy(batLPcb));
-    MEASURE_OP(batLO, copy(batLOcb));
-    MEASURE_OP(batLR, copy(batLRcb));
-    MEASURE_OP(batLSC, copy(batLSCcb));
-    MEASURE_OP(batPP, copy(batPPcb));
+    MEASURE_OP(batDDenc, copy(batDDcb));
+    MEASURE_OP(batDYenc, copy(batDYcb));
+    MEASURE_OP(batLCenc, copy(batLCcb));
+    MEASURE_OP(batLSenc, copy(batLScb));
+    MEASURE_OP(batLPenc, copy(batLPcb));
+    MEASURE_OP(batLOenc, copy(batLOcb));
+    MEASURE_OP(batLRenc, copy(batLRcb));
+    MEASURE_OP(batLSCenc, copy(batLSCcb));
+    MEASURE_OP(batPPenc, copy(batPPcb));
     MEASURE_OP(batPM, copy(batPMcb));
-    MEASURE_OP(batSS, copy(batSScb));
+    MEASURE_OP(batSSenc, copy(batSScb));
     MEASURE_OP(batSR, copy(batSRcb));
 
     delete batCCcb;
@@ -100,12 +101,12 @@ int main(
         MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batPM, const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
-        auto bat3 = batPP->reverse(); // p_partkey | VOID part
+        auto bat3 = batPPenc->reverse(); // p_partkey | VOID part
         MEASURE_OP(bat4, matchjoin(bat3, bat2)); // p_partkey | OID part
         delete bat2;
         delete bat3;
         // lo_partkey = p_partkey
-        MEASURE_OP(bat5, hashjoin(batLP, bat4)); // OID lineorder | OID supplier
+        MEASURE_OP(bat5, hashjoin(batLPenc, bat4)); // OID lineorder | OID supplier
         delete bat4;
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID lineorder
         delete bat5;
@@ -114,12 +115,12 @@ int main(
         MEASURE_OP(bat7, select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
         auto bat8 = bat7->mirror_head(); // OID supplier | OID supplier
         delete bat7;
-        auto bat9 = batSS->reverse(); // s_suppkey | VOID supplier
+        auto bat9 = batSSenc->reverse(); // s_suppkey | VOID supplier
         MEASURE_OP(bat10, matchjoin(bat9, bat8)); // s_suppkey | OID supplier
         delete bat8;
         delete bat9;
         // reduce number of l_suppkey joinpartners
-        MEASURE_OP(bat11, matchjoin(bat6, batLS)); // OID lineorder | lo_suppkey
+        MEASURE_OP(bat11, matchjoin(bat6, batLSenc)); // OID lineorder | lo_suppkey
         delete bat6;
         // lo_suppkey = s_suppkey
         MEASURE_OP(bat12, hashjoin(bat11, bat10)); // OID lineorder | OID suppkey
@@ -132,12 +133,12 @@ int main(
         MEASURE_OP(bat14, select<std::equal_to>(batCR, const_cast<str_t>("AMERICA"))); // OID customer | c_region
         auto bat15 = bat14->mirror_head(); // OID customer | OID customer
         delete bat14;
-        auto bat16 = batCC->reverse(); // c_custkey | VOID customer
+        auto bat16 = batCCenc->reverse(); // c_custkey | VOID customer
         MEASURE_OP(bat17, matchjoin(bat16, bat15)); // c_custkey | OID customer
         delete bat15;
         delete bat16;
         // reduce number of l_custkey joinpartners
-        MEASURE_OP(bat18, matchjoin(bat13, batLC)); // OID lineorder | lo_custkey
+        MEASURE_OP(bat18, matchjoin(bat13, batLCenc)); // OID lineorder | lo_custkey
         delete bat13;
         // lo_custkey = c_custkey
         MEASURE_OP(bat19, hashjoin(bat18, bat17)); // OID lineorder | OID customer
@@ -148,12 +149,12 @@ int main(
         delete bat19;
         auto bat21 = bat20->clear_head(); // VOID | OID lineorder
         delete bat20;
-        MEASURE_OP(batAR, fetchjoin(bat21, batLR)); // VOID | lo_revenue
-        MEASURE_OP(batAS, fetchjoin(bat21, batLSC)); // VOID | lo_supplycost
-        MEASURE_OP(batAP, (arithmetic<SUB, v2_int_t>(batAR, batAS))); // VOID | lo_revenue - lo_supplycost !!
-        delete batAR;
-        delete batAS;
-        MEASURE_OP(bat22, fetchjoin(bat21, batLC)); // VOID | lo_custkey
+        MEASURE_OP(batARenc, fetchjoin(bat21, batLRenc)); // VOID | lo_revenue
+        MEASURE_OP(batASenc, fetchjoin(bat21, batLSCenc)); // VOID | lo_supplycost
+        MEASURE_OP(batAPenc, (arithmetic<SUB, v2_resint_t>(batARenc, batASenc))); // VOID | lo_revenue - lo_supplycost !!
+        delete batARenc;
+        delete batASenc;
+        MEASURE_OP(bat22, fetchjoin(bat21, batLCenc)); // VOID | lo_custkey
         MEASURE_OP(bat23, hashjoin(bat22, bat17)); // OID | OID customer
         delete bat17;
         delete bat22;
@@ -161,16 +162,26 @@ int main(
         delete bat23;
         MEASURE_OP(batAN, fetchjoin(bat24, batCN)); // VOID | c_nation !!!
         delete bat24;
-        MEASURE_OP(bat25, fetchjoin(bat21, batLO)); // VOID | lo_orderdate
+        MEASURE_OP(bat25, fetchjoin(bat21, batLOenc)); // VOID | lo_orderdate
         delete bat21;
-        auto bat29 = batDD->reverse(); // d_datekey | VOID date
+        auto bat29 = batDDenc->reverse(); // d_datekey | VOID date
         MEASURE_OP(bat30, hashjoin(bat25, bat29)); // OID | OID date
         delete bat25;
         delete bat29;
         auto bat31 = bat30->clear_head(); // VOID | OID date
         delete bat30;
-        MEASURE_OP(batAY, fetchjoin(bat31, batDY)); // VOID | d_year !!!
+        MEASURE_OP(batAYenc, fetchjoin(bat31, batDYenc)); // VOID | d_year !!!
         delete bat31;
+
+        // check and decode
+        MEASURE_OP_TUPLE(tupleAP, checkAndDecodeAN(batAPenc));
+        CLEAR_CHECKANDDECODE_AN(tupleAP);
+        auto batAP = std::get<0>(tupleAP);
+        delete batAPenc;
+        MEASURE_OP_TUPLE(tupleAY, checkAndDecodeAN(batAYenc));
+        CLEAR_CHECKANDDECODE_AN(tupleAY);
+        auto batAY = std::get<0>(tupleAY);
+        delete batAYenc;
 
         // grouping
         MEASURE_OP_PAIR(pairGY, groupby(batAY));
@@ -220,20 +231,20 @@ int main(
 
     ssb::after_queries();
 
-    delete batCC;
+    delete batCCenc;
     delete batCR;
     delete batCN;
-    delete batDD;
-    delete batDY;
-    delete batLC;
-    delete batLS;
-    delete batLP;
-    delete batLO;
-    delete batLR;
-    delete batLSC;
-    delete batPP;
+    delete batDDenc;
+    delete batDYenc;
+    delete batLCenc;
+    delete batLSenc;
+    delete batLPenc;
+    delete batLOenc;
+    delete batLRenc;
+    delete batLSCenc;
+    delete batPPenc;
     delete batPM;
-    delete batSS;
+    delete batSSenc;
     delete batSR;
 
     ssb::finalize();

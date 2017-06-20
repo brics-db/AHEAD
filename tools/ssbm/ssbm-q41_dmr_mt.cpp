@@ -205,6 +205,8 @@ int main(
             MEASURE_OP_PAIR(pairGN, groupby(batAN, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
             delete std::get<0>(pairGY);
             delete std::get<1>(pairGY);
+
+            // result
             MEASURE_OP(batRP, aggregate_sum_grouped<v2_bigint_t>(batAP, std::get<0>(pairGN), std::get<1>(pairGN)->size()));
             delete batAP;
             MEASURE_OP(batRN, fetchjoin(std::get<1>(pairGN), batAN));

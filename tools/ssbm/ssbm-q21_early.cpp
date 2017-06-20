@@ -86,38 +86,44 @@ int main(
         // 0) Eager Check
         MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));
         CLEAR_CHECKANDDECODE_AN(tupleDD);
+        auto batDD = std::get<0>(tupleDD);
         MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));
         CLEAR_CHECKANDDECODE_AN(tupleDY);
+        auto batDY = std::get<0>(tupleDY);
         MEASURE_OP_TUPLE(tupleLP, checkAndDecodeAN(batLPenc));
         CLEAR_CHECKANDDECODE_AN(tupleLP);
+        auto batLP = std::get<0>(tupleLP);
         MEASURE_OP_TUPLE(tupleLS, checkAndDecodeAN(batLSenc));
         CLEAR_CHECKANDDECODE_AN(tupleLS);
+        auto batLS = std::get<0>(tupleLS);
         MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));
         CLEAR_CHECKANDDECODE_AN(tupleLO);
+        auto batLO = std::get<0>(tupleLO);
         MEASURE_OP_TUPLE(tupleLR, checkAndDecodeAN(batLRenc));
         CLEAR_CHECKANDDECODE_AN(tupleLR);
+        auto batLR = std::get<0>(tupleLR);
         MEASURE_OP_TUPLE(tuplePP, checkAndDecodeAN(batPPenc));
         CLEAR_CHECKANDDECODE_AN(tuplePP);
+        auto batPP = std::get<0>(tuplePP);
         MEASURE_OP_TUPLE(tupleSS, checkAndDecodeAN(batSSenc));
         CLEAR_CHECKANDDECODE_AN(tupleSS);
+        auto batSS = std::get<0>(tupleSS);
 
         // s_region = 'AMERICA'
         MEASURE_OP(bat1, select<std::equal_to>(batSR, const_cast<str_t>("AMERICA"))); // OID supplier | s_region
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
-        auto bat3 = std::get<0>(tupleSS)->reverse(); // s_suppkey | OID supplier
-        delete std::get<0>(tupleSS);
+        auto bat3 = batSS->reverse(); // s_suppkey | OID supplier
         MEASURE_OP(bat4, matchjoin(bat3, bat2)); // s_suppkey | OID supplier
         delete bat2;
         delete bat3;
         // lo_suppkey = s_suppkey
-        MEASURE_OP(bat5, hashjoin(std::get<0>(tupleLS), bat4)); // OID lineorder | OID supplier
-        delete std::get<0>(tupleLS);
+        MEASURE_OP(bat5, hashjoin(batLS, bat4)); // OID lineorder | OID supplier
         delete bat4;
         // join with LO_PARTKEY to already reduce the join partners
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID Lineorder
         delete bat5;
-        MEASURE_OP(bat7, matchjoin(bat6, std::get<0>(tupleLP))); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
+        MEASURE_OP(bat7, matchjoin(bat6, batLP)); // OID lineorder | lo_partkey (where s_region = 'AMERICA')
         delete bat6;
 
         // p_category = 'MFGR#12'
@@ -126,7 +132,7 @@ int main(
         // MEASURE_OP(bat8, select<equal_to>(batPB, "MFGR#121")); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         delete bat8;
-        auto batA = std::get<0>(tuplePP)->reverse(); // p_partkey | OID part
+        auto batA = batPP->reverse(); // p_partkey | OID part
         MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'
         delete batA;
         delete bat9;
@@ -137,28 +143,23 @@ int main(
         // join with date now!
         auto batE = batC->mirror_head(); // OID lineorder | OID lineorder  (where ...)
         delete batC;
-        MEASURE_OP(batF, matchjoin(batE, std::get<0>(tupleLO))); // OID lineorder | lo_orderdate (where ...)
+        MEASURE_OP(batF, matchjoin(batE, batLO)); // OID lineorder | lo_orderdate (where ...)
         delete batE;
-        delete std::get<0>(tupleLO);
-        auto batH = std::get<0>(tupleDD)->reverse(); // d_datekey | OID date
-        delete std::get<0>(tupleDD);
+        auto batH = batDD->reverse(); // d_datekey | OID date
         MEASURE_OP(batI, hashjoin(batF, batH)); // OID lineorder | OID date (where ..., joined with date)
         delete batF;
         delete batH;
 
         // now prepare grouped sum
         auto batW = batI->mirror_head(); // OID lineorder | OID lineorder
-        MEASURE_OP(batX, matchjoin(batW, std::get<0>(tupleLP))); // OID lineorder | lo_partkey
-        delete std::get<0>(tupleLP);
-        auto batY = std::get<0>(tuplePP)->reverse(); // p_partkey | OID part
-        delete std::get<0>(tuplePP);
+        MEASURE_OP(batX, matchjoin(batW, batLP)); // OID lineorder | lo_partkey
+        auto batY = batPP->reverse(); // p_partkey | OID part
         MEASURE_OP(batZ, hashjoin(batX, batY)); // OID lineorder | OID part
         delete batX;
         delete batY;
         auto batI2 = batI->clear_head();
         delete batI;
-        MEASURE_OP(batAY, fetchjoin(batI2, std::get<0>(tupleDY))); // OID lineorder | d_year
-        delete std::get<0>(tupleDY);
+        MEASURE_OP(batAY, fetchjoin(batI2, batDY)); // OID lineorder | d_year
         delete batI2;
         auto batZ2 = batZ->clear_head();
         delete batZ;
@@ -166,13 +167,26 @@ int main(
         delete batZ2;
         auto batW2 = batW->clear_head();
         delete batW;
-        MEASURE_OP(batAR, fetchjoin(batW2, std::get<0>(tupleLR))); // OID lineorder | lo_revenue (where ...)
-        delete std::get<0>(tupleLR);
+        MEASURE_OP(batAR, fetchjoin(batW2, batLR)); // OID lineorder | lo_revenue (where ...)
         delete batW2;
+
+        // delete decoded columns
+        delete batDD;
+        delete batDY;
+        delete batLP;
+        delete batLS;
+        delete batLO;
+        delete batLR;
+        delete batPP;
+        delete batSS;
+
+        // grouping
         MEASURE_OP_PAIR(pairGY, groupby(batAY));
         MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
         delete std::get<0>(pairGY);
         delete std::get<1>(pairGY);
+
+        // result
         MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
         delete batAR;
         MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY));

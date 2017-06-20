@@ -161,10 +161,14 @@ int main(
             delete batW;
             MEASURE_OP(batAR, fetchjoin(batW2, batLRs[k])); // OID lineorder | lo_revenue (where ...)
             delete batW2;
+
+            // grouping
             MEASURE_OP_PAIR(pairGY, groupby(batAY));
             MEASURE_OP_PAIR(pairGB, groupby(batAB, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
             delete std::get<0>(pairGY);
             delete std::get<1>(pairGY);
+
+            // result
             MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
             delete batAR;
             MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGB), batAY));

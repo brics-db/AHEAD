@@ -104,16 +104,20 @@ int main(
         delete batC;
         delete bat4;
 
-        // 4) lazy decode and result
+        // 4) late check and decode
         MEASURE_OP_TUPLE(tupleF, checkAndDecodeAN(batD));
         CLEAR_CHECKANDDECODE_AN(tupleF);
+        auto batF = std::get<0>(tupleF);
         delete batD;
         MEASURE_OP_TUPLE(tupleG, checkAndDecodeAN(batE));
         CLEAR_CHECKANDDECODE_AN(tupleG);
+        auto batG = std::get<0>(tupleG);
         delete batE;
-        MEASURE_OP(batH, aggregate_mul_sum<v2_bigint_t>(std::get<0>(tupleF), std::get<0>(tupleG)));
-        delete std::get<0>(tupleF);
-        delete std::get<0>(tupleG);
+
+        // result
+        MEASURE_OP(batH, aggregate_mul_sum<v2_bigint_t>(batF, batG));
+        delete batF;
+        delete batG;
         auto iter = batH->begin();
         auto result = iter->tail();
         delete iter;

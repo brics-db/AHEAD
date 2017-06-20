@@ -42,6 +42,7 @@ template BAT<v2_void_t, Result> * arithmetic<DIV, Result>(BAT<Head1, Tail1> * ba
         }
 
             ARITHMETIC(v2_int_t, v2_int_t, v2_int_t)
+            ARITHMETIC(v2_resint_t, v2_resint_t, v2_resint_t)
 
         }
     }

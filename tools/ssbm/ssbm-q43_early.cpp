@@ -13,21 +13,22 @@
 // limitations under the License.
 
 /*
- * File:   ssbm-q43_normal.cpp
+ * File:   ssbm-q43_early.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 16. June 2017, 15:16
+ * Created on 20. June 2017, 13:28
  */
 
+#include <column_operators/OperatorsAN.hpp>
 #include "ssb.hpp"
 #include "macros.hpp"
 
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 4.3 Normal");
+    ssb::init(argc, argv, "SSBM Query 4.3 Early Detection");
 
-    SSBM_LOAD("date", "customer", "supplier", "part", "lineorder", "SSBM Q4.3:\n"
+    SSBM_LOAD("dateAN", "customerAN", "supplierAN", "partAN", "lineorderAN", "SSBM Q4.3:\n"
             "select d_year, s_city, p_brand, sum(lo_revenue - lo_supplycost) as profit\n"
             "  from date, customer, supplier, part, lineorder\n"
             "  where lo_custkey = c_custkey\n"
@@ -40,38 +41,38 @@ int main(
             "  group by d_year, s_city, p_brand;");
 
     /* Measure loading ColumnBats */
-    MEASURE_OP(batCCcb, new int_colbat_t("customer", "custkey"));
-    MEASURE_OP(batDDcb, new int_colbat_t("date", "datekey"));
-    MEASURE_OP(batDYcb, new shortint_colbat_t("date", "year"));
-    MEASURE_OP(batLCcb, new int_colbat_t("lineorder", "custkey"));
-    MEASURE_OP(batLScb, new int_colbat_t("lineorder", "suppkey"));
-    MEASURE_OP(batLPcb, new int_colbat_t("lineorder", "partkey"));
-    MEASURE_OP(batLOcb, new int_colbat_t("lineorder", "orderdate"));
-    MEASURE_OP(batLRcb, new int_colbat_t("lineorder", "revenue"));
-    MEASURE_OP(batLSCcb, new int_colbat_t("lineorder", "supplycost"));
-    MEASURE_OP(batPPcb, new int_colbat_t("part", "partkey"));
-    MEASURE_OP(batPBcb, new str_colbat_t("part", "brand"));
-    MEASURE_OP(batPCcb, new str_colbat_t("part", "category"));
-    MEASURE_OP(batSScb, new int_colbat_t("supplier", "suppkey"));
-    MEASURE_OP(batSNcb, new str_colbat_t("supplier", "nation"));
-    MEASURE_OP(batSCcb, new str_colbat_t("supplier", "city"));
+    MEASURE_OP(batCCcb, new resint_colbat_t("customerAN", "custkey"));
+    MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
+    MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
+    MEASURE_OP(batLCcb, new resint_colbat_t("lineorderAN", "custkey"));
+    MEASURE_OP(batLScb, new resint_colbat_t("lineorderAN", "suppkey"));
+    MEASURE_OP(batLPcb, new resint_colbat_t("lineorderAN", "partkey"));
+    MEASURE_OP(batLOcb, new resint_colbat_t("lineorderAN", "orderdate"));
+    MEASURE_OP(batLRcb, new resint_colbat_t("lineorderAN", "revenue"));
+    MEASURE_OP(batLSCcb, new resint_colbat_t("lineorderAN", "supplycost"));
+    MEASURE_OP(batPPcb, new resint_colbat_t("partAN", "partkey"));
+    MEASURE_OP(batPBcb, new str_colbat_t("partAN", "brand"));
+    MEASURE_OP(batPCcb, new str_colbat_t("partAN", "category"));
+    MEASURE_OP(batSScb, new resint_colbat_t("supplierAN", "suppkey"));
+    MEASURE_OP(batSNcb, new str_colbat_t("supplierAN", "nation"));
+    MEASURE_OP(batSCcb, new str_colbat_t("supplierAN", "city"));
 
     ssb::after_create_columnbats();
 
     /* Measure converting (copying) ColumnBats to TempBats */
-    MEASURE_OP(batCC, copy(batCCcb));
-    MEASURE_OP(batDD, copy(batDDcb));
-    MEASURE_OP(batDY, copy(batDYcb));
-    MEASURE_OP(batLC, copy(batLCcb));
-    MEASURE_OP(batLS, copy(batLScb));
-    MEASURE_OP(batLP, copy(batLPcb));
-    MEASURE_OP(batLO, copy(batLOcb));
-    MEASURE_OP(batLR, copy(batLRcb));
-    MEASURE_OP(batLSC, copy(batLSCcb));
-    MEASURE_OP(batPP, copy(batPPcb));
+    MEASURE_OP(batCCenc, copy(batCCcb));
+    MEASURE_OP(batDDenc, copy(batDDcb));
+    MEASURE_OP(batDYenc, copy(batDYcb));
+    MEASURE_OP(batLCenc, copy(batLCcb));
+    MEASURE_OP(batLSenc, copy(batLScb));
+    MEASURE_OP(batLPenc, copy(batLPcb));
+    MEASURE_OP(batLOenc, copy(batLOcb));
+    MEASURE_OP(batLRenc, copy(batLRcb));
+    MEASURE_OP(batLSCenc, copy(batLSCcb));
+    MEASURE_OP(batPPenc, copy(batPPcb));
     MEASURE_OP(batPB, copy(batPBcb));
     MEASURE_OP(batPC, copy(batPCcb));
-    MEASURE_OP(batSS, copy(batSScb));
+    MEASURE_OP(batSSenc, copy(batSScb));
     MEASURE_OP(batSC, copy(batSCcb));
     MEASURE_OP(batSN, copy(batSNcb));
 
@@ -95,6 +96,41 @@ int main(
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
+
+        // 0) Eager Check
+        MEASURE_OP_TUPLE(tupleCC, checkAndDecodeAN(batCCenc));
+        CLEAR_CHECKANDDECODE_AN(tupleCC);
+        auto batCC = std::get<0>(tupleCC);
+        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDD);
+        auto batDD = std::get<0>(tupleDD);
+        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDY);
+        auto batDY = std::get<0>(tupleDY);
+        MEASURE_OP_TUPLE(tupleLC, checkAndDecodeAN(batLCenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLC);
+        auto batLC = std::get<0>(tupleLC);
+        MEASURE_OP_TUPLE(tupleLS, checkAndDecodeAN(batLSenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLS);
+        auto batLS = std::get<0>(tupleLS);
+        MEASURE_OP_TUPLE(tupleLP, checkAndDecodeAN(batLPenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLP);
+        auto batLP = std::get<0>(tupleLP);
+        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLO);
+        auto batLO = std::get<0>(tupleLO);
+        MEASURE_OP_TUPLE(tupleLR, checkAndDecodeAN(batLRenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLR);
+        auto batLR = std::get<0>(tupleLR);
+        MEASURE_OP_TUPLE(tupleLSC, checkAndDecodeAN(batLSCenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLSC);
+        auto batLSC = std::get<0>(tupleLSC);
+        MEASURE_OP_TUPLE(tuplePP, checkAndDecodeAN(batPPenc));
+        CLEAR_CHECKANDDECODE_AN(tuplePP);
+        auto batPP = std::get<0>(tuplePP);
+        MEASURE_OP_TUPLE(tupleSS, checkAndDecodeAN(batSSenc));
+        CLEAR_CHECKANDDECODE_AN(tupleSS);
+        auto batSS = std::get<0>(tupleSS);
 
         // p_category = 'MFGR#14'
         MEASURE_OP(bat1, (select<std::equal_to>(batPC, const_cast<str_t>("MFGR#14")))); // OID part | p_mfgr
@@ -182,6 +218,19 @@ int main(
         MEASURE_OP(batAB, fetchjoin(bat39, batPB)); // VOID p_brand !!!
         delete bat39;
 
+        // delete decoded columns
+        delete batCC;
+        delete batDD;
+        delete batDY;
+        delete batLC;
+        delete batLS;
+        delete batLP;
+        delete batLO;
+        delete batLR;
+        delete batLSC;
+        delete batPP;
+        delete batSS;
+
         // grouping
         MEASURE_OP_PAIR(pairGY, groupby(batAY));
         MEASURE_OP_PAIR(pairGC, groupby(batAC, std::get<0>(pairGY), std::get<1>(pairGY)->size()));
@@ -239,19 +288,19 @@ int main(
 
     ssb::after_queries();
 
-    delete batCC;
-    delete batDD;
-    delete batDY;
-    delete batLC;
-    delete batLS;
-    delete batLP;
-    delete batLO;
-    delete batLR;
-    delete batLSC;
-    delete batPP;
+    delete batCCenc;
+    delete batDDenc;
+    delete batDYenc;
+    delete batLCenc;
+    delete batLSenc;
+    delete batLPenc;
+    delete batLOenc;
+    delete batLRenc;
+    delete batLSCenc;
+    delete batPPenc;
     delete batPB;
     delete batPC;
-    delete batSS;
+    delete batSSenc;
     delete batSC;
     delete batSN;
 
