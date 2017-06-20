@@ -3,20 +3,20 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
- * File:   ssbm-q32_dmr_seq.cpp
+/*
+ * File:   ssbm-q34_dmr_mt.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 13. June 2017, 09:49
+ * Created on 20. June 2017, 10:21
  */
 
 #include <omp.h>
@@ -30,77 +30,72 @@ typedef DMRValue<result_tuple_t> DMR;
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.2 DMR Parallel");
+    ssb::init(argc, argv, "SSBM Query 3.4 DMR Parallel");
 
-    SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.2:\n"
+    SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.3:\n"
             "select c_city, s_city, d_year, sum(lo_revenue) as revenue\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"
             "    and lo_suppkey = s_suppkey\n"
             "    and lo_orderdate = d_datekey\n"
-            "    and c_nation = 'UNITED STATES'\n"
-            "    and s_nation = 'UNITED STATES'\n"
-            "    and d_year >= 1992 and d_year <= 1997\n"
+            "    and (c_city = 'UNITED KI1' or c_city = 'UNITED KI5')\n"
+            "    and (s_city = 'UNITED KI1' or s_city = 'UNITED KI5')\n"
+            "    and d_yearmonth = 'Dec1997'\n"
             "  group by c_city, s_city, d_year;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batCKcb, new int_colbat_t("customer", "custkey"));
     MEASURE_OP(batCCcb, new str_colbat_t("customer", "city"));
-    MEASURE_OP(batCNcb, new str_colbat_t("customer", "nation"));
     MEASURE_OP(batDDcb, new int_colbat_t("date", "datekey"));
     MEASURE_OP(batDYcb, new shortint_colbat_t("date", "year"));
+    MEASURE_OP(batDMcb, new str_colbat_t("date", "yearmonth"));
     MEASURE_OP(batLCcb, new int_colbat_t("lineorder", "custkey"));
     MEASURE_OP(batLScb, new int_colbat_t("lineorder", "suppkey"));
     MEASURE_OP(batLOcb, new int_colbat_t("lineorder", "orderdate"));
     MEASURE_OP(batLRcb, new int_colbat_t("lineorder", "revenue"));
     MEASURE_OP(batSScb, new int_colbat_t("supplier", "suppkey"));
     MEASURE_OP(batSCcb, new str_colbat_t("supplier", "city"));
-    MEASURE_OP(batSNcb, new str_colbat_t("supplier", "nation"));
 
     ssb::after_create_columnbats();
 
     /* Measure converting (copying) ColumnBats to TempBats */
     int_tmpbat_t * batCK[DMR::modularity];
     str_tmpbat_t * batCC[DMR::modularity];
-    str_tmpbat_t * batCN[DMR::modularity];
     int_tmpbat_t * batDD[DMR::modularity];
     shortint_tmpbat_t * batDY[DMR::modularity];
+    str_tmpbat_t * batDM[DMR::modularity];
     int_tmpbat_t * batLC[DMR::modularity];
     int_tmpbat_t * batLS[DMR::modularity];
     int_tmpbat_t * batLO[DMR::modularity];
     int_tmpbat_t * batLR[DMR::modularity];
     int_tmpbat_t * batSS[DMR::modularity];
     str_tmpbat_t * batSC[DMR::modularity];
-    str_tmpbat_t * batSN[DMR::modularity];
 
 #pragma omp parallel for
     for (size_t k = 0; k < DMR::modularity; ++k) {
         MEASURE_OP(batCK, [k], copy(batCKcb), batCK[k]);
         MEASURE_OP(batCC, [k], copy(batCCcb), batCC[k]);
-        MEASURE_OP(batCN, [k], copy(batCNcb), batCN[k]);
         MEASURE_OP(batDD, [k], copy(batDDcb), batDD[k]);
         MEASURE_OP(batDY, [k], copy(batDYcb), batDY[k]);
+        MEASURE_OP(batDM, [k], copy(batDMcb), batDM[k]);
         MEASURE_OP(batLC, [k], copy(batLCcb), batLC[k]);
         MEASURE_OP(batLS, [k], copy(batLScb), batLS[k]);
         MEASURE_OP(batLO, [k], copy(batLOcb), batLO[k]);
         MEASURE_OP(batLR, [k], copy(batLRcb), batLR[k]);
         MEASURE_OP(batSS, [k], copy(batSScb), batSS[k]);
         MEASURE_OP(batSC, [k], copy(batSCcb), batSC[k]);
-        MEASURE_OP(batSN, [k], copy(batSNcb), batSN[k]);
     }
 
     delete batCKcb;
     delete batCCcb;
-    delete batCNcb;
     delete batDDcb;
-    delete batDYcb;
+    delete batDMcb;
     delete batLCcb;
     delete batLScb;
     delete batLOcb;
     delete batLRcb;
     delete batSScb;
     delete batSCcb;
-    delete batSNcb;
 
     ssb::before_queries();
 
@@ -111,8 +106,8 @@ int main(
 
 #pragma omp parallel for
         for (size_t k = 0; k < DMR::modularity; ++k) {
-            // s_nation = 'UNITED STATES'
-            MEASURE_OP(bat1, select<std::equal_to>(batSN[k], const_cast<str_t>("UNITED STATES"))); // OID supplier | s_nation
+            // s_city = 'UNITED KI1' or s_city = 'UNITED KI5'
+            MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batSC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
             auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
             delete bat1;
             auto bat3 = batSS[k]->reverse(); // s_suppkey | VOID supplier
@@ -124,8 +119,8 @@ int main(
             auto bat6 = bat5->mirror_head(); // OID lineorder | OID lineorder
             delete bat5;
 
-            // c_region = 'ASIA'
-            MEASURE_OP(bat7, select<std::equal_to>(batCN[k], const_cast<str_t>("UNITED STATES"))); // OID customer | c_nation
+            // c_city = 'UNITED KI1' or c_city = 'UNITED KI5'
+            MEASURE_OP(bat7, (select<std::equal_to, std::equal_to, OR>(batCC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
             auto bat8 = bat7->mirror_head(); // OID customer | OID customer
             delete bat7;
             auto bat9 = batCK[k]->reverse(); // c_custkey | VOID customer
@@ -139,8 +134,8 @@ int main(
             MEASURE_OP(bat12, hashjoin(bat11, bat10)); // OID lineorder | OID customer
             delete bat11;
 
-            // d_year >= 1992 and d_year <= 1997
-            MEASURE_OP(bat13, (select<std::greater_equal, std::less_equal, AND>(batDY[k], 1992, 1997))); // OID date | d_year
+            // d_yearmonth = 'Dec1997'
+            MEASURE_OP(bat13, select<std::equal_to>(batDM[k], const_cast<str_t>("Dec1997"))); // OID date | d_yearmonth
             auto bat14 = bat13->mirror_head(); // OID date | OID date
             delete bat13;
             MEASURE_OP(bat15, matchjoin(bat14, batDD[k])); // OID date | d_datekey
@@ -149,6 +144,7 @@ int main(
             delete bat15;
             auto bat17 = bat12->mirror_head(); // OID lineorder | OID lineorder
             delete bat12;
+            // reduce number of lo_orderdate joinpartners
             MEASURE_OP(bat18, matchjoin(bat17, batLO[k])); // OID lineorder | lo_orderdate
             delete bat17;
             // lo_orderdate = d_datekey
@@ -262,16 +258,15 @@ int main(
     for (size_t k = 0; k < DMR::modularity; ++k) {
         delete batCK[k];
         delete batCC[k];
-        delete batCN[k];
         delete batDD[k];
         delete batDY[k];
+        delete batDM[k];
         delete batLC[k];
         delete batLS[k];
         delete batLO[k];
         delete batLR[k];
         delete batSS[k];
         delete batSC[k];
-        delete batSN[k];
     }
 
     ssb::finalize();

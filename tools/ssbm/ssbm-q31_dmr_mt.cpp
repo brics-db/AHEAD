@@ -59,6 +59,7 @@ int main(
 
     ssb::after_create_columnbats();
 
+    /* Measure converting (copying) ColumnBats to TempBats */
     int_tmpbat_t * batCC[DMR::modularity];
     str_tmpbat_t * batCR[DMR::modularity];
     str_tmpbat_t * batCN[DMR::modularity];
@@ -72,7 +73,7 @@ int main(
     str_tmpbat_t * batSR[DMR::modularity];
     str_tmpbat_t * batSN[DMR::modularity];
 
-    /* Measure converting (copying) ColumnBats to TempBats */
+#pragma omp parallel for
     for (size_t k = 0; k < DMR::modularity; ++k) {
         MEASURE_OP(batCC, [k], copy(batCCcb), batCC[k]);
         MEASURE_OP(batCR, [k], copy(batCRcb), batCR[k]);

@@ -97,7 +97,7 @@ int main(
         ssb::before_query();
 
         // p_category = 'MFGR#14'
-        MEASURE_OP(bat1, (select < std::equal_to > (batPC, const_cast<str_t>("MFGR#14")))); // OID part | p_mfgr
+        MEASURE_OP(bat1, (select<std::equal_to>(batPC, const_cast<str_t>("MFGR#14")))); // OID part | p_mfgr
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batPP->reverse(); // p_partkey | VOID part
@@ -111,7 +111,7 @@ int main(
         delete bat5;
 
         // s_nation = 'UNITED STATES'
-        MEASURE_OP(bat7, select < std::equal_to > (batSN, const_cast<str_t>("UNITED STATES"))); // OID supplier | s_region
+        MEASURE_OP(bat7, select<std::equal_to>(batSN, const_cast<str_t>("UNITED STATES"))); // OID supplier | s_region
         auto bat8 = bat7->mirror_head(); // OID supplier | OID supplier
         delete bat7;
         auto bat9 = batSS->reverse(); // s_suppkey | VOID supplier
@@ -190,7 +190,7 @@ int main(
         MEASURE_OP_PAIR(pairGB, groupby(batAC, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
         delete std::get<0>(pairGC);
         delete std::get<1>(pairGC);
-        MEASURE_OP(batRP, aggregate_sum_grouped < v2_bigint_t > (batAP, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
+        MEASURE_OP(batRP, aggregate_sum_grouped<v2_bigint_t>(batAP, std::get<0>(pairGB), std::get<1>(pairGB)->size()));
         delete batAP;
         MEASURE_OP(batRY, fetchjoin(std::get<1>(pairGC), batAY));
         delete batAY;
