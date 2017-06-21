@@ -16,16 +16,7 @@
 
 #if the outputs are not redirected to files, then call ourselves again with additional piping
 
-if [[ -t 1 ]] || [[ -t 2 ]]; then
-	echo "one of stdout or stderr is not redirected, calling script with redirecting"
-	./$0 $@ > >(tee "$0.out") 2> >(tee "$0.err" >&2)
-	exit $?
-else
-	echo "stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
-fi
-
-# Basic constants
-CXX_COMPILER="g++"
+# bootstrap variables
 DATE="$(date '+%Y-%m-%d_%H-%M')"
 PATH_BASE="$(pwd)/.."
 PATH_BUILD="${PATH_BASE}/build/Release"
@@ -33,12 +24,26 @@ PATH_DB="${PATH_BASE}/database"
 PATH_EVAL="${PATH_BASE}/eval"
 PATH_EVALDATA="${PATH_EVAL}/${DATE}/data"
 PATH_EVALOUT="${PATH_EVAL}/${DATE}/out"
+
+if [[ -t 1 ]] || [[ -t 2 ]]; then
+	echo "one of stdout or stderr is not redirected, calling script with redirecting"
+	./$0 $@ > >(tee "$0.out") 2> >(tee "$0.err" >&2)
+	ret=$?
+	mv "$0.out" "$0.err" "${PATH_EVAL}/${DATE}"
+	exit $ret
+else
+	echo "stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
+fi
+
+# Basic variables
+CXX_COMPILER="g++"
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
-IMPLEMENTED=(11 12 13 21 22 23)
-VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
+IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
+#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
+VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late")
 ARCHITECTURE=("_seq")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null
 HAS_SSE42=$?
@@ -116,7 +121,7 @@ if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
 if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
 if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS)); fi
-declare -p BENCHMARK_SCALEFACTORS 2>/dev/null
+declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
 if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
 
@@ -570,25 +575,21 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
 
     for s in "${ARCHITECTURE[@]}"; do 
     	for q in "${IMPLEMENTED[@]}"; do
-    		for v in "${VARIANTS[@]}"; do
-    			rm -f ./grep.out
-    			diff "${PATH_EVALDATA}/${BASE}${q}_normal_seq.out" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.out" | grep result >./grep.out
-    			if [[ -s ./grep.out ]]; then
-    				echo "Q${q}${v}${s} (OUT):"
-    				cat ./grep.out
-    				echo "-------------------------------"
-    			fi
-    			rm -f ./grep.out
-    			diff "${PATH_EVALDATA}/${BASE}${q}_normal${s}.err" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.err" | grep result >./grep.out
-    			if [[ -s ./grep.out ]]; then
-    				echo "Q${q}${v}${s} (ERR):"
-    				cat ./grep.out
-    				echo "-------------------------------"
-    			fi
-    			rm -f ./grep.out
-    		done
-    	done
+    	    for v in "${VARIANTS[@]}"; do
+                for t in out err; do
+                    grepfile="./grep.${t}"
+    	            diff "${PATH_EVALDATA}/${BASE}${q}_normal_seq.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
+                    if [[ -s "${grepfile}" ]]; then
+                        echo "Q${q}${v}${s} (${t}):"
+                        cat "${grepfile}"
+                        echo "-------------------------------"
+                    fi
+                    rm -f ${grepfile}
+                done
+            done
+        done
     done
 else
     echo "Skipping verification."
 fi
+
