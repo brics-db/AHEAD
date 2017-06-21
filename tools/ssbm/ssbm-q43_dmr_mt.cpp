@@ -80,7 +80,6 @@ int main(
     str_tmpbat_t * batSN[DMR::modularity];
     str_tmpbat_t * batSC[DMR::modularity];
 
-#pragma omp parallel for
     for (size_t k = 0; k < DMR::modularity; ++k) {
         MEASURE_OP(batCC, [k], copy(batCCcb), batCC[k]);
         MEASURE_OP(batDD, [k], copy(batDDcb), batDD[k]);

@@ -585,8 +585,8 @@ namespace ahead {
         for (size_t i = 1; i < column_names.size(); ++i) {
             if (nums_values[i] != previousNumValues) {
                 std::stringstream sserr;
-                sserr << "Transaction::load(@" << __FILE__ << ':' << __LINE__ << ") Column sizes don't match! previous (" << (i - 1) << ") = " << previousNumValues << ", current (" << i << ") = "
-                        << nums_values[i];
+                sserr << "Transaction::load(@" << __FILE__ << ':' << __LINE__ << ") For table \"" << tableName << "\": Column sizes don't match! previous (" << (i - 1) << ") = " << previousNumValues
+                        << ", current (" << i << ") = " << nums_values[i];
                 throw std::runtime_error(sserr.str().c_str());
             }
             previousNumValues = nums_values[i];

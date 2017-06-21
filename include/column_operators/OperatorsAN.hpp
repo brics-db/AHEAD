@@ -159,7 +159,7 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t&& threshold);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine = AND, typename Head, typename Tail>
+                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
                 selectAN(
                         BAT<Head, Tail>* arg,
@@ -174,7 +174,7 @@ namespace ahead {
                         typename Tail::v2_select_t::type_t ATR,
                         typename Tail::v2_select_t::type_t ATInvR);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine = AND, typename Head, typename Tail>
+                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
                 selectAN(
                         BAT<Head, Tail>* arg,
@@ -224,7 +224,7 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t&& threshold);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine = AND, typename Head, typename Tail>
+                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
                 selectAN(
                         BAT<Head, Tail>* arg,
@@ -239,7 +239,7 @@ namespace ahead {
                         typename Tail::v2_select_t::type_t ATReenc,
                         typename Tail::v2_select_t::type_t ATReencInv);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, template<typename > class OpCombine = AND, typename Head, typename Tail>
+                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
                 selectAN(
                         BAT<Head, Tail>* arg,

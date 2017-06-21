@@ -104,8 +104,8 @@ do {                                                                           \
 } while (false)
 
 #define MEASURE_OP4(VAR, IDX, OP, TYPE)                                        \
-MEASURE_OP6(VAR, IDX, OP, VAR IDX ->size(), VAR IDX ->consumption(),           \
-    VAR IDX ->consumptionProjected());                                         \
+MEASURE_OP6(VAR, IDX, OP, TYPE ->size(), TYPE ->consumption(),                 \
+    TYPE ->consumptionProjected());                                            \
 do {                                                                           \
     SAVE_TYPE(TYPE);                                                           \
     AFTER_SAVE_STATS                                                           \

@@ -103,7 +103,7 @@ int main(
         delete bat6;
 
         // p_brand between 'MFGR#2221' and 'MFGR#2228'
-        MEASURE_OP_PAIR(pair8, selectAN(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228"))); // OID part | p_brand
+        MEASURE_OP_PAIR(pair8, (selectAN<std::greater_equal, std::less_equal, AND>(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228")))); // OID part | p_brand
         CLEAR_SELECT_AN(pair8);
         auto bat9 = std::get<0>(pair8)->mirror_head(); // OID part | OID part
         auto batA = batPPenc->reverse(); // p_partkey | OID part

@@ -45,16 +45,26 @@ IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
 #VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late")
 ARCHITECTURE=("_seq")
+ARCHITECTURE_NAME=("Scalar")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null
 HAS_SSE42=$?
-if [[ ${HAS_SSE42} -eq 0 ]]; then ARCHITECTURE+=("_SSE"); fi
+if [[ ${HAS_SSE42} -eq 0 ]]; then
+    ARCHITECTURE+=("_SSE");
+    ARCHITECTURE_NAME+=("SSE4.2")
+fi
 #cat /proc/cpuinfo | grep avx2 &>/dev/null
 #HAS_AVX2=$?
-#if [[ ${HAS_AVX2} -eq 0 ]]; then ARCHITECTURE+="_AVX2"; fi
+#if [[ ${HAS_AVX2} -eq 0 ]]; then
+#    ARCHITECTURE+=("_AVX2");
+#    ARCHITECTURE_NAME+=("AVX2");
+#fi
 ## For the following, keep in mind that AVX-512 has several sub-sets and not all of them may be available
 #cat /proc/cpuinfo | grep avx512 &>/dev/null
 #HAS_AVX512=$?
-#if [[ ${HAS_AVX512} -eq 0 ]]; then ARCHITECTURE+="_AVX512"; fi
+#if [[ ${HAS_AVX512} -eq 0 ]]; then
+#    ARCHITECTURE+=("_AVX512");
+#    ARCHITECTURE_NAME+=("AVX512");
+#fi
 
 # distinct warmup and test phases
 ARGS=("$@")
@@ -544,8 +554,11 @@ fi
 if [[ ${DO_VERIFY} -ne 0 ]]; then
     date
     echo "Verifying:"
-    for ARCH in "${ARCHITECTURE[@]}"; do
-        echo " * ${ARCH}"
+    NUMARCHS="${#VARIANTS[@]}"
+    for idxArch in $(seq 0 $(echo "${NUMARCHS}-1" | bc)); do
+        ARCH=${ARCHITECTURE[$idxArch]}
+        ARCHNAME=${ARCHITECTURE_NAME[$idxArch]}
+        echo " * ${ARCHNAME}"
         for NUM in "${IMPLEMENTED[@]}"; do
             echo -n "   * Q${NUM}:"
             BASE2="${BASE}${NUM}"
