@@ -135,8 +135,10 @@ namespace ahead {
                         AN_indicator_vector * vecGrouping = new AN_indicator_vector;
                         vecGrouping->reserve(32);
 
-                        auto batHashToRGID = new TempBAT<v2_largerTail_t, v2_resoid_t>();
-                        batHashToRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        // auto batHashToRGID = new TempBAT<v2_largerTail_t, v2_resoid_t>();
+                        // batHashToRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        google::dense_hash_map<largerTail_t, oid_t> dictionary;
+                        dictionary.set_empty_key(v2_largerTail_t::dhm_emptykey);
                         auto batVOIDtoRGID = new TempBAT<v2_void_t, v2_resoid_t>();
                         batVOIDtoRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVGIDtoROID = new TempBAT<v2_void_t, v2_resoid_t>();
@@ -160,19 +162,23 @@ namespace ahead {
                             largerTail_t curHash = static_cast<largerTail_t>(hasher::get(t)) * static_cast<largerTail_t>(numGroups) + static_cast<largerTail_t>(g);
                             // search this tail in our mapping
                             // idx is the void value of mapGIDtoTail, which starts at zero
-                            auto opt = findFirstHead(batHashToRGID, curHash);
-                            if (opt) {
-                                batVOIDtoRGID->append(opt.value());
+                            // auto opt = findFirstHead(batHashToRGID, curHash);
+                            auto iterDict = dictionary.find(curHash);
+                            // if (opt) {
+                            if (iterDict != dictionary.end()) {
+                                // batVOIDtoRGID->append(opt.value());
+                                batVOIDtoRGID->append(iterDict->second);
                             } else {
                                 resoid_t newRGID = batVGIDtoROID->size() * AOID;
                                 batVGIDtoROID->append(h * AOID);
-                                batHashToRGID->append(std::make_pair(curHash, newRGID));
+                                // batHashToRGID->append(std::make_pair(curHash, newRGID));
+                                dictionary[curHash] = newRGID;
                                 batVOIDtoRGID->append(newRGID);
                             }
                         }
                         delete iter;
                         delete iterG;
-                        delete batHashToRGID;
+                        // delete batHashToRGID;
                         return std::make_tuple(batVOIDtoRGID, batVGIDtoROID, vec1, vec2, vecGrouping);
                     }
                 };

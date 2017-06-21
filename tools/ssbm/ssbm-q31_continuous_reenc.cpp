@@ -26,7 +26,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.1 Continuous Detection");
+    ssb::init(argc, argv, "SSBM Query 3.1 Continuous Detection With Reencoding");
 
     SSBM_LOAD("customerAN", "lineorderAN", "supplierAN", "dateAN", "SSBM Q3.1:\n"
             "select c_nation, s_nation, d_year, sum(lo_revenue) as revenue\n"
@@ -93,12 +93,13 @@ int main(
         auto bat2 = std::get<0>(pair1)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(pair1);
         auto bat3 = batSS->reverse(); // s_suppkey | VOID supplier
-        MEASURE_OP_TUPLE(tuple4, matchjoinAN(bat3, bat2)); // s_suppkey | OID supplier
+        MEASURE_OP_TUPLE(tuple4, matchjoinAN(bat3, bat2, std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs), std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs))); // s_suppkey | OID supplier
         delete bat2;
         delete bat3;
         CLEAR_JOIN_AN(tuple4);
         // lo_suppkey = s_suppkey
-        MEASURE_OP_TUPLE(tuple5, hashjoinAN(batLS, std::get<0>(tuple4), std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
+        MEASURE_OP_TUPLE(tuple5,
+                hashjoinAN(batLS, std::get<0>(tuple4), std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resoid_t::As), std::get<12>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
         CLEAR_JOIN_AN(tuple5);
         auto bat6 = std::get<0>(tuple5)->mirror_head(); // OID lineorder | OID lineorder
         delete std::get<0>(tuple5);
@@ -108,25 +109,29 @@ int main(
         auto bat8 = std::get<0>(pair7)->mirror_head(); // OID customer | OID customer
         delete std::get<0>(pair7);
         auto bat9 = batCC->reverse(); // c_custkey | VOID customer
-        MEASURE_OP_TUPLE(tuple10, matchjoinAN(bat9, bat8)); // c_custkey | OID customer
+        MEASURE_OP_TUPLE(tuple10, matchjoinAN(bat9, bat8, std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs), std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs))); // c_custkey | OID customer
         delete bat8;
         delete bat9;
         CLEAR_JOIN_AN(tuple10);
         // reduce number of l_custkey joinpartners
-        MEASURE_OP_TUPLE(tuple11, matchjoinAN(bat6, batLC)); // OID lineorder | l_custkey
+        MEASURE_OP_TUPLE(tuple11, matchjoinAN(bat6, batLC, std::get<10>(*v2_resoid_t::As), std::get<10>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs))); // OID lineorder | l_custkey
         delete bat6;
         CLEAR_JOIN_AN(tuple11);
         // lo_custkey = c_custkey
-        MEASURE_OP_TUPLE(tuple12, hashjoinAN(std::get<0>(tuple11), std::get<0>(tuple10))); // OID lineorder | OID customer
+        MEASURE_OP_TUPLE(tuple12,
+                hashjoinAN(std::get<0>(tuple11), std::get<0>(tuple10), std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<8>(*v2_resoid_t::As),
+                        std::get<8>(*v2_resoid_t::Ainvs))); // OID lineorder | OID customer
         delete std::get<0>(tuple11);
         CLEAR_JOIN_AN(tuple12);
 
         // d_year >= 1992 and d_year <= 1997
-        MEASURE_OP_PAIR(pair13, (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A))); // OID date | d_year
+        MEASURE_OP_PAIR(pair13,
+                (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As),
+                        std::get<14>(*v2_resshort_t::Ainvs)))); // OID date | d_year
         CLEAR_SELECT_AN(pair13);
         auto bat14 = std::get<0>(pair13)->mirror_head(); // OID date | OID date
         delete std::get<0>(pair13);
-        MEASURE_OP_TUPLE(tuple15, matchjoinAN(bat14, batDD)); // OID date | d_datekey
+        MEASURE_OP_TUPLE(tuple15, matchjoinAN(bat14, batDD, std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<11>(*v2_resint_t::As), std::get<11>(*v2_resint_t::Ainvs))); // OID date | d_datekey
         delete bat14;
         CLEAR_JOIN_AN(tuple15);
         auto bat16 = std::get<0>(tuple15)->reverse(); // d_datekey | OID date
