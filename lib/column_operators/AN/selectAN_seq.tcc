@@ -66,7 +66,7 @@ namespace ahead {
                             const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
                             auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result.first->reserve(arg->size() / 2);
+                            result.first->reserve(arg->size());
                             if (reencode) {
                                 result.first->tail.metaData.AN_A = ATR;
                                 result.first->tail.metaData.AN_Ainv = ATInvR;
@@ -114,7 +114,7 @@ namespace ahead {
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result.first->reserve(arg->size() / 2);
+                            result.first->reserve(arg->size());
                             auto iter = arg->begin();
                             Op<int> op;
                             for (; iter->hasNext(); ++*iter) {
@@ -162,7 +162,7 @@ namespace ahead {
                             const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
                             auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result.first->reserve(arg->size() / 2);
+                            result.first->reserve(arg->size());
                             if (reencode) {
                                 result.first->tail.metaData.AN_A = ATR;
                                 result.first->tail.metaData.AN_Ainv = ATInvR;
@@ -204,17 +204,19 @@ namespace ahead {
                                 BAT<Head, v2_str_t> * arg,
                                 tail_select_t && threshold1,
                                 tail_select_t && threshold2,
-                                __attribute__((unused))    str_t ATR = nullptr,
-                                __attribute__((unused))    str_t ATInvR = nullptr) {
+                                str_t ATR = nullptr,
+                                str_t ATInvR = nullptr) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                             static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                             // always encode head (void -> resoid)
+                            (void) ATR;
+                            (void) ATInvR;
                             const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result.first->reserve(arg->size() / 2);
+                            result.first->reserve(arg->size());
                             auto iter = arg->begin();
                             Op1<int> op1;
                             Op2<int> op2;

@@ -123,10 +123,10 @@ int main(
         CLEAR_JOIN_AN(tuple12);
 
         // d_year >= 1992 and d_year <= 1997
-        MEASURE_OP_PAIR(pair13, (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A))); // OID date | d_year
-        CLEAR_SELECT_AN(pair13);
-        auto bat14 = std::get<0>(pair13)->mirror_head(); // OID date | OID date
-        delete std::get<0>(pair13);
+        MEASURE_OP_TUPLE(tuple13, (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A))); // OID date | d_year
+        CLEAR_SELECT_AN(tuple13);
+        auto bat14 = std::get<0>(tuple13)->mirror_head(); // OID date | OID date
+        delete std::get<0>(tuple13);
         MEASURE_OP_TUPLE(tuple15, matchjoinAN(bat14, batDD)); // OID date | d_datekey
         delete bat14;
         CLEAR_JOIN_AN(tuple15);

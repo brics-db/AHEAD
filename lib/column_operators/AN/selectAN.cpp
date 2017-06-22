@@ -81,42 +81,68 @@ selectAN<Operator1, Operator2, OR, Head, Tail>( \
         typename Tail::v2_select_t::type_t \
         );
 
-#define V2_SELECT_AN(V2Tail) \
-SELECT1_AN(v2_void_t, V2Tail, std::less) \
-SELECT1_AN(v2_void_t, V2Tail, std::less_equal) \
-SELECT1_AN(v2_void_t, V2Tail, std::equal_to) \
-SELECT1_AN(v2_void_t, V2Tail, std::not_equal_to) \
-SELECT1_AN(v2_void_t, V2Tail, std::greater_equal) \
-SELECT1_AN(v2_void_t, V2Tail, std::greater) \
-SELECT2_AN(v2_void_t, V2Tail, std::greater_equal, std::less_equal)
+#define SELECT2_AN_SUB(Head, Tail, Operator2) \
+SELECT2_AN(Head, Tail, std::less, Operator2) \
+SELECT2_AN(Head, Tail, std::less_equal, Operator2) \
+SELECT2_AN(Head, Tail, std::equal_to, Operator2) \
+SELECT2_AN(Head, Tail, std::not_equal_to, Operator2) \
+SELECT2_AN(Head, Tail, std::greater, Operator2) \
+SELECT2_AN(Head, Tail, std::greater_equal, Operator2)
 
-#define V2_SELECT_AN_REENC(V2Tail) \
-SELECT1_AN_REENC(v2_void_t, V2Tail, std::less) \
-SELECT1_AN_REENC(v2_void_t, V2Tail, std::less_equal) \
-SELECT1_AN_REENC(v2_void_t, V2Tail, std::equal_to) \
-SELECT1_AN_REENC(v2_void_t, V2Tail, std::not_equal_to) \
-SELECT1_AN_REENC(v2_void_t, V2Tail, std::greater_equal) \
-SELECT1_AN_REENC(v2_void_t, V2Tail, std::greater) \
-SELECT2_AN_REENC(v2_void_t, V2Tail, std::greater_equal, std::less_equal)
+#define SELECT2_AN_REENC_SUB(Head, Tail, Operator2) \
+SELECT2_AN_REENC(Head, Tail, std::less, Operator2) \
+SELECT2_AN_REENC(Head, Tail, std::less_equal, Operator2) \
+SELECT2_AN_REENC(Head, Tail, std::equal_to, Operator2) \
+SELECT2_AN_REENC(Head, Tail, std::not_equal_to, Operator2) \
+SELECT2_AN_REENC(Head, Tail, std::greater, Operator2) \
+SELECT2_AN_REENC(Head, Tail, std::greater_equal, Operator2)
+
+#define SELECT_AN(Head, Tail) \
+SELECT1_AN(Head, Tail, std::less) \
+SELECT1_AN(Head, Tail, std::less_equal) \
+SELECT1_AN(Head, Tail, std::equal_to) \
+SELECT1_AN(Head, Tail, std::not_equal_to) \
+SELECT1_AN(Head, Tail, std::greater_equal) \
+SELECT1_AN(Head, Tail, std::greater) \
+SELECT2_AN_SUB(Head, Tail, std::less) \
+SELECT2_AN_SUB(Head, Tail, std::less_equal) \
+SELECT2_AN_SUB(Head, Tail, std::equal_to) \
+SELECT2_AN_SUB(Head, Tail, std::not_equal_to) \
+SELECT2_AN_SUB(Head, Tail, std::greater_equal) \
+SELECT2_AN_SUB(Head, Tail, std::greater)
+
+#define SELECT_AN_REENC(Head, Tail) \
+SELECT1_AN_REENC(Head, Tail, std::less) \
+SELECT1_AN_REENC(Head, Tail, std::less_equal) \
+SELECT1_AN_REENC(Head, Tail, std::equal_to) \
+SELECT1_AN_REENC(Head, Tail, std::not_equal_to) \
+SELECT1_AN_REENC(Head, Tail, std::greater_equal) \
+SELECT1_AN_REENC(Head, Tail, std::greater) \
+SELECT2_AN_REENC_SUB(Head, Tail, std::less) \
+SELECT2_AN_REENC_SUB(Head, Tail, std::less_equal) \
+SELECT2_AN_REENC_SUB(Head, Tail, std::equal_to) \
+SELECT2_AN_REENC_SUB(Head, Tail, std::not_equal_to) \
+SELECT2_AN_REENC_SUB(Head, Tail, std::greater_equal) \
+SELECT2_AN_REENC_SUB(Head, Tail, std::greater)
 
             namespace scalar {
-                V2_SELECT_AN(v2_restiny_t)
-                V2_SELECT_AN_REENC(v2_restiny_t)
-                V2_SELECT_AN(v2_resshort_t)
-                V2_SELECT_AN_REENC(v2_resshort_t)
-                V2_SELECT_AN(v2_resint_t)
-                V2_SELECT_AN_REENC(v2_resint_t)
-                V2_SELECT_AN(v2_str_t)
+                SELECT_AN (v2_void_t, v2_restiny_t)
+                SELECT_AN_REENC (v2_void_t, v2_restiny_t)
+                SELECT_AN (v2_void_t, v2_resshort_t)
+                SELECT_AN_REENC (v2_void_t, v2_resshort_t)
+                SELECT_AN (v2_void_t, v2_resint_t)
+                SELECT_AN_REENC (v2_void_t, v2_resint_t)
+                SELECT_AN (v2_void_t, v2_str_t)
             }
 
             namespace sse {
-                V2_SELECT_AN(v2_restiny_t)
-                V2_SELECT_AN_REENC(v2_restiny_t)
-                V2_SELECT_AN(v2_resshort_t)
-                V2_SELECT_AN_REENC(v2_resshort_t)
-                V2_SELECT_AN(v2_resint_t)
-                V2_SELECT_AN_REENC(v2_resint_t)
-                V2_SELECT_AN(v2_str_t)
+                SELECT_AN (v2_void_t, v2_restiny_t)
+                SELECT_AN_REENC (v2_void_t, v2_restiny_t)
+                SELECT_AN (v2_void_t, v2_resshort_t)
+                SELECT_AN_REENC (v2_void_t, v2_resshort_t)
+                SELECT_AN (v2_void_t, v2_resint_t)
+                SELECT_AN_REENC (v2_void_t, v2_resint_t)
+                SELECT_AN (v2_void_t, v2_str_t)
             }
 
         }

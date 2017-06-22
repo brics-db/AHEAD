@@ -16,7 +16,7 @@
  * File:   ssbm-q32_continuous_reenc.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 13. June 2017, 12:34
+ * Created on 22. June 2017, 12:34
  */
 
 #include <column_operators/OperatorsAN.hpp>

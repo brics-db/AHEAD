@@ -13,10 +13,10 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q32_continuous.cpp
+ * File:   ssbm-q33_continuous.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 22. June 2017, 10:58
+ * Created on 22. June 2017, 14:18
  */
 
 #include <column_operators/OperatorsAN.hpp>
@@ -26,23 +26,22 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.2 Continuous Detection");
+    ssb::init(argc, argv, "SSBM Query 3.3 Continuous Detection");
 
-    SSBM_LOAD("customerAN", "lineorderAN", "supplierAN", "dateAN", "SSBM Q3.2:\n"
+    SSBM_LOAD("customerAN", "lineorderAN", "supplierAN", "dateAN", "SSBM Q3.3:\n"
             "select c_city, s_city, d_year, sum(lo_revenue) as revenue\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"
             "    and lo_suppkey = s_suppkey\n"
             "    and lo_orderdate = d_datekey\n"
-            "    and c_nation = 'UNITED STATES'\n"
-            "    and s_nation = 'UNITED STATES'\n"
+            "    and (c_city = 'UNITED KI1' or c_city = 'UNITED KI5')\n"
+            "    and (s_city = 'UNITED KI1' or s_city = 'UNITED KI5')\n"
             "    and d_year >= 1992 and d_year <= 1997\n"
             "  group by c_city, s_city, d_year;");
 
     /* Measure loading ColumnBats */
     MEASURE_OP(batCKcb, new resint_colbat_t("customerAN", "custkey"));
     MEASURE_OP(batCCcb, new str_colbat_t("customerAN", "city"));
-    MEASURE_OP(batCNcb, new str_colbat_t("customerAN", "nation"));
     MEASURE_OP(batDDcb, new resint_colbat_t("dateAN", "datekey"));
     MEASURE_OP(batDYcb, new resshort_colbat_t("dateAN", "year"));
     MEASURE_OP(batLCcb, new resint_colbat_t("lineorderAN", "custkey"));
@@ -51,14 +50,12 @@ int main(
     MEASURE_OP(batLRcb, new resint_colbat_t("lineorderAN", "revenue"));
     MEASURE_OP(batSScb, new resint_colbat_t("supplierAN", "suppkey"));
     MEASURE_OP(batSCcb, new str_colbat_t("supplierAN", "city"));
-    MEASURE_OP(batSNcb, new str_colbat_t("supplierAN", "nation"));
 
     ssb::after_create_columnbats();
 
     /* Measure converting (copying) ColumnBats to TempBats */
     MEASURE_OP(batCK, copy(batCKcb));
     MEASURE_OP(batCC, copy(batCCcb));
-    MEASURE_OP(batCN, copy(batCNcb));
     MEASURE_OP(batDD, copy(batDDcb));
     MEASURE_OP(batDY, copy(batDYcb));
     MEASURE_OP(batLC, copy(batLCcb));
@@ -67,11 +64,9 @@ int main(
     MEASURE_OP(batLR, copy(batLRcb));
     MEASURE_OP(batSS, copy(batSScb));
     MEASURE_OP(batSC, copy(batSCcb));
-    MEASURE_OP(batSN, copy(batSNcb));
 
     delete batCKcb;
     delete batCCcb;
-    delete batCNcb;
     delete batDDcb;
     delete batDYcb;
     delete batLCcb;
@@ -80,15 +75,14 @@ int main(
     delete batLRcb;
     delete batSScb;
     delete batSCcb;
-    delete batSNcb;
 
     ssb::before_queries();
 
     for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
         ssb::before_query();
 
-        // s_nation = 'UNITED STATES'
-        MEASURE_OP_TUPLE(tuple1, selectAN<std::equal_to>(batSN, const_cast<str_t>("UNITED STATES"))); // OID supplier | s_nation
+        // s_city = 'UNITED KI1' or s_city = 'UNITED KI5'
+        MEASURE_OP_TUPLE(tuple1, (selectAN<std::equal_to, std::equal_to, OR>(batSC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
         CLEAR_SELECT_AN(tuple1);
         auto bat2 = std::get<0>(tuple1)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(tuple1);
@@ -103,8 +97,8 @@ int main(
         auto bat6 = std::get<0>(tuple5)->mirror_head(); // OID lineorder | OID lineorder
         delete std::get<0>(tuple5);
 
-        // c_nation = 'UNITED STATES'
-        MEASURE_OP_TUPLE(tuple7, selectAN<std::equal_to>(batCN, const_cast<str_t>("UNITED STATES"))); // OID customer | c_nation
+        // c_city = 'UNITED KI1' or c_city = 'UNITED KI5'
+        MEASURE_OP_TUPLE(tuple7, (selectAN<std::equal_to, std::equal_to, OR>(batCC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
         CLEAR_SELECT_AN(tuple7);
         auto bat8 = std::get<0>(tuple7)->mirror_head(); // OID customer | OID customer
         delete std::get<0>(tuple7);
@@ -120,6 +114,7 @@ int main(
         // lo_custkey = c_custkey
         MEASURE_OP_TUPLE(tuple12, hashjoinAN(std::get<0>(tuple11), std::get<0>(tuple10))); // OID lineorder | OID customer
         delete std::get<0>(tuple11);
+        CLEAR_JOIN_AN(tuple12);
 
         // d_year >= 1992 and d_year <= 1997
         MEASURE_OP_TUPLE(tuple13, (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A))); // OID date | d_year
@@ -197,8 +192,8 @@ int main(
 
         // result
         MEASURE_OP_TUPLE(tupleRR, aggregate_sum_groupedAN<v2_resbigint_t>(std::get<0>(tupleAR), std::get<0>(tupleGC), std::get<1>(tupleGC)->size()));
-        CLEAR_GROUPEDSUM_AN(tupleRR);
         delete std::get<0>(tupleAR);
+        CLEAR_GROUPEDSUM_AN(tupleRR);
         MEASURE_OP_TUPLE(tupleRD, fetchjoinAN(std::get<1>(tupleGC), std::get<0>(tupleAD)));
         delete std::get<0>(tupleAD);
         CLEAR_FETCHJOIN_AN(tupleRD);
@@ -249,7 +244,6 @@ int main(
 
     delete batCK;
     delete batCC;
-    delete batCN;
     delete batDD;
     delete batDY;
     delete batLC;
@@ -258,7 +252,6 @@ int main(
     delete batLR;
     delete batSS;
     delete batSC;
-    delete batSN;
 
     ssb::finalize();
 

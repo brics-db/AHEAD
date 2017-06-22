@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q31_continuous.cpp
+ * File:   ssbm-q31_continuous_reenc.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 21. June 2017, 10:22
