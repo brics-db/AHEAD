@@ -126,7 +126,7 @@ int main(
         auto bat6 = bat5->mirror_head(); // OID lineorder | OID lineorder
         delete bat5;
 
-        // c_region = 'ASIA'
+        // c_nation = 'UNITED STATES'
         MEASURE_OP(bat7, select<std::equal_to>(batCN, const_cast<str_t>("UNITED STATES"))); // OID customer | c_nation
         auto bat8 = bat7->mirror_head(); // OID customer | OID customer
         delete bat7;

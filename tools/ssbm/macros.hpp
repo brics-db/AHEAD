@@ -21,6 +21,8 @@
 #ifndef TOOLS_SSBM_MACROS_HPP_
 #define TOOLS_SSBM_MACROS_HPP_
 
+#include <tuple>
+
 ///////////////
 // SSBM_LOAD //
 ///////////////
@@ -98,14 +100,14 @@ TYPE VAR = OP;                                                                 \
 ssb::after_op();                                                               \
 do {                                                                           \
     BEFORE_SAVE_STATS                                                          \
-    ssb::batSizes.push_back(STORE_SIZE_OP);                                    \
-    ssb::batConsumptions.push_back(STORE_CONSUMPTION_OP);                      \
-    ssb::batConsumptionsProj.push_back(STORE_PROJECTEDCONSUMPTION_OP);         \
+    ssb::batSizes.push_back((STORE_SIZE_OP));                                  \
+    ssb::batConsumptions.push_back((STORE_CONSUMPTION_OP));                    \
+    ssb::batConsumptionsProj.push_back((STORE_PROJECTEDCONSUMPTION_OP));       \
 } while (false)
 
 #define MEASURE_OP4(VAR, IDX, OP, TYPE)                                        \
-MEASURE_OP6(VAR, IDX, OP, TYPE ->size(), TYPE ->consumption(),                 \
-    TYPE ->consumptionProjected());                                            \
+MEASURE_OP6(VAR, IDX, OP, (TYPE ->size()), (TYPE ->consumption()),             \
+    (TYPE ->consumptionProjected()));                                          \
 do {                                                                           \
     SAVE_TYPE(TYPE);                                                           \
     AFTER_SAVE_STATS                                                           \
@@ -120,7 +122,8 @@ do {                                                                           \
 } while (false)
 
 #define MEASURE_OP2(BAT, OP)                                                   \
-MEASURE_OP6(auto, BAT, OP, BAT->size(), BAT->consumption(), BAT->consumptionProjected());  \
+MEASURE_OP6(auto, BAT, OP, BAT->size(), BAT->consumption(),                    \
+        BAT->consumptionProjected());                                          \
 do {                                                                           \
     SAVE_TYPE(BAT);                                                            \
     AFTER_SAVE_STATS                                                           \
@@ -135,7 +138,9 @@ do {                                                                           \
 } while (false)
 
 #define MEASURE_OP_TUPLE(TUPLE, OP)                                            \
-MEASURE_OP6(auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption(), std::get<0>(TUPLE)->consumptionProjected());  \
+MEASURE_OP6(auto, TUPLE, OP, (std::get<0>(TUPLE)->size()),                     \
+        (std::get<0>(TUPLE)->consumption()),                                   \
+        (std::get<0>(TUPLE)->consumptionProjected()));                         \
 do {                                                                           \
     SAVE_TYPE((std::get<0>(TUPLE)));                                           \
     AFTER_SAVE_STATS                                                           \
