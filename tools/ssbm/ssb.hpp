@@ -43,7 +43,6 @@
 #endif
 
 #include <util/argumentparser.hpp>
-#include <util/ModularRedundant.hpp>
 #include <util/rss.hpp>
 #include <util/stopwatch.hpp>
 
@@ -115,6 +114,16 @@ namespace ssb {
             const char* const tableName,
             const SSB_CONF & CONFIG);
 
+    template<typename T>
+    struct PrintBatHelper {
+        typedef typename T::type_t print_type_t;
+    };
+
+    template<>
+    struct PrintBatHelper<v2_tinyint_t> {
+        typedef int print_type_t;
+    };
+
     template<typename Head, typename Tail>
     void printBat(
             StopWatch & sw,
@@ -143,10 +152,14 @@ namespace ssb {
         fout << " | " << std::setw(wHead) << "head";
         fout << " | " << std::setw(wTail) << "tail";
         fout << '\n';
+        fout << std::setw(wOID) << "oid_t";
+        fout << " | " << std::setw(wHead) << bat->type_head().pretty_name();
+        fout << " | " << std::setw(wTail) << bat->type_tail().pretty_name();
+        fout << '\n';
         for (; iter->hasNext(); ++i, ++*iter) {
             fout << std::setw(wOID) << i;
-            fout << " | " << std::setw(wHead) << iter->head();
-            fout << " | " << std::setw(wTail) << iter->tail();
+            fout << " | " << std::setw(wHead) << static_cast<typename PrintBatHelper<Head>::print_type_t>(iter->head());
+            fout << " | " << std::setw(wTail) << static_cast<typename PrintBatHelper<Tail>::print_type_t>(iter->tail());
             fout << '\n';
         }
         fout << std::flush;
@@ -177,7 +190,7 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     extern std::string emptyString;
     extern std::vector<StopWatch::rep> totalTimes;
     extern size_t I;
-    extern StopWatch sw1, sw2;
+    extern StopWatch swOperator, swTotalTime;
 
     extern std::vector<StopWatch::rep> opTimes;
     extern std::vector<size_t> batSizes;
@@ -201,8 +214,13 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     void after_query(
             size_t index,
             size_t result);
+    void after_query(
+            size_t index,
+            std::exception & ex);
     void before_op();
     void after_op();
+    void lock_for_stats();
+    void unlock_for_stats();
     void finalize();
 
     void print_headline();

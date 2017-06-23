@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
-    PROJECT(LIBAHEAD VERSION 0.8 LANGUAGES CXX)
+    PROJECT(LIBAHEAD VERSION 0.9 LANGUAGES CXX)
 ELSE()
     PROJECT(LIBAHEAD LANGUAGES CXX)
 ENDIF()
@@ -66,6 +66,7 @@ column_storage/Storage.cpp \
 column_storage/Transaction.cpp \
 column_storage/TransactionManager.cpp \
 column_operators/Normal/aggregate.cpp \
+column_operators/Normal/arithmetic.cpp \
 column_operators/Normal/groupby.cpp \
 column_operators/Normal/hashjoin_void.cpp \
 column_operators/Normal/hashjoin_oid.cpp \

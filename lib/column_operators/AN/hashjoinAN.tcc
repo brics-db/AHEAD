@@ -225,9 +225,11 @@ namespace ahead {
                             hash_side_t hashside = hash_side_t::right,
                             h1enc_t AH1R = 1, // for reencode
                             h1enc_t AH1InvR = 1, // for reencode
-                            __attribute__((unused))   t2enc_t AT2R = nullptr, // dummy
-                            __attribute__((unused))   t2enc_t AT2InvR = nullptr // dummy
+                            t2enc_t AT2R = nullptr, // dummy
+                            t2enc_t AT2InvR = nullptr // dummy
                             ) {
+                        (void) AT2R;
+                        (void) AT2InvR;
                         const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
                         const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
                         const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
@@ -540,10 +542,10 @@ namespace ahead {
             std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> hashjoinAN(
                     BAT<Head1, Tail1>* arg1,
                     BAT<Head2, Tail2>* arg2,
-                    typename TypeMap<Head1>::v2_encoded_t::type_t AReenc,
-                    typename TypeMap<Head1>::v2_encoded_t::type_t AInvReenc,
+                    typename TypeMap<Head1>::v2_encoded_t::type_t AH1Reenc,
+                    typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc,
                     hash_side_t hashside = hash_side_t::right) {
-                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true, false>::run(arg1, arg2, hashside, AReenc, AInvReenc);
+                return Hashjoin::hashjoinANunencHashmap<Head1, Tail1, Head2, Tail2, true, false>::run(arg1, arg2, hashside, AH1Reenc, AH1InvReenc);
             }
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>

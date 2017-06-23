@@ -28,6 +28,7 @@
 #include "../SSE.hpp"
 #include "../SSECMP.hpp"
 #include "../miscellaneous.hpp"
+#include <column_operators/functors.hpp>
 
 namespace ahead {
     namespace bat {
@@ -90,12 +91,12 @@ namespace ahead {
                         }
                     };
 
-                    template<template<typename > class Op1, template<typename > class Op2, typename Head, typename Tail>
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                     struct Selection2 {
                     };
 
-                    template<template<typename > class Op1, template<typename > class Op2, typename Tail>
-                    struct Selection2<Op1, Op2, v2_void_t, Tail> {
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Tail>
+                    struct Selection2<Op1, Op2, OpCombine, v2_void_t, Tail> {
 
                         typedef typename Tail::type_t tail_t;
                         typedef typename v2_void_t::v2_select_t v2_head_select_t;
@@ -106,6 +107,7 @@ namespace ahead {
                                 BAT<v2_void_t, Tail>* arg,
                                 tail_t && th1,
                                 tail_t && th2) {
+                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -113,7 +115,7 @@ namespace ahead {
                             Op2<typename Tail::v2_compare_t::type_t> op2;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
-                                if (op1(t, th1) & op2(t, th2)) {
+                                if (OpCombine<void>()(op1(t, std::forward<tail_t>(th1)), op2(t, std::forward<tail_t>(th2)))) {
                                     result->append(std::make_pair(iter->head(), t));
                                 }
                             }
@@ -122,8 +124,8 @@ namespace ahead {
                         }
                     };
 
-                    template<template<typename > class Op1, template<typename > class Op2>
-                    struct Selection2<Op1, Op2, v2_void_t, v2_str_t> {
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine>
+                    struct Selection2<Op1, Op2, OpCombine, v2_void_t, v2_str_t> {
 
                         typedef typename v2_void_t::v2_select_t v2_head_select_t;
                         typedef typename v2_str_t::v2_select_t v2_tail_select_t;
@@ -134,6 +136,7 @@ namespace ahead {
                                 BAT<v2_void_t, v2_str_t>* arg,
                                 tail_select_t && th1,
                                 tail_select_t && th2) {
+                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -141,7 +144,7 @@ namespace ahead {
                             Op2<int> op2;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
-                                if (op1(strcmp(t, th1), 0) && op2(strcmp(t, th2), 0)) {
+                                if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(th1)), 0), op2(strcmp(t, std::forward<tail_select_t>(th2)), 0))) {
                                     result->append(std::make_pair(iter->head(), t));
                                 }
                             }

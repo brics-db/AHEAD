@@ -22,8 +22,12 @@
 #include <iostream>
 #include <execinfo.h>
 #include <signal.h>
+#include <exception>
+
+#include <mutex>
 
 #include "ssb.hpp"
+#include <column_storage/TransactionManager.h>
 
 namespace ssb {
 
@@ -31,13 +35,25 @@ namespace ssb {
             int sig) {
         constexpr const int BACKTRACE_SIZE = 64;
         void *array[BACKTRACE_SIZE];
-        size_t size;
+        std::size_t size;
 
         // get void*'s for all entries on the stack
         size = backtrace(array, BACKTRACE_SIZE);
 
+        std::exception_ptr pEx = std::current_exception();
+
         // print out all the frames to stderr
-        std::cerr << "Error: signal " << sig << ":\\n";
+        switch (sig) {
+            case SIGSEGV:
+                std::cerr << "Error: signal " << sig << ":\\n";
+                break;
+            case SIGTERM:
+                try {
+                    std::rethrow_exception(pEx);
+                } catch (std::exception & ex) {
+                    std::cerr << ex.what() << ":\n";
+                }
+        }
         backtrace_symbols_fd(array, size, STDERR_FILENO);
         exit(1);
     }
@@ -81,6 +97,7 @@ namespace ssb {
             int argc,
             char** argv) {
         signal(SIGSEGV, handler);
+        signal(SIGTERM, handler);
         parser.parse(argc, argv, 1);
         NUM_RUNS = parser.get_uint(ID_NUMRUNS);
         LEN_TIMES = parser.get_uint(ID_LENTIMES);
@@ -98,7 +115,7 @@ namespace ssb {
             const SSB_CONF & CONFIG) {
         StopWatch sw;
         sw.start();
-        size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
+        std::size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
         sw.stop();
         if (CONFIG.VERBOSE) {
             std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
@@ -109,19 +126,20 @@ namespace ssb {
     SSB_CONF ssb_config;
     PCM * m = nullptr;
     PCM::ErrorCode pcmStatus = PCM::UnknownError;
-    size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
+    std::mutex mutex_stats;
+    std::size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
     std::vector<CoreCounterState> cstate1, cstate2, cstate3;
     std::vector<SocketCounterState> sktstate1, sktstate2, sktstate3;
     SystemCounterState sysstate1, sysstate2, sysstate3;
     std::string emptyString;
     std::vector<StopWatch::rep> totalTimes;
-    StopWatch sw1, sw2;
+    ahead::StopWatch swOperatorTime, swTotalTime;
 
-    std::vector<StopWatch::rep> opTimes;
-    std::vector<size_t> batSizes;
-    std::vector<size_t> batConsumptions;
-    std::vector<size_t> batConsumptionsProj;
-    std::vector<size_t> batRSS;
+    std::vector<ahead::StopWatch::rep> opTimes;
+    std::vector<std::size_t> batSizes;
+    std::vector<std::size_t> batConsumptions;
+    std::vector<std::size_t> batConsumptionsProj;
+    std::vector<std::size_t> batRSS;
     std::vector<bool> hasTwoTypes;
     std::vector<boost::typeindex::type_index> headTypes;
     std::vector<boost::typeindex::type_index> tailTypes;
@@ -132,7 +150,12 @@ namespace ssb {
             const char * strHeadline) {
         set_signal_handlers();
 
-        constexpr const size_t numOpsDefault = 64;
+        rssBeforeLoad = 0;
+        rssAfterLoad = 0;
+        rssAfterCopy = 0;
+        rssAfterQueries = 0;
+
+        constexpr const std::size_t numOpsDefault = 64;
         ssb::opTimes.reserve(numOpsDefault);
         ssb::batSizes.reserve(numOpsDefault);
         ssb::batConsumptions.reserve(numOpsDefault);
@@ -145,8 +168,11 @@ namespace ssb {
         ssb::ssb_config.init(argc, argv);
         ssb::totalTimes.reserve(ssb::ssb_config.NUM_RUNS);
         ssb::init_pcm();
-        std::cout << strHeadline << std::endl;
+        std::cout << strHeadline << '\n';
+        auto fillChar = std::cout.fill('=');
+        std::cout << std::setw(strlen(strHeadline)) << "=" << std::setfill(fillChar) << '\n';
         ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH.c_str());
+        std::cout << "Database path: \"" << ssb::ssb_config.DB_PATH << "\"" << std::endl;
     }
 
     void init_pcm() {
@@ -187,7 +213,6 @@ namespace ssb {
     }
 
     void before_queries() {
-        ssb::rssAfterCopy = getPeakRSS(size_enum_t::B);
         if (ssb::ssb_config.VERBOSE) {
             std::cout << "\n(Copying)\n";
             ssb::print_headline();
@@ -197,17 +222,20 @@ namespace ssb {
         if (ssb::pcmStatus == PCM::Success) {
             ssb::m->getAllCounterStates(ssb::sysstate2, ssb::sktstate2, ssb::cstate2);
         }
+        ssb::rssAfterCopy = getPeakRSS(size_enum_t::B);
     }
 
     void after_queries() {
         ssb::rssAfterQueries = getPeakRSS(size_enum_t::B);
         if (ssb::ssb_config.VERBOSE) {
-            std::cout << "Memory statistics (Resident Set size in B):\n\t" << std::setw(15) << "before load: " << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::rssBeforeLoad << "\n\t" << std::setw(15)
-                    << "after load: " << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::rssAfterLoad << "\n\t" << std::setw(15) << "after copy: " << std::setw(ssb::ssb_config.LEN_SIZES)
-                    << ssb::rssAfterCopy << "\n\t" << std::setw(15) << "after queries: " << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::rssAfterQueries << "\n";
+            std::cout << "Memory statistics (Resident Set size in B):\n\t";
+            std::cout << std::setw(15) << "before load: " << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::rssBeforeLoad << "\n\t";
+            std::cout << std::setw(15) << "after load: " << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::rssAfterLoad << "\n\t";
+            std::cout << std::setw(15) << "after copy: " << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::rssAfterCopy << "\n\t";
+            std::cout << std::setw(15) << "after queries: " << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::rssAfterQueries << "\n";
         }
         std::cout << "TotalTimes:\n";
-        for (size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
+        for (std::size_t i = 0; i < ssb::ssb_config.NUM_RUNS; ++i) {
             std::cout << std::setw(2) << i << '\t' << ssb::totalTimes[i] << '\n';
         }
         std::cout << "Memory:\n" << ssb::rssBeforeLoad << '\n' << ssb::rssAfterLoad << '\n' << ssb::rssAfterCopy << '\n' << ssb::rssAfterQueries << std::endl;
@@ -215,25 +243,40 @@ namespace ssb {
 
     void before_query() {
         ssb::clear_stats();
-        ssb::sw2.start();
+        ssb::swTotalTime.start();
     }
 
     void after_query(
-            size_t index,
-            size_t result) {
-        ssb::totalTimes[index] = ssb::sw2.stop();
-        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::sw2 << " ns.\n";
+            std::size_t index,
+            std::size_t result) {
+        ssb::totalTimes[index] = ssb::swTotalTime.stop();
+        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::swTotalTime << " ns.\n";
         ssb::print_headline();
         ssb::print_result();
     }
 
+    void after_query(
+            std::size_t index,
+            std::exception & ex) {
+        ssb::totalTimes[index] = ssb::swTotalTime.stop();
+        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << ex.what() << "\n\t  time: " << ssb::swTotalTime << " ns.\n";
+    }
+
     void before_op() {
-        ssb::sw1.start();
+        ssb::swOperatorTime.start();
     }
 
     void after_op() {
-        ssb::opTimes.push_back(ssb::sw1.stop());
+        ssb::opTimes.push_back(ssb::swOperatorTime.stop());
         ssb::batRSS.push_back(getPeakRSS(size_enum_t::B));
+    }
+
+    void lock_for_stats() {
+        mutex_stats.lock();
+    }
+
+    void unlock_for_stats() {
+        mutex_stats.unlock();
     }
 
     ///////////////
@@ -265,18 +308,28 @@ namespace ssb {
 #undef PCM_PRINT
 
     void print_headline() {
-        std::cout << "\tname\t" << std::setw(ssb::ssb_config.LEN_TIMES) << "time [ns]" << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "size [#]" << "\t" << std::setw(ssb::ssb_config.LEN_SIZES)
-                << "consum [B]" << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "proj [B]" << "\t " << std::setw(ssb::ssb_config.LEN_SIZES) << " RSS Δ [B]" << "\t"
-                << std::setw(ssb::ssb_config.LEN_TYPES) << "type head" << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type tail" << "\n";
+        std::cout << "\tname";
+        std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << "time [ns]";
+        std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "size [#]";
+        std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "consum [B]";
+        std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "proj [B]";
+        std::cout << "\t " << std::setw(ssb::ssb_config.LEN_SIZES) << " RSS Δ [B]";
+        std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type head";
+        std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type tail";
+        std::cout << "\n";
     }
 
     void print_result() {
-        for (size_t k = 0; k < ssb::opTimes.size(); ++k) {
-            std::cout << "\top" << std::setw(2) << (k + 1) << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]) << "\t" << std::setw(ssb::ssb_config.LEN_SIZES)
-                    << ssb::batSizes[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptions[k] << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptionsProj[k]
-                    << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << (k == 0 ? (ssb::batRSS[k] - ssb::rssAfterCopy) : (ssb::batRSS[k] - ssb::batRSS[k - 1])) << "\t"
-                    << std::setw(ssb::ssb_config.LEN_TYPES) << ssb::headTypes[k].pretty_name() << "\t" << std::setw(ssb::ssb_config.LEN_TYPES)
-                    << (ssb::hasTwoTypes[k] ? ssb::tailTypes[k].pretty_name() : ssb::emptyString) << '\n';
+        for (std::size_t k = 0; k < ssb::opTimes.size(); ++k) {
+            std::cout << "\top" << std::setw(2) << (k + 1);
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]);
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batSizes[k];
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptions[k];
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptionsProj[k];
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << (k == 0 ? (ssb::batRSS[k] - ssb::rssAfterCopy) : (ssb::batRSS[k] - ssb::batRSS[k - 1]));
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << ssb::headTypes[k].pretty_name();
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << (ssb::hasTwoTypes[k] ? ssb::tailTypes[k].pretty_name() : ssb::emptyString);
+            std::cout << '\n';
         }
         std::cout << std::flush;
     }

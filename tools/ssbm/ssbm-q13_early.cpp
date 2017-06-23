@@ -26,7 +26,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.3 Early Detection\n==============================");
+    ssb::init(argc, argv, "SSBM Query 1.3 Early Detection");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.3:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
@@ -70,43 +70,51 @@ int main(
         ssb::before_query();
 
         // 0) Eager Check
-        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));CLEAR_CHECKANDDECODE_AN(tupleDY);
-        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));CLEAR_CHECKANDDECODE_AN(tupleDD);
-        MEASURE_OP_TUPLE(tupleLQ, checkAndDecodeAN(batLQenc));CLEAR_CHECKANDDECODE_AN(tupleLQ);
-        MEASURE_OP_TUPLE(tupleLD, checkAndDecodeAN(batLDenc));CLEAR_CHECKANDDECODE_AN(tupleLD);
-        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));CLEAR_CHECKANDDECODE_AN(tupleLO);
-        MEASURE_OP_TUPLE(tupleLE, checkAndDecodeAN(batLEenc));CLEAR_CHECKANDDECODE_AN(tupleLE);
-        MEASURE_OP_TUPLE(tupleDW, checkAndDecodeAN(batDWenc));CLEAR_CHECKANDDECODE_AN(tupleDW);
+        MEASURE_OP_TUPLE(tupleDD, checkAndDecodeAN(batDDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDD);
+        auto batDD = std::get<0>(tupleDD);
+        MEASURE_OP_TUPLE(tupleDY, checkAndDecodeAN(batDYenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDY);
+        auto batDY = std::get<0>(tupleDY);
+        MEASURE_OP_TUPLE(tupleLQ, checkAndDecodeAN(batLQenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLQ);
+        auto batLQ = std::get<0>(tupleLQ);
+        MEASURE_OP_TUPLE(tupleLD, checkAndDecodeAN(batLDenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLD);
+        auto batLD = std::get<0>(tupleLD);
+        MEASURE_OP_TUPLE(tupleLO, checkAndDecodeAN(batLOenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLO);
+        auto batLO = std::get<0>(tupleLO);
+        MEASURE_OP_TUPLE(tupleLE, checkAndDecodeAN(batLEenc));
+        CLEAR_CHECKANDDECODE_AN(tupleLE);
+        auto batLE = std::get<0>(tupleLE);
+        MEASURE_OP_TUPLE(tupleDW, checkAndDecodeAN(batDWenc));
+        CLEAR_CHECKANDDECODE_AN(tupleDW);
+        auto batDW = std::get<0>(tupleDW);
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, select(std::get<0>(tupleLQ), 26, 35)); // lo_quantity between 26 and 35
-        MEASURE_OP(bat2, select(std::get<0>(tupleLD), 5, 7)); // lo_discount between 5 and 7
+        MEASURE_OP(bat1, (select<std::greater_equal, std::less_equal, AND>(batLQ, 26, 35))); // lo_quantity between 26 and 35
+        MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(batLD, 5, 7))); // lo_discount between 5 and 7
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        delete std::get<0>(tupleLQ);
-        delete std::get<0>(tupleLD);
         delete bat1;
         MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection
         delete bat2;
         delete bat3;
         auto bat5 = bat4->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
-        MEASURE_OP(bat6, matchjoin(bat5, std::get<0>(tupleLO))); // only those lo_orderdates where lo_quantity... and lo_discount
-        delete std::get<0>(tupleLO);
+        MEASURE_OP(bat6, matchjoin(bat5, batLO)); // only those lo_orderdates where lo_quantity... and lo_discount
         delete bat5;
 
-        // 1) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP(bat7, select<std::equal_to>(std::get<0>(tupleDY), 1994)); // d_year = 1994
-        delete std::get<0>(tupleDY);
+        // 2) select from date (join inbetween to reduce the number of lines we touch in total)
+        MEASURE_OP(bat7, select<std::equal_to>(batDY, 1994)); // d_year = 1994
         auto bat8 = bat7->mirror_head(); // prepare joined selection over d_year and d_weeknuminyear
         delete bat7;
-        MEASURE_OP(bat9, select<std::equal_to>(std::get<0>(tupleDW), 6)); // d_weeknuminyear = 6
-        delete std::get<0>(tupleDW);
+        MEASURE_OP(bat9, select<std::equal_to>(batDW, 6)); // d_weeknuminyear = 6
         MEASURE_OP(batA, matchjoin(bat8, bat9));
         delete bat8;
         delete bat9;
         auto batB = batA->mirror_head();
         delete batA;
-        MEASURE_OP(batC, matchjoin(batB, std::get<0>(tupleDD))); // only those d_datekey where d_year and d_weeknuminyear...
-        delete std::get<0>(tupleDD);
+        MEASURE_OP(batC, matchjoin(batB, batDD)); // only those d_datekey where d_year and d_weeknuminyear...
         delete batB;
         auto batD = batC->reverse();
         delete batC;
@@ -119,11 +127,21 @@ int main(
         auto batF = batE->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batE;
         // BatF only contains the 
-        MEASURE_OP(batG, matchjoin(batF, std::get<0>(tupleLE)));
+        MEASURE_OP(batG, matchjoin(batF, batLE));
         MEASURE_OP(batH, matchjoin(batF, bat4));
-        delete std::get<0>(tupleLE);
         delete batF;
         delete bat4;
+
+        // delete decoded columns
+        delete batDD;
+        delete batDY;
+        delete batLQ;
+        delete batLD;
+        delete batLO;
+        delete batLE;
+        delete batDW;
+
+        // 4) result
         MEASURE_OP(batI, aggregate_mul_sum<v2_bigint_t>(batG, batH, 0));
         delete batG;
         delete batH;

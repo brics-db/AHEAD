@@ -34,10 +34,10 @@
 
 /***
  * @author Benjamin Schlegel
- * 
+ * @author Till Kolditz
  */
-#ifndef COLUMNBAT_H
-#define COLUMNBAT_H
+#ifndef LIB_COLUMNBAT_HPP
+#define LIB_COLUMNBAT_HPP
 
 #include <vector>
 #include <iostream>
@@ -46,8 +46,8 @@
 #include <ColumnStore.h>
 #include <column_storage/Bat.h>
 #include <column_storage/ColumnManager.h>
-#include <meta_repository/MetaRepositoryManager.h>
 #include <column_storage/ColumnBatIterator.h>
+#include "../meta_repository/MetaRepositoryManager.h"
 
 namespace ahead {
 
@@ -135,4 +135,4 @@ namespace ahead {
 
 }
 
-#endif
+#endif /* LIB_COLUMNBAT_HPP */

@@ -58,7 +58,7 @@ namespace ahead {
                         google::dense_hash_map<tail_t, oid_t, hasher, comparator> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
                         auto batVoidToGID = new TempBAT<v2_void_t, v2_oid_t>();
-                        auto batGIDtoOID = new TempBAT<v2_void_t, v2_oid_t>();
+                        auto batVGIDtoOID = new TempBAT<v2_void_t, v2_oid_t>();
                         auto iter = bat->begin();
                         for (; iter->hasNext(); ++*iter) {
                             tail_t curTail = iter->tail();
@@ -68,14 +68,14 @@ namespace ahead {
                             if (iterDict != dictionary.end()) {
                                 batVoidToGID->append(iterDict->second);
                             } else {
-                                oid_t newGID = batGIDtoOID->size();
-                                batGIDtoOID->append(iter->head());
+                                oid_t newGID = batVGIDtoOID->size();
+                                batVGIDtoOID->append(iter->head());
                                 batVoidToGID->append(newGID);
                                 dictionary[curTail] = newGID;
                             }
                         }
                         delete iter;
-                        return std::make_pair(batVoidToGID, batGIDtoOID);
+                        return std::make_pair(batVoidToGID, batVGIDtoOID);
                     }
 
                     typedef typename Tail::v2_larger_t v2_largerTail_t;
@@ -91,7 +91,9 @@ namespace ahead {
                         if (bat->size() != grouping->size()) {
                             throw std::runtime_error("input BAT and existing grouping have different sizes!");
                         }
-                        auto batHashToGID = new TempBAT<v2_largerTail_t, v2_oid_t>();
+                        // auto batHashToGID = new TempBAT<v2_largerTail_t, v2_oid_t>();
+                        google::dense_hash_map<largerTail_t, oid_t> dictionary;
+                        dictionary.set_empty_key(v2_largerTail_t::dhm_emptykey);
                         auto batVoidToGID = new TempBAT<v2_void_t, v2_oid_t>();
                         auto batVGIDtoOID = new TempBAT<v2_void_t, v2_oid_t>();
                         auto iter = bat->begin();
@@ -100,19 +102,23 @@ namespace ahead {
                             largerTail_t curHash = static_cast<largerTail_t>(hasher::get(iter->tail())) * static_cast<largerTail_t>(numGroups) + static_cast<largerTail_t>(iterG->tail());
                             // search this tail in our mapping
                             // idx is the void value of mapGIDtoTail, which starts at zero
-                            auto opt = findFirstHead(batHashToGID, curHash);
-                            if (opt) {
-                                batVoidToGID->append(opt.value());
+                            // auto opt = findFirstHead(batHashToGID, curHash);
+                            auto iterDict = dictionary.find(curHash);
+                            // if (opt) {
+                            if (iterDict != dictionary.end()) {
+                                // batVoidToGID->append(opt.value());
+                                batVoidToGID->append(iterDict->second);
                             } else {
                                 oid_t newGID = batVGIDtoOID->size();
                                 batVGIDtoOID->append(iter->head());
-                                batHashToGID->append(std::make_pair(curHash, newGID));
+                                // batHashToGID->append(std::make_pair(curHash, newGID));
+                                dictionary[curHash] = newGID;
                                 batVoidToGID->append(newGID);
                             }
                         }
                         delete iter;
                         delete iterG;
-                        delete batHashToGID;
+                        // delete batHashToGID;
                         return std::make_pair(batVoidToGID, batVGIDtoOID);
                     }
                 };

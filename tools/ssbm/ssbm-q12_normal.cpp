@@ -25,7 +25,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.2 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 1.2 Normal");
 
     SSBM_LOAD("date", "lineorder", "SSBM Q1.2:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
@@ -66,8 +66,8 @@ int main(
         ssb::before_query();
 
         // 1) select from lineorder
-        MEASURE_OP(bat1, select(batLQ, 26, 35)); // lo_quantity between 26 and 35
-        MEASURE_OP(bat2, select(batLD, 4, 6)); // lo_discount between 4 and 6
+        MEASURE_OP(bat1, (select<std::greater_equal, std::less_equal, AND>(batLQ, 26, 35))); // lo_quantity between 26 and 35
+        MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(batLD, 4, 6))); // lo_discount between 4 and 6
         auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete bat1;
         MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection

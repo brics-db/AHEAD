@@ -40,6 +40,7 @@
 #define BATITERATOR_H
 
 #include <utility>
+#include <optional>
 
 #include <column_storage/Bat.h>
 
@@ -55,10 +56,12 @@ namespace ahead {
         virtual ~BATIterator() {
         }
 
+        // TODO hasNext() and operator++ and next() have misleading semantics. We need a 'bool operator()' which tests whether we are at a valid location, and delete the next() method
         virtual void next() = 0;
         virtual BATIterator& operator++() = 0;
         virtual BATIterator& operator+=(
                 oid_t i) = 0;
+        virtual std::optional<oid_t> position() = 0;
         virtual void position(
                 oid_t index) = 0;
         virtual bool hasNext() = 0;

@@ -29,7 +29,7 @@
 #include <ColumnStore.h>
 #include <column_storage/TransactionManager.h>
 #include <column_storage/Storage.hpp>
-#include <meta_repository/MetaRepositoryManager.h>
+#include "../meta_repository/MetaRepositoryManager.h"
 #include <util/resilience.hpp>
 
 namespace ahead {
@@ -73,7 +73,7 @@ namespace ahead {
         std::stringstream sserr;
         if (!this->isUpdater) {
             // Problem : Transaktion darf keine Änderungen vornehmen
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Transaktion darf keine Änderungen vornehmen" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Transaktion darf keine Änderungen vornehmen" << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -82,12 +82,12 @@ namespace ahead {
         const size_t LEN_VALUE = 256;
 
         if (path == nullptr) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ")  You must provide a path!" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ")  You must provide a path!" << std::endl;
             throw std::runtime_error(sserr.str());
         }
         size_t pathLen = strnlen(path, LEN_PATH);
         if (pathLen == 0 || pathLen > LEN_PATH) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ") path is too long (>1024)!" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") path is too long (>1024)!" << std::endl;
             throw std::runtime_error(sserr.str());
         }
         const char* actDelim = delim == nullptr ? "|" : delim;
@@ -111,7 +111,7 @@ namespace ahead {
         char *buffer(nullptr);
         TransactionManager::BinaryUnit bun;
         column_type_t type(type_void);
-        size_t n(0); // line counter
+        size_t numValues(0); // line counter
         size_t lenPrefix = prefix ? strlen(prefix) : 0;
 
         id_t newTableId(0); // unique id of the created table
@@ -126,13 +126,15 @@ namespace ahead {
         column_widths.reserve(DEFAULT_RESERVE);
         std::vector<column_type_t> column_types;
         column_types.reserve(DEFAULT_RESERVE);
+        std::vector<size_t> nums_values;
+        nums_values.reserve(DEFAULT_RESERVE);
 
         valuesFile = std::fopen(valuesPath.c_str(), "r");
         headerFile = std::fopen(headerPath.c_str(), "r");
 
         if (!headerFile) {
             // Problem : Dateien konnten nicht geöffnet werden
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Header-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Header-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -160,7 +162,7 @@ namespace ahead {
         // Defer column creation until after we checked whether either the actual contents file or the converted data files are present
         std::memset(line, 0, LEN_LINE);
         if (std::fgets(line, LEN_LINE, headerFile) != line) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Error reading line!" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Error reading line!" << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -179,7 +181,7 @@ namespace ahead {
             size_t lenBuf = strlen(buffer);
             if (lenPrefix + lenBuf > (LEN_VALUE - 1)) {
                 // Problem : Name für Spalte (inkl. Prefix) zu lang
-                sserr << "TransactionManager::load(@" << __LINE__ << ") Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
+                sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Name of column is too long (>" << (LEN_VALUE - 1) << ")!";
                 throw std::runtime_error(sserr.str());
             }
 
@@ -206,7 +208,7 @@ namespace ahead {
         // Zeile mit Spaltentypen einlesen aus Header-Datei
         std::memset(line, 0, LEN_LINE);
         if (std::fgets(line, LEN_LINE, headerFile) != line) {
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Error reading line" << std::endl;
+            sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Error reading line" << std::endl;
             throw std::runtime_error(sserr.str());
         }
 
@@ -264,7 +266,7 @@ namespace ahead {
                 columnType = type_resbigint;
                 columnWidth = sizeof(resbigint_t);
             } else {
-                sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") data type " << buffer << " in header unknown" << std::endl;
+                sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") data type " << buffer << " in header unknown" << std::endl;
                 throw std::runtime_error(sserr.str());
             }
 
@@ -279,14 +281,16 @@ namespace ahead {
         ////////////////////////////////////////////////
         const size_t numColumns = column_names.size();
         bool areAllColumnFilesPresent = true;
+        std::vector<bool> vecColumnPresent(column_names.size());
         if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
             auto columnItersIterator = columnIters.begin();
             for (size_t i = 0; i < column_names.size(); ++i) {
-                std::string attrFilePath(path);
-                attrFilePath.append("_").append(column_names[i]).append(".ahead");
-                std::ifstream attrIStream(attrFilePath);
-                areAllColumnFilesPresent &= attrIStream.is_open();
-                attrIStream.close();
+                std::string columnFilePath(path);
+                columnFilePath.append("_").append(column_names[i]).append(".ahead");
+                std::ifstream columnIStream(columnFilePath);
+                vecColumnPresent[i] = columnIStream.is_open();
+                areAllColumnFilesPresent &= columnIStream.is_open();
+                columnIStream.close();
                 ++columnItersIterator;
             }
         }
@@ -296,7 +300,12 @@ namespace ahead {
         //////////////////////////////////////////////////////////////////////////////////////////
         if (!areAllColumnFilesPresent && !valuesFile) {
             // Problem : Dateien konnten nicht geöffnet werden
-            sserr << "TransactionManager::load(@" << __LINE__ << ") Content-Datei konnte nicht geöffnet werden (" << headerPath << ')' << std::endl;
+            sserr << "TransactionManager::load(@" << __LINE__ << ") Content-Datei konnte nicht geöffnet werden (" << valuesPath << "). Fehlende Spalten sind:\n";
+            for (size_t i = 0; i < column_names.size(); ++i) {
+                if (!vecColumnPresent[i]) {
+                    sserr << '\t' << column_names[i] << '\n';
+                }
+            }
             throw std::runtime_error(sserr.str());
         }
 
@@ -394,11 +403,12 @@ namespace ahead {
             attributeNamesIndex++;
         }
 
-        ////////////////////////////////////////////////////
-        // Convert data for faster next load if necessary //
-        ////////////////////////////////////////////////////
+        //////////////////////////////////////////////
+        // Check for converted data for faster load //
+        //////////////////////////////////////////////
         bool areAllColumnsConverted = AHEAD::getInstance()->isConvertTableFilesOnLoad();
         std::vector<bool> vecIscolumnAlreadyLoaded(numColumns);
+        nums_values.resize(column_names.size());
         if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
             auto columnItersIterator = columnIters.begin();
             for (size_t i = 0; i < column_names.size(); ++i) {
@@ -407,7 +417,7 @@ namespace ahead {
                 std::ifstream attrIStream(attrFilePath);
                 areAllColumnsConverted &= attrIStream.is_open();
                 if (attrIStream) {
-                    (*columnItersIterator)->read(attrIStream);
+                    nums_values[i] = (*columnItersIterator)->read(attrIStream);
                     if (attrIStream.fail() | attrIStream.bad()) {
                         sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
                         throw std::runtime_error(sserr.str());
@@ -424,15 +434,16 @@ namespace ahead {
         // Spaltenwerte zeilenweise aus Datei einlesen
         auto columnsMetaData = cm->getColumnMetaData();
         if (!areAllColumnsConverted) {
+            numValues = 0;
             std::memset(line, 0, LEN_LINE);
-            while (std::fgets(line, LEN_LINE, valuesFile) != 0 && n < size) {
+            while (std::fgets(line, LEN_LINE, valuesFile) != 0 && numValues < size) {
                 if ((pPos = std::strchr(line, '\n')) != nullptr) {
                     *pPos = 0;
                 }
                 if (*(pPos - 1) == '\r') {
                     *(pPos - 1) = 0;
                 }
-                n++; // increase line counter
+                numValues++; // increase line counter
 
                 // Iteratoren für Spaltentypen und Spalteniteratoren zur?cksetzen
                 auto columnItersIterator = columnIters.begin();
@@ -520,11 +531,16 @@ namespace ahead {
                 }
                 std::memset(line, 0, LEN_LINE);
             }
+            for (size_t i = 0; i < column_names.size(); ++i) {
+                if (!vecIscolumnAlreadyLoaded[i]) {
+                    nums_values[i] = numValues;
+                }
+            }
         }
         delete columnsMetaData;
 
         /////////////////////////////////////////
-        // Write Yet Unconverted Contents File //
+        // Write newly converted Contents File //
         /////////////////////////////////////////
         if (AHEAD::getInstance()->isConvertTableFilesOnLoad() && !areAllColumnsConverted) {
             auto columnItersIterator = columnIters.begin();
@@ -561,7 +577,22 @@ namespace ahead {
             std::fclose(valuesFile);
         }
         std::fclose(headerFile);
-        return n;
+
+        ////////////////////////////////////////////
+        // Test if all columns have the same size //
+        ////////////////////////////////////////////
+        size_t previousNumValues = nums_values[0];
+        for (size_t i = 1; i < column_names.size(); ++i) {
+            if (nums_values[i] != previousNumValues) {
+                std::stringstream sserr;
+                sserr << "Transaction::load(@" << __FILE__ << ':' << __LINE__ << ") For table \"" << tableName << "\": Column sizes don't match! previous (" << (i - 1) << ") = " << previousNumValues
+                        << ", current (" << i << ") = " << nums_values[i];
+                throw std::runtime_error(sserr.str().c_str());
+            }
+            previousNumValues = nums_values[i];
+        }
+
+        return nums_values[0];
     }
 
     std::unordered_set<id_t> TransactionManager::Transaction::list() {

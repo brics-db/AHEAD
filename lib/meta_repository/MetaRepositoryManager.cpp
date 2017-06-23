@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cstring>
-
-#include <ColumnStore.h>
-#include <meta_repository/MetaRepositoryManager.h>
+#include "MetaRepositoryManager.h"
 #include <column_operators/Operators.hpp>
 
 namespace ahead {
@@ -325,6 +322,12 @@ namespace ahead {
         (*pKeyIter) += i;
         (*pNameIter) += i;
         return *this;
+    }
+    std::optional<oid_t> MetaRepositoryManager::TablesIterator::position() {
+        if (hasNext()) {
+            return std::optional<oid_t>(pKeyIter->position());
+        }
+        return std::optional<oid_t>();
     }
 
     void MetaRepositoryManager::TablesIterator::position(

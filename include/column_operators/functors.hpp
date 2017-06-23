@@ -21,25 +21,32 @@
 #ifndef INCLUDE_COLUMN_OPERATORS_FUNCTORS_HPP_
 #define INCLUDE_COLUMN_OPERATORS_FUNCTORS_HPP_
 
+#include <util/v2types.hpp>
+
 namespace ahead {
     namespace bat {
         namespace ops {
 
+            struct functor {
+            };
+
             template<typename _Op = void>
-            struct add {
+            struct ADD :
+                    public functor {
                 template<typename _Tp, typename ... _Types>
                 constexpr
                 auto operator()(
                         _Tp&& __t,
-                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) + _Op().operator()(args...)))
-                        -> decltype(std::forward<_Tp>(__t) + _Op().operator()(args...))
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) + _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<_Tp>(__t) + _Op().operator()(std::forward<_Types>(args)...))
                         {
-                    return std::forward<_Tp>(__t) + _Op().operator()(args...);
+                    return std::forward<_Tp>(__t) + _Op().operator()(std::forward<_Types>(args)...);
                 }
             };
 
             template<>
-            struct add<void> {
+            struct ADD<void> :
+                    public functor {
                 template<typename _Tp, typename _Up>
                 constexpr
                 auto operator()(
@@ -52,20 +59,22 @@ namespace ahead {
             };
 
             template<typename _Op = void>
-            struct sub {
+            struct SUB :
+                    public functor {
                 template<typename _Tp, typename ... _Types>
                 constexpr
                 auto operator()(
                         _Tp&& __t,
-                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) - _Op().operator()(args...)))
-                        -> decltype(std::forward<_Tp>(__t) - _Op().operator()(args...))
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) - _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<_Tp>(__t) - _Op().operator()(std::forward<_Types>(args)...))
                         {
-                    return std::forward<_Tp>(__t) - _Op().operator()(args...);
+                    return std::forward<_Tp>(__t) - _Op().operator()(std::forward<_Types>(args)...);
                 }
             };
 
             template<>
-            struct sub<void> {
+            struct SUB<void> :
+                    public functor {
                 template<typename _Tp, typename _Up>
                 constexpr
                 auto operator()(
@@ -78,20 +87,22 @@ namespace ahead {
             };
 
             template<typename _Op = void>
-            struct mul {
+            struct MUL :
+                    public functor {
                 template<typename _Tp, typename ... _Types>
                 constexpr
                 auto operator()(
                         _Tp&& __t,
-                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) * _Op().operator()(args...)))
-                        -> decltype(std::forward<_Tp>(__t) * _Op().operator()(args...))
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) * _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<_Tp>(__t) * _Op().operator()(std::forward<_Types>(args)...))
                         {
-                    return std::forward<_Tp>(__t) * _Op().operator()(args...);
+                    return std::forward<_Tp>(__t) * _Op().operator()(std::forward<_Types>(args)...);
                 }
             };
 
             template<>
-            struct mul<void> {
+            struct MUL<void> :
+                    public functor {
                 template<typename _Tp, typename _Up>
                 constexpr
                 auto operator()(
@@ -104,20 +115,22 @@ namespace ahead {
             };
 
             template<typename _Op = void>
-            struct div {
+            struct DIV :
+                    public functor {
                 template<typename _Tp, typename ... _Types>
                 constexpr
                 auto operator()(
                         _Tp&& __t,
-                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) / _Op().operator()(args...)))
-                        -> decltype(std::forward<_Tp>(__t) / _Op().operator()(args...))
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) / _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<_Tp>(__t) / _Op().operator()(std::forward<_Types>(args)...))
                         {
-                    return std::forward<_Tp>(__t) / _Op().operator()(args...);
+                    return std::forward<_Tp>(__t) / _Op().operator()(std::forward<_Types>(args)...);
                 }
             };
 
             template<>
-            struct div<void> {
+            struct DIV<void> :
+                    public functor {
                 template<typename _Tp, typename _Up>
                 constexpr
                 auto operator()(
@@ -126,6 +139,172 @@ namespace ahead {
                         -> decltype(std::forward<_Tp>(__t) / std::forward<_Up>(__u))
                         {
                     return std::forward<_Tp>(__t) / std::forward<_Up>(__u);
+                }
+            };
+
+            template<typename _Op = void>
+            struct AND :
+                    public functor {
+                template<typename _Tp, typename ... _Types>
+                constexpr
+                auto operator()(
+                        _Tp&& __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) & _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<_Tp>(__t) & _Op().operator()(std::forward<_Types>(args)...))
+                        {
+                    return std::forward<_Tp>(__t) & _Op().operator()(std::forward<_Types>(args)...);
+                }
+            };
+
+            template<>
+            struct AND<void> :
+                    public functor {
+                template<typename _Tp, typename _Up>
+                constexpr
+                auto operator()(
+                        _Tp&& __t,
+                        _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) & std::forward<_Up>(__u)))
+                        -> decltype(std::forward<_Tp>(__t) & std::forward<_Up>(__u))
+                        {
+                    return std::forward<_Tp>(__t) & std::forward<_Up>(__u);
+                }
+            };
+
+            template<typename _Op = void>
+            struct OR :
+                    public functor {
+                template<typename _Tp, typename ... _Types>
+                constexpr
+                auto operator()(
+                        _Tp&& __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) | _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<_Tp>(__t) | _Op().operator()(std::forward<_Types>(args)...))
+                        {
+                    return std::forward<_Tp>(__t) | _Op().operator()(std::forward<_Types>(args)...);
+                }
+            };
+
+            template<>
+            struct OR<void> :
+                    public functor {
+                template<typename _Tp, typename _Up>
+                constexpr
+                auto operator()(
+                        _Tp&& __t,
+                        _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) | std::forward<_Up>(__u)))
+                        -> decltype(std::forward<_Tp>(__t) | std::forward<_Up>(__u))
+                        {
+                    return std::forward<_Tp>(__t) | std::forward<_Up>(__u);
+                }
+            };
+
+            template<typename _Op = void>
+            struct NOT :
+                    public functor {
+                template<typename ... _Types>
+                constexpr
+                auto operator()(
+                        _Types && ... args) const noexcept(noexcept(! _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(! _Op().operator()(std::forward<_Types>(args)...))
+                        {
+                    return !_Op().operator()(std::forward<_Types>(args)...);
+                }
+            };
+
+            template<>
+            struct NOT<void> :
+                    public functor {
+                template<typename _Up>
+                constexpr
+                auto operator()(
+                        _Up&& __u) const noexcept(noexcept(! std::forward<_Up>(__u)))
+                        -> decltype(! std::forward<_Up>(__u))
+                        {
+                    return !std::forward<_Up>(__u);
+                }
+            };
+
+            template<typename _Op = void>
+            struct EQ :
+                    public functor {
+                template<typename _Tp, typename ... _Types>
+                constexpr
+                auto operator()(
+                        _Tp && __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<_Tp>(__t) == _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<_Tp>(__t) == _Op().operator()(std::forward<_Types>(args)...))
+                        {
+                    return std::forward<_Tp>(__t) == _Op().operator()(std::forward<_Types>(args)...);
+                }
+
+                template<typename ... _Types>
+                constexpr
+                auto operator()(
+                        str_t && __t,
+                        _Types && ... args) const noexcept(noexcept(std::forward<str_t>(__t) == _Op().operator()(std::forward<_Types>(args)...)))
+                        -> decltype(std::forward<str_t>(__t) == _Op().operator()(std::forward<_Types>(args)...))
+                        {
+                    return EQ()(strcmp(std::forward<str_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0);
+                }
+
+                template<typename ... _Types>
+                constexpr
+                auto operator()(
+                        cstr_t && __t,
+                        _Types && ... args) const noexcept(noexcept(EQ()(strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0)))
+                        -> decltype(EQ()(strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0))
+                        {
+                    return EQ()(strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0);
+                }
+            };
+
+            template<>
+            struct EQ<void> :
+                    public functor {
+                template<typename _Tp, typename _Up>
+                constexpr
+                auto operator()(
+                        _Tp&& __t,
+                        _Up&& __u) const noexcept(noexcept(std::forward<_Tp>(__t) == std::forward<_Up>(__u)))
+                        -> decltype(std::forward<_Tp>(__t) == std::forward<_Up>(__u))
+                        {
+                    return std::forward<_Tp>(__t) == std::forward<_Up>(__u);
+                }
+
+                constexpr
+                auto operator()(
+                        str_t && __t,
+                        str_t && __u) const noexcept(noexcept(strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0))
+                        -> decltype(strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0)
+                        {
+                    return strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0;
+                }
+
+                constexpr
+                auto operator()(
+                        cstr_t && __t,
+                        str_t && __u) const noexcept(noexcept(strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0))
+                        -> decltype(strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0)
+                        {
+                    return strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0;
+                }
+
+                constexpr
+                auto operator()(
+                        str_t && __t,
+                        cstr_t && __u) const noexcept(noexcept(strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0))
+                        -> decltype(strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0)
+                        {
+                    return strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0;
+                }
+
+                constexpr
+                auto operator()(
+                        cstr_t && __t,
+                        cstr_t && __u) const noexcept(noexcept(strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0))
+                        -> decltype(strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0)
+                        {
+                    return strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0;
                 }
             };
 

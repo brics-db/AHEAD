@@ -39,7 +39,8 @@
 #ifndef OPERATORS_HPP
 #define OPERATORS_HPP
 
-#include <column_storage/Storage.hpp>
+#include <column_storage/TempStorage.hpp>
+#include <column_operators/functors.hpp>
 
 namespace ahead {
     namespace bat {
@@ -96,12 +97,19 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
                 select(
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1,
                         typename Tail::type_t && th2);
+
+                // ARITHMETIC
+                template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, Result> *
+                arithmetic(
+                        BAT<Head1, Tail1> * bat1,
+                        BAT<Head2, Tail2> * bat2);
 
                 // AGGREGATE
                 template<typename v2_result_t, typename Head, typename Tail>
@@ -125,12 +133,19 @@ namespace ahead {
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1);
 
-                template<template<typename > class Op1 = std::greater_equal, template<typename > class Op2 = std::less_equal, typename Head, typename Tail>
+                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
                 select(
                         BAT<Head, Tail>* arg,
                         typename Tail::type_t && th1,
                         typename Tail::type_t && th2);
+
+                // ARITHMETIC
+                template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                BAT<v2_void_t, Result> *
+                arithmetic(
+                        BAT<Head1, Tail1> * bat1,
+                        BAT<Head2, Tail2> * bat2);
 
                 // AGGREGATE
                 template<typename v2_result_t, typename Head, typename Tail>

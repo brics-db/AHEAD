@@ -26,7 +26,7 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.1 Continuous Detection\n===================================");
+    ssb::init(argc, argv, "SSBM Query 1.1 Continuous Detection");
 
     SSBM_LOAD("dateAN", "lineorderAN", "SSBM Q1.1:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
@@ -68,18 +68,14 @@ int main(
 
         // 1) select from lineorder
         MEASURE_OP_PAIR(pair1, selectAN<std::less>(batLQenc, 25 * batLQenc->tail.metaData.AN_A)); // lo_quantity < 25
-        if (pair1.second)
-            delete pair1.second;
-        MEASURE_OP_PAIR(pair2, selectAN(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A)); // lo_discount between 1 and 3
-        if (pair2.second)
-            delete pair2.second;
+        CLEAR_SELECT_AN(pair1);
+        MEASURE_OP_PAIR(pair2, (selectAN<std::greater_equal, std::less_equal, AND>(batLDenc, 1 * batLDenc->tail.metaData.AN_A, 3 * batLDenc->tail.metaData.AN_A))); // lo_discount between 1 and 3
+        CLEAR_SELECT_AN(pair2);
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
-        if (pair1.first)
-            delete pair1.first;
+        delete pair1.first;
         MEASURE_OP_TUPLE(tuple4, matchjoinAN(bat3, pair2.first)); // join selection
         delete bat3;
-        if (pair2.first)
-            delete pair2.first;
+        delete pair2.first;
         CLEAR_JOIN_AN(tuple4);
         auto bat5 = std::get<0>(tuple4)->mirror_head(); // prepare joined selection with lo_orderdate (contains positions in tail)
         MEASURE_OP_TUPLE(tuple6, matchjoinAN(bat5, batLOenc)); // only those lo_orderdates where lo_quantity... and lo_discount
@@ -88,8 +84,7 @@ int main(
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
         MEASURE_OP_PAIR(pair7, (selectAN<std::equal_to>(batDYenc, 1993 * batDYenc->tail.metaData.AN_A))); // d_year = 1993
-        if (pair7.second)
-            delete pair7.second;
+        CLEAR_SELECT_AN(pair7);
         auto bat8 = pair7.first->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete pair7.first;
         MEASURE_OP_TUPLE(tuple9, (matchjoinAN(bat8, batDDenc))); // only those d_datekey where d_year...
@@ -106,7 +101,8 @@ int main(
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = std::get<0>(tupleB)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete std::get<0>(tupleB);
-        MEASURE_OP_TUPLE(tupleD, (matchjoinAN(batC, batLEenc)));CLEAR_JOIN_AN(tupleD);
+        MEASURE_OP_TUPLE(tupleD, (matchjoinAN(batC, batLEenc)));
+        CLEAR_JOIN_AN(tupleD);
         MEASURE_OP_TUPLE(tupleE, (matchjoinAN(batC, std::get<0>(tuple4))));
         delete std::get<0>(tuple4);
         delete batC;

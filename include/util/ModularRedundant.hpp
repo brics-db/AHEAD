@@ -23,6 +23,9 @@
 
 #include <array>
 #include <exception>
+#include <tuple>
+#include <type_traits>
+#include <sstream>
 
 namespace ahead {
 
@@ -72,9 +75,9 @@ namespace ahead {
     };
 
     template<std::size_t _Int, typename _Tp, std::size_t _Modularity>
-    constexpr _Tp&
+    constexpr _Tp &
     get(
-            NModularRedundantValue<_Tp, _Modularity>& __in) noexcept
+            NModularRedundantValue<_Tp, _Modularity> & __in) noexcept
             {
         return std::get<_Int>(__in.values);
     }
@@ -88,96 +91,274 @@ namespace ahead {
     }
 
     template<std::size_t _Int, typename _Tp, std::size_t _Modularity>
-    constexpr const _Tp&
+    constexpr const _Tp &
     get(
-            const NModularRedundantValue<_Tp, _Modularity>& __in) noexcept
+            const NModularRedundantValue<_Tp, _Modularity> & __in) noexcept
             {
         return std::get(__in.values);
     }
 
+    template<std::size_t _Int, typename _Tp, std::size_t _Modularity>
+    constexpr const _Tp &&
+    get(
+            const NModularRedundantValue<_Tp, _Modularity> && __in) noexcept
+            {
+        return std::get<_Int>(std::forward<NModularRedundantValue<_Tp, _Modularity>>(__in.values));
+    }
+
+    namespace Private {
+        template<std::size_t _Modularity, typename ... _Types>
+        struct __get_voted {
+        };
+
+        template<typename _Tp>
+        struct __get_voted<2, _Tp> {
+            typedef NModularRedundantValue<_Tp, 2> DMR;
+            static _Tp&
+            value(
+                    DMR & __in) {
+                if (ahead::get<0>(__in) == ahead::get<1>(__in)) {
+                    return ahead::get<0>(__in);
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+
+            static _Tp value(
+                    DMR && __in) {
+                if (ahead::get<0>(std::forward<DMR>(__in)) == ahead::get<1>(std::forward<DMR>(__in))) {
+                    return ahead::get<0>(std::forward<DMR>(__in));
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+
+            static const _Tp&
+            value(
+                    const DMR & __in) {
+                if (ahead::get<0>(__in) == ahead::get<1>(__in)) {
+                    return ahead::get<0>(__in);
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+
+            static const _Tp get(
+                    const DMR && __in) {
+                if (ahead::get<0>(std::forward<DMR>(__in)) == ahead::get<1>(std::forward<DMR>(__in))) {
+                    return ahead::get<0>(std::forward<DMR>(__in));
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+        };
+
+        template<typename _Tp>
+        struct __get_voted<3, _Tp> {
+            typedef NModularRedundantValue<_Tp, 3> TMR;
+            static _Tp &
+            value(
+                    TMR & __in) {
+                if (ahead::get<0>(__in) == ahead::get<1>(__in) || ahead::get<0>(__in) == ahead::get<2>(__in)) {
+                    return ahead::get<0>(__in);
+                } else if (ahead::get<1>(__in) == ahead::get<2>(__in)) {
+                    ahead::get<0>(__in) = ahead::get<1>(__in);
+                    return ahead::get<1>(__in);
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+
+            static _Tp &&
+            value(
+                    TMR && __in) {
+                if (ahead::get<0>(std::forward<TMR>(__in)) == ahead::get<1>(std::forward<TMR>(__in)) || ahead::get<0>(std::forward<TMR>(__in)) == ahead::get<2>(std::forward<TMR>(__in))) {
+                    return ahead::get<0>(std::forward<TMR>(__in));
+                } else if (ahead::get<1>(std::forward<TMR>(__in)) == ahead::get<2>(std::forward<TMR>(__in))) {
+                    ahead::get<0>(std::forward<TMR>(__in)) = ahead::get<1>(std::forward<TMR>(__in));
+                    return ahead::get<1>(std::forward<TMR>(__in));
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+
+            static const _Tp &
+            value(
+                    const TMR & __in) {
+                if (ahead::get<0>(__in) == ahead::get<1>(__in) || ahead::get<0>(__in) == ahead::get<2>(__in)) {
+                    return ahead::get<0>(__in);
+                } else if (ahead::get<1>(__in) == ahead::get<2>(__in)) {
+                    ahead::get<0>(__in) = ahead::get<1>(__in);
+                    return ahead::get<1>(__in);
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+
+            static const _Tp &&
+            value(
+                    const TMR && __in) {
+                if (ahead::get<0>(std::forward<TMR>(__in)) == ahead::get<1>(std::forward<TMR>(__in)) || ahead::get<0>(std::forward<TMR>(__in)) == ahead::get<2>(std::forward<TMR>(__in))) {
+                    return ahead::get<0>(std::forward<TMR>(__in));
+                } else if (ahead::get<1>(std::forward<TMR>(__in)) == ahead::get<2>(std::forward<TMR>(__in))) {
+                    ahead::get<0>(std::forward<TMR>(__in)) = ahead::get<1>(std::forward<TMR>(__in));
+                    return ahead::get<1>(std::forward<TMR>(__in));
+                }
+                throw modularity_exception("DMR: values do not match");
+            }
+        };
+
+        template<std::size_t _Modularity, std::size_t N, typename ... _Types>
+        struct __get_voted_tuple_helper {
+        };
+
+        template<std::size_t N, typename ... _Types>
+        struct __get_voted_tuple_helper<2, N, _Types...> {
+            typedef NModularRedundantValue<std::tuple<_Types...>, 2> DMR;
+            static constexpr decltype(auto) isSizeSame(
+                    DMR & __in) {
+                return std::tuple_cat(__get_voted_tuple_helper<2, N - 1, _Types...>::isSizeSame(__in),
+                        std::make_tuple(std::get<N - 1>(ahead::get<0>(__in))->size() == std::get<N - 1>(ahead::get<1>(__in))->size()));
+            }
+            template<typename ... _Types2>
+            static decltype(auto) get(
+                    DMR & __in1,
+                    std::tuple<_Types2...> __in2) {
+                auto sub = __get_voted_tuple_helper<2, N - 1, _Types...>::get(__in1, __in2);
+                if (!std::get<N - 1>(__in2)) {
+                    throw modularity_exception("DMR: sizes don't match");
+                }
+                return std::tuple_cat(sub, std::make_tuple(std::get<N - 1>(ahead::get<0>(__in1))->size()));
+            }
+            static decltype(auto) content(
+                    DMR & __in) {
+                auto sub = __get_voted_tuple_helper<2, N - 1, _Types...>::content(__in);
+                auto bat1 = std::get<0>(ahead::get<0>(__in));
+                auto bat2 = std::get<0>(ahead::get<1>(__in));
+                if (bat1->size() != bat2->size()) {
+                    std::stringstream sserr;
+                    sserr << "DMR: size does not match! BATType = <" << bat1->type_head().pretty_name() << ", " << bat1->type_tail().pretty_name() << "> (@" << __FILE__ << ':' << __LINE__ << ')';
+                    throw modularity_exception(sserr.str().c_str());
+                }
+                auto iter1 = bat1->begin();
+                auto iter2 = bat2->begin();
+                bool isSame = true;
+                for (; isSame && iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
+                    isSame &= iter1->tail() == iter2->tail();
+                }
+                delete iter1;
+                delete iter2;
+                if (!isSame) {
+                    std::stringstream sserr;
+                    sserr << "DMR: content does not match! BATType = <" << bat1->type_head().pretty_name() << ", " << bat1->type_tail().pretty_name() << "> (@" << __FILE__ << ':' << __LINE__ << ')';
+                    throw modularity_exception(sserr.str().c_str());
+                }
+                return std::tuple_cat(sub, std::make_tuple(std::get<N - 1>(ahead::get<0>(__in))));
+            }
+        };
+
+        template<typename ... _Types>
+        struct __get_voted_tuple_helper<2, 1, _Types...> {
+            typedef NModularRedundantValue<std::tuple<_Types...>, 2> DMR;
+            static constexpr decltype(auto) isSizeSame(
+                    DMR & __in) {
+                return std::make_tuple(std::get<0>(ahead::get<0>(__in))->size() == std::get<0>(ahead::get<1>(__in))->size());
+            }
+            template<typename ... _Types2>
+            static decltype(auto) get(
+                    DMR & __in1,
+                    std::tuple<_Types2...> __in2) {
+                if (!std::get<0>(__in2)) {
+                    throw modularity_exception("DMR: sizes don't match");
+                }
+                return std::make_tuple(std::get<0>(ahead::get<0>(__in1))->size());
+            }
+            static decltype(auto) content(
+                    DMR & __in) {
+                auto bat1 = std::get<0>(ahead::get<0>(__in));
+                auto bat2 = std::get<0>(ahead::get<1>(__in));
+                if (bat1->size() != bat2->size()) {
+                    std::stringstream sserr;
+                    sserr << "DMR: size does not match! BATType = <" << bat1->type_head().pretty_name() << ", " << bat1->type_tail().pretty_name() << "> (@" << __FILE__ << ':' << __LINE__ << ')';
+                    throw modularity_exception(sserr.str().c_str());
+                }
+                auto iter1 = bat1->begin();
+                auto iter2 = bat2->begin();
+                bool isSame = true;
+                for (; isSame && iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2) {
+                    isSame &= iter1->tail() == iter2->tail();
+                }
+                delete iter1;
+                delete iter2;
+                if (!isSame) {
+                    std::stringstream sserr;
+                    sserr << "DMR: content does not match! BATType = <" << bat1->type_head().pretty_name() << ", " << bat1->type_tail().pretty_name() << "> (@" << __FILE__ << ':' << __LINE__ << ')';
+                    throw modularity_exception(sserr.str().c_str());
+                }
+                return std::make_tuple(std::get<0>(ahead::get<0>(__in)));
+            }
+        };
+
+        template<typename ... _Types>
+        struct __get_voted<2, _Types...> {
+            typedef NModularRedundantValue<std::tuple<_Types...>, 2> DMR;
+            static decltype(auto) size(
+                    DMR & __in) {
+                return __get_voted_tuple_helper<2, std::tuple_size<std::tuple<_Types...>>::value, _Types...>::get(__in,
+                        __get_voted_tuple_helper<2, std::tuple_size<std::tuple<_Types...>>::value, _Types...>::isSizeSame(__in));
+            }
+            static decltype(auto) content(
+                    DMR & __in) {
+                return __get_voted_tuple_helper<2, std::tuple_size<std::tuple<_Types...>>::value, _Types...>::content(__in);
+            }
+        };
+
+        template<typename BATType>
+        oid_t BATsize(
+                BATType * bat1,
+                BATType * bat2) {
+            oid_t sz1 = bat1->size();
+            oid_t sz2 = bat2->size();
+            if (sz1 != sz2) {
+                std::stringstream sserr;
+                sserr << "DMR: sizes don't match! BATType = <" << bat1->type_head().pretty_name() << ", " << bat1->type_tail().pretty_name() << "> (@" << __FILE__ << ':' << __LINE__ << ')';
+                throw modularity_exception(sserr.str().c_str());
+            }
+            return bat1->size();
+        }
+    }
+
     template<typename _Tp, std::size_t _Modularity>
-    struct __get_voted;
-
-    template<typename _Tp>
-    struct __get_voted<_Tp, 2> {
-        static _Tp&
-        get(
-                NModularRedundantValue<_Tp, 2> & __in) {
-            if (ahead::get<0>(__in) == ahead::get<1>(__in)) {
-                return ahead::get<0>(__in);
-            }
-            throw modularity_exception("DMR: values do not match");
-        }
-        static _Tp get(
-                NModularRedundantValue<_Tp, 2> && __in) {
-            if (ahead::get<0>(__in) == ahead::get<1>(__in)) {
-                return ahead::get<0>(__in);
-            }
-            throw modularity_exception("DMR: values do not match");
-        }
-        static const _Tp&
-        get(
-                const NModularRedundantValue<_Tp, 2> & __in) {
-            if (ahead::get<0>(__in) == ahead::get<1>(__in)) {
-                return ahead::get<0>(__in);
-            }
-            throw modularity_exception("DMR: values do not match");
-        }
-    };
-
-    template<typename _Tp>
-    struct __get_voted<_Tp, 3> {
-        static _Tp&
-        get(
-                NModularRedundantValue<_Tp, 3> & __in) {
-            if (ahead::get<0>(__in) == ahead::get<1>(__in) || ahead::get<0>(__in) == ahead::get<2>(__in)) {
-                return ahead::get<0>(__in);
-            } else if (ahead::get<1>(__in) == ahead::get<2>(__in)) {
-                ahead::get<0>(__in) = ahead::get<1>(__in);
-                return ahead::get<1>(__in);
-            }
-            throw modularity_exception("DMR: values do not match");
-        }
-        static _Tp get(
-                NModularRedundantValue<_Tp, 3> && __in) {
-            if (ahead::get<0>(__in) == ahead::get<1>(__in) || ahead::get<0>(__in) == ahead::get<2>(__in)) {
-                return ahead::get<0>(__in);
-            } else if (ahead::get<1>(__in) == ahead::get<2>(__in)) {
-                ahead::get<0>(__in) = ahead::get<1>(__in);
-                return ahead::get<1>(__in);
-            }
-            throw modularity_exception("DMR: values do not match");
-        }
-        static const _Tp&
-        get(
-                const NModularRedundantValue<_Tp, 3> & __in) {
-            if (ahead::get<0>(__in) == ahead::get<1>(__in) || ahead::get<0>(__in) == ahead::get<2>(__in)) {
-                return ahead::get<0>(__in);
-            } else if (ahead::get<1>(__in) == ahead::get<2>(__in)) {
-                ahead::get<0>(__in) = ahead::get<1>(__in);
-                return ahead::get<1>(__in);
-            }
-            throw modularity_exception("DMR: values do not match");
-        }
-    };
-
-    template<typename _Tp, std::size_t _Modularity>
-    _Tp & vote_majority(
+    _Tp & vote_majority_value(
             NModularRedundantValue<_Tp, _Modularity> & __in) {
-        return ahead::__get_voted<_Tp, _Modularity>::get(__in);
+        return ahead::Private::__get_voted<_Modularity, _Tp>::value(__in);
     }
 
     template<typename _Tp, std::size_t _Modularity>
-    _Tp vote_majority(
+    _Tp && vote_majority_value(
             NModularRedundantValue<_Tp, _Modularity> && __in) {
-        return ahead::__get_voted<_Tp, _Modularity>::get(std::forward<NModularRedundantValue<_Tp, 3>>(__in));
+        return ahead::Private::__get_voted<_Modularity, _Tp>::value(std::forward<NModularRedundantValue<_Tp, _Modularity>>(__in));
     }
 
     template<typename _Tp, std::size_t _Modularity>
-    const _Tp & vote_majority(
+    const _Tp & vote_majority_value(
             const NModularRedundantValue<_Tp, _Modularity> & __in) {
-        return ahead::__get_voted<_Tp, _Modularity>::get(__in);
+        return ahead::Private::__get_voted<_Modularity, _Tp>::value(__in);
     }
+
+    template<typename _Tp, std::size_t _Modularity>
+    const _Tp && vote_majority_value(
+            const NModularRedundantValue<_Tp, _Modularity> && __in) {
+        return ahead::Private::__get_voted<_Modularity, _Tp>::value(std::forward<NModularRedundantValue<_Tp, _Modularity>>(__in));
+    }
+
+    template<std::size_t _Modularity, typename ... _Types>
+    auto vote_majority_tuple(
+            NModularRedundantValue<std::tuple<_Types...>, _Modularity> & __in)
+            ->decltype(ahead::Private::__get_voted<_Modularity, _Types...>::content(__in)) {
+        return ahead::Private::__get_voted<_Modularity, _Types...>::content(__in);
+    }
+
+    template<std::size_t _Modularity, typename ... _Types>
+    auto vote_majority_tuple_size(
+            NModularRedundantValue<std::tuple<_Types...>, _Modularity> & __in)
+            ->decltype(ahead::Private::__get_voted<_Modularity, _Types...>::size(__in)) {
+        return ahead::Private::__get_voted<_Modularity, _Types...>::size(__in);
+    }
+
 }
 
 #endif /* UTIL_MODULARREDUNDANT_HPP_ */

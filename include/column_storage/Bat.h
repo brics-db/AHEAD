@@ -44,6 +44,7 @@
 #include <boost/type_index.hpp>
 
 #include <ColumnStore.h>
+#include <column_storage/BaseBAT.hpp>
 #include <column_storage/BatIterator.h>
 #include <column_storage/ColumnMetaData.hpp>
 #include <column_storage/ColumnDescriptor.hpp>
@@ -51,8 +52,10 @@
 namespace ahead {
 
     template<typename Head, typename Tail>
-    struct BAT {
+    class BAT :
+            public BaseBAT {
 
+    public:
         typedef Head v2_head_t;
         typedef Tail v2_tail_t;
         typedef typename v2_head_t::type_t head_t;
@@ -110,8 +113,10 @@ namespace ahead {
     };
 
     template<>
-    struct BAT<v2_void_t, v2_void_t> {
+    class BAT<v2_void_t, v2_void_t> :
+            public BaseBAT {
 
+    public:
         typedef v2_void_t Head;
         typedef Head v2_head_t;
         typedef v2_void_t Tail;
@@ -178,8 +183,10 @@ namespace ahead {
     };
 
     template<typename Head>
-    struct BAT<Head, v2_void_t> {
+    class BAT<Head, v2_void_t> :
+            public BaseBAT {
 
+    public:
         typedef v2_void_t Tail;
         typedef Head v2_head_t;
         typedef Tail v2_tail_t;
@@ -245,8 +252,10 @@ namespace ahead {
     };
 
     template<typename Tail>
-    struct BAT<v2_void_t, Tail> {
+    class BAT<v2_void_t, Tail> :
+            public BaseBAT {
 
+    public:
         typedef v2_void_t Head;
         typedef Head v2_head_t;
         typedef Tail v2_tail_t;

@@ -21,6 +21,8 @@
 #ifndef TOOLS_SSBM_MACROS_HPP_
 #define TOOLS_SSBM_MACROS_HPP_
 
+#include <tuple>
+
 ///////////////
 // SSBM_LOAD //
 ///////////////
@@ -38,11 +40,12 @@ std::cout << QueryString << std::endl;
 #define SSBM_LOAD(...)                                                         \
 do {                                                                           \
     ssb::rssBeforeLoad = getPeakRSS(size_enum_t::B);                           \
-    ssb::sw1.start();                                                          \
+    ahead::StopWatch sw;                                                       \
+    sw.start();                                                                \
     VFUNC(SSBM_LOAD, __VA_ARGS__)                                              \
-    ssb::sw1.stop();                                                           \
+    sw.stop();                                                                 \
     ssb::rssAfterLoad = getPeakRSS(size_enum_t::B);                            \
-    std::cout << "Total loading time: " << ssb::sw1 << " ns.\n" << std::endl;  \
+    std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;        \
     if (ssb::ssb_config.VERBOSE) {                                             \
         SSBM_LOAD_PRINTQUERYSTRING(__VA_ARGS__);                               \
     }                                                                          \
@@ -68,6 +71,14 @@ loadTable(tab2, ssb::ssb_config);
 #define SSBM_LOAD2(tab1, QueryString)                                          \
 loadTable(tab1, ssb::ssb_config);
 
+#ifdef _OPENMP
+#define BEFORE_SAVE_STATS ssb::lock_for_stats();
+#define AFTER_SAVE_STATS ssb::unlock_for_stats();
+#else
+#define BEFORE_SAVE_STATS
+#define AFTER_SAVE_STATS
+#endif
+
 ///////////////
 // SAVE_TYPE //
 ///////////////
@@ -83,20 +94,23 @@ do {                                                                           \
 ////////////////
 #define MEASURE_OP(...) VFUNC(MEASURE_OP, __VA_ARGS__)
 
-#define MEASURE_OP4(VAR, IDX, OP, TYPE) \
-MEASURE_OP6(VAR, IDX, OP, VAR IDX ->size(), VAR IDX ->consumption(), VAR IDX ->consumptionProjected()); \
-do { \
-    SAVE_TYPE(TYPE); \
-} while (false)
-
 #define MEASURE_OP6(TYPE, VAR, OP, STORE_SIZE_OP, STORE_CONSUMPTION_OP, STORE_PROJECTEDCONSUMPTION_OP) \
 ssb::before_op();                                                              \
 TYPE VAR = OP;                                                                 \
 ssb::after_op();                                                               \
 do {                                                                           \
-    ssb::batSizes.push_back(STORE_SIZE_OP);                                    \
-    ssb::batConsumptions.push_back(STORE_CONSUMPTION_OP);                      \
-    ssb::batConsumptionsProj.push_back(STORE_PROJECTEDCONSUMPTION_OP);         \
+    BEFORE_SAVE_STATS                                                          \
+    ssb::batSizes.push_back((STORE_SIZE_OP));                                  \
+    ssb::batConsumptions.push_back((STORE_CONSUMPTION_OP));                    \
+    ssb::batConsumptionsProj.push_back((STORE_PROJECTEDCONSUMPTION_OP));       \
+} while (false)
+
+#define MEASURE_OP4(VAR, IDX, OP, TYPE)                                        \
+MEASURE_OP6(VAR, IDX, OP, (TYPE ->size()), (TYPE ->consumption()),             \
+    (TYPE ->consumptionProjected()));                                          \
+do {                                                                           \
+    SAVE_TYPE(TYPE);                                                           \
+    AFTER_SAVE_STATS                                                           \
 } while (false)
 
 #define MEASURE_OP3(TYPE, VAR, OP)                                             \
@@ -104,20 +118,33 @@ MEASURE_OP6(TYPE, VAR, OP, 1, sizeof(TYPE), sizeof(TYPE));                     \
 do {                                                                           \
     ssb::headTypes.push_back(boost::typeindex::type_id<TYPE>().type_info());   \
     ssb::hasTwoTypes.push_back(false);                                         \
+    AFTER_SAVE_STATS                                                           \
 } while (false)
 
-#define MEASURE_OP2(BAT, OP)                                                               \
-MEASURE_OP6(auto, BAT, OP, BAT->size(), BAT->consumption(), BAT->consumptionProjected());  \
-SAVE_TYPE(BAT)
+#define MEASURE_OP2(BAT, OP)                                                   \
+MEASURE_OP6(auto, BAT, OP, BAT->size(), BAT->consumption(),                    \
+        BAT->consumptionProjected());                                          \
+do {                                                                           \
+    SAVE_TYPE(BAT);                                                            \
+    AFTER_SAVE_STATS                                                           \
+} while (false)
 
 #define MEASURE_OP_PAIR(PAIR, OP)                                              \
 MEASURE_OP6(auto, PAIR, OP, PAIR.first->size(), PAIR.first->consumption(),     \
     PAIR.first->consumptionProjected());                                       \
-SAVE_TYPE(PAIR.first);
+do {                                                                           \
+    SAVE_TYPE(PAIR.first);                                                     \
+    AFTER_SAVE_STATS                                                           \
+} while (false)
 
 #define MEASURE_OP_TUPLE(TUPLE, OP)                                            \
-MEASURE_OP6(auto, TUPLE, OP, std::get<0>(TUPLE)->size(), std::get<0>(TUPLE)->consumption(), std::get<0>(TUPLE)->consumptionProjected());  \
-SAVE_TYPE((std::get<0>(TUPLE)))
+MEASURE_OP6(auto, TUPLE, OP, (std::get<0>(TUPLE)->size()),                     \
+        (std::get<0>(TUPLE)->consumption()),                                   \
+        (std::get<0>(TUPLE)->consumptionProjected()));                         \
+do {                                                                           \
+    SAVE_TYPE((std::get<0>(TUPLE)));                                           \
+    AFTER_SAVE_STATS                                                           \
+} while (false)
 
 /////////////////////
 // CLEAR_SELECT_AN //

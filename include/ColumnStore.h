@@ -63,6 +63,7 @@ namespace ahead {
     class BucketManager;
     class ColumnManager;
     class TransactionManager;
+    class BaseBAT;
     template<typename Head, typename Tail>
     class BAT;
     template<typename Tail>

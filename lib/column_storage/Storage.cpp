@@ -42,24 +42,26 @@ template class ColumnBAT<Tail>;
     COLUMNBAT(v2_resbigint_t)
 
 #define TEMPBAT(V2Head) \
-template class TempBAT<V2Head, v2_void_t> ; \
-template class TempBAT<V2Head, v2_tinyint_t> ; \
-template class TempBAT<V2Head, v2_shortint_t> ; \
-template class TempBAT<V2Head, v2_int_t> ; \
-template class TempBAT<V2Head, v2_bigint_t> ; \
-template class TempBAT<V2Head, v2_char_t> ; \
-template class TempBAT<V2Head, v2_str_t> ; \
-template class TempBAT<V2Head, v2_fixed_t> ; \
-template class TempBAT<V2Head, v2_id_t> ; \
-template class TempBAT<V2Head, v2_size_t> ; \
-template class TempBAT<V2Head, v2_oid_t> ; \
-template class TempBAT<V2Head, v2_restiny_t> ; \
-template class TempBAT<V2Head, v2_resshort_t> ; \
-template class TempBAT<V2Head, v2_resint_t> ; \
-template class TempBAT<V2Head, v2_resbigint_t> ; \
-template class TempBAT<V2Head, v2_resstr_t> ;
+template class TempBAT<V2Head, v2_void_t>;                  \
+template class TempBAT<V2Head, v2_oid_t>;                   \
+template class TempBAT<V2Head, v2_tinyint_t>;               \
+template class TempBAT<V2Head, v2_shortint_t>;              \
+template class TempBAT<V2Head, v2_int_t>;                   \
+template class TempBAT<V2Head, v2_bigint_t>;                \
+template class TempBAT<V2Head, v2_char_t>;                  \
+template class TempBAT<V2Head, v2_str_t>;                   \
+template class TempBAT<V2Head, v2_fixed_t>;                 \
+template class TempBAT<V2Head, v2_id_t>;                    \
+template class TempBAT<V2Head, v2_size_t>;                  \
+template class TempBAT<V2Head, v2_resoid_t>;                \
+template class TempBAT<V2Head, v2_restiny_t>;               \
+template class TempBAT<V2Head, v2_resshort_t>;              \
+template class TempBAT<V2Head, v2_resint_t>;                \
+template class TempBAT<V2Head, v2_resbigint_t>;             \
+template class TempBAT<V2Head, v2_resstr_t>;
 
     TEMPBAT(v2_void_t)
+    TEMPBAT(v2_oid_t)
     TEMPBAT(v2_tinyint_t)
     TEMPBAT(v2_shortint_t)
     TEMPBAT(v2_int_t)
@@ -69,7 +71,7 @@ template class TempBAT<V2Head, v2_resstr_t> ;
     TEMPBAT(v2_fixed_t)
     TEMPBAT(v2_id_t)
     TEMPBAT(v2_size_t)
-    TEMPBAT(v2_oid_t)
+    TEMPBAT(v2_resoid_t)
     TEMPBAT(v2_restiny_t)
     TEMPBAT(v2_resshort_t)
     TEMPBAT(v2_resint_t)

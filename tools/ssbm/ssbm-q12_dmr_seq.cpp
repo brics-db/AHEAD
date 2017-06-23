@@ -21,13 +21,14 @@
 
 #include "ssb.hpp"
 #include "macros.hpp"
+#include <util/ModularRedundant.hpp>
 
 typedef DMRValue<bigint_t> DMR;
 
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 1.2 DMR Sequential\n=============================");
+    ssb::init(argc, argv, "SSBM Query 1.2 DMR Sequential");
 
     SSBM_LOAD("date", "lineorder", "SSBM Q1.2:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
@@ -80,8 +81,8 @@ int main(
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // 1) select from lineorder
-            MEASURE_OP(bat1, select(batLQs[k], 26, 35)); // lo_quantity between 26 and 35
-            MEASURE_OP(bat2, select(batLDs[k], 4, 6)); // lo_discount between 4 and 6
+            MEASURE_OP(bat1, (select<std::greater_equal, std::less_equal, AND>(batLQs[k], 26, 35))); // lo_quantity between 26 and 35
+            MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(batLDs[k], 4, 6))); // lo_discount between 4 and 6
             auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
             delete bat1;
             MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection
@@ -126,9 +127,12 @@ int main(
         }
 
         // 5) Voting
-        auto result = vote_majority(results);
-
-        ssb::after_query(i, result);
+        try {
+            auto result = vote_majority_value(results);
+            ssb::after_query(i, result);
+        } catch (std::exception & ex) {
+            ssb::after_query(i, ex);
+        }
     }
 
     ssb::after_queries();

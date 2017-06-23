@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   ssbm-q31.cpp
+ * File:   ssbm-q31_normal.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 12. June 2017, 10:49
@@ -25,10 +25,10 @@
 int main(
         int argc,
         char** argv) {
-    ssb::init(argc, argv, "SSBM Query 3.1 Normal\n=====================");
+    ssb::init(argc, argv, "SSBM Query 3.1 Normal");
 
     SSBM_LOAD("customer", "lineorder", "supplier", "date", "SSBM Q3.1:\n"
-            "select c_nation, s_nation, d_year, sum(lo_revenue)\n"
+            "select c_nation, s_nation, d_year, sum(lo_revenue) as revenue\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"
             "    and lo_suppkey = s_suppkey\n"
@@ -115,7 +115,7 @@ int main(
         delete bat11;
 
         // d_year >= 1992 and d_year <= 1997
-        MEASURE_OP(bat13, select(batDY, 1992, 1997)); // OID date | d_year
+        MEASURE_OP(bat13, (select<std::greater_equal, std::less_equal, AND>(batDY, 1992, 1997))); // OID date | d_year
         auto bat14 = bat13->mirror_head(); // OID date | OID date
         delete bat13;
         MEASURE_OP(bat15, matchjoin(bat14, batDD)); // OID date | d_datekey
@@ -170,6 +170,8 @@ int main(
         MEASURE_OP_PAIR(pairGC, groupby(batAC, std::get<0>(pairGS), std::get<1>(pairGS)->size()));
         delete std::get<0>(pairGS);
         delete std::get<1>(pairGS);
+
+        // result
         MEASURE_OP(batRR, aggregate_sum_grouped<v2_bigint_t>(batAR, std::get<0>(pairGC), std::get<1>(pairGC)->size()));
         delete batAR;
         MEASURE_OP(batRD, fetchjoin(std::get<1>(pairGC), batAD));
@@ -192,7 +194,7 @@ int main(
             auto iter3 = batRD->begin();
             auto iter4 = batRR->begin();
             std::cerr << "+-----------------+-----------------+--------+------------+\n";
-            std::cerr << "+        c_nation +        s_nation | d_year | lo_revenue |\n";
+            std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
             std::cerr << "+=================+=================+========+============+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                 sum += iter4->tail();
