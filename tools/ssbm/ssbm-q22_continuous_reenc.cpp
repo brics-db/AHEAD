@@ -182,25 +182,25 @@ int main(
         ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
-            size_t sum = 0;
             auto iter1 = std::get<0>(tupleRR)->begin();
             auto iter2 = std::get<0>(tupleRY)->begin();
             auto iter3 = std::get<0>(tupleRB)->begin();
-            typedef typename std::remove_pointer<typename std::remove_reference<decltype(std::get<0>(tupleRR))>::type>::type::tail_t revenue_tail_t;
+            typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRR))>::type>::type::tail_t revenue_tail_t;
             revenue_tail_t batRRAinv = static_cast<revenue_tail_t>(std::get<0>(tupleRR)->tail.metaData.AN_Ainv);
-            typedef typename std::remove_pointer<typename std::remove_reference<decltype(std::get<0>(tupleRY))>::type>::type::tail_t year_tail_t;
+            typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRY))>::type>::type::tail_t year_tail_t;
             year_tail_t batRYAinv = static_cast<year_tail_t>(std::get<0>(tupleRY)->tail.metaData.AN_Ainv);
+            revenue_tail_t sum = 0;
             std::cerr << "+------------+--------+-----------+\n";
             std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
-                sum += iter1->tail() * batRRAinv;
+                sum += iter1->tail();
                 std::cerr << "| " << std::setw(10) << static_cast<revenue_tail_t>(iter1->tail() * batRRAinv);
                 std::cerr << " | " << std::setw(6) << static_cast<year_tail_t>(iter2->tail() * batRYAinv);
                 std::cerr << " | " << std::setw(9) << iter3->tail() << " |\n";
             }
             std::cerr << "+============+========+===========+\n";
-            std::cerr << "\t   sum: " << sum << std::endl;
+            std::cerr << "\t   sum: " << static_cast<revenue_tail_t>(sum * batRRAinv) << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;

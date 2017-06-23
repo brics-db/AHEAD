@@ -346,14 +346,16 @@ namespace ahead {
     }
 
     template<std::size_t _Modularity, typename ... _Types>
-    decltype(auto) vote_majority_tuple(
-            NModularRedundantValue<std::tuple<_Types...>, _Modularity> & __in) {
+    auto vote_majority_tuple(
+            NModularRedundantValue<std::tuple<_Types...>, _Modularity> & __in)
+            ->decltype(ahead::Private::__get_voted<_Modularity, _Types...>::content(__in)) {
         return ahead::Private::__get_voted<_Modularity, _Types...>::content(__in);
     }
 
     template<std::size_t _Modularity, typename ... _Types>
-    decltype(auto) vote_majority_tuple_size(
-            NModularRedundantValue<std::tuple<_Types...>, _Modularity> & __in) {
+    auto vote_majority_tuple_size(
+            NModularRedundantValue<std::tuple<_Types...>, _Modularity> & __in)
+            ->decltype(ahead::Private::__get_voted<_Modularity, _Types...>::size(__in)) {
         return ahead::Private::__get_voted<_Modularity, _Types...>::size(__in);
     }
 

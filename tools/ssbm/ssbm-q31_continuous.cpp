@@ -223,6 +223,10 @@ int main(
             auto iter2 = std::get<0>(tupleRS)->begin();
             auto iter3 = std::get<0>(tupleRD)->begin();
             auto iter4 = std::get<0>(tupleRR)->begin();
+            typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRR))>::type>::type::tail_t revenue_tail_t;
+            revenue_tail_t batRRAinv = static_cast<revenue_tail_t>(std::get<0>(tupleRR)->tail.metaData.AN_Ainv);
+            typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRD))>::type>::type::tail_t year_tail_t;
+            year_tail_t batRDAinv = static_cast<year_tail_t>(std::get<0>(tupleRD)->tail.metaData.AN_Ainv);
             std::cerr << "+-----------------+-----------------+--------+------------+\n";
             std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
             std::cerr << "+=================+=================+========+============+\n";
@@ -230,11 +234,11 @@ int main(
                 sum += iter4->tail();
                 std::cerr << "| " << std::setw(15) << iter1->tail();
                 std::cerr << " | " << std::setw(15) << iter2->tail();
-                std::cerr << " | " << std::setw(6) << static_cast<resshort_t>(iter3->tail() * std::get<0>(tupleRD)->tail.metaData.AN_Ainv);
-                std::cerr << " | " << std::setw(10) << static_cast<resbigint_t>(iter4->tail() * std::get<0>(tupleRR)->tail.metaData.AN_Ainv) << " |\n";
+                std::cerr << " | " << std::setw(6) << static_cast<year_tail_t>(iter3->tail() * batRDAinv);
+                std::cerr << " | " << std::setw(10) << static_cast<revenue_tail_t>(iter4->tail() * batRRAinv) << " |\n";
             }
             std::cerr << "+=================+=================+========+============+\n";
-            std::cerr << "\t   sum: " << static_cast<resbigint_t>(sum * std::get<0>(tupleRR)->tail.metaData.AN_Ainv) << std::endl;
+            std::cerr << "\t   sum: " << static_cast<revenue_tail_t>(sum * batRRAinv) << std::endl;
             delete iter1;
             delete iter2;
             delete iter3;
