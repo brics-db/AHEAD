@@ -19,8 +19,8 @@
  * Created on 31-05-2017 10:06
  */
 
-#include <column_operators/ANbase.hpp>
-#include "encdecAN.tcc"
+#include "encdecAN_SSE.tcc"
+#include "encdecAN_scalar.tcc"
 
 namespace ahead {
     namespace bat {

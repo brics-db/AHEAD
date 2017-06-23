@@ -96,6 +96,7 @@ column_operators/Normal/matchjoin_resbigint.cpp \
 column_operators/Normal/miscellaneous.cpp \
 column_operators/Normal/select.cpp \
 column_operators/AN/aggregateAN.cpp \
+column_operators/AN/arithmeticAN.cpp \
 column_operators/AN/encdecAN.cpp \
 column_operators/AN/groupbyAN.cpp \
 column_operators/AN/hashjoinAN_void.cpp \

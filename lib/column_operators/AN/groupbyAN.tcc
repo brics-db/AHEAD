@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   groupby.tcc
+ * File:   groupbyAN.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 16:27
@@ -22,15 +22,11 @@
 #ifndef GROUPBY_AN_TCC
 #define GROUPBY_AN_TCC
 
-#ifdef DEBUG
-#include <iostream>
-#include <iomanip>
-#endif
 #include <type_traits>
 
 #include <google/dense_hash_map>
 
-#include <column_storage/Storage.hpp>
+#include <column_storage/TempStorage.hpp>
 #include <column_operators/ANbase.hpp>
 #include "../miscellaneous.hpp"
 #include "ANhelper.tcc"

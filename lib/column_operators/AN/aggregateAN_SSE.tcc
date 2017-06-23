@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   aggregate.tcc
+ * File:   aggregateAN_SSE.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 16:26
@@ -24,7 +24,7 @@
 
 #include <type_traits>
 
-#include <column_storage/Storage.hpp>
+#include <column_storage/TempStorage.hpp>
 #include <util/v2typeconversion.hpp>
 #include <column_operators/ANbase.hpp>
 #include "SSEAN.hpp"

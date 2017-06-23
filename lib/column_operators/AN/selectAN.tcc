@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   select_AN.tcc
+ * File:   selectAN.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 16:22

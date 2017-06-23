@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   matchjoin.tcc
+ * File:   matchjoinAN.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 2. Januar 2017, 22:38

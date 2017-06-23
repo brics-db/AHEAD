@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   hashjoinAN.cpp
+ * File:   hashjoinAN_void.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 10-04-2017 22:14
