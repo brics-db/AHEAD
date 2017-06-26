@@ -160,8 +160,8 @@ namespace ahead {
                             __m128i mmDecS, mmDecL;
                             auto pRH = reinterpret_cast<head_unenc_t*>(result->head.container->data());
                             auto pRT = reinterpret_cast<tail_unenc_t*>(result->tail.container->data());
-                            auto pmmRS = reinterpret_cast<__m128i *>(smaller_type<head_unenc_t, tail_unenc_t>::get(pRH, pRT));
-                            auto pmmRL = reinterpret_cast<__m128i *>(larger_type<head_unenc_t, tail_unenc_t>::get(pRH, pRT));
+                            auto pmmRS = reinterpret_cast<__m128i *>(smaller_type<head_t, tail_t>::get(reinterpret_cast<head_t *>(pRH), reinterpret_cast<tail_t *>(pRT)));
+                            auto pmmRL = reinterpret_cast<__m128i *>(larger_type<head_t, tail_t>::get(reinterpret_cast<head_t *>(pRH), reinterpret_cast<tail_t *>(pRT)));
 
                             head_t hAinv = static_cast<head_t>(arg->head.metaData.AN_Ainv);
                             head_t hUnencMaxU = static_cast<head_t>(arg->head.metaData.AN_unencMaxU);
@@ -181,7 +181,7 @@ namespace ahead {
                                     mmDecS = mm;
                                 }
                                 _mm_storeu_si128(pmmRS, mmDecS);
-                                pmmRS = reinterpret_cast<__m128i *>(reinterpret_cast<smaller_t *>(pmmRS) + smallersPerMM128);
+                                pmmRS = reinterpret_cast<__m128i *>(reinterpret_cast<smaller_unenc_t *>(pmmRS) + smallersPerMM128);
                                 for (size_t i = 0; i < factor; ++i) {
                                     mm = _mm_lddqu_si128(pmmL++);
                                     if (isLargerEncoded) {
@@ -192,7 +192,7 @@ namespace ahead {
                                     }
                                     pos += largersPerMM128;
                                     _mm_storeu_si128(pmmRL, mmDecL);
-                                    pmmRL = reinterpret_cast<__m128i *>(reinterpret_cast<larger_t *>(pmmRL) + largersPerMM128);
+                                    pmmRL = reinterpret_cast<__m128i *>(reinterpret_cast<larger_unenc_t *>(pmmRL) + largersPerMM128);
                                 }
                             }
                             result->overwrite_size(pos); // "register" the number of values we added
