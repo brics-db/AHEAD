@@ -184,7 +184,8 @@ namespace ahead {
                         typename Tail::v2_select_t::type_t ATInvR);
 
                 template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-                std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> arithmeticAN(
+                std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
+                arithmeticAN(
                         BAT<Head1, Tail1> * bat1,
                         BAT<Head2, Tail2> * bat2,
                         typename Result::type_t AResult = std::get<Result::As->size() - 1>(*Result::As),

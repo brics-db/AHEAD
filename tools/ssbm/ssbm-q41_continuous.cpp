@@ -163,7 +163,7 @@ int main(
         CLEAR_FETCHJOIN_AN(tupleAR);
         MEASURE_OP_TUPLE(tupleAS, fetchjoinAN(bat21, batLSC)); // VOID | lo_supplycost
         CLEAR_FETCHJOIN_AN(tupleAS);
-        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<SUB, v2_int_t>(std::get<0>(tupleAR), std::get<0>(tupleAS)))); // VOID | lo_revenue - lo_supplycost !!
+        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<SUB, v2_resint_t>(std::get<0>(tupleAR), std::get<0>(tupleAS)))); // VOID | lo_revenue - lo_supplycost !!
         delete std::get<0>(tupleAR);
         delete std::get<0>(tupleAS);
         CLEAR_ARITHMETIC_AN(tupleAP);
@@ -182,7 +182,9 @@ int main(
         delete bat21;
         CLEAR_FETCHJOIN_AN(tuple25);
         auto bat29 = batDD->reverse(); // d_datekey | VOID date
-        MEASURE_OP_TUPLE(tuple30, hashjoinAN(std::get<0>(tuple25), bat29)); // OID | OID date
+        MEASURE_OP_TUPLE(tuple30,
+                hashjoinAN(std::get<0>(tuple25), bat29, std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs),
+                        std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID | OID date
         delete std::get<0>(tuple25);
         delete bat29;
         auto bat31 = std::get<0>(tuple30)->clear_head(); // VOID | OID date
@@ -220,7 +222,7 @@ int main(
             auto iter2 = std::get<0>(tupleRN)->begin();
             auto iter3 = std::get<0>(tupleRP)->begin();
             typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRP))>::type>::type::tail_t profit_tail_t;
-            profit_tail_t batRPAinv = static_cast<revenue_tail_t>(std::get<0>(tupleRP)->tail.metaData.AN_Ainv);
+            profit_tail_t batRPAinv = static_cast<profit_tail_t>(std::get<0>(tupleRP)->tail.metaData.AN_Ainv);
             typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRY))>::type>::type::tail_t year_tail_t;
             year_tail_t batRYAinv = static_cast<year_tail_t>(std::get<0>(tupleRY)->tail.metaData.AN_Ainv);
             profit_tail_t sum = 0;

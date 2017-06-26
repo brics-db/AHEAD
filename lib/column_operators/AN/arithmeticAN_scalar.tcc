@@ -18,8 +18,8 @@
  *
  * Created on 22. June 2017, 12:51
  */
-#ifndef LIB_COLUMN_OPERATORS_NORMAL_ARITHMETIC_SCALAR_TCC_
-#define LIB_COLUMN_OPERATORS_NORMAL_ARITHMETIC_SCALAR_TCC_
+#ifndef LIB_COLUMN_OPERATORS_AN_ARITHMETIC_SCALAR_TCC_
+#define LIB_COLUMN_OPERATORS_AN_ARITHMETIC_SCALAR_TCC_
 
 #include <stdexcept>
 #include <type_traits>
@@ -63,7 +63,9 @@ namespace ahead {
                             if (bat1->size() != bat2->size()) {
                                 throw std::runtime_error("arithmetic: bat1->size() != bat2->size()");
                             }
-                            auto result = skeleton<v2_void_t, Result>(bat1); // apply meta data from first BAT
+                            auto result = new TempBAT<v2_void_t, Result>(ColumnDescriptor<v2_void_t, void>(),
+                                    ColumnDescriptor<Result>(ColumnMetaData(sizeof(result_t) * 8, AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN))); // apply meta data from first BAT
+                            result->reserve(bat1->size());
                             auto vecH1 = H1helper::createIndicatorVector();
                             auto vecT1 = T1helper::createIndicatorVector();
                             auto vecH2 = H2helper::createIndicatorVector();
@@ -76,11 +78,8 @@ namespace ahead {
                             auto H2unencMaxU = H2helper::getIfEncoded(bat2->head.metaData.AN_unencMaxU);
                             auto AT2inv = T2helper::getIfEncoded(bat2->tail.metaData.AN_Ainv);
                             auto T2unencMaxU = T2helper::getIfEncoded(bat2->tail.metaData.AN_unencMaxU);
-                            result->reserve(bat1->size());
                             auto iter1 = bat1->begin();
                             auto iter2 = bat2->begin();
-                            result_t convT1 = AT1inv * AResult;
-                            result_t convT2 = AT2inv * AResult;
                             for (oid_t pos = 0; iter1->hasNext(); ++*iter1, ++*iter2, ++pos) {
                                 h1_t h1 = H1helper::mulIfEncoded(iter1->head(), AH1inv);
                                 if (H1helper::isEncoded && (h1 * AH1inv > H1unencMaxU)) {
@@ -98,7 +97,7 @@ namespace ahead {
                                 if (T2helper::isEncoded && (t2 * AT2inv > T2unencMaxU)) {
                                     vecT2->push_back(pos * AOID);
                                 }
-                                result->append(Op<void>()(static_cast<result_t>(t1) * convT1, static_cast<result_t>(t2) * convT2));
+                                result->append(Op<void>()(static_cast<result_t>(static_cast<result_t>(t1) * AResult), static_cast<result_t>(static_cast<result_t>(t2) * AResult)));
                             }
                             delete iter1;
                             delete iter2;
@@ -123,4 +122,4 @@ namespace ahead {
     }
 }
 
-#endif /* LIB_COLUMN_OPERATORS_NORMAL_ARITHMETIC_SCALAR_TCC_ */
+#endif /* LIB_COLUMN_OPERATORS_AN_ARITHMETIC_SCALAR_TCC_ */

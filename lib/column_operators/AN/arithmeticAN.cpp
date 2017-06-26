@@ -42,6 +42,7 @@ template std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicato
             ARITHMETIC_SUB(Result, v2_void_t, Tail1, v2_void_t, Tail2) \
         }
 
+            ARITHMETIC(v2_resint_t, v2_resint_t, v2_resint_t)
             ARITHMETIC(v2_resbigint_t, v2_resint_t, v2_resint_t)
 
         }

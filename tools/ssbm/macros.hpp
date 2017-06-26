@@ -228,11 +228,33 @@ do {                                                                           \
 /////////////////////////
 #define CLEAR_GROUPEDSUM_AN(TUPLE)                                             \
 do {                                                                           \
+    if (std::get<1>(TUPLE)) {                                                  \
+        delete std::get<1>(TUPLE);                                             \
+    }                                                                          \
     if (std::get<2>(TUPLE)) {                                                  \
         delete std::get<2>(TUPLE);                                             \
     }                                                                          \
     if (std::get<3>(TUPLE)) {                                                  \
         delete std::get<3>(TUPLE);                                             \
+    }                                                                          \
+} while (false)
+
+/////////////////////////
+// CLEAR_GROUPEDSUM_AN //
+/////////////////////////
+#define CLEAR_ARITHMETIC_AN(TUPLE)                                             \
+do {                                                                           \
+    if (std::get<1>(TUPLE)) {                                                  \
+        delete std::get<1>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<2>(TUPLE)) {                                                  \
+        delete std::get<2>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<3>(TUPLE)) {                                                  \
+        delete std::get<3>(TUPLE);                                             \
+    }                                                                          \
+    if (std::get<4>(TUPLE)) {                                                  \
+        delete std::get<4>(TUPLE);                                             \
     }                                                                          \
 } while (false)
 
