@@ -67,28 +67,30 @@ namespace ahead {
                     if (arg1->size() != arg2->size()) {
                         throw std::runtime_error(CONCAT("aggregate_mul_sum: bat1->size() != bat2->size() (", __FILE__, "@", TOSTRING(__LINE__), ")"));
                     }
-                    oid_t numValues = arg1->tail.container->size();
-                    auto pT1 = arg1->tail.container->data();
-                    auto pT1End = pT1 + numValues;
-                    auto pmmT1 = reinterpret_cast<__m128i *>(pT1);
-                    auto pmmT1End = reinterpret_cast<__m128i *>(pT1End);
-                    auto pT2 = arg2->tail.container->data();
-                    auto pT2End = pT2 + numValues;
-                    auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
-                    auto pmmT2End = reinterpret_cast<__m128i *>(pT2End);
-                    auto mmTotal = v2_mm128<result_t>::set1(0);
-                    size_t inc1 = 0, inc2 = 0;
-                    for (; (pmmT1 <= (pmmT1End - 1)) && (pmmT2 <= (pmmT2End - 1)); pmmT1 += inc1, pmmT2 += inc2) {
-                        mmTotal = v2_mm128<result_t>::add(mmTotal, v2_mm128_mul_add<tail1_t, tail2_t, result_t>(pmmT1, pmmT2, inc1, inc2));
-                    }
-                    result_t total = init + v2_mm128<result_t>::sum(mmTotal);
-                    pT1 = reinterpret_cast<tail1_t*>(pmmT1);
-                    pT2 = reinterpret_cast<tail2_t*>(pmmT2);
-                    for (; pT1 < pT1End && pT2 < pT2End; ++pT1, ++pT2) {
-                        total += *pT1 * *pT2;
-                    }
                     auto bat = new TempBAT<v2_void_t, Result>;
-                    bat->append(total);
+                    oid_t numValues = arg1->tail.container->size();
+                    if (numValues) {
+                        auto pT1 = arg1->tail.container->data();
+                        auto pT1End = pT1 + numValues;
+                        auto pmmT1 = reinterpret_cast<__m128i *>(pT1);
+                        auto pmmT1End = reinterpret_cast<__m128i *>(pT1End);
+                        auto pT2 = arg2->tail.container->data();
+                        auto pT2End = pT2 + numValues;
+                        auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
+                        auto pmmT2End = reinterpret_cast<__m128i *>(pT2End);
+                        auto mmTotal = v2_mm128<result_t>::set1(0);
+                        size_t inc1 = 0, inc2 = 0;
+                        for (; (pmmT1 <= (pmmT1End - 1)) && (pmmT2 <= (pmmT2End - 1)); pmmT1 += inc1, pmmT2 += inc2) {
+                            mmTotal = v2_mm128<result_t>::add(mmTotal, v2_mm128_mul_add<tail1_t, tail2_t, result_t>(pmmT1, pmmT2, inc1, inc2));
+                        }
+                        result_t total = init + v2_mm128<result_t>::sum(mmTotal);
+                        pT1 = reinterpret_cast<tail1_t*>(pmmT1);
+                        pT2 = reinterpret_cast<tail2_t*>(pmmT2);
+                        for (; pT1 < pT1End && pT2 < pT2End; ++pT1, ++pT2) {
+                            total += *pT1 * *pT2;
+                        }
+                        bat->append(total);
+                    }
                     return bat;
                 }
 
