@@ -15,10 +15,36 @@
  */
 
 /* 
- * File:   SSE.cpp
+ * File:   SSECMP.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 25. Februar 2017, 23:48
+ * Created on 24. Februar 2017, 14:07
  */
 
-#include "SSE.inc"
+#ifndef SSECMP_HPP
+#define SSECMP_HPP
+
+#include <immintrin.h>
+
+#include "SSE.hpp"
+#include <column_operators/functors.hpp>
+
+namespace ahead {
+    namespace bat {
+        namespace ops {
+            namespace sse {
+
+                template<typename T, template<typename > class Op>
+                struct v2_mm128_cmp;
+
+            }
+        }
+    }
+}
+
+#include "SSECMP_uint8.tcc"
+#include "SSECMP_uint16.tcc"
+#include "SSECMP_uint32.tcc"
+#include "SSECMP_uint64.tcc"
+
+#endif /* SSECMP_HPP */

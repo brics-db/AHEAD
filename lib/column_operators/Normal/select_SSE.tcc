@@ -25,8 +25,8 @@
 #include <type_traits>
 
 #include <column_storage/Storage.hpp>
-#include "../SSE.hpp"
-#include "../SSECMP.hpp"
+#include "../SSE/SSE.hpp"
+#include "../SSE/SSECMP.hpp"
 #include "../miscellaneous.hpp"
 
 namespace ahead {

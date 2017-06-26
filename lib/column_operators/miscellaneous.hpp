@@ -193,13 +193,13 @@ namespace ahead {
             }
 
             template<typename T, typename U>
-            struct is_instance_of {
-                constexpr static const bool value = false;
+            struct is_instance_of :
+                    public std::integral_constant<bool, false> {
             };
 
             template<typename T>
-            struct is_instance_of<T, T> {
-                constexpr static const bool value = true;
+            struct is_instance_of<T, T> :
+                    public std::integral_constant<bool, true> {
             };
 
         }

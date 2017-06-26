@@ -23,7 +23,7 @@
 #define AGGREGATE_SSE_TCC
 
 #include <column_storage/Storage.hpp>
-#include "../SSE.hpp"
+#include "../SSE/SSE.hpp"
 #include "../miscellaneous.hpp"
 
 namespace ahead {
@@ -64,14 +64,16 @@ namespace ahead {
                     typedef typename Tail1::type_t tail1_t;
                     typedef typename Tail2::type_t tail2_t;
                     typedef typename Result::type_t result_t;
-                    oid_t szTail1 = arg1->tail.container->size();
-                    oid_t szTail2 = arg2->tail.container->size();
+                    if (arg1->size() != arg2->size()) {
+                        throw std::runtime_error(CONCAT("aggregate_mul_sum: bat1->size() != bat2->size() (", __FILE__, "@", TOSTRING(__LINE__), ")"));
+                    }
+                    oid_t numValues = arg1->tail.container->size();
                     auto pT1 = arg1->tail.container->data();
-                    auto pT1End = pT1 + szTail1;
+                    auto pT1End = pT1 + numValues;
                     auto pmmT1 = reinterpret_cast<__m128i *>(pT1);
                     auto pmmT1End = reinterpret_cast<__m128i *>(pT1End);
                     auto pT2 = arg2->tail.container->data();
-                    auto pT2End = pT2 + szTail2;
+                    auto pT2End = pT2 + numValues;
                     auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
                     auto pmmT2End = reinterpret_cast<__m128i *>(pT2End);
                     auto mmTotal = v2_mm128<result_t>::set1(0);

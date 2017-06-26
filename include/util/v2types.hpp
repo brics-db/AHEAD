@@ -75,34 +75,88 @@ namespace ahead {
     struct type_selector {
 
         typedef T type_t;
+
+        constexpr static type_t get(
+                T t,
+                U u) {
+            (void) u;
+            return t;
+        }
+
+        constexpr static type_t * get(
+                T * t,
+                U * u) {
+            (void) u;
+            return t;
+        }
     };
 
     template<typename T, typename U>
     struct type_selector<T, U, false> {
 
         typedef U type_t;
+
+        constexpr static type_t get(
+                T t,
+                U u) {
+            (void) t;
+            return u;
+        }
+
+        constexpr static type_t * get(
+                T * t,
+                U * u) {
+            (void) t;
+            return u;
+        }
     };
 
     template<typename T, typename U>
     struct larger_type :
             public type_selector<T, U, (sizeof(T) >= sizeof(U))> {
 
-        using type_t = typename type_selector<T, U, (sizeof (T) >= sizeof (U))>::type_t;
+        typedef type_selector<T, U, (sizeof(T) >= sizeof(U))> type_selector_t;
+        using type_t = typename type_selector_t::type_t;
 
         constexpr static const bool areEquallyLarge = sizeof(T) == sizeof(U);
         constexpr static const bool isFirstLarger = sizeof(T) > sizeof(U);
         constexpr static const bool isSecondLarger = sizeof(T) < sizeof(U);
+
+        constexpr static type_t get(
+                T t,
+                U u) {
+            return type_selector_t::get(t, u);
+        }
+
+        constexpr static type_t * get(
+                T * t,
+                U * u) {
+            return type_selector_t::get(t, u);
+        }
     };
 
     template<typename T, typename U>
     struct smaller_type :
             public type_selector<T, U, (sizeof(T) < sizeof(U))> {
 
-        using type_t = typename type_selector<T, U, (sizeof (T) < sizeof (U))>::type_t;
+        typedef type_selector<T, U, (sizeof(T) < sizeof(U))> type_selector_t;
+        using type_t = typename type_selector_t::type_t;
 
         constexpr static const bool areEquallySmall = sizeof(T) == sizeof(U);
         constexpr static const bool isFirstSmaller = sizeof(T) < sizeof(U);
         constexpr static const bool isSecondSmaller = sizeof(T) > sizeof(U);
+
+        constexpr static type_t get(
+                T t,
+                U u) {
+            return type_selector_t::get(t, u);
+        }
+
+        constexpr static type_t * get(
+                T * t,
+                U * u) {
+            return type_selector_t::get(t, u);
+        }
     };
 
     template<typename T, typename U, bool>

@@ -25,10 +25,7 @@
 #include <type_traits>
 
 #include <column_storage/Storage.hpp>
-#include "../SSE.hpp"
-#include "../SSECMP.hpp"
 #include "../miscellaneous.hpp"
-#include <column_operators/functors.hpp>
 
 namespace ahead {
     namespace bat {
