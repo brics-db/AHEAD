@@ -52,7 +52,7 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, Tail>* arg,
-                                typename Tail::type_t&& threshold,
+                                typename Tail::type_t threshold,
                                 tail_select_t ATR = 1,
                                 tail_select_t ATInvR = 1) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -104,7 +104,7 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, v2_str_t> * arg,
-                                str_t && threshold,
+                                str_t threshold,
                                 __attribute__ ((unused)) str_t ATR = nullptr,
                                 __attribute__ ((unused)) str_t ATInvR = nullptr) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -146,8 +146,8 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, Tail> * arg,
-                                tail_t && threshold1,
-                                tail_t && threshold2,
+                                tail_t threshold1,
+                                tail_t threshold2,
                                 tail_select_t ATR = 1,
                                 tail_select_t ATInvR = 1) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -202,8 +202,8 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, v2_str_t> * arg,
-                                tail_select_t && threshold1,
-                                tail_select_t && threshold2,
+                                tail_select_t threshold1,
+                                tail_select_t threshold2,
                                 str_t ATR = nullptr,
                                 str_t ATInvR = nullptr) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");

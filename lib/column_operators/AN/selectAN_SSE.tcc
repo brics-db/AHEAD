@@ -54,7 +54,7 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, Tail>* arg,
-                                typename Tail::type_t&& th,
+                                typename Tail::type_t th,
                                 tail_select_t ATR = 1, // for reencoding
                                 tail_select_t ATInvR = 1 // for reencoding
                                 ) {
@@ -179,7 +179,7 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, v2_str_t> * arg,
-                                str_t && threshold,
+                                str_t threshold,
                                 __attribute__ ((unused)) str_t ATR = nullptr,
                                 __attribute__ ((unused)) str_t ATInvR = nullptr) {
                             // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
@@ -223,8 +223,8 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, Tail> * arg,
-                                tail_t && threshold1,
-                                tail_t && threshold2,
+                                tail_t threshold1,
+                                tail_t threshold2,
                                 tail_select_t ATR = 1, // for reencoding
                                 tail_select_t ATInvR = 1 // for reencoding
                                 ) {
@@ -349,8 +349,8 @@ namespace ahead {
 
                         static result_t filter(
                                 BAT<Head, v2_str_t> * arg,
-                                tail_select_t && threshold1,
-                                tail_select_t && threshold2,
+                                tail_select_t threshold1,
+                                tail_select_t threshold2,
                                 tail_select_t ATR = nullptr, // currently only to match the signature
                                 tail_select_t ATInvR = nullptr // cururently only to match the signature
                                 ) {

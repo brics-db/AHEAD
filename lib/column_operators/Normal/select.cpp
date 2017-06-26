@@ -27,10 +27,10 @@ namespace ahead {
         namespace ops {
 
 #define V2_SELECT2_SUB2(SELECT1, SELECT2, V2TYPE) \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<SELECT1, SELECT2, AND, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<SELECT1, SELECT2, OR, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<SELECT1, SELECT2, AND, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<SELECT1, SELECT2, OR, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1, typename V2TYPE::type_t && th2);
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<SELECT1, SELECT2, AND, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1, typename V2TYPE::type_t th2); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<SELECT1, SELECT2, OR, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1, typename V2TYPE::type_t th2); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<SELECT1, SELECT2, AND, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1, typename V2TYPE::type_t th2); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<SELECT1, SELECT2, OR, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1, typename V2TYPE::type_t th2);
 
 #define V2_SELECT2_SUB(SELECT, V2TYPE) \
 V2_SELECT2_SUB2(std::greater, SELECT, V2TYPE) \
@@ -49,21 +49,21 @@ V2_SELECT2_SUB(std::less, V2TYPE) \
 V2_SELECT2_SUB(std::not_equal_to, V2TYPE)
 
 #define V2_SELECT(V2TYPE) \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::greater, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::greater_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::less_equal, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::less, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
 V2_SELECT2(V2TYPE)
 
 #define V2_SELECT_STR(V2TYPE) \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
-template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t && th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* scalar::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
+template BAT<v2_oid_t, typename V2TYPE::v2_select_t>* sse::select<std::equal_to, v2_void_t, V2TYPE> (BAT<v2_void_t, V2TYPE>* arg, typename V2TYPE::type_t th1); \
 V2_SELECT2(V2TYPE);
 
             V2_SELECT(v2_id_t)

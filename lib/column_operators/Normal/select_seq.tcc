@@ -48,7 +48,7 @@ namespace ahead {
                         static bat_t*
                         filter(
                                 BAT<v2_void_t, Tail>* arg,
-                                tail_t && th) {
+                                tail_t th) {
                             auto result = skeleton<head_select_t, tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -73,7 +73,7 @@ namespace ahead {
 
                         static result_t* filter(
                                 BAT<v2_void_t, v2_str_t>* arg,
-                                str_t && threshold) {
+                                str_t threshold) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -102,8 +102,8 @@ namespace ahead {
 
                         static result_t* filter(
                                 BAT<v2_void_t, Tail>* arg,
-                                tail_t && th1,
-                                tail_t && th2) {
+                                tail_t th1,
+                                tail_t th2) {
                             static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
@@ -131,8 +131,8 @@ namespace ahead {
 
                         static result_t* filter(
                                 BAT<v2_void_t, v2_str_t>* arg,
-                                tail_select_t && th1,
-                                tail_select_t && th2) {
+                                tail_select_t th1,
+                                tail_select_t th2) {
                             static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());

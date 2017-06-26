@@ -32,7 +32,7 @@ template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
 selectAN<Operator, Head, Tail> ( \
         BAT<Head, Tail> *, \
-        typename Tail::type_t && \
+        typename Tail::type_t \
         );
 
 #define SELECT1_AN_REENC(Head, Tail, Operator) \
@@ -40,7 +40,7 @@ template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
 selectAN<Operator>( \
         BAT<Head, Tail> *, \
-        typename Tail::type_t &&, \
+        typename Tail::type_t, \
         typename Tail::v2_select_t::type_t, \
         typename Tail::v2_select_t::type_t \
         );
@@ -50,15 +50,15 @@ template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
 selectAN<Operator1, Operator2, AND, Head, Tail>( \
         BAT<Head, Tail> *, \
-        typename Tail::type_t &&, \
-        typename Tail::type_t && \
+        typename Tail::type_t, \
+        typename Tail::type_t \
         ); \
 template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
 selectAN<Operator1, Operator2, OR, Head, Tail>( \
         BAT<Head, Tail> *, \
-        typename Tail::type_t &&, \
-        typename Tail::type_t && \
+        typename Tail::type_t, \
+        typename Tail::type_t \
         );
 
 #define SELECT2_AN_REENC(Head, Tail, Operator1, Operator2) \
@@ -66,8 +66,8 @@ template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
 selectAN<Operator1, Operator2, AND, Head, Tail>( \
         BAT<Head, Tail> *, \
-        typename Tail::type_t &&, \
-        typename Tail::type_t &&, \
+        typename Tail::type_t, \
+        typename Tail::type_t, \
         typename Tail::v2_select_t::type_t, \
         typename Tail::v2_select_t::type_t \
         ); \
@@ -75,8 +75,8 @@ template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
 selectAN<Operator1, Operator2, OR, Head, Tail>( \
         BAT<Head, Tail> *, \
-        typename Tail::type_t &&, \
-        typename Tail::type_t &&, \
+        typename Tail::type_t, \
+        typename Tail::type_t, \
         typename Tail::v2_select_t::type_t, \
         typename Tail::v2_select_t::type_t \
         );
@@ -126,23 +126,23 @@ SELECT2_AN_REENC_SUB(Head, Tail, std::greater_equal) \
 SELECT2_AN_REENC_SUB(Head, Tail, std::greater)
 
             namespace scalar {
-                SELECT_AN (v2_void_t, v2_restiny_t)
-                SELECT_AN_REENC (v2_void_t, v2_restiny_t)
-                SELECT_AN (v2_void_t, v2_resshort_t)
-                SELECT_AN_REENC (v2_void_t, v2_resshort_t)
-                SELECT_AN (v2_void_t, v2_resint_t)
-                SELECT_AN_REENC (v2_void_t, v2_resint_t)
-                SELECT_AN (v2_void_t, v2_str_t)
+                SELECT_AN(v2_void_t, v2_restiny_t)
+                SELECT_AN_REENC(v2_void_t, v2_restiny_t)
+                SELECT_AN(v2_void_t, v2_resshort_t)
+                SELECT_AN_REENC(v2_void_t, v2_resshort_t)
+                SELECT_AN(v2_void_t, v2_resint_t)
+                SELECT_AN_REENC(v2_void_t, v2_resint_t)
+                SELECT_AN(v2_void_t, v2_str_t)
             }
 
             namespace sse {
-                SELECT_AN (v2_void_t, v2_restiny_t)
-                SELECT_AN_REENC (v2_void_t, v2_restiny_t)
-                SELECT_AN (v2_void_t, v2_resshort_t)
-                SELECT_AN_REENC (v2_void_t, v2_resshort_t)
-                SELECT_AN (v2_void_t, v2_resint_t)
-                SELECT_AN_REENC (v2_void_t, v2_resint_t)
-                SELECT_AN (v2_void_t, v2_str_t)
+                SELECT_AN(v2_void_t, v2_restiny_t)
+                SELECT_AN_REENC(v2_void_t, v2_restiny_t)
+                SELECT_AN(v2_void_t, v2_resshort_t)
+                SELECT_AN_REENC(v2_void_t, v2_resshort_t)
+                SELECT_AN(v2_void_t, v2_resint_t)
+                SELECT_AN_REENC(v2_void_t, v2_resint_t)
+                SELECT_AN(v2_void_t, v2_str_t)
             }
 
         }

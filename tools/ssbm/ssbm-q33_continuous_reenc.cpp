@@ -121,7 +121,7 @@ int main(
 
         // d_year >= 1992 and d_year <= 1997
         MEASURE_OP_TUPLE(tuple13,
-                (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As),
+                (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992ull * batDY->tail.metaData.AN_A, 1997ull * batDY->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As),
                         std::get<14>(*v2_resshort_t::Ainvs)))); // OID date | d_year
         CLEAR_SELECT_AN(tuple13);
         auto bat14 = std::get<0>(tuple13)->mirror_head(); // OID date | OID date

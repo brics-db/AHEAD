@@ -67,9 +67,9 @@ int main(
         ssb::before_query();
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(pair1, (selectAN<std::greater_equal, std::less_equal, AND>(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
+        MEASURE_OP_PAIR(pair1, (selectAN<std::greater_equal, std::less_equal, AND>(batLQenc, 26ull * batLQenc->tail.metaData.AN_A, 35ull * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
         CLEAR_SELECT_AN(pair1);
-        MEASURE_OP_PAIR(pair2, (selectAN<std::greater_equal, std::less_equal, AND>(batLDenc, 4 * batLDenc->tail.metaData.AN_A, 6 * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
+        MEASURE_OP_PAIR(pair2, (selectAN<std::greater_equal, std::less_equal, AND>(batLDenc, 4ull * batLDenc->tail.metaData.AN_A, 6ull * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
         CLEAR_SELECT_AN(pair2);
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
@@ -83,7 +83,7 @@ int main(
         CLEAR_JOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(pair7, (selectAN<std::equal_to>(batDYenc, 199401 * batDYenc->tail.metaData.AN_A))); // d_yearmonthnum = 199401
+        MEASURE_OP_PAIR(pair7, (selectAN<std::equal_to>(batDYenc, 199401ull * batDYenc->tail.metaData.AN_A))); // d_yearmonthnum = 199401
         CLEAR_SELECT_AN(pair7);
         auto bat8 = pair7.first->mirror_head(); // prepare joined selection over d_year and d_datekey
         delete pair7.first;

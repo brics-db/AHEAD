@@ -52,7 +52,10 @@ namespace ssb {
                     std::rethrow_exception(pEx);
                 } catch (std::exception & ex) {
                     std::cerr << ex.what() << ":\n";
+                } catch (...) {
+                    std::cerr << "Unknown exception type caught!";
                 }
+                break;
         }
         backtrace_symbols_fd(array, size, STDERR_FILENO);
         exit(1);
