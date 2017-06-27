@@ -38,9 +38,12 @@ template std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicato
     arithmeticAN<DIV, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2, typename Result::type_t AResult, typename Result::type_t AResultInv, resoid_t AOID);
 
 #define ARITHMETIC(Result, Tail1, Tail2) \
-        namespace scalar { \
-            ARITHMETIC_SUB(Result, v2_void_t, Tail1, v2_void_t, Tail2) \
-        }
+            namespace scalar { \
+                ARITHMETIC_SUB(Result, v2_void_t, Tail1, v2_void_t, Tail2) \
+            } \
+            namespace sse { \
+                ARITHMETIC_SUB(Result, v2_void_t, Tail1, v2_void_t, Tail2) \
+            }
 
             ARITHMETIC(v2_resint_t, v2_resint_t, v2_resint_t)
             ARITHMETIC(v2_resbigint_t, v2_resint_t, v2_resint_t)

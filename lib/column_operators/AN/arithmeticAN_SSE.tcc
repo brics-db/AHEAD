@@ -64,9 +64,10 @@ namespace ahead {
                             if (bat1->size() != bat2->size()) {
                                 throw std::runtime_error(CONCAT("arithmetic: bat1->size() != bat2->size() (", __FILE__, "@" TOSTRING(__LINE__), ")"));
                             }
+                            size_t numBUNs = bat1->size();
                             auto result = new TempBAT<v2_void_t, Result>(ColumnDescriptor<v2_void_t, void>(),
                                     ColumnDescriptor<Result>(ColumnMetaData(sizeof(result_t) * 8, AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN))); // apply meta data from first BAT
-                            result->reserve(bat1->size());
+                            result->reserve(numBUNs);
                             auto vecH1 = H1helper::createIndicatorVector();
                             auto vecT1 = T1helper::createIndicatorVector();
                             auto vecH2 = H2helper::createIndicatorVector();
@@ -79,9 +80,39 @@ namespace ahead {
                             auto H2unencMaxU = H2helper::getIfEncoded(bat2->head.metaData.AN_unencMaxU);
                             auto AT2inv = T2helper::getIfEncoded(bat2->tail.metaData.AN_Ainv);
                             auto T2unencMaxU = T2helper::getIfEncoded(bat2->tail.metaData.AN_unencMaxU);
+
+                            auto pT1 = bat1->tail.container->data();
+                            auto pT1End = pT1 + numBUNs;
+                            auto pmmT1 = reinterpret_cast<__m128i *>(pT1);
+                            auto pmmT1End = reinterpret_cast<__m128i *>(pT1End);
+                            auto pT2 = bat2->tail.container->data();
+                            auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
+                            auto mmAT1inv = v2_mm128<t1_t>::set1(AT1inv);
+                            auto mmDMax1 = v2_mm128<t1_t>::set1(T1unencMaxU);
+                            auto mmAT2inv = v2_mm128<t2_t>::set1(AT2inv);
+                            auto mmDMax2 = v2_mm128<t2_t>::set1(T2unencMaxU);
+                            auto pRT = result->tail.container->data();
+                            auto pmmRT = reinterpret_cast<__m128i *>(pRT);
+                            auto mmREnc = v2_mm128<result_t>::set1(AResult);
+
+                            oid_t pos = 0;
+                            while (pmmT1 <= (pmmT1End - 1)) {
+                                __m128i mmDec1 = *pmmT1++;
+                                __m128i mmDec2 = *pmmT2++;
+                                v2_mm128_AN<t1_t>::detect(mmDec1, mmAT1inv, mmDMax1, vecT1, pos, AOID);
+                                v2_mm128_AN<t2_t>::detect(mmDec2, mmAT2inv, mmDMax2, vecT2, pos, AOID);
+                                if (std::is_same<Tail1, Result>::value) {
+                                    auto mmR = v2_mm128_cmp<t1_t, Op>::cmp(mmDec1, mmDec2);
+                                    *pmmRT++ = v2_mm128_cmp<t1_t, MUL>::cmp(mmR, mmREnc);
+                                } else if (sizeof(result_t) > sizeof(t1_t)) {
+                                }
+                            }
+                            result->overwrite_size(pos);
                             auto iter1 = bat1->begin();
+                            iter1->position(pos);
                             auto iter2 = bat2->begin();
-                            for (oid_t pos = 0; iter1->hasNext(); ++*iter1, ++*iter2, ++pos) {
+                            iter2->position(pos);
+                            for (; iter1->hasNext(); ++*iter1, ++*iter2, ++pos) {
                                 h1_t h1 = H1helper::mulIfEncoded(iter1->head(), AH1inv);
                                 if (H1helper::isEncoded && (h1 * AH1inv > H1unencMaxU)) {
                                     vecH1->push_back(pos * AOID);
