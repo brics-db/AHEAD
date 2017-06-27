@@ -218,7 +218,6 @@ int main(
         ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
-            size_t sum = 0;
             auto iter1 = std::get<0>(tupleRC)->begin();
             auto iter2 = std::get<0>(tupleRS)->begin();
             auto iter3 = std::get<0>(tupleRD)->begin();
@@ -227,9 +226,10 @@ int main(
             revenue_tail_t batRRAinv = static_cast<revenue_tail_t>(std::get<0>(tupleRR)->tail.metaData.AN_Ainv);
             typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRD))>::type>::type::tail_t year_tail_t;
             year_tail_t batRDAinv = static_cast<year_tail_t>(std::get<0>(tupleRD)->tail.metaData.AN_Ainv);
-            std::cerr << "+-----------------+-----------------+--------+------------+\n";
-            std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
+            revenue_tail_t sum = 0;
             std::cerr << "+=================+=================+========+============+\n";
+            std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
+            std::cerr << "+-----------------+-----------------+--------+------------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                 sum += iter4->tail();
                 std::cerr << "| " << std::setw(15) << iter1->tail();

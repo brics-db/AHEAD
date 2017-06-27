@@ -190,9 +190,9 @@ int main(
             typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRY))>::type>::type::tail_t year_tail_t;
             year_tail_t batRYAinv = static_cast<year_tail_t>(std::get<0>(tupleRY)->tail.metaData.AN_Ainv);
             revenue_tail_t sum = 0;
-            std::cerr << "+------------+--------+-----------+\n";
-            std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
+            std::cerr << "| lo_revenue | d_year | p_brand   |\n";
+            std::cerr << "+------------+--------+-----------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail();
                 std::cerr << "| " << std::setw(10) << static_cast<revenue_tail_t>(iter1->tail() * batRRAinv);
