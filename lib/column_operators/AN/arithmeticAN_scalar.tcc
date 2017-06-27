@@ -61,7 +61,7 @@ namespace ahead {
                             static_assert(std::is_base_of<v2_anencoded_t, Tail1>::value, "Tail1 must be AN-encoded!");
                             static_assert(std::is_base_of<v2_anencoded_t, Tail2>::value, "Tail2 must be AN-encoded!");
                             if (bat1->size() != bat2->size()) {
-                                throw std::runtime_error("arithmetic: bat1->size() != bat2->size()");
+                                throw std::runtime_error(CONCAT("arithmetic: bat1->size() != bat2->size() (", __FILE__, "@" TOSTRING(__LINE__), ")"));
                             }
                             auto result = new TempBAT<v2_void_t, Result>(ColumnDescriptor<v2_void_t, void>(),
                                     ColumnDescriptor<Result>(ColumnMetaData(sizeof(result_t) * 8, AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN))); // apply meta data from first BAT
