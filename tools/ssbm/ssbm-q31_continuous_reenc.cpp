@@ -127,7 +127,7 @@ int main(
 
         // d_year >= 1992 and d_year <= 1997
         MEASURE_OP_PAIR(pair13,
-                (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As),
+                (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992ull * batDY->tail.metaData.AN_A, 1997ull * batDY->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As),
                         std::get<14>(*v2_resshort_t::Ainvs)))); // OID date | d_year
         CLEAR_SELECT_AN(pair13);
         auto bat14 = std::get<0>(pair13)->mirror_head(); // OID date | OID date
@@ -235,11 +235,11 @@ int main(
             typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRD))>::type>::type::tail_t year_tail_t;
             year_tail_t batRDAinv = static_cast<year_tail_t>(std::get<0>(tupleRD)->tail.metaData.AN_Ainv);
             revenue_tail_t sum = 0;
-            std::cerr << "+-----------------+-----------------+--------+------------+\n";
-            std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
             std::cerr << "+=================+=================+========+============+\n";
+            std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
+            std::cerr << "+-----------------+-----------------+--------+------------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
-                sum += static_cast<resbigint_t>(iter4->tail() * std::get<0>(tupleRR)->tail.metaData.AN_Ainv);
+                sum += iter4->tail();
                 std::cerr << "| " << std::setw(15) << iter1->tail();
                 std::cerr << " | " << std::setw(15) << iter2->tail();
                 std::cerr << " | " << std::setw(6) << static_cast<year_tail_t>(iter3->tail() * batRDAinv);

@@ -128,14 +128,14 @@ int main(
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2'
             MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batPM[k], const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
-            auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
+            auto bat2 = bat1->mirror_head(); // OID part | OID part
             delete bat1;
             auto bat3 = batPP[k]->reverse(); // p_partkey | VOID part
             MEASURE_OP(bat4, matchjoin(bat3, bat2)); // p_partkey | OID part
             delete bat2;
             delete bat3;
             // lo_partkey = p_partkey
-            MEASURE_OP(bat5, hashjoin(batLP[k], bat4)); // OID lineorder | OID supplier
+            MEASURE_OP(bat5, hashjoin(batLP[k], bat4)); // OID lineorder | OID part
             delete bat4;
             auto bat6 = bat5->mirror_head(); // OID lineorder | OID lineorder
             delete bat5;
@@ -260,14 +260,14 @@ int main(
             oid_t szResult = std::get<0>(content)->size();
             ssb::after_query(i, szResult);
             if (ssb::ssb_config.PRINT_RESULT && i == 0) {
-                size_t sum = 0;
+                bigint_t sum = 0;
                 auto iter1 = std::get<0>(results[0])->begin();
                 auto iter2 = std::get<1>(results[0])->begin();
                 auto iter3 = std::get<2>(results[0])->begin();
                 auto iter4 = std::get<3>(results[0])->begin();
-                std::cerr << "+--------+------------+------------+------------+\n";
+                std::cerr << "+========+============+============+============+\n";
                 std::cerr << "+ d_year |   s_nation | p_category |     profit |\n";
-                std::cerr << "+========+============+============+------------+\n";
+                std::cerr << "+--------+------------+------------+------------+\n";
                 for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                     sum += iter4->tail();
                     std::cerr << "| " << std::setw(6) << iter1->tail();
@@ -275,7 +275,7 @@ int main(
                     std::cerr << " | " << std::setw(10) << iter3->tail();
                     std::cerr << " | " << std::setw(10) << iter4->tail() << " |\n";
                 }
-                std::cerr << "+========+============+============+------------+\n";
+                std::cerr << "+========+============+============+============+\n";
                 std::cerr << "\t   sum: " << sum << std::endl;
                 delete iter1;
                 delete iter2;
@@ -284,11 +284,11 @@ int main(
             }
         } catch (std::exception & ex) {
             ssb::after_query(i, ex);
-            std::cerr << "+--------+------------+------------+------------+\n";
+            std::cerr << "+========+============+============+============+\n";
             std::cerr << "+ d_year |   s_nation | p_category |     profit |\n";
-            std::cerr << "+========+============+============+------------+\n";
+            std::cerr << "+--------+------------+------------+------------+\n";
             std::cerr << "| " << ex.what() << "|\n";
-            std::cerr << "+========+============+============+------------+\n";
+            std::cerr << "+========+============+============+============+\n";
         }
 
         for (size_t k = 0; k < DMR::modularity; ++k) {

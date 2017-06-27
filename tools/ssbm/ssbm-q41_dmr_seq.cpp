@@ -226,9 +226,9 @@ int main(
                 auto iter1 = std::get<0>(results[0])->begin();
                 auto iter2 = std::get<1>(results[0])->begin();
                 auto iter3 = std::get<2>(results[0])->begin();
-                std::cerr << "+--------+------------+------------+\n";
-                std::cerr << "+ d_year |   c_nation |     profit |\n";
                 std::cerr << "+========+============+============+\n";
+                std::cerr << "+ d_year |   c_nation |     profit |\n";
+                std::cerr << "+--------+------------+------------+\n";
                 for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                     sum += iter3->tail();
                     std::cerr << "| " << std::setw(6) << iter1->tail();
@@ -243,9 +243,9 @@ int main(
             }
         } catch (std::exception & ex) {
             ssb::after_query(i, ex);
-            std::cerr << "+--------+------------+------------+\n";
-            std::cerr << "+ d_year |   c_nation |     profit |\n";
             std::cerr << "+========+============+============+\n";
+            std::cerr << "+ d_year |   c_nation |     profit |\n";
+            std::cerr << "+--------+------------+------------+\n";
             std::cerr << "| " << ex.what() << "|\n";
             std::cerr << "+========+============+============+\n";
         }

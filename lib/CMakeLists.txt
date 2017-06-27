@@ -14,6 +14,10 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
+IF("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+    MESSAGE(FATAL_ERROR "You must run cmake on the root diretory!")
+ENDIF()
+
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
     PROJECT(LIBAHEAD VERSION 0.9 LANGUAGES CXX)
@@ -96,6 +100,7 @@ column_operators/Normal/matchjoin_resbigint.cpp \
 column_operators/Normal/miscellaneous.cpp \
 column_operators/Normal/select.cpp \
 column_operators/AN/aggregateAN.cpp \
+column_operators/AN/arithmeticAN.cpp \
 column_operators/AN/encdecAN.cpp \
 column_operators/AN/groupbyAN.cpp \
 column_operators/AN/hashjoinAN_void.cpp \
@@ -114,6 +119,4 @@ column_operators/AN/hashjoinAN_resint.cpp \
 column_operators/AN/hashjoinAN_resbigint.cpp \
 column_operators/AN/matchjoinAN.cpp \
 column_operators/AN/selectAN.cpp \
-column_operators/SSE.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
-

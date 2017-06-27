@@ -219,14 +219,14 @@ int main(
             oid_t szResult = std::get<0>(content)->size();
             ssb::after_query(i, szResult);
             if (ssb::ssb_config.PRINT_RESULT && i == 0) {
-                size_t sum = 0;
+                bigint_t sum = 0;
                 auto iter1 = std::get<0>(results[0])->begin();
                 auto iter2 = std::get<1>(results[0])->begin();
                 auto iter3 = std::get<2>(results[0])->begin();
                 auto iter4 = std::get<3>(results[0])->begin();
-                std::cerr << "+------------+------------+--------+------------+\n";
-                std::cerr << "+     c_city |     s_city | d_year |    revenue |\n";
                 std::cerr << "+============+============+========+============+\n";
+                std::cerr << "+     c_city |     s_city | d_year |    revenue |\n";
+                std::cerr << "+------------+------------+--------+------------+\n";
                 for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                     sum += iter4->tail();
                     std::cerr << "| " << std::setw(10) << iter1->tail();
@@ -243,9 +243,9 @@ int main(
             }
         } catch (std::exception & ex) {
             ssb::after_query(i, ex);
-            std::cerr << "+------------+------------+--------+------------+\n";
-            std::cerr << "+     c_city |     s_city | d_year |    revenue |\n";
             std::cerr << "+============+============+========+============+\n";
+            std::cerr << "+     c_city |     s_city | d_year |    revenue |\n";
+            std::cerr << "+------------+------------+--------+------------+\n";
             std::cerr << "| " << ex.what() << "|\n";
             std::cerr << "+============+============+========+============+\n";
         }

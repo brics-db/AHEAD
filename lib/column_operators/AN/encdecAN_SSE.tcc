@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   encdec.tcc
+ * File:   encdecAN_SSE.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 16:22
@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <immintrin.h>
 
-#include <column_storage/Storage.hpp>
+#include <column_storage/TempStorage.hpp>
 #include <column_operators/ANbase.hpp>
 #include "SSEAN.hpp"
 #include "../miscellaneous.hpp"
@@ -139,8 +139,6 @@ namespace ahead {
                             constexpr const size_t factor = sizeof(larger_t) / sizeof(smaller_t);
                             constexpr const bool isSmallerEncoded = isHeadSmaller ? isHeadEncoded : isTailEncoded;
                             constexpr const bool isLargerEncoded = isHeadSmaller ? isTailEncoded : isHeadEncoded;
-                            constexpr const smaller_mask_t maskSMask = static_cast<smaller_mask_t>((1ull << smallersPerMM128) - 1);
-                            constexpr const larger_mask_t maskLMask = static_cast<larger_mask_t>((1ull << largersPerMM128) - 1);
 
                             oid_t szArg = arg->size();
 
@@ -162,11 +160,8 @@ namespace ahead {
                             __m128i mmDecS, mmDecL;
                             auto pRH = reinterpret_cast<head_unenc_t*>(result->head.container->data());
                             auto pRT = reinterpret_cast<tail_unenc_t*>(result->tail.container->data());
-                            auto pmmRS = isHeadSmaller ? reinterpret_cast<__m128i *>(pRH) : reinterpret_cast<__m128i *>(pRT);
-                            auto pmmRL = isHeadSmaller ? reinterpret_cast<__m128i *>(pRT) : reinterpret_cast<__m128i *>(pRH);
-
-                            smaller_mask_t maskSBad, maskSOk, maskSOk2;
-                            larger_mask_t maskLBad, maskLOk;
+                            auto pmmRS = reinterpret_cast<__m128i *>(smaller_type<head_t, tail_t>::get(reinterpret_cast<head_t *>(pRH), reinterpret_cast<tail_t *>(pRT)));
+                            auto pmmRL = reinterpret_cast<__m128i *>(larger_type<head_t, tail_t>::get(reinterpret_cast<head_t *>(pRH), reinterpret_cast<tail_t *>(pRT)));
 
                             head_t hAinv = static_cast<head_t>(arg->head.metaData.AN_Ainv);
                             head_t hUnencMaxU = static_cast<head_t>(arg->head.metaData.AN_unencMaxU);
@@ -180,52 +175,38 @@ namespace ahead {
                             while (pmmS <= (pmmSEnd - 1)) {
                                 auto mm = _mm_lddqu_si128(pmmS++);
                                 if (isSmallerEncoded) {
-                                    maskSBad = v2_mm128_AN<smaller_t>::detect(mmDecS, mm, mmASinv, mmASDmax, vecS, pos);
+                                    v2_mm128_AN<smaller_t>::detect(mmDecS, mm, mmASinv, mmASDmax, vecS, pos);
                                     mmDecS = v2_mm128_cvt<smaller_t, smaller_unenc_t>(mmDecS);
                                 } else {
                                     mmDecS = mm;
-                                    maskSBad = 0;
                                 }
-                                maskSOk = (~maskSBad) & maskSMask;
-                                maskSOk2 = 0;
+                                _mm_storeu_si128(pmmRS, mmDecS);
+                                pmmRS = reinterpret_cast<__m128i *>(reinterpret_cast<smaller_unenc_t *>(pmmRS) + smallersPerMM128);
                                 for (size_t i = 0; i < factor; ++i) {
                                     mm = _mm_lddqu_si128(pmmL++);
                                     if (isLargerEncoded) {
-                                        maskLBad = v2_mm128_AN<larger_t>::detect(mmDecL, mm, mmALinv, mmALDmax, vecL, pos);
+                                        v2_mm128_AN<larger_t>::detect(mmDecL, mm, mmALinv, mmALDmax, vecL, pos);
                                         mmDecL = v2_mm128_cvt<larger_t, larger_unenc_t>(mmDecL);
                                     } else {
                                         mmDecL = mm;
-                                        maskLBad = 0;
                                     }
                                     pos += largersPerMM128;
-                                    maskLOk = (~maskLBad) & maskLMask;
-                                    auto shift = i * largersPerMM128;
-                                    larger_mask_t maskBoth = static_cast<larger_mask_t>(((static_cast<smaller_mask_t>(maskLOk) << shift) & maskSOk) >> shift);
-                                    maskSOk2 |= static_cast<smaller_mask_t>(maskBoth) << shift;
-                                    if (maskBoth) {
-                                        _mm_storeu_si128(pmmRL, v2_mm128<larger_unenc_t>::pack_right(mmDecL, maskBoth));
-                                        pmmRL = reinterpret_cast<__m128i *>(reinterpret_cast<larger_unenc_t*>(pmmRL) + __builtin_popcount(maskBoth));
-                                    }
+                                    _mm_storeu_si128(pmmRL, mmDecL);
+                                    pmmRL = reinterpret_cast<__m128i *>(reinterpret_cast<larger_unenc_t *>(pmmRL) + largersPerMM128);
                                 }
-                                _mm_storeu_si128(pmmRS, v2_mm128<smaller_unenc_t>::pack_right(mmDecS, maskSOk2));
-                                pmmRS = reinterpret_cast<__m128i *>(reinterpret_cast<smaller_unenc_t*>(pmmRS) + __builtin_popcount(maskSOk2));
                             }
                             result->overwrite_size(pos); // "register" the number of values we added
                             auto iter = arg->begin();
                             for (*iter += pos; iter->hasNext(); ++*iter, ++pos) {
                                 head_t decH = isHeadEncoded ? static_cast<head_t>(iter->head() * hAinv) : iter->head();
                                 tail_t decT = isTailEncoded ? static_cast<tail_t>(iter->tail() * tAinv) : iter->tail();
-                                bool isHeadOK = !isHeadEncoded || (decH <= hUnencMaxU);
-                                if (!isHeadOK) {
+                                if (isHeadEncoded && (decH > hUnencMaxU)) {
                                     (*vec1)[pos] = true;
                                 }
-                                bool isTailOK = !isTailEncoded || (decT <= tUnencMaxU);
-                                if (!isTailOK) {
+                                if (isTailEncoded && (decT > tUnencMaxU)) {
                                     (*vec2)[pos] = true;
                                 }
-                                if (isHeadOK && isTailOK) {
-                                    result->append(std::make_pair(static_cast<head_unenc_t>(decH), static_cast<tail_unenc_t>(decT)));
-                                }
+                                result->append(std::make_pair(static_cast<head_unenc_t>(decH), static_cast<tail_unenc_t>(decT)));
                             }
                             delete iter;
                             return make_tuple(result, vec1, vec2);
@@ -246,7 +227,6 @@ namespace ahead {
                             static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "Tail must be an AN-encoded type");
 
                             constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_t);
-                            constexpr const tail_mask_t maskMaskT = static_cast<tail_mask_t>((1ull << tailsPerMM128) - 1);
 
                             tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                             tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
@@ -262,20 +242,15 @@ namespace ahead {
                             auto mmATInv = v2_mm128<tail_t>::set1(tAinv);
                             auto mmATDmax = v2_mm128<tail_t>::set1(tUnencMaxU);
                             __m128i mmDec;
-                            auto pRT = reinterpret_cast<tail_unenc_t*>(result->tail.container->data());
+                            auto pRT = reinterpret_cast<tail_unenc_t *>(result->tail.container->data());
                             auto pmmRT = reinterpret_cast<__m128i *>(pRT);
 
                             size_t pos = 0;
-                            for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                auto mm = _mm_lddqu_si128(pmmT);
-                                tail_mask_t maskTBad = v2_mm128_AN<tail_t>::detect(mmDec, mm, mmATInv, mmATDmax, vec, pos);
-                                tail_mask_t maskOK = (~maskTBad) & maskMaskT;
-                                auto mmDec2 = v2_mm128_cvt<tail_t, tail_unenc_t>(mmDec);
-                                pos += tailsPerMM128;
-                                if (maskOK) { // any valid code words at all?
-                                    _mm_storeu_si128(pmmRT, v2_mm128<tail_unenc_t>::pack_right(mmDec2, maskOK));
-                                    pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_unenc_t*>(pmmRT) + __builtin_popcount(maskOK));
-                                }
+                            for (; pmmT <= (pmmTEnd - 1); ++pmmT, pos += tailsPerMM128) {
+                                v2_mm128_AN<tail_t>::detect(mmDec, _mm_lddqu_si128(pmmT), mmATInv, mmATDmax, vec, pos);
+                                mmDec = v2_mm128_cvt<tail_t, tail_unenc_t>(mmDec);
+                                _mm_storeu_si128(pmmRT, mmDec);
+                                pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_unenc_t *>(pmmRT) + tailsPerMM128);
                             }
                             result->overwrite_size(pos); // "register" the number of values we added
                             auto iter = arg->begin();
@@ -283,9 +258,8 @@ namespace ahead {
                                 tail_t decT = static_cast<tail_t>(iter->tail() * tAinv);
                                 if (decT > tUnencMaxU) {
                                     (*vec)[pos] = true;
-                                } else {
-                                    result->append(static_cast<tail_unenc_t>(decT));
                                 }
+                                result->append(static_cast<tail_unenc_t>(decT));
                             }
                             delete iter;
                             return make_tuple(result, nullptr, vec);

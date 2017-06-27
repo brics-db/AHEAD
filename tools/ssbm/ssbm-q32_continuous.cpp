@@ -122,7 +122,7 @@ int main(
         delete std::get<0>(tuple11);
 
         // d_year >= 1992 and d_year <= 1997
-        MEASURE_OP_TUPLE(tuple13, (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992 * batDY->tail.metaData.AN_A, 1997 * batDY->tail.metaData.AN_A))); // OID date | d_year
+        MEASURE_OP_TUPLE(tuple13, (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992ull * batDY->tail.metaData.AN_A, 1997ull * batDY->tail.metaData.AN_A))); // OID date | d_year
         CLEAR_SELECT_AN(tuple13);
         auto bat14 = std::get<0>(tuple13)->mirror_head(); // OID date | OID date
         delete std::get<0>(tuple13);
@@ -225,9 +225,9 @@ int main(
             typedef typename std::remove_pointer<typename std::decay<decltype(std::get<0>(tupleRD))>::type>::type::tail_t year_tail_t;
             year_tail_t batRDAinv = static_cast<year_tail_t>(std::get<0>(tupleRD)->tail.metaData.AN_Ainv);
             revenue_tail_t sum = 0;
-            std::cerr << "+------------+------------+--------+------------+\n";
-            std::cerr << "+     c_city |     s_city | d_year |    revenue |\n";
             std::cerr << "+============+============+========+============+\n";
+            std::cerr << "+     c_city |     s_city | d_year |    revenue |\n";
+            std::cerr << "+------------+------------+--------+------------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                 sum += iter4->tail();
                 std::cerr << "| " << std::setw(10) << iter1->tail();

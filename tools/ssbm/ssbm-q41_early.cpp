@@ -246,9 +246,9 @@ int main(
             auto iter1 = batRY->begin();
             auto iter2 = batRN->begin();
             auto iter3 = batRP->begin();
-            std::cerr << "+--------+------------+------------+\n";
-            std::cerr << "+ d_year |   c_nation |     profit |\n";
             std::cerr << "+========+============+============+\n";
+            std::cerr << "+ d_year |   c_nation |     profit |\n";
+            std::cerr << "+--------+------------+------------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter3->tail();
                 std::cerr << "| " << std::setw(6) << iter1->tail();

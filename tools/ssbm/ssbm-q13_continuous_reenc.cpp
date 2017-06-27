@@ -32,6 +32,7 @@ int main(
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
             "  from lineorder, date\n"
             "  where lo_orderdate = d_datekey\n"
+            "    and d_weeknuminyear = 6\n"
             "    and d_year = 1994\n"
             "    and lo_discount between 5 and 7\n"
             "    and lo_quantity between 26 and 35;");
@@ -71,11 +72,11 @@ int main(
 
         // 1) select from lineorder
         MEASURE_OP_PAIR(pair1,
-                (selectAN<std::greater_equal, std::less_equal, AND>(batLQenc, 26 * batLQenc->tail.metaData.AN_A, 35 * batLQenc->tail.metaData.AN_A, std::get<6>(*v2_restiny_t::As),
+                (selectAN<std::greater_equal, std::less_equal, AND>(batLQenc, 26ull * batLQenc->tail.metaData.AN_A, 35ull * batLQenc->tail.metaData.AN_A, std::get<6>(*v2_restiny_t::As),
                         std::get<6>(*v2_restiny_t::Ainvs)))); // lo_quantity between 26 and 35
         CLEAR_SELECT_AN(pair1);
         MEASURE_OP_PAIR(pair2,
-                (selectAN<std::greater_equal, std::less_equal, AND>(batLDenc, 5 * batLDenc->tail.metaData.AN_A, 7 * batLDenc->tail.metaData.AN_A, std::get<5>(*v2_restiny_t::As),
+                (selectAN<std::greater_equal, std::less_equal, AND>(batLDenc, 5ull * batLDenc->tail.metaData.AN_A, 7ull * batLDenc->tail.metaData.AN_A, std::get<5>(*v2_restiny_t::As),
                         std::get<5>(*v2_restiny_t::Ainvs)))); // lo_discount between 5 and 7
         CLEAR_SELECT_AN(pair2);
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
@@ -90,11 +91,11 @@ int main(
         CLEAR_JOIN_AN(tuple6);
 
         // 2) select from date (join inbetween to reduce the number of lines we touch in total)
-        MEASURE_OP_PAIR(pair7, selectAN<std::equal_to>(batDYenc, 1994 * batDYenc->tail.metaData.AN_A)); // d_year = 1994
+        MEASURE_OP_PAIR(pair7, selectAN<std::equal_to>(batDYenc, 1994ull * batDYenc->tail.metaData.AN_A)); // d_year = 1994
         CLEAR_SELECT_AN(pair7);
         auto bat8 = pair7.first->mirror_head(); // prepare joined selection over d_year and d_weeknuminyear
         delete pair7.first;
-        MEASURE_OP_PAIR(pair9, selectAN<std::equal_to>(batDWenc, 6 * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
+        MEASURE_OP_PAIR(pair9, selectAN<std::equal_to>(batDWenc, 6ull * batDWenc->tail.metaData.AN_A)); // d_weeknuminyear = 6
         delete pair9.second;
         MEASURE_OP_TUPLE(tupleA, matchjoinAN(bat8, pair9.first, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_restiny_t::As), std::get<14>(*v2_restiny_t::Ainvs)));
         delete bat8;

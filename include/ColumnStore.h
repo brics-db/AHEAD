@@ -39,7 +39,7 @@ namespace ahead {
      * Concatenate preprocessor tokens A and B without expanding macro definitions
      * (however, if invoked from a macro, macro arguments are expanded).
      */
-#define CONCAT0(A, B) A ## B
+#define CONCAT0(A, B) A B
 #define CONCATX(A, B) CONCAT0(A, B)
 
     /*
@@ -47,8 +47,9 @@ namespace ahead {
      */
 #define CONCAT(...) VFUNC(CONCAT, __VA_ARGS__)
 #define CONCAT2(A, B) CONCATX(A, B)
-#define CONCAT3(A, B, C) CONCAT2(CONCATX(A, B), C)
-#define CONCAT4(A, B, C, D) (CONCATX(A, B) ## CONCATX(C, D))
+#define CONCAT3(A, B, C) CONCAT2(CONCAT2(A, B), C)
+#define CONCAT4(A, B, C, D) CONCAT2(CONCAT2(A, B), CONCAT2(C, D))
+#define CONCAT5(A, B, C, D, E) CONCAT2(CONCAT4(A, B, C, D), E)
 
 #define TOSTRING0(str) #str
 #define TOSTRING(...) VFUNC(TOSTRING, __VA_ARGS__)

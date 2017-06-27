@@ -173,9 +173,9 @@ int main(
             auto iter1 = batRR->begin();
             auto iter2 = batRY->begin();
             auto iter3 = batRB->begin();
-            std::cerr << "+------------+--------+-----------+\n";
-            std::cerr << "| lo_revenue | d_year | p_brand   |\n";
             std::cerr << "+============+========+===========+\n";
+            std::cerr << "| lo_revenue | d_year | p_brand   |\n";
+            std::cerr << "+------------+--------+-----------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3) {
                 sum += iter1->tail();
                 std::cerr << "| " << std::setw(10) << iter1->tail();

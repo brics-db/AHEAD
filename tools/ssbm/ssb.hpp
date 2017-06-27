@@ -71,6 +71,23 @@ using namespace ahead::bat::ops::scalar;
 ///////////////////////////////
 namespace ssb {
 
+    enum architecture_t {
+        Scalar,
+        SSE42,
+        AVX2,
+        AVX512
+    };
+
+#if defined(FORCE_AVX512)
+    const architecture_t DEFAULT_ARCHITECTURE = AVX512;
+#elif defined(FORCE_AVX2)
+    const architecture_t DEFAULT_ARCHITECTURE = AVX2;
+#elif defined(FORCE_SSE)
+    const architecture_t DEFAULT_ARCHITECTURE = SSE42;
+#else
+    const architecture_t DEFAULT_ARCHITECTURE = Scalar;
+#endif
+
     struct SSB_CONF {
 
         typedef typename ArgumentParser::alias_list_t alias_list_t;
@@ -204,7 +221,8 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
     void init(
             int argc,
             char ** argv,
-            const char * strHeadline);
+            const char * strHeadline,
+            architecture_t arch = DEFAULT_ARCHITECTURE);
     void init_pcm();
     void clear_stats();
     void after_create_columnbats();

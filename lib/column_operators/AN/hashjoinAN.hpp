@@ -21,7 +21,6 @@
 #ifndef LIB_COLUMN_OPERATORS_AN_HASHJOINAN_HPP_
 #define LIB_COLUMN_OPERATORS_AN_HASHJOINAN_HPP_
 
-#include <column_operators/ANbase.hpp>
 #include "hashjoinAN.tcc"
 
 namespace ahead {

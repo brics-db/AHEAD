@@ -27,7 +27,8 @@
 #include <ColumnStore.h>
 #include <column_storage/Storage.hpp>
 #include "../miscellaneous.hpp"
-#include "../SSE.hpp"
+#include "../SSE/SSE.hpp"
+#include "../SSE/SSECMP.hpp"
 
 namespace ahead {
     namespace bat {
@@ -39,17 +40,34 @@ namespace ahead {
                     template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
                     struct arithmetic {
 
+                        typedef typename Result::type_t result_t;
+                        typedef typename Tail1::type_t tail_t;
+
                         static BAT<v2_void_t, Result> *
                         run(
                                 BAT<Head1, Tail1> * bat1,
                                 BAT<Head2, Tail2> * bat2) {
                             static_assert(!std::is_same<Tail1, v2_str_t>::value, "Tail1 must not be a string type!");
                             static_assert(!std::is_same<Tail2, v2_str_t>::value, "Tail2 must not be a string type!");
+                            static_assert(is_instance_of<Tail1, Tail2>::value, "Tail1 and Tail2 must be the same (currently)!");
+                            static_assert(is_instance_of<Tail1, Result>::value, "Tail1 and Result must be the same (currently)!");
                             if (bat1->size() != bat2->size()) {
-                                throw std::runtime_error("arithmetic: bat1->size() != bat2->size()");
+                                throw std::runtime_error(CONCAT("arithmetic: bat1->size() != bat2->size() (", __FILE__, "@" TOSTRING(__LINE__), ")"));
                             }
+                            oid_t numValues = bat1->tail.container->size();
                             auto result = skeleton<v2_void_t, Result>(bat1); // apply meta data from first BAT
-                            result->reserve(bat1->size());
+                            result->reserve(numValues);
+                            auto pT1 = bat1->tail.container->data();
+                            auto pT1End = pT1 + numValues;
+                            auto pmmT1 = reinterpret_cast<__m128i *>(pT1);
+                            auto pmmT1End = reinterpret_cast<__m128i *>(pT1End);
+                            auto pT2 = bat2->tail.container->data();
+                            auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
+                            auto pR = result->tail.container->data();
+                            auto pmmR = reinterpret_cast<__m128i *>(pR);
+                            for (; pmmT1 <= (pmmT1End - 1); pmmT1++, pmmT2++, pmmR++) {
+                                _mm_storeu_si128(pmmR, v2_mm128_cmp<tail_t, Op>::cmp(*pmmT1, *pmmT2));
+                            }
                             auto iter1 = bat1->begin();
                             auto iter2 = bat2->begin();
                             for (; iter1->hasNext(); ++*iter1, ++*iter2) {
@@ -70,6 +88,7 @@ namespace ahead {
                         BAT<Head2, Tail2> * bat2) {
                     return Private::arithmetic<Op, Result, Head1, Tail1, Head2, Tail2>::run(bat1, bat2);
                 }
+
             }
         }
     }

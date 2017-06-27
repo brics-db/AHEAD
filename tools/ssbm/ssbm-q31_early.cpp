@@ -225,14 +225,14 @@ int main(
         ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
-            size_t sum = 0;
+            bigint_t sum = 0;
             auto iter1 = batRC->begin();
             auto iter2 = batRS->begin();
             auto iter3 = batRD->begin();
             auto iter4 = batRR->begin();
-            std::cerr << "+-----------------+-----------------+--------+------------+\n";
-            std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
             std::cerr << "+=================+=================+========+============+\n";
+            std::cerr << "+        c_nation |        s_nation | d_year |    revenue |\n";
+            std::cerr << "+-----------------+-----------------+--------+------------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                 sum += iter4->tail();
                 std::cerr << "| " << std::setw(15) << iter1->tail();

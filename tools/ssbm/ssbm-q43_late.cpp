@@ -219,14 +219,14 @@ int main(
         ssb::after_query(i, szResult);
 
         if (ssb::ssb_config.PRINT_RESULT && i == 0) {
-            size_t sum = 0;
+            bigint_t sum = 0;
             auto iter1 = batRY->begin();
             auto iter2 = batRC->begin();
             auto iter3 = batRB->begin();
             auto iter4 = batRP->begin();
-            std::cerr << "+--------+------------+------------+------------+\n";
+            std::cerr << "+========+============+============+============+\n";
             std::cerr << "+ d_year |     s_city |    p_brand |     profit |\n";
-            std::cerr << "+========+============+============+------------+\n";
+            std::cerr << "+--------+------------+------------+------------+\n";
             for (; iter1->hasNext(); ++*iter1, ++*iter2, ++*iter3, ++*iter4) {
                 sum += iter4->tail();
                 std::cerr << "| " << std::setw(6) << iter1->tail();
@@ -234,7 +234,7 @@ int main(
                 std::cerr << " | " << std::setw(10) << iter3->tail();
                 std::cerr << " | " << std::setw(10) << iter4->tail() << " |\n";
             }
-            std::cerr << "+========+============+============+------------+\n";
+            std::cerr << "+========+============+============+============+\n";
             std::cerr << "\t   sum: " << sum << std::endl;
             delete iter1;
             delete iter2;

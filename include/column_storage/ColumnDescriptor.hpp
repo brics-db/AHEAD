@@ -51,7 +51,7 @@ namespace ahead {
         typedef void container_t;
     };
 
-    template<typename V2Type, typename Container>
+    template<typename V2Type, typename Container = typename ColumnDescriptorContainerType<V2Type>::container_t>
     class ColumnDescriptor {
 
     public:
@@ -104,13 +104,13 @@ namespace ahead {
 
         ColumnDescriptor()
                 : metaData() {
-            static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
+            static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is not derived from v2_base_t, but this class requires this!");
         }
 
         ColumnDescriptor(
                 oid_t seqbase)
                 : metaData(seqbase) {
-            static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is no derived from v2_base_t, but this class requires this!");
+            static_assert(std::is_base_of<v2_base_t, v2_void_t>::value, "v2_void_t is not derived from v2_base_t, but this class requires this!");
         }
 
         ColumnDescriptor(

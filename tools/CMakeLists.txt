@@ -14,6 +14,10 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
+IF("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+    MESSAGE(FATAL_ERROR "You must run cmake on the root diretory!")
+ENDIF()
+
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
     PROJECT(SSBQueries VERSION 0.9 LANGUAGES CXX)
@@ -128,8 +132,8 @@ ssbm-q31_normal ssbm-q31_dmr_seq ssbm-q31_early ssbm-q31_late ssbm-q31_continuou
 ssbm-q32_normal ssbm-q32_dmr_seq ssbm-q32_early ssbm-q32_late ssbm-q32_continuous ssbm-q32_continuous_reenc \
 ssbm-q33_normal ssbm-q33_dmr_seq ssbm-q33_early ssbm-q33_late ssbm-q33_continuous ssbm-q33_continuous_reenc \
 ssbm-q34_normal ssbm-q34_dmr_seq ssbm-q34_early ssbm-q34_late ssbm-q34_continuous ssbm-q34_continuous_reenc \
-ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late \
-ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late \
+ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late ssbm-q41_continuous ssbm-q41_continuous_reenc \
+ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late ssbm-q42_continuous ssbm-q42_continuous_reenc \
 ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late")
 add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
@@ -141,8 +145,8 @@ ssbm-q31_normal ssbm-q31_dmr_seq ssbm-q31_early ssbm-q31_late ssbm-q31_continuou
 ssbm-q32_normal ssbm-q32_dmr_seq ssbm-q32_early ssbm-q32_late ssbm-q32_continuous ssbm-q32_continuous_reenc \
 ssbm-q33_normal ssbm-q33_dmr_seq ssbm-q33_early ssbm-q33_late ssbm-q33_continuous ssbm-q33_continuous_reenc \
 ssbm-q34_normal ssbm-q34_dmr_seq ssbm-q34_early ssbm-q34_late ssbm-q34_continuous ssbm-q34_continuous_reenc \
-ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late \
-ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late \
+ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late ssbm-q41_continuous ssbm-q41_continuous_reenc \
+ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late ssbm-q42_continuous ssbm-q42_continuous_reenc \
 ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late")
 
 ##############

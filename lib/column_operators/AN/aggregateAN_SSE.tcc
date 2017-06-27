@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /* 
- * File:   aggregate.tcc
+ * File:   aggregateAN_SSE.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 16:26
@@ -24,7 +24,7 @@
 
 #include <type_traits>
 
-#include <column_storage/Storage.hpp>
+#include <column_storage/TempStorage.hpp>
 #include <util/v2typeconversion.hpp>
 #include <column_operators/ANbase.hpp>
 #include "SSEAN.hpp"
@@ -169,7 +169,6 @@ namespace ahead {
                         AT2InvR = v2convert<result_t>(temp);
                     }
                     const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
-                    // const result_t AResultEncode = RA;
                     size_t i = 0;
                     for (; pmmT1 <= (pmmT1End - 1) && pmmT2 <= (pmmT2End - 1);) {
                         if (larger_type<tail1_t, tail2_t>::isFirstLarger) {
