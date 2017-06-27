@@ -125,7 +125,7 @@ int main(
         auto bat8 = std::get<0>(tuple7)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(tuple7);
         auto bat9 = batSS->reverse(); // s_suppkey | VOID supplier
-        MEASURE_OP_TUPLE(tuple10, matchjoinAN(bat9, bat8, std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs))); // s_suppkey | OID supplier
+        MEASURE_OP_TUPLE(tuple10, matchjoinAN(bat9, bat8, std::get<13>(*v2_resint_t::As), std::get<13>(*v2_resint_t::Ainvs), std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs))); // s_suppkey | OID supplier
         delete bat8;
         delete bat9;
         CLEAR_JOIN_AN(tuple10);
@@ -199,7 +199,7 @@ int main(
         CLEAR_FETCHJOIN_AN(tupleAR);
         MEASURE_OP_TUPLE(tupleAS, fetchjoinAN(bat28, batLSC, std::get<8>(*v2_resint_t::As), std::get<8>(*v2_resint_t::Ainvs))); // VOID | lo_supplycost
         CLEAR_FETCHJOIN_AN(tupleAS);
-        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<SUB, v2_resint_t>(std::get<0>(tupleAR), std::get<0>(tupleAS), std::get<14>(*v2_resbigint_t::As), std::get<14>(*v2_resbigint_t::Ainvs)))); // VOID | lo_revenue - lo_supplycost
+        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<SUB, v2_resint_t>(std::get<0>(tupleAR), std::get<0>(tupleAS), std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs)))); // VOID | lo_revenue - lo_supplycost
         delete std::get<0>(tupleAR);
         delete std::get<0>(tupleAS);
         CLEAR_ARITHMETIC_AN(tupleAP);
@@ -247,21 +247,19 @@ int main(
         CLEAR_FETCHJOIN_AN(tupleAC);
 
         // grouping
-        MEASURE_OP_TUPLE(tupleGY, groupbyAN(std::get<0>(tupleAY)));
+        MEASURE_OP_TUPLE(tupleGY, groupbyAN(std::get<0>(tupleAY), std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs)));
         CLEAR_GROUPBY_UNARY_AN(tupleGY);
-        MEASURE_OP_TUPLE(tupleGN, groupbyAN(std::get<0>(tupleAN), std::get<0>(tupleGY), std::get<1>(tupleGY)->size(), std::get<9>(*v2_resoid_t::As)));
+        MEASURE_OP_TUPLE(tupleGN, groupbyAN(std::get<0>(tupleAN), std::get<0>(tupleGY), std::get<1>(tupleGY)->size(), std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs)));
         delete std::get<0>(tupleGY);
         delete std::get<1>(tupleGY);
         CLEAR_GROUPBY_BINARY_AN(tupleGN);
-        MEASURE_OP_TUPLE(tupleGC, groupbyAN(std::get<0>(tupleAC), std::get<0>(tupleGN), std::get<1>(tupleGN)->size(), std::get<8>(*v2_resoid_t::As)));
+        MEASURE_OP_TUPLE(tupleGC, groupbyAN(std::get<0>(tupleAC), std::get<0>(tupleGN), std::get<1>(tupleGN)->size(), std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs)));
         delete std::get<0>(tupleGN);
         delete std::get<1>(tupleGN);
         CLEAR_GROUPBY_BINARY_AN(tupleGC);
 
         // result
-        MEASURE_OP_TUPLE(tupleRP,
-                aggregate_sum_groupedAN<v2_resbigint_t>(std::get<0>(tupleAP), std::get<0>(tupleGC), std::get<1>(tupleGC)->size(), std::get<13>(*v2_resbigint_t::As),
-                        std::get<13>(*v2_resbigint_t::Ainvs), std::get<7>(*v2_resoid_t::As)));
+        MEASURE_OP_TUPLE(tupleRP, aggregate_sum_groupedAN<v2_resbigint_t>(std::get<0>(tupleAP), std::get<0>(tupleGC), std::get<1>(tupleGC)->size()));
         delete std::get<0>(tupleAP);
         CLEAR_GROUPEDSUM_AN(tupleRP);
         MEASURE_OP_TUPLE(tupleRN, fetchjoinAN(std::get<1>(tupleGC), std::get<0>(tupleAN)));
