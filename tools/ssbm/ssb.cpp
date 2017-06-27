@@ -23,6 +23,7 @@
 #include <execinfo.h>
 #include <signal.h>
 #include <exception>
+#include <sstream>
 
 #include <mutex>
 
@@ -150,7 +151,8 @@ namespace ssb {
     void init(
             int argc,
             char ** argv,
-            const char * strHeadline) {
+            const char * strHeadline,
+            architecture_t arch) {
         set_signal_handlers();
 
         rssBeforeLoad = 0;
@@ -171,9 +173,28 @@ namespace ssb {
         ssb::ssb_config.init(argc, argv);
         ssb::totalTimes.reserve(ssb::ssb_config.NUM_RUNS);
         ssb::init_pcm();
-        std::cout << strHeadline << '\n';
+        std::stringstream ss;
+        ss << strHeadline << ' ';
+        switch (arch) {
+            case AVX512:
+                ss << "AVX-512";
+                break;
+            case AVX2:
+                ss << "AVX-2";
+                break;
+            case SSE42:
+                ss << "SSE-4.2";
+                break;
+            case Scalar:
+                ss << "Scalar";
+                break;
+            default:
+                ss << "Unknown";
+        }
+        auto strHeadline2 = ss.str();
+        std::cout << strHeadline2 << '\n';
         auto fillChar = std::cout.fill('=');
-        std::cout << std::setw(strlen(strHeadline)) << "=" << std::setfill(fillChar) << '\n';
+        std::cout << std::setw(strHeadline2.size()) << "=" << std::setfill(fillChar) << '\n';
         ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH.c_str());
         std::cout << "Database path: \"" << ssb::ssb_config.DB_PATH << "\"" << std::endl;
     }
