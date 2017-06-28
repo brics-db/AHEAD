@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <sstream>
+
 #include "MetaRepositoryManager.h"
 #include <column_operators/Operators.hpp>
 
@@ -258,6 +260,11 @@ namespace ahead {
             auto reverseBat = attributes_column_id->reverse();
             batNrPair = this->unique_selection(reverseBat, batId);
             delete reverseBat;
+        } else {
+            std::stringstream sserr;
+            sserr << CONCAT("MetaRepositoryManager::getBatIdOfAttribute(", __FILE__, "@", TOSTRING(__LINE__), "): ");
+            sserr << "Unknown table \"" << nameOfTable << "\" or attribute \"" << attribute << "\"!";
+            throw std::runtime_error(sserr.str());
         }
 
         return batNrPair.first;
@@ -268,14 +275,20 @@ namespace ahead {
             cstr_t datatype,
             id_t columnID,
             id_t tableID) {
-        id_t batIdOfDataType = selectBatId(datatype_name, datatype);
-        id_t dataTypeID = selectPKId(datatype_id_pk, batIdOfDataType);
-        id_t newAttributeID = getLastValue(attributes_id_pk).second + 1;
+        id_t oidDataType = selectBatId(datatype_name, datatype);
+        if (oidDataType == ID_INVALID) {
+            std::stringstream sserr;
+            sserr << CONCAT("MetaRepositoryManager::createAttribute(", __FILE__, "@", TOSTRING(__LINE__), "): ");
+            sserr << "Unknown datatype \"" << datatype << "\"!";
+            throw std::runtime_error(sserr.str());
+        }
+        id_t idDataType = selectPKId(datatype_id_pk, oidDataType);
+        id_t idNewAttribute = getLastValue(attributes_id_pk).second + 1;
 
-        attributes_id_pk->append(newAttributeID);
+        attributes_id_pk->append(idNewAttribute);
         attributes_name->append(const_cast<str_t>(name));
         attributes_table_id_fk->append(tableID);
-        attributes_type_id_fk->append(dataTypeID);
+        attributes_type_id_fk->append(idDataType);
         attributes_column_id->append(columnID);
     }
 
@@ -325,7 +338,7 @@ namespace ahead {
     }
     std::optional<oid_t> MetaRepositoryManager::TablesIterator::position() {
         if (hasNext()) {
-            return std::optional<oid_t>(pKeyIter->position());
+            return std::optional < oid_t > (pKeyIter->position());
         }
         return std::optional<oid_t>();
     }
