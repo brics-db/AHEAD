@@ -30,6 +30,12 @@
 #include <column_storage/Storage.hpp>
 #include "../miscellaneous.hpp"
 
+#ifdef __GNUC__
+#pragma GCC target "no-sse"
+#else
+#warning "Forcing scalar code is not yet implemented for this compiler"
+#endif
+
 namespace ahead {
     namespace bat {
         namespace ops {
@@ -83,5 +89,11 @@ namespace ahead {
         }
     }
 }
+
+#ifdef __GNUC__
+#pragma GCC target "sse4.2"
+#else
+#warning "Unforcing scalar code is not yet implemented for this compiler"
+#endif
 
 #endif /* AGGREGATE_SEQ_TCC */
