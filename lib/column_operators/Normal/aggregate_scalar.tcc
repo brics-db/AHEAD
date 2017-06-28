@@ -13,10 +13,15 @@
 // limitations under the License.
 
 /* 
- * File:   aggregate.tcc
+ * File:   aggregate_seq.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 23. November 2016, 00:28
+ *
+ * File:   aggregate_scalar.tcc
+ * Author: Till Kolditz <till.kolditz@gmail.com>
+ *
+ * Renamed on 28. June 2017, 09:41
  */
 
 #ifndef AGGREGATE_SEQ_TCC

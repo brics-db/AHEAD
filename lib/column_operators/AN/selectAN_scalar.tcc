@@ -17,6 +17,11 @@
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 16:22
+ *
+ * File:   selectAN_scalar.tcc
+ * Author: Till Kolditz <till.kolditz@gmail.com>
+ *
+ * Renamed on 28. June 2017, 09:39
  */
 
 #ifndef SELECT_AN_SEQ_TCC

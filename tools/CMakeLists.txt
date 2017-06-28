@@ -108,8 +108,8 @@ MACRO(add_ssb arg_queries)
 	SET(QUERIES "")
     STRING(REPLACE " " ";" QUERIES "${arg_queries}")
     FOREACH(Q ${QUERIES})
-        add_algorithm(${Q} "ssbm" "${Q}_seq")
-        TARGET_COMPILE_OPTIONS("${Q}_seq" PUBLIC "-fno-tree-vectorize")
+        add_algorithm(${Q} "ssbm" "${Q}_scalar")
+        TARGET_COMPILE_OPTIONS("${Q}_scalar" PUBLIC "-fno-tree-vectorize")
     ENDFOREACH(Q QUERIES)
 ENDMACRO(add_ssb)
 
@@ -173,10 +173,10 @@ ssbm-q41_dmr_mt ssbm-q42_dmr_mt ssbm-q43_dmr_mt")
 ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt \
 ssbm-q31_dmr_mt ssbm-q32_dmr_mt ssbm-q33_dmr_mt ssbm-q34_dmr_mt \
 ssbm-q41_dmr_mt ssbm-q42_dmr_mt ssbm-q43_dmr_mt")
-	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE \
-ssbm-q21_dmr_mt_seq ssbm-q22_dmr_mt_seq ssbm-q23_dmr_mt_seq ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE ssbm-q23_dmr_mt_SSE \
-ssbm-q31_dmr_mt_seq ssbm-q32_dmr_mt_seq ssbm-q33_dmr_mt_seq ssbm-q34_dmr_mt_seq ssbm-q31_dmr_mt_SSE ssbm-q32_dmr_mt_SSE ssbm-q33_dmr_mt_SSE ssbm-q34_dmr_mt_SSE \
-ssbm-q41_dmr_mt_seq ssbm-q42_dmr_mt_seq ssbm-q43_dmr_mt_seq ssbm-q41_dmr_mt_SSE ssbm-q42_dmr_mt_SSE ssbm-q43_dmr_mt_SSE")
+	enable_openmp("ssbm-q11_dmr_mt_scalar ssbm-q12_dmr_mt_scalar ssbm-q13_dmr_mt_scalar ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE \
+ssbm-q21_dmr_mt_scalar ssbm-q22_dmr_mt_scalar ssbm-q23_dmr_mt_scalar ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE ssbm-q23_dmr_mt_SSE \
+ssbm-q31_dmr_mt_scalar ssbm-q32_dmr_mt_scalar ssbm-q33_dmr_mt_scalar ssbm-q34_dmr_mt_scalar ssbm-q31_dmr_mt_SSE ssbm-q32_dmr_mt_SSE ssbm-q33_dmr_mt_SSE ssbm-q34_dmr_mt_SSE \
+ssbm-q41_dmr_mt_scalar ssbm-q42_dmr_mt_scalar ssbm-q43_dmr_mt_scalar ssbm-q41_dmr_mt_SSE ssbm-q42_dmr_mt_SSE ssbm-q43_dmr_mt_SSE")
 ELSE(OPENMP_FOUND)
 	MESSAGE(WARNING "OpenMP not found!")
 ENDIF(OPENMP_FOUND)

@@ -14,10 +14,75 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#if the outputs are not redirected to files, then call ourselves again with additional piping
+#####################
+#####################
+### Preliminaries ###
+#####################
+#####################
 
-# bootstrap variables
-DATE="$(date '+%Y-%m-%d_%H-%M')"
+ARGS=("$@")
+if [[ $# -ne 0 ]] ; then
+    case "${ARGS[0]}" in
+    	DEFAULT)
+    		PHASE="DEFAULT"
+    		;;
+        COMPILE)
+            PHASE="COMPILE"
+            DO_COMPILE=1
+            DO_COMPILE_CMAKE=1
+            DO_BENCHMARK=0
+            DO_EVAL=0
+            DO_VERIFY=0
+            ;;
+        WARMUP)
+            PHASE="WARMUP"
+            DO_COMPILE=0
+            DO_BENCHMARK=1
+            DO_EVAL=0
+            DO_VERIFY=0
+            ;;
+        ACTUAL)
+            PHASE="ACTUAL"
+            DO_COMPILE=0
+            DO_BENCHMARK=1
+            DO_EVAL=1
+            DO_EVAL_PREPARE=1
+            DO_VERIFY=1
+            ;;
+        EVALONLY)
+            PHASE="EVALONLY"
+            DO_COMPILE=0
+            DO_BENCHMARK=0
+            DO_EVAL=1
+            DO_EVAL_PREPARE=1
+            DO_VERIFY=1
+            if [[ $# > 1 ]]; then
+            	DATE="${ARGS[1]}"
+            fi
+            ;;
+        BATCH)
+        	PHASE="BATCH"
+            /usr/bin/env $0 COMPILE
+            for i in $(seq 1 1); do
+                /usr/bin/env $0 ACTUAL
+                mv ${PATH_EVALDATA} "${PATH_EVALDATA}_act${i}"
+                mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
+            done
+            exit 0
+            ;;
+        *)
+            echo "UNKNOWN Phase"
+            exit 1
+            ;;
+    esac
+else
+    PHASE="DEFAULT"
+fi
+
+#######################
+# Bootstrap Variables #
+#######################
+if [[ -z "$DATE" ]]; then DATE="$(date '+%Y-%m-%d_%H-%M')"; fi
 PATH_BASE="$(pwd)/.."
 PATH_BUILD="${PATH_BASE}/build/Release"
 PATH_DB="${PATH_BASE}/database"
@@ -25,26 +90,45 @@ PATH_EVAL="${PATH_BASE}/eval"
 PATH_EVALDATA="${PATH_EVAL}/${DATE}/data"
 PATH_EVALOUT="${PATH_EVAL}/${DATE}/out"
 
+
+################################################################################################
+# if the outputs are not redirected to files, then call ourselves again with additional piping #
+################################################################################################
 if [[ -t 1 ]] || [[ -t 2 ]]; then
 	echo "one of stdout or stderr is not redirected, calling script with redirecting"
-	./$0 $@ > >(tee "$0.out") 2> >(tee "$0.err" >&2)
+	outfile="$0.out"
+	errfile="$0.err"
+	./$0 $@ > >(tee "${outfile}") 2> >(tee "${errfile}" >&2)
 	ret=$?
-	mv "$0.out" "$0.err" "${PATH_EVAL}/${DATE}"
+	if [[ -f "${PATH_EVAL}/${DATE}/${outfile}" ]]; then
+		idx=0
+		while [[ -f "${PATH_EVAL}/${DATE}/${outfile}.${idx}" ]]; do
+			((idx++))
+		done
+		# keep both file versions in sync
+		mv "${outfile}" "${PATH_EVAL}/${DATE}/${outfile}.${idx}"
+		mv "${errfile}" "${PATH_EVAL}/${DATE}/${errfile}.${idx}"
+	else
+		mv "${outfile}" "${errfile}" "${PATH_EVAL}/${DATE}"
+	fi
 	exit $ret
 else
 	echo "stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
+	echo "${PHASE} Phase"
 fi
 
-# Basic variables
+###################
+# Basic Variables #
+###################
 CXX_COMPILER="g++"
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
 IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
-#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
-VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late")
-ARCHITECTURE=("_seq")
+VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
+#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late")
+ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null
 HAS_SSE42=$?
@@ -66,59 +150,9 @@ fi
 #    ARCHITECTURE_NAME+=("AVX512");
 #fi
 
-# distinct warmup and test phases
-ARGS=("$@")
-if [[ $# -ne 0 ]] ; then
-    case "${ARGS[0]}" in
-        COMPILE)
-            echo "COMPILE Phase"
-            DO_COMPILE=1
-            DO_COMPILE_CMAKE=1
-            DO_BENCHMARK=0
-            DO_EVAL=0
-            DO_VERIFY=0
-            ;;
-        WARMUP)
-            echo "WARMUP Phase"
-            DO_COMPILE=0
-            DO_BENCHMARK=1
-            DO_EVAL=1
-            DO_VERIFY=1
-            ;;
-        ACTUAL)
-            echo "ACTUAL Phase"
-            DO_COMPILE=0
-            DO_BENCHMARK=1
-            DO_EVAL=1
-            DO_VERIFY=1
-            ;;
-        EVALONLY)
-            echo "EVALONLY Phase"
-            DO_COMPILE=0
-            DO_BENCHMARK=0
-            DO_EVAL=1
-            DO_EVAL_PREPARE=1
-            DO_VERIFY=1
-            ;;
-        BATCH)
-            /usr/bin/env $0 COMPILE
-            for i in $(seq 1 1); do
-                /usr/bin/env $0 ACTUAL
-                mv ${PATH_EVALDATA} "${PATH_EVALDATA}_act${i}"
-                mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
-            done
-            exit 0
-            ;;
-        *)
-            echo "UNKNOWN Phase"
-            exit 1
-            ;;
-    esac
-else
-    echo "DEFAULT Phase"
-fi
-
-# Process Switches
+####################
+# Process Switches #
+####################
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
 if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
 if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
@@ -126,7 +160,9 @@ if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
 if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 
-# Process specific constants
+##############################
+# Process specific constants #
+##############################
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
 if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
@@ -135,7 +171,9 @@ declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
 if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
 
-# functions etc
+#################
+# functions etc #
+#################
 pushd () {
     command pushd "$@" > /dev/null
 }
@@ -277,9 +315,11 @@ plot 1 ls 0 with linespoints
 EOM
 }
 
-#############################
-# Actual Script starts here #
-#############################
+#################################
+#################################
+### Actual Script starts here ###
+#################################
+#################################
 
 numcpus=$(nproc)
 if [[ $? -ne 0 ]]; then
@@ -554,7 +594,7 @@ fi
 if [[ ${DO_VERIFY} -ne 0 ]]; then
     date
     echo "Verifying:"
-    NUMARCHS="${#VARIANTS[@]}"
+    NUMARCHS="${#ARCHITECTURE[@]}"
     for idxArch in $(seq 0 $(echo "${NUMARCHS}-1" | bc)); do
         ARCH=${ARCHITECTURE[$idxArch]}
         ARCHNAME=${ARCHITECTURE_NAME[$idxArch]}
@@ -591,7 +631,7 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
     	    for v in "${VARIANTS[@]}"; do
                 for t in out err; do
                     grepfile="./grep.${t}"
-    	            diff "${PATH_EVALDATA}/${BASE}${q}_normal_seq.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
+    	            diff "${PATH_EVALDATA}/${BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
                     if [[ -s "${grepfile}" ]]; then
                         echo "Q${q}${v}${s} (${t}):"
                         cat "${grepfile}"

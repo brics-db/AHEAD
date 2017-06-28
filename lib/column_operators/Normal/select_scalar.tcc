@@ -13,10 +13,15 @@
 // limitations under the License.
 
 /* 
- * File:   select.tcc
+ * File:   select_seq.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 21:02
+ *
+ * File:   select_scalar.tcc
+ * Author: Till Kolditz <till.kolditz@gmail.com>
+ *
+ * Renamed on 28. June 2017, 09:41
  */
 
 #ifndef SELECT_SEQ_TCC
