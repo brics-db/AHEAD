@@ -46,6 +46,10 @@ namespace ahead {
     }
 
     AHEAD::~AHEAD() {
+        TransactionManager::destroyInstance();
+        BucketManager::destroyInstance();
+        ColumnManager::destroyInstance();
+        MetaRepositoryManager::destroyInstance();
         mgrMeta = nullptr;
         mgrTx = nullptr;
     }
@@ -65,6 +69,14 @@ namespace ahead {
             const std::string & path) {
         AHEAD::instance = new AHEAD(path);
         return AHEAD::instance;
+    }
+
+    void AHEAD::destroyInstance() {
+        auto current = AHEAD::instance;
+        if (current) {
+            AHEAD::instance = nullptr;
+            delete current;
+        }
     }
 
     size_t AHEAD::loadTable(

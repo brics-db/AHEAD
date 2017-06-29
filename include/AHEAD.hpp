@@ -61,6 +61,8 @@ namespace ahead {
         static AHEAD * createInstance(
                 const std::string & strBaseDir);
 
+        static void destroyInstance();
+
         size_t loadTable(
                 const std::string & tableName,
                 const char * const prefix = nullptr,

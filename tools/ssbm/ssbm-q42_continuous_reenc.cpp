@@ -233,11 +233,12 @@ int main(
         CLEAR_FETCHJOIN_AN(tupleAY);
         // p_category
         MEASURE_OP_TUPLE(tuple36, fetchjoinAN(bat28, batLP, std::get<5>(*v2_resint_t::As), std::get<5>(*v2_resint_t::Ainvs))); // VOID | lo_partkey
+        delete bat28;
         CLEAR_FETCHJOIN_AN(tuple36);
         auto bat37 = batPP->reverse(); // p_partkey | VOID part
         MEASURE_OP_TUPLE(tuple38,
                 hashjoinAN(std::get<0>(tuple36), bat37, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<10>(*v2_resoid_t::As), std::get<10>(*v2_resoid_t::Ainvs))); // OID | OID partkey
-        delete bat28;
+        delete std::get<0>(tuple36);
         delete bat37;
         CLEAR_JOIN_AN(tuple38);
         auto bat39 = std::get<0>(tuple38)->clear_head(); // VOID | OID partkey

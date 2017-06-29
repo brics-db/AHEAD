@@ -195,7 +195,7 @@ namespace ssb {
         std::cout << strHeadline2 << '\n';
         auto fillChar = std::cout.fill('=');
         std::cout << std::setw(strHeadline2.size()) << "=" << std::setfill(fillChar) << '\n';
-        ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH.c_str());
+        ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH);
         std::cout << "Database path: \"" << ssb::ssb_config.DB_PATH << "\"" << std::endl;
     }
 
@@ -312,7 +312,6 @@ namespace ssb {
         std::cout << std::setw(ssb::ssb_config.LEN_PCM) << proc(state2, state3) << '\n';
 
     void finalize() {
-        ahead::TransactionManager::destroyInstance();
         if (ssb::pcmStatus == PCM::Success) {
             ssb::m->getAllCounterStates(ssb::sysstate3, ssb::sktstate3, ssb::cstate3);
             std::cout << "PCM:\n";
@@ -327,6 +326,7 @@ namespace ssb {
             PCM_PRINT("L2-Miss Cycle Loss", getCyclesLostDueL2CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
             PCM_PRINT("L3-Miss Cycle Loss", getCyclesLostDueL3CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
         }
+        AHEAD::destroyInstance();
     }
 
 #undef PCM_PRINT

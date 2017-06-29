@@ -81,9 +81,15 @@ namespace ahead {
         }
 
         ColumnDescriptor(
-                ColumnMetaData metaData)
+                ColumnMetaData & metaData)
                 : container(new Container),
                   metaData(metaData) {
+        }
+
+        ColumnDescriptor(
+                ColumnMetaData && metaData)
+                : container(new Container),
+                  metaData(std::forward<ColumnMetaData>(metaData)) {
         }
 
         virtual ~ColumnDescriptor() {

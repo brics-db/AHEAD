@@ -30,9 +30,10 @@ namespace ahead {
     }
 
     void BucketManager::destroyInstance() {
-        if (BucketManager::instance) {
-            delete BucketManager::instance;
+        auto current = BucketManager::instance;
+        if (current) {
             BucketManager::instance = nullptr;
+            delete current;
         }
     }
 
@@ -48,6 +49,13 @@ namespace ahead {
     BucketManager::Chunk::Chunk(
             const Chunk &copy)
             : content(copy.content) {
+    }
+
+    BucketManager::Chunk::~Chunk() {
+        if (this->content) {
+            free(this->content);
+        }
+        this->content = nullptr;
     }
 
     BucketManager::Chunk& BucketManager::Chunk::operator=(
@@ -67,11 +75,11 @@ namespace ahead {
 
     BucketManager::Bucket::Bucket(
             id_t number,
-            version_t *version,
-            Bucket *next,
-            Bucket *older,
-            Bucket* newer,
-            Chunk *chunk)
+            std::shared_ptr<version_t> & version,
+            Bucket * next,
+            Bucket * older,
+            Bucket * newer,
+            Chunk * chunk)
             : number(number),
               version(version),
               next(next),
@@ -88,6 +96,17 @@ namespace ahead {
               older(copy.older),
               newer(copy.newer),
               chunk(copy.chunk) {
+    }
+
+    BucketManager::Bucket::~Bucket() {
+        if (this->chunk) {
+            delete this->chunk;
+        }
+        this->chunk = nullptr;
+        this->newer = nullptr;
+        this->older = nullptr;
+        this->next = nullptr;
+        this->version = nullptr;
     }
 
     BucketManager::Bucket& BucketManager::Bucket::operator=(
@@ -122,6 +141,55 @@ namespace ahead {
               size(copy.size) {
     }
 
+    BucketManager::BucketStream::~BucketStream() {
+        auto bucket = head;
+        size_t numBuckets = 0;
+        while (bucket) {
+            ++numBuckets;
+            auto bucket2 = bucket->older;
+            while (bucket2) {
+                ++numBuckets;
+                bucket2 = bucket2->older;
+            }
+            bucket2 = bucket->newer;
+            while (bucket2) {
+                ++numBuckets;
+                bucket2 = bucket2->newer;
+            }
+            bucket = bucket->next;
+        }
+        std::unordered_set<Bucket*> bucketAdresses;
+        while (bucket) {
+            auto bucket2 = bucket->older;
+            while (bucket2) {
+                auto bucketTmp = bucket2->older;
+                bucketAdresses.insert(bucket2);
+                delete bucket2;
+                bucket2 = bucketTmp;
+            }
+            bucket2 = bucket->newer;
+            while (bucket2) {
+                auto bucketTmp = bucket2->newer;
+                bucketAdresses.insert(bucket2);
+                delete bucket2;
+                bucket2 = bucketTmp;
+            }
+            bucket2 = bucket->next;
+            bucketAdresses.insert(bucket);
+            delete bucket;
+            bucket = bucket2;
+        }
+        for (auto pBucket : index) {
+            auto iter = bucketAdresses.find(pBucket);
+            if (iter == bucketAdresses.end()) {
+                delete pBucket;
+            }
+        }
+        this->index.clear();
+        this->head = nullptr;
+        this->tail = nullptr;
+    }
+
     BucketManager::BucketStream& BucketManager::BucketStream::operator=(
             const BucketStream &copy) {
         new (this) BucketStream(copy);
@@ -133,22 +201,16 @@ namespace ahead {
     }
 
     BucketManager::~BucketManager() {
-        for (auto mypair : streams) {
-            for (auto pBucket : mypair.second.index) {
-                delete pBucket;
-            }
-            mypair.second.index.clear();
-        }
-        streams.clear();
+        this->streams.clear();
     }
 
     BucketManager::BucketIterator*
     BucketManager::openStream(
             id_t id,
-            version_t *version) {
+            std::shared_ptr<version_t> & version) {
         if (this->streams.find(id) == this->streams.end()) {
-            this->streams[id].head = 0;
-            this->streams[id].tail = 0;
+            this->streams[id].head = nullptr;
+            this->streams[id].tail = nullptr;
             this->streams[id].size = 0;
             this->streams[id].index.clear();
         }
@@ -170,12 +232,12 @@ namespace ahead {
 #endif
 
     BucketManager::BucketIterator::BucketIterator(
-            BucketManager::BucketStream *stream,
-            version_t *version)
+            BucketManager::BucketStream * stream,
+            std::shared_ptr<version_t> & version)
             : stream(stream),
               version(version),
-              currentBucket(0),
-              previousBucket(0),
+              currentBucket(nullptr),
+              previousBucket(nullptr),
               log() {
         if (stream == nullptr || version == nullptr) {
             // Problem : Falsche Parameter
@@ -199,6 +261,10 @@ namespace ahead {
     }
 
     BucketManager::BucketIterator::~BucketIterator() {
+        this->stream = nullptr;
+        this->version = nullptr;
+        this->currentBucket = nullptr;
+        this->previousBucket = nullptr;
     }
 
     BucketManager::BucketIterator& BucketManager::BucketIterator::operator=(
@@ -217,11 +283,11 @@ namespace ahead {
             do {
                 bucket = this->stream->index[position];
 
-                while (bucket != 0 && *bucket->version > *this->version) {
+                while (bucket && bucket->version && (*bucket->version > *this->version)) {
                     bucket = bucket->older;
                 }
 
-                if (bucket != 0) {
+                if (bucket) {
                     return position + 1;
                 }
             } while (position-- > 0);
@@ -315,8 +381,6 @@ namespace ahead {
 
     BucketManager::Chunk*
     BucketManager::BucketIterator::edit() {
-        BucketManager::Bucket *newBucket;
-
         if (this->currentBucket == nullptr) {
             // Problem : Anfang/Ende des Streams
             return nullptr;
@@ -325,17 +389,8 @@ namespace ahead {
                 // Problem : Existenz aktuellerer Version
                 return nullptr;
             } else {
-                if (this->currentBucket->version != this->version) {
-                    newBucket = new BucketManager::Bucket;
-
-                    newBucket->next = this->currentBucket->next;
-                    newBucket->older = this->currentBucket;
-                    newBucket->newer = nullptr;
-
-                    newBucket->version = this->version;
-                    newBucket->number = this->currentBucket->number;
-
-                    newBucket->chunk = new BucketManager::Chunk;
+                if (*this->currentBucket->version != *this->version) {
+                    auto newBucket = new BucketManager::Bucket(this->currentBucket->number, this->version, this->currentBucket->next, this->currentBucket, nullptr, new BucketManager::Chunk);
 
                     newBucket->chunk->content = malloc(CHUNK_CONTENT_SIZE);
                     memcpy(newBucket->chunk->content, this->currentBucket->chunk->content, CHUNK_CONTENT_SIZE);
@@ -366,18 +421,7 @@ namespace ahead {
 
     BucketManager::Chunk*
     BucketManager::BucketIterator::append() {
-        BucketManager::Bucket *newBucket;
-
-        newBucket = new BucketManager::Bucket;
-
-        newBucket->next = nullptr;
-        newBucket->older = nullptr;
-        newBucket->newer = nullptr;
-
-        newBucket->version = this->version;
-        newBucket->number = this->stream->size;
-
-        newBucket->chunk = new BucketManager::Chunk;
+        auto newBucket = new BucketManager::Bucket(this->stream->size, this->version, nullptr, nullptr, nullptr, new BucketManager::Chunk);
 
         newBucket->chunk->content = malloc(CHUNK_CONTENT_SIZE);
         *static_cast<oid_t*>(newBucket->chunk->content) = 0;
@@ -395,8 +439,6 @@ namespace ahead {
             this->stream->tail = newBucket;
         }
 
-        // this->stream->index.resize(this->stream->size + 1, 0);
-        // this->stream->index[this->stream->size] = newBucket;
         this->stream->index.push_back(newBucket);
         this->stream->size++;
 

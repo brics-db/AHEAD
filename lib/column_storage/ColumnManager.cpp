@@ -38,9 +38,10 @@ namespace ahead {
     }
 
     void ColumnManager::destroyInstance() {
-        if (ColumnManager::instance) {
-            delete ColumnManager::instance;
+        auto current = ColumnManager::instance;
+        if (current) {
             ColumnManager::instance = nullptr;
+            delete current;
         }
     }
 
@@ -59,7 +60,7 @@ namespace ahead {
     ColumnManager::ColumnIterator*
     ColumnManager::openColumn(
             id_t id,
-            version_t *version) {
+            std::shared_ptr<version_t> & version) {
         if (columnMetaData.find(id) != columnMetaData.end()) {
             return new ColumnManager::ColumnIterator(columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version));
         } else {
@@ -141,14 +142,15 @@ namespace ahead {
         const oid_t recordsPerBucket = (oid_t) ((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / this->columnMetaData.width);
         oid_t position;
         oid_t * elementCounter;
-        if (this->iterator->countBuckets() == 0) {
+        auto numBuckets = this->iterator->countBuckets();
+        if (numBuckets == 0) {
             return 0;
         } else {
             position = this->iterator->position();
-            this->currentChunk = this->iterator->seek(this->iterator->countBuckets() - 1);
+            this->currentChunk = this->iterator->seek(numBuckets - 1);
             elementCounter = static_cast<oid_t *>(this->currentChunk->content);
             this->currentChunk = this->iterator->seek(position);
-            return (this->iterator->countBuckets() - 1) * recordsPerBucket + *elementCounter;
+            return (numBuckets - 1) * recordsPerBucket + *elementCounter;
         }
     }
 

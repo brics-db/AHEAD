@@ -223,9 +223,10 @@ int main(
             delete bat35;
             // p_category
             MEASURE_OP(bat36, fetchjoin(bat28, batLP[k])); // VOID | lo_partkey
+            delete bat28;
             auto bat37 = batPP[k]->reverse(); // p_partkey | VOID part
             MEASURE_OP(bat38, hashjoin(bat36, bat37)); // OID | OID partkey
-            delete bat28;
+            delete bat36;
             delete bat37;
             auto bat39 = bat38->clear_head(); // VOID | OID partkey
             delete bat38;

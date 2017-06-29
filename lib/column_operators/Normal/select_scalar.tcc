@@ -95,6 +95,7 @@ namespace ahead {
                                     result->append(std::make_pair(iter->head(), t));
                                 }
                             }
+                            delete iter;
                             return result;
                         }
                     };
