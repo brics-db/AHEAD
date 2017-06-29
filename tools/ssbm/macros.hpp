@@ -39,12 +39,12 @@ std::cout << QueryString << std::endl;
 std::cout << QueryString << std::endl;
 #define SSBM_LOAD(...)                                                         \
 do {                                                                           \
-    ssb::rssBeforeLoad = getPeakRSS(size_enum_t::B);                           \
     ahead::StopWatch sw;                                                       \
     sw.start();                                                                \
+    ssb::before_load();                                                        \
     VFUNC(SSBM_LOAD, __VA_ARGS__)                                              \
+    ssb::after_load();                                                         \
     sw.stop();                                                                 \
-    ssb::rssAfterLoad = getPeakRSS(size_enum_t::B);                            \
     std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;        \
     if (ssb::ssb_config.VERBOSE) {                                             \
         SSBM_LOAD_PRINTQUERYSTRING(__VA_ARGS__);                               \

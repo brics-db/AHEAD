@@ -144,6 +144,7 @@ namespace ssb {
     std::vector<std::size_t> batConsumptions;
     std::vector<std::size_t> batConsumptionsProj;
     std::vector<std::size_t> batRSS;
+    std::vector<SystemCounterState> sysstatesBeforeOp, sysstatesAfterOp;
     std::vector<bool> hasTwoTypes;
     std::vector<boost::typeindex::type_index> headTypes;
     std::vector<boost::typeindex::type_index> tailTypes;
@@ -166,13 +167,14 @@ namespace ssb {
         ssb::batConsumptions.reserve(numOpsDefault);
         ssb::batConsumptionsProj.reserve(numOpsDefault);
         ssb::batRSS.reserve(numOpsDefault);
+        ssb::sysstatesBeforeOp.reserve(numOpsDefault);
+        ssb::sysstatesAfterOp.reserve(numOpsDefault);
         ssb::hasTwoTypes.reserve(numOpsDefault);
         ssb::headTypes.reserve(numOpsDefault);
         ssb::tailTypes.reserve(numOpsDefault);
 
         ssb::ssb_config.init(argc, argv);
         ssb::totalTimes.reserve(ssb::ssb_config.NUM_RUNS);
-        ssb::init_pcm();
         std::stringstream ss;
         ss << strHeadline << ' ';
         switch (arch) {
@@ -197,6 +199,7 @@ namespace ssb {
         std::cout << std::setw(strHeadline2.size()) << "=" << std::setfill(fillChar) << '\n';
         ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH);
         std::cout << "Database path: \"" << ssb::ssb_config.DB_PATH << "\"" << std::endl;
+        ssb::init_pcm();
     }
 
     void init_pcm() {
@@ -224,6 +227,14 @@ namespace ssb {
         ssb::hasTwoTypes.clear();
         ssb::headTypes.clear();
         ssb::tailTypes.clear();
+    }
+
+    void before_load() {
+        ssb::rssBeforeLoad = getPeakRSS(size_enum_t::B);
+    }
+
+    void after_load() {
+        ssb::rssAfterLoad = getPeakRSS(size_enum_t::B);
     }
 
     void after_create_columnbats() {
@@ -263,6 +274,28 @@ namespace ssb {
             std::cout << std::setw(2) << i << '\t' << ssb::totalTimes[i] << '\n';
         }
         std::cout << "Memory:\n" << ssb::rssBeforeLoad << '\n' << ssb::rssAfterLoad << '\n' << ssb::rssAfterCopy << '\n' << ssb::rssAfterQueries << std::endl;
+
+#define PCM_PRINT(attr, proc, state1, state2, state3)                          \
+        std::cout << std::setw(ssb::ssb_config.LEN_PCM) << attr << '\t';                    \
+        std::cout << std::setw(ssb::ssb_config.LEN_PCM) << proc(state1, state2) << '\t';    \
+        std::cout << std::setw(ssb::ssb_config.LEN_PCM) << proc(state2, state3) << '\n';
+
+        if (ssb::pcmStatus == PCM::Success) {
+            ssb::m->getAllCounterStates(ssb::sysstate3, ssb::sktstate3, ssb::cstate3);
+            std::cout << "PCM:\n";
+            std::cout << std::setw(ssb::ssb_config.LEN_PCM) << "Attribute" << '\t';
+            std::cout << std::setw(ssb::ssb_config.LEN_PCM) << "init" << '\t';
+            std::cout << std::setw(ssb::ssb_config.LEN_PCM) << "query" << '\n';
+            PCM_PRINT("IPC", getIPC, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
+            PCM_PRINT("MC Read", getBytesReadFromMC, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
+            PCM_PRINT("MC written", getBytesWrittenToMC, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
+            PCM_PRINT("Energy", getConsumedEnergy, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
+            PCM_PRINT("Joules", getConsumedJoules, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
+            PCM_PRINT("L2-Miss Cycle Loss", getCyclesLostDueL2CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
+            PCM_PRINT("L3-Miss Cycle Loss", getCyclesLostDueL3CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
+        }
+
+#undef PCM_PRINT
     }
 
     void before_query() {
@@ -287,11 +320,17 @@ namespace ssb {
     }
 
     void before_op() {
+        if (ssb::pcmStatus == PCM::Success) {
+            ssb::sysstatesBeforeOp.push_back(ssb::m->getSystemCounterState());
+        }
         ssb::swOperatorTime.start();
     }
 
     void after_op() {
         ssb::opTimes.push_back(ssb::swOperatorTime.stop());
+        if (ssb::pcmStatus == PCM::Success) {
+            ssb::sysstatesAfterOp.push_back(ssb::m->getSystemCounterState());
+        }
         ssb::batRSS.push_back(getPeakRSS(size_enum_t::B));
     }
 
@@ -303,33 +342,9 @@ namespace ssb {
         mutex_stats.unlock();
     }
 
-    ///////////////
-    // PCM_PRINT //
-    ///////////////
-#define PCM_PRINT(attr, proc, state1, state2, state3)                          \
-        std::cout << std::setw(ssb::ssb_config.LEN_PCM) << attr << '\t';                    \
-        std::cout << std::setw(ssb::ssb_config.LEN_PCM) << proc(state1, state2) << '\t';    \
-        std::cout << std::setw(ssb::ssb_config.LEN_PCM) << proc(state2, state3) << '\n';
-
     void finalize() {
-        if (ssb::pcmStatus == PCM::Success) {
-            ssb::m->getAllCounterStates(ssb::sysstate3, ssb::sktstate3, ssb::cstate3);
-            std::cout << "PCM:\n";
-            std::cout << std::setw(ssb::ssb_config.LEN_PCM) << "Attribute" << '\t';
-            std::cout << std::setw(ssb::ssb_config.LEN_PCM) << "init" << '\t';
-            std::cout << std::setw(ssb::ssb_config.LEN_PCM) << "query" << '\n';
-            PCM_PRINT("IPC", getIPC, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
-            PCM_PRINT("MC Read", getBytesReadFromMC, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
-            PCM_PRINT("MC written", getBytesWrittenToMC, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
-            PCM_PRINT("Energy", getConsumedEnergy, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
-            PCM_PRINT("Joules", getConsumedJoules, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
-            PCM_PRINT("L2-Miss Cycle Loss", getCyclesLostDueL2CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
-            PCM_PRINT("L3-Miss Cycle Loss", getCyclesLostDueL3CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
-        }
         AHEAD::destroyInstance();
     }
-
-#undef PCM_PRINT
 
     void print_headline() {
         std::cout << "\tname";
@@ -340,6 +355,9 @@ namespace ssb {
         std::cout << "\t " << std::setw(ssb::ssb_config.LEN_SIZES) << " RSS Δ [B]";
         std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type head";
         std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type tail";
+        if (ssb::pcmStatus == PCM::Success) {
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Inst. Retired";
+        }
         std::cout << "\n";
     }
 
@@ -353,6 +371,9 @@ namespace ssb {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << (k == 0 ? (ssb::batRSS[k] - ssb::rssAfterCopy) : (ssb::batRSS[k] - ssb::batRSS[k - 1]));
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << ssb::headTypes[k].pretty_name();
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << (ssb::hasTwoTypes[k] ? ssb::tailTypes[k].pretty_name() : ssb::emptyString);
+            if (ssb::pcmStatus == PCM::Success) {
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getInstructionsRetired(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+            }
             std::cout << '\n';
         }
         std::cout << std::flush;
