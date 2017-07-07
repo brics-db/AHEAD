@@ -74,21 +74,24 @@ namespace ahead {
      */
     class BucketManager {
 
-    public:
         friend class TransactionManager;
+        friend class AHEAD;
+
+    public:
 
         /**
          * Die Datenstruktur kapselt einen Zeiger auf einen Speicherbereich fester Größe für die Datenstruktur Bucket.
          */
         struct Chunk {
 
-            void *content;
+            void * content;
 
             Chunk();
             Chunk(
-                    void* content);
+                    void * content);
             Chunk(
                     const Chunk &);
+            virtual ~Chunk();
 
             Chunk& operator=(
                     const Chunk &);
@@ -103,20 +106,21 @@ namespace ahead {
         struct Bucket {
 
             id_t number;
-            version_t *version;
+            std::shared_ptr<version_t> version;
             Bucket *next, *older, *newer;
             Chunk *chunk;
 
             Bucket();
             Bucket(
                     id_t number,
-                    version_t *version,
-                    Bucket *next,
-                    Bucket *older,
-                    Bucket* newer,
-                    Chunk *chunk);
+                    std::shared_ptr<version_t> & version,
+                    Bucket * next,
+                    Bucket * older,
+                    Bucket * newer,
+                    Chunk * chunk);
             Bucket(
                     const Bucket &);
+            virtual ~Bucket();
 
             Bucket& operator=(
                     const Bucket &);
@@ -131,7 +135,8 @@ namespace ahead {
          */
         struct BucketStream {
 
-            Bucket *head, *tail;
+            Bucket *head;
+            Bucket *tail;
             std::vector<Bucket*> index;
             size_t size;
 
@@ -143,6 +148,7 @@ namespace ahead {
                     size_t size);
             BucketStream(
                     const BucketStream &);
+            virtual ~BucketStream();
 
             BucketStream& operator=(
                     const BucketStream &);
@@ -254,11 +260,11 @@ namespace ahead {
 #endif
 
         private:
-            BucketStream *stream;
-            version_t *version;
+            BucketStream * stream;
+            std::shared_ptr<version_t> version;
 
-            Bucket *currentBucket;
-            Bucket *previousBucket;
+            Bucket * currentBucket;
+            Bucket * previousBucket;
 
             /**
              * Der Stack wird benötigt um die Undo-Funktionalität zu realisieren. Bei jedem Aufruf der Funktion append() oder edit() auf ein Bucket,
@@ -268,8 +274,8 @@ namespace ahead {
             std::stack<Bucket*> log;
 
             BucketIterator(
-                    BucketStream *stream,
-                    version_t *version);
+                    BucketStream * stream,
+                    std::shared_ptr<version_t> & version);
             BucketIterator(
                     const BucketIterator &copy);
             virtual ~BucketIterator();
@@ -307,7 +313,7 @@ namespace ahead {
          */
         BucketIterator* openStream(
                 id_t id,
-                version_t *version);
+                std::shared_ptr<version_t> & version);
 
 #ifdef DEBUG
         void printDebugInformation ();

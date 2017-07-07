@@ -21,7 +21,7 @@
 
 #include <column_operators/functors.hpp>
 #include "arithmetic_scalar.tcc"
-#include "arithmetic_sse.tcc"
+#include "arithmetic_SSE.tcc"
 
 namespace ahead {
     namespace bat {

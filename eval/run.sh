@@ -14,37 +14,138 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#if the outputs are not redirected to files, then call ourselves again with additional piping
+#####################
+#####################
+### Preliminaries ###
+#####################
+#####################
 
-# bootstrap variables
-DATE="$(date '+%Y-%m-%d_%H-%M')"
+if [[ $(id -u) -eq 0 ]]; then
+	echo "[ERROR] You must not run this script as super user!"
+	exit 1
+fi
+
+#######################
+# Bootstrap Variables #
+#######################
+if [[ -z "$DATE" ]]; then DATE="$(date '+%Y-%m-%d_%H-%M')"; fi
 PATH_BASE="$(pwd)/.."
 PATH_BUILD="${PATH_BASE}/build/Release"
 PATH_DB="${PATH_BASE}/database"
 PATH_EVAL="${PATH_BASE}/eval"
-PATH_EVALDATA="${PATH_EVAL}/${DATE}/data"
-PATH_EVALOUT="${PATH_EVAL}/${DATE}/out"
+PATH_EVAL_CURRENT="${PATH_EVAL}/${DATE}"
+PATH_EVALDATA="${PATH_EVAL_CURRENT}/data"
+PATH_EVALOUT="${PATH_EVAL_CURRENT}/report"
+EXEC_ENV=$(which env)
+EXEC_BASH=$(which bash)
 
+
+################################################################################################
+# if the outputs are not redirected to files, then call ourselves again with additional piping #
+################################################################################################
 if [[ -t 1 ]] || [[ -t 2 ]]; then
-	echo "one of stdout or stderr is not redirected, calling script with redirecting"
-	./$0 $@ > >(tee "$0.out") 2> >(tee "$0.err" >&2)
+	echo "[INFO] one of stdout or stderr is not redirected, calling script with redirecting"
+	outfile="$0.out"
+	errfile="$0.err"
+	./$0 $@ > >(tee "${outfile}") 2> >(tee "${errfile}" >&2)
 	ret=$?
-	mv "$0.out" "$0.err" "${PATH_EVAL}/${DATE}"
+	if [[ -e ${PATH_EVAL_CURRENT} ]]; then
+		if [[ -f "${PATH_EVAL_CURRENT}/${outfile}" ]]; then
+			idx=0
+			while [[ -f "${PATH_EVAL_CURRENT}/${outfile}.${idx}" ]]; do
+				((idx++))
+			done
+			# keep both file versions in sync
+			mv "${outfile}" "${PATH_EVAL_CURRENT}/${outfile}.${idx}"
+			mv "${errfile}" "${PATH_EVAL_CURRENT}/${errfile}.${idx}"
+		else
+			mv "${outfile}" "${errfile}" "${PATH_EVAL_CURRENT}"
+		fi
+	fi
+	if [[ ${ret} != 0 ]]; then
+		echo "[ERROR] Aborted"
+	fi
 	exit $ret
 else
-	echo "stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
+	echo "[INFO] stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
 fi
 
-# Basic variables
-CXX_COMPILER="g++"
+##############################################
+# Argument Processing for pre-defined phases #
+##############################################
+ARGS=("$@")
+if [[ $# -ne 0 ]] ; then
+	case "${ARGS[0]}" in
+		DEFAULT)
+			PHASE="DEFAULT"
+			;;
+		COMPILE)
+			PHASE="COMPILE"
+			DO_COMPILE=1
+			DO_COMPILE_CMAKE=1
+			DO_BENCHMARK=0
+			DO_EVAL=0
+			DO_VERIFY=0
+			;;
+		WARMUP)
+			PHASE="WARMUP"
+			DO_COMPILE=0
+			DO_BENCHMARK=1
+			DO_EVAL=0
+			DO_VERIFY=0
+			;;
+		ACTUAL)
+			PHASE="ACTUAL"
+			DO_COMPILE=0
+			DO_BENCHMARK=1
+			DO_EVAL=1
+			DO_EVAL_PREPARE=1
+			DO_VERIFY=1
+			;;
+		EVALONLY)
+			PHASE="EVALONLY"
+			DO_COMPILE=0
+			DO_BENCHMARK=0
+			DO_EVAL=1
+			DO_EVAL_PREPARE=1
+			DO_VERIFY=1
+			if [[ $# > 1 ]]; then
+				DATE="${ARGS[1]}"
+			fi
+			;;
+		BATCH)
+			PHASE="BATCH"
+			${EXEC_ENV} $0 COMPILE
+			for i in $(seq 1 1); do
+				${EXEC_ENV} $0 ACTUAL
+				mv ${PATH_EVALDATA} "${PATH_EVALDATA}_act${i}"
+				mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
+			done
+			exit 0
+			;;
+		*)
+			echo "[ERROR] UNKNOWN Phase"
+			exit 1
+			;;
+	esac
+else
+	PHASE="DEFAULT"
+fi
+
+echo "[INFO] ${PHASE} Phase"
+
+###################
+# Basic Variables #
+###################
+CXX_COMPILER="c++"
+GXX_COMPILER="g++"
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
-IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
-#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
-VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late")
-ARCHITECTURE=("_seq")
+IMPLEMENTED=(11) # 12 13 21 22 23 31 32 33 34 41 42 43)
+VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
+ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null
 HAS_SSE42=$?
@@ -66,59 +167,9 @@ fi
 #    ARCHITECTURE_NAME+=("AVX512");
 #fi
 
-# distinct warmup and test phases
-ARGS=("$@")
-if [[ $# -ne 0 ]] ; then
-    case "${ARGS[0]}" in
-        COMPILE)
-            echo "COMPILE Phase"
-            DO_COMPILE=1
-            DO_COMPILE_CMAKE=1
-            DO_BENCHMARK=0
-            DO_EVAL=0
-            DO_VERIFY=0
-            ;;
-        WARMUP)
-            echo "WARMUP Phase"
-            DO_COMPILE=0
-            DO_BENCHMARK=1
-            DO_EVAL=1
-            DO_VERIFY=1
-            ;;
-        ACTUAL)
-            echo "ACTUAL Phase"
-            DO_COMPILE=0
-            DO_BENCHMARK=1
-            DO_EVAL=1
-            DO_VERIFY=1
-            ;;
-        EVALONLY)
-            echo "EVALONLY Phase"
-            DO_COMPILE=0
-            DO_BENCHMARK=0
-            DO_EVAL=1
-            DO_EVAL_PREPARE=1
-            DO_VERIFY=1
-            ;;
-        BATCH)
-            /usr/bin/env $0 COMPILE
-            for i in $(seq 1 1); do
-                /usr/bin/env $0 ACTUAL
-                mv ${PATH_EVALDATA} "${PATH_EVALDATA}_act${i}"
-                mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
-            done
-            exit 0
-            ;;
-        *)
-            echo "UNKNOWN Phase"
-            exit 1
-            ;;
-    esac
-else
-    echo "DEFAULT Phase"
-fi
-
-# Process Switches
+####################
+# Process Switches #
+####################
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
 if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
 if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
@@ -126,26 +177,36 @@ if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
 if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 
-# Process specific constants
+##############################
+# Process specific constants #
+##############################
+### Compilation
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
-if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
-if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS)); fi
+### Benchmarking
+if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=1; fi # like above
+#if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS)); fi
+BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
-if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
+if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1)); fi
 
-# functions etc
+### Eval
+EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)
+
+#################
+# functions etc #
+#################
 pushd () {
-    command pushd "$@" > /dev/null
+	command pushd "$@" &>/dev/null
 }
 
 popd () {
-    command popd "$@" > /dev/null
+	command popd &>/dev/null
 }
 
 date () {
-    /bin/bash -c 'date "+%Y-%m-%d %H-%M-%S"'
+	${EXEC_ENV} ${EXEC_BASH} -c 'date "+%Y-%m-%d %H-%M-%S"'
 }
 
 #########################################################
@@ -188,8 +249,8 @@ awktranspose () {
 #       custom code to be added                         #
 #########################################################
 gnuplotcode () {
-        # Write GNUplot code to file
-        cat >$1 << EOM
+	# Write GNUplot code to file
+	cat >$1 << EOM
 #!/usr/bin/env gnuplot
 set term pdf enhanced color fontscale 0.44 size 3.25in,1.25in
 set output '${2}'
@@ -216,8 +277,8 @@ EOM
 }
 
 gnuplotlegend () {
-        # Write GNUplot code to file
-        cat >$1 << EOM
+	# Write GNUplot code to file
+	cat >$1 << EOM
 #!/usr/bin/env gnuplot
 set term pdf enhanced color fontscale 0.44 size 3.25in,0.3in
 set output '${2}'
@@ -277,52 +338,78 @@ plot 1 ls 0 with linespoints
 EOM
 }
 
-#############################
-# Actual Script starts here #
-#############################
+
+
+
+#################################
+#################################
+### Actual Script starts here ###
+#################################
+#################################
 
 numcpus=$(nproc)
 if [[ $? -ne 0 ]]; then
-    numcpus=$(cat /proc/cpuinfo | grep processor | wc -l)
+	numcpus=$(cat /proc/cpuinfo | grep processor | wc -l)
 fi
 
 
 # Compile
 if [[ ${DO_COMPILE} -ne 0 ]]; then
-    date
-    echo "Compiling:"
-    if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
-        echo " * Recreating build dir \"${PATH_BUILD}\"."
-        rm -Rf ${PATH_BUILD}
-        mkdir -p ${PATH_BUILD}
-        pushd ${PATH_BUILD}
-        cxx=$(which ${CXX_COMPILER})
-        if [[ -e ${cxx} ]]; then
-            export CXX=$cxx
-        else
-            echo " ! This benchmark requires G++-6. You may modify variable CXX_COMPILER at the top of the script."
-            exit 1
-        fi
-        echo " * Running cmake (Build Type = ${CMAKE_BUILD_TYPE}"
-        cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        exitcode=$?
-        if [[ ${exitcode} -ne 0 ]]; then
-            echo "    ! Error! Exitcode = ${exitcode}"
-            exit ${exitcode};
-        fi
-    else
-        pushd ${PATH_BUILD}
-    fi
-    echo " * Running make (-j${numcpus})"
-    /bin/bash -c "make -j${numcpus}"
-    exitcode=$?
-    popd
-    if [[ ${exitcode} -ne 0 ]]; then
-        echo "    ! Error! Exitcode = ${exitcode}"
-        exit ${exitcode};
-    fi
+	date
+	echo "Compiling:"
+	if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
+		echo " * Testing for compiler"
+		cxx=$(which ${CXX_COMPILER})
+		if [[ -e ${cxx} ]]; then
+			export CXX=$cxx
+		else
+			cxx=$(which ${GXX_COMPILER})
+			if [[ -e ${cxx} ]]; then
+				export CXX=$cxx
+			else
+				echo "[ERROR] This benchmark requires a c++17 compatible compiler! You may modify variable CXX_COMPILER or GXX_COMPILER at the top of the script."
+				exit 1
+			fi
+		fi
+		version_string=$(${cxx} --version | head -n 1)
+		if [[ "${version_string}" =~ "g++ (GCC)" ]] || [[ "${version_string}" =~ "c++ (GCC)" ]]; then
+			version=$(echo "${version_string}" | grep -oP "\d+\.\d+\.\d+")
+			${cxx} -std=c++17 -o ${PATH_BASE}/test.a ${PATH_BASE}/test.cpp &>/dev/null && echo "[INFO] Compiler is c++17 compatible." || (echo "[ERROR] Compiler is not c++17 compatible!"; exit 1)
+		else
+			echo "[ERROR] \"${version_string}\": Currently, only g++ is supported by this script. Please fix this by yourself or tell me: Till.Kolditz@gmail.com."
+			exit 1
+		fi
+		echo " * Recreating build dir \"${PATH_BUILD}\"."
+		bootstrap_file="${PATH_BASE}/bootstrap.sh"
+		if [[ -e "${bootstrap_file}" ]]; then
+			pushd "${PATH_BASE}"
+			${EXEC_ENV} ${EXEC_BASH} -c "${bootstrap_file}"
+			popd
+		else
+			rm -Rf ${PATH_BUILD}
+			mkdir -p ${PATH_BUILD}
+			pushd ${PATH_BUILD}
+			echo " * Running cmake (Build Type = ${CMAKE_BUILD_TYPE}"
+			cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+			exitcode=$?
+			popd
+			if [[ ${exitcode} -ne 0 ]]; then
+				echo " * [ERROR] Exitcode = ${exitcode}"
+				exit ${exitcode};
+			fi
+		fi
+	fi
+	echo " * Running make (-j${numcpus})"
+	pushd ${PATH_BUILD}
+	${EXEC_ENV} ${EXEC_BASH} -c "make -j${numcpus}"
+	exitcode=$?
+	popd
+	if [[ ${exitcode} -ne 0 ]]; then
+		echo " * [ERROR] Exitcode = ${exitcode}"
+		exit ${exitcode};
+	fi
 else
-    echo "Skipping compilation."
+	echo "Skipping compilation."
 fi
 
 # Benchmarking
@@ -349,11 +436,30 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                     for SF in ${BENCHMARK_SCALEFACTORS[*]}; do
                         echo -n " sf${SF}"
                         echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
-                        /usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath "${PATH_DB}/sf-${SF}/" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}
+                        sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}/\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
                     done
                     echo " done."
                 else
                     echo " * Skipping missing binary \"${type}\"."
+                fi
+            done
+        done
+    done
+
+    USERID=$(id -u)
+    GROUPID=$(id -g)
+
+    for ARCH in "${ARCHITECTURE[@]}"; do
+        for NUM in "${IMPLEMENTED[@]}"; do
+            BASE2=${BASE}${NUM}
+            for VAR in "${VARIANTS[@]}"; do
+                type="${BASE2}${VAR}${ARCH}"
+                PATH_BINARY=${PATH_BUILD}/${type}
+                if [[ -e ${PATH_BINARY} ]]; then
+                    EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
+                    EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
+                    sudo chown ${USERID}:${GROUPID} "${EVAL_FILEOUT}"
+                    sudo chown ${USERID}:${GROUPID} "${EVAL_FILEERR}"
                 fi
             done
         done
@@ -453,6 +559,10 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         fi
                     done
                     echo "" >>${EVAL_TEMPFILE_PATH}
+
+                    ### process individual Operators' times
+                    COUNT=$(grep op ${EVAL_FILEOUT} | wc -l)
+                    NUMOPS=$(echo "sca${COUNT} / ${EVAL_TOTALRUNS_PER_VARIANT}" | bc)
                 done
 
                 # transpose original data
@@ -554,7 +664,7 @@ fi
 if [[ ${DO_VERIFY} -ne 0 ]]; then
     date
     echo "Verifying:"
-    NUMARCHS="${#VARIANTS[@]}"
+    NUMARCHS="${#ARCHITECTURE[@]}"
     for idxArch in $(seq 0 $(echo "${NUMARCHS}-1" | bc)); do
         ARCH=${ARCHITECTURE[$idxArch]}
         ARCHNAME=${ARCHITECTURE_NAME[$idxArch]}
@@ -591,7 +701,7 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
     	    for v in "${VARIANTS[@]}"; do
                 for t in out err; do
                     grepfile="./grep.${t}"
-    	            diff "${PATH_EVALDATA}/${BASE}${q}_normal_seq.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
+    	            diff "${PATH_EVALDATA}/${BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
                     if [[ -s "${grepfile}" ]]; then
                         echo "Q${q}${v}${s} (${t}):"
                         cat "${grepfile}"

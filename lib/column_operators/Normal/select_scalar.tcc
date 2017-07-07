@@ -13,10 +13,15 @@
 // limitations under the License.
 
 /* 
- * File:   select.tcc
+ * File:   select_seq.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 21:02
+ *
+ * File:   select_scalar.tcc
+ * Author: Till Kolditz <till.kolditz@gmail.com>
+ *
+ * Renamed on 28. June 2017, 09:41
  */
 
 #ifndef SELECT_SEQ_TCC
@@ -26,6 +31,12 @@
 
 #include <column_storage/Storage.hpp>
 #include "../miscellaneous.hpp"
+
+#ifdef __GNUC__
+#pragma GCC target "no-sse"
+#else
+#warning "Forcing scalar code is not yet implemented for this compiler"
+#endif
 
 namespace ahead {
     namespace bat {
@@ -84,6 +95,7 @@ namespace ahead {
                                     result->append(std::make_pair(iter->head(), t));
                                 }
                             }
+                            delete iter;
                             return result;
                         }
                     };
@@ -155,5 +167,11 @@ namespace ahead {
         }
     }
 }
+
+#ifdef __GNUC__
+#pragma GCC target "sse4.2"
+#else
+#warning "Unforcing scalar code is not yet implemented for this compiler"
+#endif
 
 #endif /* SELECT_SEQ_TCC */

@@ -97,7 +97,7 @@ namespace ahead {
          * Creates an entry for an attribute of a specified table into the meta repository.
          */
         void createAttribute(
-                cstr_t name,
+                std::string & name,
                 cstr_t datatype,
                 unsigned BATId,
                 unsigned table_id);
@@ -113,6 +113,14 @@ namespace ahead {
         static MetaRepositoryManager *instance;
 
         static void destroyInstance();
+
+        MetaRepositoryManager();
+        MetaRepositoryManager(
+                const MetaRepositoryManager &copy);
+        virtual
+        ~MetaRepositoryManager();
+        MetaRepositoryManager& operator=(
+                const MetaRepositoryManager &copy);
 
         str_t strBaseDir;
 
@@ -187,14 +195,6 @@ namespace ahead {
         bool dataAlreadyExists(
                 BAT<Head, Tail> *bat,
                 cstr_t name_value);
-
-        MetaRepositoryManager();
-        MetaRepositoryManager(
-                const MetaRepositoryManager &copy);
-        virtual
-        ~MetaRepositoryManager();
-        MetaRepositoryManager& operator=(
-                const MetaRepositoryManager &copy);
 
     public:
 

@@ -44,6 +44,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <atomic>
+#include <memory>
 
 #include <ColumnStore.h>
 #include <column_storage/BucketManager.h>
@@ -58,14 +59,15 @@ namespace ahead {
      */
     class ColumnManager {
 
+        friend class TransactionManager;
+        friend class AHEAD;
+
     public:
         static const size_t BAT_COLNAMES_MAXLEN;
         static const id_t ID_BAT_COLNAMES;
         static const id_t ID_BAT_COLTYPES;
         static const id_t ID_BAT_COLIDENT;
         static const id_t ID_BAT_FIRST_USER;
-
-        friend class TransactionManager;
 
         /**
          * Die Datenstruktur kapselt einen Zeiger auf den Speicherbereich fester Größe eines Records.
@@ -239,7 +241,7 @@ namespace ahead {
          */
         ColumnIterator* openColumn(
                 id_t id,
-                version_t *version);
+                std::shared_ptr<version_t> & version);
 
         /**
          * @author Julian Hollender

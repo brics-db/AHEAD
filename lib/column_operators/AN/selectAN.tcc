@@ -27,7 +27,7 @@
 #include <column_storage/Storage.hpp>
 #include <column_operators/ANbase.hpp>
 #include "selectAN_SSE.tcc"
-#include "selectAN_seq.tcc"
+#include "selectAN_scalar.tcc"
 
 namespace ahead {
     namespace bat {

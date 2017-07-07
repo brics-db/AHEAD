@@ -30,6 +30,12 @@
 #include <column_operators/ANbase.hpp>
 #include "ANhelper.tcc"
 
+#ifdef __GNUC__
+#pragma GCC target "no-sse"
+#else
+#warning "Forcing scalar code is not yet implemented for this compiler"
+#endif
+
 namespace ahead {
     namespace bat {
         namespace ops {
@@ -121,5 +127,11 @@ namespace ahead {
         }
     }
 }
+
+#ifdef __GNUC__
+#pragma GCC target "sse4.2"
+#else
+#warning "Unforcing scalar code is not yet implemented for this compiler"
+#endif
 
 #endif /* LIB_COLUMN_OPERATORS_AN_ARITHMETIC_SCALAR_TCC_ */

@@ -225,6 +225,8 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
             architecture_t arch = DEFAULT_ARCHITECTURE);
     void init_pcm();
     void clear_stats();
+    void before_load();
+    void after_load();
     void after_create_columnbats();
     void before_queries();
     void after_queries();

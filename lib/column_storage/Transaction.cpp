@@ -38,7 +38,7 @@ namespace ahead {
             bool isUpdater,
             version_t currentVersion)
             : botVersion(currentVersion),
-              eotVersion(isUpdater ? (new id_t(std::numeric_limits<id_t>::max())) : (&this->botVersion)),
+              eotVersion(new id_t(isUpdater ? std::numeric_limits<id_t>::max() : this->botVersion)),
               isUpdater(isUpdater),
               iterators(),
               iteratorPositions() {
@@ -120,7 +120,7 @@ namespace ahead {
         const size_t DEFAULT_RESERVE(32);
         std::vector<id_t> column_IDs;
         column_IDs.reserve(DEFAULT_RESERVE);
-        std::vector<char*> column_names;
+        std::vector<std::string> column_names;
         column_names.reserve(DEFAULT_RESERVE);
         std::vector<size_t> column_widths;
         column_widths.reserve(DEFAULT_RESERVE);
@@ -193,11 +193,7 @@ namespace ahead {
                 std::strncpy(value, buffer, LEN_VALUE);
             }
 
-            // prevents the referencing of value
-            const size_t attr_name_len = lenPrefix + lenBuf + 1;
-            char* attribute_name = new char[attr_name_len];
-            std::strncpy(attribute_name, value, attr_name_len);
-            column_names.push_back(attribute_name);
+            column_names.emplace_back(value);
 
             buffer = std::strtok(nullptr, actDelim);
         }
@@ -318,7 +314,7 @@ namespace ahead {
             column_IDs[i] = column_ID;
 
             bun = append(ColumnManager::ID_BAT_COLNAMES);
-            std::strncpy(static_cast<str_t>(bun.tail), column_names[i], strlen(column_names[i]) + 1);
+            std::strncpy(static_cast<str_t>(bun.tail), column_names[i].c_str(), column_names[i].size() + 1);
 
             bool stdCreate = true;
             switch (column_types[i]) {
@@ -605,8 +601,8 @@ namespace ahead {
         if (id >= this->iterators.size()) {
             this->iterators.resize(id + 1);
             this->iteratorPositions.resize(id + 1);
-            ColumnManager::ColumnIterator* cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
-            if (cm != 0) {
+            auto cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
+            if (cm) {
                 this->iterators[id] = cm;
                 this->iteratorPositions[id] = 0;
                 isOK = true;
@@ -615,8 +611,8 @@ namespace ahead {
             }
         } else if (id < this->iterators.size() && this->iterators[id] != nullptr) {
             if (this->iteratorPositions[id] != -1) {
-                ColumnManager::ColumnIterator* cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
-                if (cm != 0) {
+                auto cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
+                if (cm) {
                     this->iterators[id] = cm;
                     this->iteratorPositions[id] = 0;
                     isOK = true;

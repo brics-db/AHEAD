@@ -66,9 +66,15 @@ namespace ahead {
         }
 
         TempBAT(
-                coldesc_head_t head,
-                coldesc_tail_t tail)
+                coldesc_head_t & head,
+                coldesc_tail_t & tail)
                 : BAT<Head, Tail>(head, tail) {
+        }
+
+        TempBAT(
+                coldesc_head_t && head,
+                coldesc_tail_t && tail)
+                : BAT<Head, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
         }
 
         virtual ~TempBAT() {
@@ -180,15 +186,15 @@ namespace ahead {
         }
 
         TempBAT(
-                coldesc_head_t& head,
-                coldesc_tail_t& tail)
+                coldesc_head_t & head,
+                coldesc_tail_t & tail)
                 : BAT<Head, Tail>(head, tail),
                   count(0) {
         }
 
         TempBAT(
-                coldesc_head_t&& head,
-                coldesc_tail_t&& tail)
+                coldesc_head_t && head,
+                coldesc_tail_t && tail)
                 : BAT<Head, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)),
                   count(0) {
         }
@@ -282,14 +288,14 @@ namespace ahead {
         }
 
         TempBAT(
-                coldesc_head_t& head,
-                coldesc_tail_t& tail)
+                coldesc_head_t & head,
+                coldesc_tail_t & tail)
                 : BAT<Head, v2_void_t>(head, tail) {
         }
 
         TempBAT(
-                coldesc_head_t&& head,
-                coldesc_tail_t&& tail)
+                coldesc_head_t && head,
+                coldesc_tail_t && tail)
                 : BAT<Head, v2_void_t>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
         }
 
@@ -401,14 +407,14 @@ namespace ahead {
         }
 
         TempBAT(
-                coldesc_head_t& head,
-                coldesc_tail_t& tail)
+                coldesc_head_t & head,
+                coldesc_tail_t & tail)
                 : BAT<v2_void_t, Tail>(head, tail) {
         }
 
         TempBAT(
-                coldesc_head_t&& head,
-                coldesc_tail_t&& tail)
+                coldesc_head_t && head,
+                coldesc_tail_t && tail)
                 : BAT<v2_void_t, Tail>(std::forward<coldesc_head_t>(head), std::forward<coldesc_tail_t>(tail)) {
         }
 

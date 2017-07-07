@@ -50,6 +50,7 @@
 #include <utility>
 #include <vector>
 #include <unordered_set>
+#include <memory>
 
 #include <ColumnStore.h>
 #include <column_storage/ColumnManager.h>
@@ -223,8 +224,8 @@ namespace ahead {
                     id_t id);
 
         private:
-            unsigned int botVersion;
-            unsigned int *eotVersion;
+            version_t botVersion;
+            std::shared_ptr<version_t> eotVersion;
             bool isUpdater;
 
             /**

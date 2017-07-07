@@ -76,9 +76,7 @@ namespace ahead {
         ColumnBAT(
                 cstr_t table_name,
                 cstr_t attribute)
-                : mColumnId(0) {
-            mColumnId = MetaRepositoryManager::getInstance()->getBatIdOfAttribute(table_name, attribute);
-            this->tail.metaData = ColumnManager::getInstance()->getColumnMetaData(mColumnId);
+                : ColumnBAT(MetaRepositoryManager::getInstance()->getBatIdOfAttribute(table_name, attribute)) {
         }
 
         virtual ~ColumnBAT() {

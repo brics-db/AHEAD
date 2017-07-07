@@ -108,8 +108,8 @@ MACRO(add_ssb arg_queries)
 	SET(QUERIES "")
     STRING(REPLACE " " ";" QUERIES "${arg_queries}")
     FOREACH(Q ${QUERIES})
-        add_algorithm(${Q} "ssbm" "${Q}_seq")
-        TARGET_COMPILE_OPTIONS("${Q}_seq" PUBLIC "-fno-tree-vectorize")
+        add_algorithm(${Q} "ssbm" "${Q}_scalar")
+        TARGET_COMPILE_OPTIONS("${Q}_scalar" PUBLIC "-fno-tree-vectorize")
     ENDFOREACH(Q QUERIES)
 ENDMACRO(add_ssb)
 
@@ -134,7 +134,7 @@ ssbm-q33_normal ssbm-q33_dmr_seq ssbm-q33_early ssbm-q33_late ssbm-q33_continuou
 ssbm-q34_normal ssbm-q34_dmr_seq ssbm-q34_early ssbm-q34_late ssbm-q34_continuous ssbm-q34_continuous_reenc \
 ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late ssbm-q41_continuous ssbm-q41_continuous_reenc \
 ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late ssbm-q42_continuous ssbm-q42_continuous_reenc \
-ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late")
+ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late ssbm-q43_continuous ssbm-q43_continuous_reenc")
 add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
@@ -147,7 +147,7 @@ ssbm-q33_normal ssbm-q33_dmr_seq ssbm-q33_early ssbm-q33_late ssbm-q33_continuou
 ssbm-q34_normal ssbm-q34_dmr_seq ssbm-q34_early ssbm-q34_late ssbm-q34_continuous ssbm-q34_continuous_reenc \
 ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late ssbm-q41_continuous ssbm-q41_continuous_reenc \
 ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late ssbm-q42_continuous ssbm-q42_continuous_reenc \
-ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late")
+ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late ssbm-q43_continuous ssbm-q43_continuous_reenc")
 
 ##############
 ### OPENMP ###
@@ -173,10 +173,10 @@ ssbm-q41_dmr_mt ssbm-q42_dmr_mt ssbm-q43_dmr_mt")
 ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt \
 ssbm-q31_dmr_mt ssbm-q32_dmr_mt ssbm-q33_dmr_mt ssbm-q34_dmr_mt \
 ssbm-q41_dmr_mt ssbm-q42_dmr_mt ssbm-q43_dmr_mt")
-	enable_openmp("ssbm-q11_dmr_mt_seq ssbm-q12_dmr_mt_seq ssbm-q13_dmr_mt_seq ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE \
-ssbm-q21_dmr_mt_seq ssbm-q22_dmr_mt_seq ssbm-q23_dmr_mt_seq ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE ssbm-q23_dmr_mt_SSE \
-ssbm-q31_dmr_mt_seq ssbm-q32_dmr_mt_seq ssbm-q33_dmr_mt_seq ssbm-q34_dmr_mt_seq ssbm-q31_dmr_mt_SSE ssbm-q32_dmr_mt_SSE ssbm-q33_dmr_mt_SSE ssbm-q34_dmr_mt_SSE \
-ssbm-q41_dmr_mt_seq ssbm-q42_dmr_mt_seq ssbm-q43_dmr_mt_seq ssbm-q41_dmr_mt_SSE ssbm-q42_dmr_mt_SSE ssbm-q43_dmr_mt_SSE")
+	enable_openmp("ssbm-q11_dmr_mt_scalar ssbm-q12_dmr_mt_scalar ssbm-q13_dmr_mt_scalar ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE \
+ssbm-q21_dmr_mt_scalar ssbm-q22_dmr_mt_scalar ssbm-q23_dmr_mt_scalar ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE ssbm-q23_dmr_mt_SSE \
+ssbm-q31_dmr_mt_scalar ssbm-q32_dmr_mt_scalar ssbm-q33_dmr_mt_scalar ssbm-q34_dmr_mt_scalar ssbm-q31_dmr_mt_SSE ssbm-q32_dmr_mt_SSE ssbm-q33_dmr_mt_SSE ssbm-q34_dmr_mt_SSE \
+ssbm-q41_dmr_mt_scalar ssbm-q42_dmr_mt_scalar ssbm-q43_dmr_mt_scalar ssbm-q41_dmr_mt_SSE ssbm-q42_dmr_mt_SSE ssbm-q43_dmr_mt_SSE")
 ELSE(OPENMP_FOUND)
 	MESSAGE(WARNING "OpenMP not found!")
 ENDIF(OPENMP_FOUND)

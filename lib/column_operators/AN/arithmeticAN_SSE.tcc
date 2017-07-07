@@ -31,6 +31,12 @@
 #include "../miscellaneous.hpp"
 #include "ANhelper.tcc"
 
+#ifdef __GNUC__
+#pragma GCC target "sse4.2"
+#else
+#warning "Forcing SSE 4.2 code is not yet implemented for this compiler"
+#endif
+
 namespace ahead {
     namespace bat {
         namespace ops {

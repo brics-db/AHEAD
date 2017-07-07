@@ -27,7 +27,7 @@
 
 #include <column_storage/Storage.hpp>
 #include "select_SSE.tcc"
-#include "select_seq.tcc"
+#include "select_scalar.tcc"
 
 namespace ahead {
     namespace bat {

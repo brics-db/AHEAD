@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <sstream>
+
 #include "MetaRepositoryManager.h"
 #include <column_operators/Operators.hpp>
 
@@ -85,6 +87,10 @@ namespace ahead {
         delete tables_id_pk;
         delete tables_name;
         delete attributes_id_pk;
+        auto vec = attributes_name->tail.container.get();
+        for (auto name : *vec) {
+            delete name;
+        }
         delete attributes_name;
         delete attributes_table_id_fk;
         delete attributes_type_id_fk;
@@ -98,6 +104,8 @@ namespace ahead {
         delete datatype_name;
         delete datatype_length;
         delete datatype_category;
+        delete[] strBaseDir;
+        delete[] META_PATH;
     }
 
     MetaRepositoryManager*
@@ -110,24 +118,24 @@ namespace ahead {
     }
 
     void MetaRepositoryManager::destroyInstance() {
-        if (MetaRepositoryManager::instance) {
-            delete MetaRepositoryManager::instance;
+        auto current = MetaRepositoryManager::instance;
+        if (current) {
             MetaRepositoryManager::instance = nullptr;
+            delete current;
         }
     }
 
     void MetaRepositoryManager::init(
             cstr_t strBaseDir) {
         if (this->strBaseDir == nullptr) {
-            getInstance(); // make sure that an instance exists
             size_t len = strlen(strBaseDir);
             this->strBaseDir = new char[len + 1];
             memcpy(this->strBaseDir, strBaseDir, len + 1); // includes NULL character
 
             size_t len3 = strlen(PATH_INFORMATION_SCHEMA);
-            instance->META_PATH = new char[len + len3 + 1];
-            memcpy(instance->META_PATH, strBaseDir, len); // excludes NULL character
-            memcpy(instance->META_PATH + len, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
+            META_PATH = new char[len + len3 + 1];
+            memcpy(META_PATH, strBaseDir, len); // excludes NULL character
+            memcpy(META_PATH + len, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
         }
     }
 
@@ -245,7 +253,7 @@ namespace ahead {
         id_t tableId = this->selectPKId(tables_id_pk, batIdForTableName);
 
         if (tableId != ID_INVALID) {
-            auto batForTableId = ahead::bat::ops::sse::select<std::equal_to>(attributes_table_id_fk, std::move(tableId));
+            auto batForTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
 
             // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
             // reverse will not work here, because we need the bat id, not the table id
@@ -258,24 +266,37 @@ namespace ahead {
             auto reverseBat = attributes_column_id->reverse();
             batNrPair = this->unique_selection(reverseBat, batId);
             delete reverseBat;
+        } else {
+            std::stringstream sserr;
+            sserr << CONCAT("MetaRepositoryManager::getBatIdOfAttribute(", __FILE__, "@", TOSTRING(__LINE__), "): ");
+            sserr << "Unknown table \"" << nameOfTable << "\" or attribute \"" << attribute << "\"!";
+            throw std::runtime_error(sserr.str());
         }
 
         return batNrPair.first;
     }
 
     void MetaRepositoryManager::createAttribute(
-            cstr_t name,
+            std::string & name,
             cstr_t datatype,
             id_t columnID,
             id_t tableID) {
-        id_t batIdOfDataType = selectBatId(datatype_name, datatype);
-        id_t dataTypeID = selectPKId(datatype_id_pk, batIdOfDataType);
-        id_t newAttributeID = getLastValue(attributes_id_pk).second + 1;
+        id_t oidDataType = selectBatId(datatype_name, datatype);
+        if (oidDataType == ID_INVALID) {
+            std::stringstream sserr;
+            sserr << CONCAT("MetaRepositoryManager::createAttribute(", __FILE__, "@", TOSTRING(__LINE__), "): ");
+            sserr << "Unknown datatype \"" << datatype << "\"!";
+            throw std::runtime_error(sserr.str());
+        }
+        id_t idDataType = selectPKId(datatype_id_pk, oidDataType);
+        id_t idNewAttribute = getLastValue(attributes_id_pk).second + 1;
 
-        attributes_id_pk->append(newAttributeID);
-        attributes_name->append(const_cast<str_t>(name));
+        attributes_id_pk->append(idNewAttribute);
+        str_t nameCopy = new char_t[name.size() + 1];
+        strncpy(nameCopy, name.c_str(), name.size() + 1);
+        attributes_name->append(nameCopy);
         attributes_table_id_fk->append(tableID);
-        attributes_type_id_fk->append(dataTypeID);
+        attributes_type_id_fk->append(idDataType);
         attributes_column_id->append(columnID);
     }
 
@@ -325,7 +346,7 @@ namespace ahead {
     }
     std::optional<oid_t> MetaRepositoryManager::TablesIterator::position() {
         if (hasNext()) {
-            return std::optional<oid_t>(pKeyIter->position());
+            return std::optional < oid_t > (pKeyIter->position());
         }
         return std::optional<oid_t>();
     }

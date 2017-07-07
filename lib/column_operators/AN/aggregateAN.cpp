@@ -16,7 +16,7 @@
  * File:   aggregateAN.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 10-04-2017 22:11
+ * Created on 10. April 2017, 22:11
  */
 
 #include <column_operators/ANbase.hpp>

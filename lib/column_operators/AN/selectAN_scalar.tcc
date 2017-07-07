@@ -17,6 +17,11 @@
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 22. November 2016, 16:22
+ *
+ * File:   selectAN_scalar.tcc
+ * Author: Till Kolditz <till.kolditz@gmail.com>
+ *
+ * Renamed on 28. June 2017, 09:39
  */
 
 #ifndef SELECT_AN_SEQ_TCC
@@ -27,6 +32,12 @@
 #include <column_storage/Storage.hpp>
 #include <column_operators/ANbase.hpp>
 #include "../miscellaneous.hpp"
+
+#ifdef __GNUC__
+#pragma GCC target "no-sse"
+#else
+#warning "Forcing scalar code is not yet implemented for this compiler"
+#endif
 
 namespace ahead {
     namespace bat {
@@ -236,5 +247,11 @@ namespace ahead {
         }
     }
 }
+
+#ifdef __GNUC__
+#pragma GCC target "sse4.2"
+#else
+#warning "Unforcing scalar code is not yet implemented for this compiler"
+#endif
 
 #endif /* SELECT_AN_SEQ_TCC */

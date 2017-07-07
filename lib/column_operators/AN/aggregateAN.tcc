@@ -23,7 +23,7 @@
 #define AGGREGATE_AN_TCC
 
 #include "aggregateAN_SSE.tcc"
-#include "aggregateAN_seq.tcc"
+#include "aggregateAN_scalar.tcc"
 
 namespace ahead {
     namespace bat {

@@ -29,9 +29,10 @@ namespace ahead {
     }
 
     void TransactionManager::destroyInstance() {
-        if (TransactionManager::instance) {
-            delete TransactionManager::instance;
+        auto current = TransactionManager::instance;
+        if (current) {
             TransactionManager::instance = nullptr;
+            delete current;
         }
     }
 
@@ -51,9 +52,6 @@ namespace ahead {
             delete pT;
         }
         transactions.clear();
-        BucketManager::destroyInstance();
-        ColumnManager::destroyInstance();
-        MetaRepositoryManager::destroyInstance();
     }
 
     TransactionManager::Transaction*
