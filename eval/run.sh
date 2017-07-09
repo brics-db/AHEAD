@@ -144,7 +144,8 @@ BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
 IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
-VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
+#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
+VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
 ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null
@@ -184,12 +185,12 @@ if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
 if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
 
 ### Benchmarking
-if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=1; fi # like above
+if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
 #if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS)); fi
 BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
-if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1)); fi
+if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
 
 ### Eval
 EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)
@@ -272,7 +273,6 @@ plot '${3}' using 2:xtic(1) title col fillstyle pattern 0 border ls 1 lw 1 dt 1,
          '' using 6:xtic(1) title col fillstyle pattern 7 border ls 5 lw 1 dt 1, \\
          '' using 7:xtic(1) title col fillstyle pattern 1 border ls 6 lw 1 dt 1, \\
          '' using 8:xtic(1) title col fillstyle pattern 4 border ls 7 lw 1 dt 1
-#         '' using 4:xtic(1) title col fillstyle pattern 6 border ls 3 lw 1 dt 1, \\
 EOM
 }
 
@@ -314,7 +314,6 @@ plot '${4}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 t "Unencod
          '' using 6:xtic(1) fillstyle pattern 7 border ls 5 lw 1 dt 1 t "Late", \\
          '' using 7:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 t "Continuous", \\
          '' using 8:xtic(1) fillstyle pattern 4 border ls 7 lw 1 dt 1 t "Reencoding"
-#         '' using 4:xtic(1) fillstyle pattern 6 border ls 3 lw 1 dt 1 t "DMR MT", \\
 
 set term pdf enhanced monochrome fontscale 0.44 size 0.2in,1.25in
 set output '${3}'
@@ -332,7 +331,6 @@ unset y2label
 unset label
 unset arrow
 unset key
-#set label 'Relative Runtime' at screen 0.5, bm + 0.4 * (size + gap) offset 0,-strlen("Relative Runtime")/4.0 rotate by 90
 set label 'Relative Runtime' at screen 0.5,0.15 rotate by 90
 plot 1 ls 0 with linespoints
 EOM
