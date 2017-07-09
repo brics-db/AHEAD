@@ -143,7 +143,7 @@ BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
-IMPLEMENTED=(11) # 12 13 21 22 23 31 32 33 34 41 42 43)
+IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
 VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
@@ -252,7 +252,7 @@ gnuplotcode () {
 	# Write GNUplot code to file
 	cat >$1 << EOM
 #!/usr/bin/env gnuplot
-set term pdf enhanced color fontscale 0.44 size 3.25in,1.25in
+set term pdf enhanced color fontscale 0.44 size 6.5in,1.25in
 set output '${2}'
 set style data histogram
 set style histogram cluster gap 1
@@ -280,7 +280,7 @@ gnuplotlegend () {
 	# Write GNUplot code to file
 	cat >$1 << EOM
 #!/usr/bin/env gnuplot
-set term pdf enhanced color fontscale 0.44 size 3.25in,0.3in
+set term pdf enhanced color fontscale 0.44 size 6.5in,0.15in
 set output '${2}'
 set datafile separator '\t'
 set style data histogram
@@ -332,8 +332,8 @@ unset y2label
 unset label
 unset arrow
 unset key
-#set label 'Relative Throughput' at screen 0.5, bm + 0.4 * (size + gap) offset 0,-strlen("Relative Throughput")/4.0 rotate by 90
-set label 'Relative Throughput' at screen 0.5,0.15 rotate by 90
+#set label 'Relative Runtime' at screen 0.5, bm + 0.4 * (size + gap) offset 0,-strlen("Relative Runtime")/4.0 rotate by 90
+set label 'Relative Runtime' at screen 0.5,0.15 rotate by 90
 plot 1 ls 0 with linespoints
 EOM
 }
