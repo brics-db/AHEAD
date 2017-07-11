@@ -21,8 +21,51 @@
 #####################
 
 if [[ $(id -u) -eq 0 ]]; then
-	echo "[ERROR] You must not run this script as super user!"
-	exit 1
+    echo "[ERROR] You must not run this script as super user!"
+    exit 1
+fi
+
+##############################################
+# Argument Processing for pre-defined phases #
+##############################################
+ARGS=("$@")
+if [[ $# -ne 0 ]] ; then
+    case "${ARGS[0]}" in
+        ALL)
+            PHASE="ALL"
+            DO_COMPILE=1
+            DO_COMPILE_CMAKE=1
+            DO_BENCHMARK=1
+            DO_EVAL=1
+            DO_EVAL_PREPARE=1
+            DO_VERIFY=1
+            ;;
+        ACTUAL)
+            PHASE="ACTUAL"
+            DO_COMPILE=0
+            DO_BENCHMARK=1
+            DO_EVAL=1
+            DO_EVAL_PREPARE=1
+            DO_VERIFY=1
+            ;;
+        EVALONLY)
+            PHASE="EVALONLY"
+            DO_COMPILE=0
+            DO_BENCHMARK=0
+            DO_EVAL=1
+            DO_EVAL_PREPARE=1
+            DO_VERIFY=1
+            if [[ $# > 1 ]]; then
+                DATE="${ARGS[1]}"
+            fi
+            ;;
+        *)
+            echo "[ERROR] UNKNOWN Phase"
+            exit 1
+            ;;
+    esac
+else
+    PHASE="DEFAULT"
 fi
 
 #######################
@@ -43,102 +86,44 @@ EXEC_BASH=$(which bash)
 ################################################################################################
 # if the outputs are not redirected to files, then call ourselves again with additional piping #
 ################################################################################################
-if [[ -t 1 ]] || [[ -t 2 ]]; then
-	echo "[INFO] one of stdout or stderr is not redirected, calling script with redirecting"
-	outfile="$0.out"
-	errfile="$0.err"
-	./$0 $@ > >(tee "${outfile}") 2> >(tee "${errfile}" >&2)
-	ret=$?
-	if [[ -e ${PATH_EVAL_CURRENT} ]]; then
-		if [[ -f "${PATH_EVAL_CURRENT}/${outfile}" ]]; then
-			idx=0
-			while [[ -f "${PATH_EVAL_CURRENT}/${outfile}.${idx}" ]]; do
-				((idx++))
-			done
-			# keep both file versions in sync
-			mv "${outfile}" "${PATH_EVAL_CURRENT}/${outfile}.${idx}"
-			mv "${errfile}" "${PATH_EVAL_CURRENT}/${errfile}.${idx}"
-		else
-			mv "${outfile}" "${errfile}" "${PATH_EVAL_CURRENT}"
-		fi
-	fi
-	if [[ ${ret} != 0 ]]; then
-		echo "[ERROR] Aborted"
-	fi
-	exit $ret
+if [[ -t 1 ]] && [[ -t 2 ]]; then
+    outfile="$0.out"
+    errfile="$0.err"
+    rm -Rf $outfile $errfile
+    echo "[INFO] one of stdout or stderr is not redirected, calling script with redirecting" | tee $outfile
+    ./$0 $@ >> >(tee "${outfile}") 2>> >(tee "${errfile}" >&2)
+    ret=$?
+    if [[ ${ret} != 0 ]]; then
+        echo "[ERROR] Aborted. Exit code = $ret" >>$errfile
+    else
+        echo "[INFO] Finished" >>$outfile
+    fi
+    if [[ -e ${PATH_EVAL_CURRENT} ]]; then
+        if [[ -f "${PATH_EVAL_CURRENT}/${outfile}" ]]; then
+            idx=0
+            while [[ -f "${PATH_EVAL_CURRENT}/${outfile}.${idx}" ]]; do
+                ((idx++))
+            done
+            # keep both file versions in sync
+            mv "${outfile}" "${PATH_EVAL_CURRENT}/${outfile}.${idx}"
+            mv "${errfile}" "${PATH_EVAL_CURRENT}/${errfile}.${idx}"
+        else
+            mv "${outfile}" "${errfile}" "${PATH_EVAL_CURRENT}"
+        fi
+        cp $0 "${PATH_EVAL_CURRENT}/"
+    fi
+    exit $ret
 else
-	echo "[INFO] stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
+    echo "[INFO] stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
 fi
 
-##############################################
-# Argument Processing for pre-defined phases #
-##############################################
-ARGS=("$@")
-if [[ $# -ne 0 ]] ; then
-	case "${ARGS[0]}" in
-		DEFAULT)
-			PHASE="DEFAULT"
-			;;
-		COMPILE)
-			PHASE="COMPILE"
-			DO_COMPILE=1
-			DO_COMPILE_CMAKE=1
-			DO_BENCHMARK=0
-			DO_EVAL=0
-			DO_VERIFY=0
-			;;
-		WARMUP)
-			PHASE="WARMUP"
-			DO_COMPILE=0
-			DO_BENCHMARK=1
-			DO_EVAL=0
-			DO_VERIFY=0
-			;;
-		ACTUAL)
-			PHASE="ACTUAL"
-			DO_COMPILE=0
-			DO_BENCHMARK=1
-			DO_EVAL=1
-			DO_EVAL_PREPARE=1
-			DO_VERIFY=1
-			;;
-		EVALONLY)
-			PHASE="EVALONLY"
-			DO_COMPILE=0
-			DO_BENCHMARK=0
-			DO_EVAL=1
-			DO_EVAL_PREPARE=1
-			DO_VERIFY=1
-			if [[ $# > 1 ]]; then
-				DATE="${ARGS[1]}"
-			fi
-			;;
-		BATCH)
-			PHASE="BATCH"
-			${EXEC_ENV} $0 COMPILE
-			for i in $(seq 1 1); do
-				${EXEC_ENV} $0 ACTUAL
-				mv ${PATH_EVALDATA} "${PATH_EVALDATA}_act${i}"
-				mv ${PATH_EVALOUT} "${PATH_EVALOUT}_act${i}"
-			done
-			exit 0
-			;;
-		*)
-			echo "[ERROR] UNKNOWN Phase"
-			exit 1
-			;;
-	esac
-else
-	PHASE="DEFAULT"
-fi
-
-echo "[INFO] ${PHASE} Phase"
+echo "[INFO] Running Phase \"${PHASE}\""
 
 ###################
 # Basic Variables #
 ###################
-CXX_COMPILER="c++"
-GXX_COMPILER="g++"
+if [[ -z "$CXX_COMPILER" ]]; then CXX_COMPILER="c++"; fi
+if [[ -z "$GXX_COMPILER" ]]; then GXX_COMPILER="g++"; fi
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
@@ -199,15 +184,15 @@ EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTOR
 # functions etc #
 #################
 pushd () {
-	command pushd "$@" &>/dev/null
+    command pushd "$@" &>/dev/null
 }
 
 popd () {
-	command popd &>/dev/null
+    command popd &>/dev/null
 }
 
 date () {
-	${EXEC_ENV} ${EXEC_BASH} -c 'date "+%Y-%m-%d %H-%M-%S"'
+    ${EXEC_ENV} ${EXEC_BASH} -c 'date "+%Y-%m-%d %H-%M-%S"'
 }
 
 #########################################################
@@ -250,8 +235,8 @@ awktranspose () {
 #       custom code to be added                         #
 #########################################################
 gnuplotcode () {
-	# Write GNUplot code to file
-	cat >$1 << EOM
+    # Write GNUplot code to file
+    cat >$1 << EOM
 #!/usr/bin/env gnuplot
 set term pdf enhanced color fontscale 0.44 size 6.5in,1.25in
 set output '${2}'
@@ -277,8 +262,8 @@ EOM
 }
 
 gnuplotlegend () {
-	# Write GNUplot code to file
-	cat >$1 << EOM
+    # Write GNUplot code to file
+    cat >$1 << EOM
 #!/usr/bin/env gnuplot
 set term pdf enhanced color fontscale 0.44 size 6.5in,0.15in
 set output '${2}'
@@ -347,67 +332,67 @@ EOM
 
 numcpus=$(nproc)
 if [[ $? -ne 0 ]]; then
-	numcpus=$(cat /proc/cpuinfo | grep processor | wc -l)
+    numcpus=$(cat /proc/cpuinfo | grep processor | wc -l)
 fi
 
 
 # Compile
 if [[ ${DO_COMPILE} -ne 0 ]]; then
-	date
-	echo "Compiling:"
-	if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
-		echo " * Testing for compiler"
-		cxx=$(which ${CXX_COMPILER})
-		if [[ -e ${cxx} ]]; then
-			export CXX=$cxx
-		else
-			cxx=$(which ${GXX_COMPILER})
-			if [[ -e ${cxx} ]]; then
-				export CXX=$cxx
-			else
-				echo "[ERROR] This benchmark requires a c++17 compatible compiler! You may modify variable CXX_COMPILER or GXX_COMPILER at the top of the script."
-				exit 1
-			fi
-		fi
-		version_string=$(${cxx} --version | head -n 1)
-		if [[ "${version_string}" =~ "g++ (GCC)" ]] || [[ "${version_string}" =~ "c++ (GCC)" ]]; then
-			version=$(echo "${version_string}" | grep -oP "\d+\.\d+\.\d+")
-			${cxx} -std=c++17 -o ${PATH_BASE}/test.a ${PATH_BASE}/test.cpp &>/dev/null && echo "[INFO] Compiler is c++17 compatible." || (echo "[ERROR] Compiler is not c++17 compatible!"; exit 1)
-		else
-			echo "[ERROR] \"${version_string}\": Currently, only g++ is supported by this script. Please fix this by yourself or tell me: Till.Kolditz@gmail.com."
-			exit 1
-		fi
-		echo " * Recreating build dir \"${PATH_BUILD}\"."
-		bootstrap_file="${PATH_BASE}/bootstrap.sh"
-		if [[ -e "${bootstrap_file}" ]]; then
-			pushd "${PATH_BASE}"
-			${EXEC_ENV} ${EXEC_BASH} -c "${bootstrap_file}"
-			popd
-		else
-			rm -Rf ${PATH_BUILD}
-			mkdir -p ${PATH_BUILD}
-			pushd ${PATH_BUILD}
-			echo " * Running cmake (Build Type = ${CMAKE_BUILD_TYPE}"
-			cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-			exitcode=$?
-			popd
-			if [[ ${exitcode} -ne 0 ]]; then
-				echo " * [ERROR] Exitcode = ${exitcode}"
-				exit ${exitcode};
-			fi
-		fi
-	fi
-	echo " * Running make (-j${numcpus})"
-	pushd ${PATH_BUILD}
-	${EXEC_ENV} ${EXEC_BASH} -c "make -j${numcpus}"
-	exitcode=$?
-	popd
-	if [[ ${exitcode} -ne 0 ]]; then
-		echo " * [ERROR] Exitcode = ${exitcode}"
-		exit ${exitcode};
-	fi
+    date
+    echo "Compiling:"
+    if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
+        echo " * Testing for compiler"
+        cxx=$(which ${CXX_COMPILER})
+        if [[ -e ${cxx} ]]; then
+            export CXX=$cxx
+        else
+            cxx=$(which ${GXX_COMPILER})
+            if [[ -e ${cxx} ]]; then
+                export CXX=$cxx
+            else
+                echo "[ERROR] This benchmark requires a c++17 compatible compiler! You may modify variable CXX_COMPILER or GXX_COMPILER at the top of the script."
+                exit 1
+            fi
+        fi
+        version_string=$(${cxx} --version | head -n 1)
+        if [[ "${version_string}" =~ "g++ (GCC)" ]] || [[ "${version_string}" =~ "c++ (GCC)" ]]; then
+            version=$(echo "${version_string}" | grep -oP "\d+\.\d+\.\d+")
+            ${cxx} -std=c++17 -o ${PATH_BASE}/test.a ${PATH_BASE}/test.cpp &>/dev/null && echo "[INFO] Compiler is c++17 compatible." || (echo "[ERROR] Compiler is not c++17 compatible!"; exit 1)
+        else
+            echo "[ERROR] \"${version_string}\": Currently, only g++ is supported by this script. Please fix this by yourself or tell me: Till.Kolditz@gmail.com."
+            exit 1
+        fi
+        echo " * Recreating build dir \"${PATH_BUILD}\"."
+        bootstrap_file="${PATH_BASE}/bootstrap.sh"
+        if [[ -e "${bootstrap_file}" ]]; then
+            pushd "${PATH_BASE}"
+            ${EXEC_ENV} ${EXEC_BASH} -c "${bootstrap_file}"
+            popd
+        else
+            rm -Rf ${PATH_BUILD}
+            mkdir -p ${PATH_BUILD}
+            pushd ${PATH_BUILD}
+            echo " * Running cmake (Build Type = ${CMAKE_BUILD_TYPE}"
+            cmake ${PATH_BASE} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            exitcode=$?
+            popd
+            if [[ ${exitcode} -ne 0 ]]; then
+                echo " * [ERROR] Exitcode = ${exitcode}"
+                exit ${exitcode};
+            fi
+        fi
+    fi
+    echo " * Running make (-j${numcpus})"
+    pushd ${PATH_BUILD}
+    ${EXEC_ENV} ${EXEC_BASH} -c "make -j${numcpus}"
+    exitcode=$?
+    popd
+    if [[ ${exitcode} -ne 0 ]]; then
+        echo " * [ERROR] Exitcode = ${exitcode}"
+        exit ${exitcode};
+    fi
 else
-	echo "Skipping compilation."
+    echo "Skipping compilation."
 fi
 
 # Benchmarking
@@ -559,8 +544,147 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                     echo "" >>${EVAL_TEMPFILE_PATH}
 
                     ### process individual Operators' times
-                    COUNT=$(grep op ${EVAL_FILEOUT} | wc -l)
-                    NUMOPS=$(echo "sca${COUNT} / ${EVAL_TOTALRUNS_PER_VARIANT}" | bc)
+                    EVAL_FILEOPS_TMP="${PATH_EVALDATA}/${type}.ops.tmp"
+                    EVAL_FILEOPS_OUT="${PATH_EVALDATA}/${type}.ops.out"
+                    EVAL_FILEOPS_TIMES="${PATH_EVALDATA}/${type}.ops.times"
+                    EVAL_FILEOPS_TIMESAVG="${PATH_EVALDATA}/${type}.ops.timesavg"
+                    EVAL_FILEOPS_RETINST="${PATH_EVALDATA}/${type}.ops.retinst"
+                    EVAL_FILEOPS_RETINSTAVG="${PATH_EVALDATA}/${type}.ops.retinstavg"
+                    grep op "${EVAL_FILEOUT}" | grep -v opy | sed -E 's/[ ]+//g' | sed -E 's/^\t//g' | sed -E 's/op([0-9]+\t)/\1/g' >"${EVAL_FILEOPS_TMP}"
+                    NUM_OPS_ARRAY=$(awk '
+                    BEGIN{i=0;copynum=0;copycount=0;querynum=0;FS="\t";}
+                    {
+                        if($1<i) {
+                            if(copynum==0) {
+                                copynum=i
+                                ++copycount
+                            } else if (i==copynum) {
+                                ++copycount
+                            }
+                            i=$1
+                        } else {
+                            ++i
+                        }
+                        if($1>querynum) {
+                            querynum=i
+                        }
+                    }
+                    END{print copynum,copycount,querynum}' "${EVAL_FILEOPS_TMP}")
+                    IFS=' ' read -r -a array <<< "${NUM_OPS_ARRAY}"
+                    NUM_OPS_COPY=${array[0]}
+                    NUM_OPS_COPY_COUNT=${array[1]}
+                    NUM_OPS_QUERY=${array[2]}
+                    awk -v numopscopy=${NUM_OPS_COPY} -v numcopycount=${NUM_OPS_COPY_COUNT} '
+                        BEGIN{i=0;FS="\t";}
+                        FNR>(numcopycount*numopscopy) {
+                            print
+                        }
+                        END{printf "\n"}' "${EVAL_FILEOPS_TMP}" >"${EVAL_FILEOPS_OUT}"
+                    countOps=0
+                    countRuns=0
+                    sfidx=0
+                    sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
+                    echo -n "sf" >${EVAL_FILEOPS_TIMES}
+                    for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
+                        echo -ne "\t$i" >>${EVAL_FILEOPS_TIMES}
+                    done
+                    echo -e "\tavg" >>${EVAL_FILEOPS_TIMES}
+                    echo -n $sf >>${EVAL_FILEOPS_TIMES}
+                    if [[ ${#array[@]} -gt 7 ]]; then
+                        echo -n "sf" >${EVAL_FILEOPS_RETINST}
+                        for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
+                            echo -ne "\t$i" >>${EVAL_FILEOPS_RETINST}
+                        done
+                        echo -e "\tavg" >>${EVAL_FILEOPS_RETINST}
+                        echo -n $sf >>${EVAL_FILEOPS_RETINST}
+                    fi
+                    while read line; do
+                        ((countOps++))
+                        IFS='    ' read -r -a array <<< "${line}"
+                        curTime=$(echo "${array[1]}" | sed 's/\.//g')
+                        arrayTimes+=(${curTime})
+                        echo -ne "\t${curTime}" >>${EVAL_FILEOPS_TIMES}
+                        if [[ ${#array[@]} -gt 7 ]]; then
+                            arrayRetInst+=(${array[8]})
+                            echo -ne "\t${array[8]}" >>${EVAL_FILEOPS_RETINST}
+                        fi
+                        if [[ ${countOps} -eq ${NUM_OPS_QUERY} ]]; then
+                            countOps=0
+                            ((countRuns++))
+                            if [[ ${countRuns} -lt ${BENCHMARK_NUMRUNS} ]]; then
+                                echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
+                                if [[ ${#array[@]} -gt 7 ]]; then
+                                    echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
+                                fi
+                            else
+                                countRuns=0
+                                ((sfidx++))
+                                if [[ $sfidx -lt ${#BENCHMARK_SCALEFACTORS[@]} ]]; then
+                                    sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
+                                    unset arrayTimes
+                                    arrayTimes=()
+                                    echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
+                                    if [[ ${#array[@]} -gt 7 ]]; then
+                                        unset arrayRetInst
+                                        arrayRetInst=()
+                                        echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
+                                    fi
+                                fi
+                            fi
+                        fi
+                    done <"${EVAL_FILEOPS_OUT}"
+                    awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
+                        BEGIN {
+                            for (i=0; i<numOps; ++i) {
+                                a[i]=0
+                            }
+                            run=0
+                            printf "sf"
+                            for (i=1; i<=numOps; ++i) {
+                                printf "\t%d", i
+                            }
+                            printf "\n"
+                        }
+                        FNR>1{
+                            for (i=0; i<numOps; ++i) {
+                                a[i]+=$(i+2)
+                            }
+                            ++run
+                            if (run==numRuns) {
+                                printf "%d", $0
+                                for (i=0; i<numOps; ++i) {
+                                    printf "\t%d", a[i]/numOps
+                                }
+                                printf "\n"
+                            }
+                        }' "${EVAL_FILEOPS_TIMES}" >"${EVAL_FILEOPS_TIMESAVG}"
+                        if [[ ${#array[@]} -gt 7 ]]; then
+                        awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
+                            BEGIN {
+                                for (i=0; i<numOps; ++i) {
+                                    a[i]=0
+                                }
+                                run=0
+                                printf "sf"
+                                for (i=1; i<=numOps; ++i) {
+                                    printf "\t%d", i
+                                }
+                                printf "\n"
+                            }
+                            FNR>1{
+                                for (i=0; i<numOps; ++i) {
+                                    a[i]+=$(i+2)
+                                }
+                                ++run
+                                if (run==numRuns) {
+                                    printf "%d", $0
+                                    for (i=0; i<numOps; ++i) {
+                                        printf "\t%d", a[i]/numOps
+                                    }
+                                    printf "\n"
+                                }
+                            }' "${EVAL_FILEOPS_RETINST}" >"${EVAL_FILEOPS_RETINSTAVG}"
+                        fi
                 done
 
                 # transpose original data
@@ -695,11 +819,11 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
     done
 
     for s in "${ARCHITECTURE[@]}"; do 
-    	for q in "${IMPLEMENTED[@]}"; do
-    	    for v in "${VARIANTS[@]}"; do
+        for q in "${IMPLEMENTED[@]}"; do
+            for v in "${VARIANTS[@]}"; do
                 for t in out err; do
                     grepfile="./grep.${t}"
-    	            diff "${PATH_EVALDATA}/${BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
+                    diff "${PATH_EVALDATA}/${BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
                     if [[ -s "${grepfile}" ]]; then
                         echo "Q${q}${v}${s} (${t}):"
                         cat "${grepfile}"
