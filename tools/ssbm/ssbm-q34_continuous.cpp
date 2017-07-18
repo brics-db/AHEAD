@@ -95,7 +95,9 @@ int main(
         delete bat3;
         CLEAR_JOIN_AN(tuple4);
         // lo_suppkey = s_suppkey
-        MEASURE_OP_TUPLE(tuple5, hashjoinAN(batLS, std::get<0>(tuple4), std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID lineorder | OID supplier
+        MEASURE_OP_TUPLE(tuple5,
+                hashjoinAN(batLS, std::get<0>(tuple4), std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs),
+                        std::get<0>(tuple4)->tail.metaData.AN_A, std::get<0>(tuple4)->tail.metaData.AN_Ainv)); // OID lineorder | OID supplier
         CLEAR_JOIN_AN(tuple5);
         auto bat6 = std::get<0>(tuple5)->mirror_head(); // OID lineorder | OID lineorder
         delete std::get<0>(tuple5);
