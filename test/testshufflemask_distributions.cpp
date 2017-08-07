@@ -4,6 +4,7 @@
 #include <array>
 #include <exception>
 #include <omp.h>
+#include <ColumnStore.h>
 #include <column_operators/SSE/SSE.hpp>
 #include <util/stopwatch.hpp>
 
@@ -30,7 +31,7 @@ struct initcolumns_inout_t :
 
 struct abstract_abstract_context_t {
 
-    constexpr static const size_t NUM_RND = 256;
+    constexpr static const size_t NUM_RND = 64;
     constexpr static const size_t MASK_ARR = NUM_RND - 1;
 
     ahead::StopWatch sw;
@@ -71,24 +72,28 @@ template<>
 struct ac_helper<__m128i, uint8_t, uint16_t> {
     static const size_t SHIFT = 4;
     static const size_t MASK = 0xF;
+    static const size_t FULL = 0xFFFF;
 };
 
 template<>
 struct ac_helper<__m128i, uint16_t, uint8_t> {
     static const size_t SHIFT = 3;
     static const size_t MASK = 0x7;
+    static const size_t FULL = 0xFF;
 };
 
 template<>
 struct ac_helper<__m128i, uint32_t, uint8_t> {
     static const size_t SHIFT = 2;
     static const size_t MASK = 0x3;
+    static const size_t FULL = 0x0F;
 };
 
 template<>
 struct ac_helper<__m128i, uint64_t, uint8_t> {
     static const size_t SHIFT = 1;
     static const size_t MASK = 0x1;
+    static const size_t FULL = 0x03;
 };
 
 template<typename T>
@@ -121,7 +126,7 @@ struct abstract_context_t {
                 } else if (selectivity == 100) {
                     // set all bits
                     for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
-                        randoms[i] = static_cast<mask_t>(-1);
+                        randoms[i] = helper::FULL;
                     }
                 } else {
                     for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
@@ -146,7 +151,7 @@ struct abstract_context_t {
                 for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
                     numMaskBitsSet += __builtin_popcountll(static_cast<size_t>(randoms[i]));
                 }
-                std::cout << (static_cast<double>(numMaskBitsSet) / static_cast<double>(numMaskBitsTotal));
+                std::cout << std::fixed << (static_cast<double>(numMaskBitsSet) / static_cast<double>(numMaskBitsTotal)) << std::defaultfloat;
             }
         };
 
@@ -200,20 +205,26 @@ struct concrete_context_t {
     // TODO: copy lookup tables into the concrete context for pack_right_1
 
     abstract_context_t<T> * pac;
+    __m128i * pmmInUnaligned;
     __m128i * pmmIn;
+    __m128i * pmmOutUnaligned;
     __m128i * pmmOut;
 
     concrete_context_t()
             : pac(nullptr),
+              pmmInUnaligned(nullptr),
               pmmIn(nullptr),
+              pmmOutUnaligned(nullptr),
               pmmOut(nullptr) {
     }
 
     concrete_context_t(
             abstract_context_t<T> & ac)
             : pac(&ac),
-              pmmIn(column_initializer<initcolumns_in_t, M>::init(ac.numMM128 + 1)),
-              pmmOut(column_initializer<initcolumns_out_t, M>::init(ac.numMM128 + 1)) {
+              pmmInUnaligned(column_initializer<initcolumns_in_t, M>::init(ac.numMM128 + 2)),
+              pmmIn(ahead::align_to<sizeof(__m128i )>(pmmInUnaligned)),
+              pmmOutUnaligned(column_initializer<initcolumns_out_t, M>::init(ac.numMM128 + 2)),
+              pmmOut(ahead::align_to<sizeof(__m128i )>(pmmOutUnaligned)) {
         if (pmmIn) {
             for (size_t i = 0; i < ac.numMM128; ++i) {
                 _mm_storeu_si128(&pmmIn[i], ac.mm);
@@ -232,12 +243,14 @@ struct concrete_context_t {
     }
 
     virtual ~concrete_context_t() {
-        if (pmmIn) {
-            delete[] pmmIn;
+        if (pmmInUnaligned) {
+            delete[] pmmInUnaligned;
+            pmmInUnaligned = nullptr;
             pmmIn = nullptr;
         }
-        if (pmmOut) {
-            delete[] pmmOut;
+        if (pmmOutUnaligned) {
+            delete[] pmmOutUnaligned;
+            pmmOutUnaligned = nullptr;
             pmmOut = nullptr;
         }
     }

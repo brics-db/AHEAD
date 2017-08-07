@@ -7,6 +7,7 @@ c++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask testshuffl
 c++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_dbg testshufflemask.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_dbg.build &
 c++ -std=c++14 -O3 -march=native -o functors -I../include functors.cpp &>functors.build &
 c++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask_distributions testshufflemask_distributions.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions.build &
+c++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_distributions_dbg testshufflemask_distributions.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions_dbg.build &
 
 wait $(jobs -p)
 
@@ -40,4 +41,11 @@ if [[ -e testshufflemask_distributions.build ]] && [[ -s testshufflemask_distrib
 	echo
 fi
 
+if [[ -e testshufflemask_distributions_dbg.build ]] && [[ -s testshufflemask_distributions_dbg.build ]]; then
+	echo "testshufflemask_distributions_dbg:"
+	cat testshufflemask_distributions_dbg.build
+	echo
+fi
+
 #g++ -std=c++14 -O3 -march=native -o testshufflemasktable testshufflemasktable.cpp ../util/stopwatch.cpp SSE.cpp -I../../include -I..
+
