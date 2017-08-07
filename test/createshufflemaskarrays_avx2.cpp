@@ -382,7 +382,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint32_t SHUFFLE_EPI32_TABLE[256 * 8] = {";
-    for (size_t i = 0; i < (mask32.size() - 112); i += 112) {
+    for (size_t i = 0; i <= (mask32.size() - 112); i += 112) {
         std::cout << "\n\
                     " << mask32.substr(i, 112);
     }
@@ -390,7 +390,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint64_t SHUFFLE_EPI64_TABLE[16 * 4] = {";
-    for (size_t i = 0; i < (mask64.size() - 92); i += 92) {
+    for (size_t i = 0; i <= (mask64.size() - 92); i += 92) {
         std::cout << "\n\
                     " << mask64.substr(i, 92);
     }
