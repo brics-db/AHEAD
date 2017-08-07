@@ -326,7 +326,7 @@ void test(
     std::cout << "# #data bits\t" << (sizeof(T) * 8) << "\n#128-bit vectors\t" << (ac.numMM128 * aac.numRepititions) << "\t(" << ac.numMM128 << " repeated " << aac.numRepititions << " times)"
             << std::endl;
     std::cout << "selectivity,lookup table,iteration\n";
-    for (size_t selectivity = 0; selectivity <= 100; selectivity += 10) {
+    for (size_t selectivity = 0; selectivity <= 100; selectivity++) {
         ac.setSelectivity(selectivity);
         Test<T, initcolumns_inout_t, testPack1ColumnArray, nprocs>::run(ac);
         Test<T, initcolumns_inout_t, testPack2ColumnArray, nprocs>::run(ac);
