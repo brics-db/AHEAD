@@ -25,6 +25,7 @@ CMakeFiles
 /eval/dataNewHashjoin2/
 /eval/2017*
 /test/createshufflemaskarrays
+/test/createshufflemaskarrays_avx2
 /test/functors
 /test/testshufflemask
 /test/testshufflemasktable

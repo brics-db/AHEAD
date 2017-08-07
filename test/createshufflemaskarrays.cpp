@@ -15,7 +15,7 @@
  */
 
 /* 
- * File:   SSE.cpp
+ * File:   createshufflemaskarrays.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 25. Februar 2017, 23:48
@@ -174,7 +174,7 @@ int main() {
  */\n\
 \n\
 /* \n\
- * File:   SSE.cpp\n\
+ * File:   createshufflemaskarrays.cpp\n\
  * Author: Till Kolditz <till.kolditz@gmail.com>\n\
  *\n\
  * Created on 25. Februar 2017, 23:48\n\

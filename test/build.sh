@@ -3,6 +3,7 @@
 rm -Rf ./build
 
 c++ -std=c++14 -O3 -march=native -o createshufflemaskarrays createshufflemaskarrays.cpp &>createshufflemaskarrays.build &
+c++ -std=c++14 -O3 -mavx2 -o createshufflemaskarrays_avx2 createshufflemaskarrays_avx2.cpp &>createshufflemaskarrays_avx2.build &
 c++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask testshufflemask.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask.build &
 c++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_dbg testshufflemask.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_dbg.build &
 c++ -std=c++14 -O3 -march=native -o functors -I../include functors.cpp &>functors.build &
@@ -11,41 +12,21 @@ c++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_distri
 
 wait $(jobs -p)
 
-if [[ -e createshufflemaskarrays.build ]] && [[ -s createshufflemaskarrays.build ]]; then
-	echo "createshufflemaskarrays:"
-	cat createshufflemaskarrays.build
-	echo
-fi
+function check {
+	if [[ -e $1.build ]] && [[ -s $1.build ]]; then
+		echo "$1:"
+		cat $1.build
+		echo
+	fi
+}
 
-if [[ -e testshufflemask.build ]] && [[ -s testshufflemask.build ]]; then
-	echo "testshufflemask:"
-	cat testshufflemask.build
-	echo
-fi
-
-if [[ -e testshufflemask_dbg.build ]] && [[ -s testshufflemask_dbg.build ]]; then
-	echo "testshufflemask_dbg:"
-	cat testshufflemask_dbg.build
-	echo
-fi
-
-if [[ -e functors.build ]] && [[ -s functors.build ]]; then
-	echo "functors:"
-	cat functors.build
-	echo
-fi
-
-if [[ -e testshufflemask_distributions.build ]] && [[ -s testshufflemask_distributions.build ]]; then
-	echo "testshufflemask_distributions:"
-	cat testshufflemask_distributions.build
-	echo
-fi
-
-if [[ -e testshufflemask_distributions_dbg.build ]] && [[ -s testshufflemask_distributions_dbg.build ]]; then
-	echo "testshufflemask_distributions_dbg:"
-	cat testshufflemask_distributions_dbg.build
-	echo
-fi
+check createshufflemaskarrays
+check createshufflemaskarrays_avx2
+check testshufflemask
+check testshufflemask_dbg
+check functors
+check testshufflemask_distributions
+check testshufflemask_distributions_dbg
 
 #g++ -std=c++14 -O3 -march=native -o testshufflemasktable testshufflemasktable.cpp ../util/stopwatch.cpp SSE.cpp -I../../include -I..
 
