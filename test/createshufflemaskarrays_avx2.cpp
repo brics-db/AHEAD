@@ -328,12 +328,13 @@ namespace ahead {\n\
     std::string mask08LH = TOSTRING(MASK_64_08LH);
     std::string mask08HL = TOSTRING(MASK_64_08HL);
     std::string mask08HH = TOSTRING(MASK_64_08HH);
-    std::string mask16 = TOSTRING(MASK_256_16);
+    std::string mask16L = TOSTRING(MASK_128L_16);
+    std::string mask16H = TOSTRING(MASK_128H_16);
     std::string mask32 = TOSTRING(MASK_256_32);
     std::string mask64 = TOSTRING(MASK_256_64);
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_LL[256 * 8] = {";
-    for (size_t i = 0; i < mask08LL.size(); i += 48) {
+    for (size_t i = 0; i <= (mask08LL.size() - 48); i += 48) {
         std::cout << "\n\
                     " << mask08LL.substr(i, 48);
     }
@@ -341,7 +342,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_LH[256 * 8] = {";
-    for (size_t i = 0; i < mask08LH.size(); i += 48) {
+    for (size_t i = 0; i <= (mask08LH.size() - 48); i += 48) {
         std::cout << "\n\
                     " << mask08LH.substr(i, 48);
     }
@@ -349,7 +350,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_HL[256 * 8] = {";
-    for (size_t i = 0; i < mask08HL.size(); i += 48) {
+    for (size_t i = 0; i <= (mask08HL.size() - 48); i += 48) {
         std::cout << "\n\
                     " << mask08HL.substr(i, 48);
     }
@@ -357,42 +358,53 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_HH[256 * 8] = {";
-    for (size_t i = 0; i < mask08HH.size(); i += 48) {
+    for (size_t i = 0; i <= (mask08HH.size() - 48); i += 48) {
         std::cout << "\n\
                     " << mask08HH.substr(i, 48);
     }
     std::cout << "\n\
                 };\n\n";
     std::cout << "\
-                const uint16_t SHUFFLE_EPI16_TABLE[256 * 8] = {";
-    for (size_t i = 0; i < mask16.size(); i += 72) {
+                const uint16_t SHUFFLE_EPI16_TABLE_L[128 * 16] = {";
+    for (size_t i = 0; i <= (mask16L.size() - 144); i += 144) {
         std::cout << "\n\
-                    " << mask16.substr(i, 72);
+                    " << mask16L.substr(i, 144);
     }
     std::cout << "\n\
                 };\n\n";
     std::cout << "\
-                const uint32_t SHUFFLE_EPI32_TABLE[16 * 4] = {";
-    for (size_t i = 0; i < mask32.size(); i += 56) {
+                const uint16_t SHUFFLE_EPI16_TABLE_H[128 * 16] = {";
+    for (size_t i = 0; i <= (mask16H.size() - 144); i += 144) {
         std::cout << "\n\
-                    " << mask32.substr(i, 56);
+                    " << mask16H.substr(i, 144);
     }
     std::cout << "\n\
                 };\n\n";
     std::cout << "\
-                const uint64_t SHUFFLE_EPI64_TABLE[4 * 2] = {";
-    for (size_t i = 0; i < mask64.size(); i += 46) {
+                const uint32_t SHUFFLE_EPI32_TABLE[256 * 8] = {";
+    for (size_t i = 0; i < (mask32.size() - 112); i += 112) {
         std::cout << "\n\
-                    " << mask64.substr(i, 46);
+                    " << mask32.substr(i, 112);
+    }
+    std::cout << "\n\
+                };\n\n";
+    std::cout << "\
+                const uint64_t SHUFFLE_EPI64_TABLE[16 * 4] = {";
+    for (size_t i = 0; i < (mask64.size() - 92); i += 92) {
+        std::cout << "\n\
+                    " << mask64.substr(i, 92);
     }
     std::cout
             << "\n\
                 };\n\n\
-                const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_L = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_L);\n\
-                const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_H = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_H);\n\
-                const __m128i * const v2_mm128<uint16_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE);\n\
-                const __m128i * const v2_mm128<uint32_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI32_TABLE);\n\
-                const __m128i * const v2_mm128<uint64_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI64_TABLE);\n\
+                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LL = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_LL);\n\
+                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LH = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_LH);\n\
+                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HL = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_HL);\n\
+                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HH = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_HH);\n\
+                const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_L = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE_L);\n\
+                const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_H = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE_H);\n\
+                const __m256i * const v2_mm256<uint32_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI32_TABLE);\n\
+                const __m256i * const v2_mm256<uint64_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI64_TABLE);\n\
 \n\
             }\n\
         }\n\
