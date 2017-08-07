@@ -281,12 +281,12 @@
                     MASK_256_64_2(A2, A1, A0, 0x0F0E0D0C0B0A0908ull)
 
 #define MASK_256_64_8(A3, A2, A1, A0) \
-                    MASK_256_64_2(A3, A2, A1, A0), \
-                    MASK_256_64_2(A2, A1, A0, 0x1716151413121110ull)
+                    MASK_256_64_4(A3, A2, A1, A0), \
+                    MASK_256_64_4(A2, A1, A0, 0x1716151413121110ull)
 
 #define MASK_256_64_16(A3, A2, A1, A0) \
-                    MASK_256_64_2(A3, A2, A1, A0), \
-                    MASK_256_64_2(A2, A1, A0, 0x1F1E1D1C1B1A1918ull)
+                    MASK_256_64_8(A3, A2, A1, A0), \
+                    MASK_256_64_8(A2, A1, A0, 0x1F1E1D1C1B1A1918ull)
 
 #define MASK_256_64 MASK_256_64_16(0xFFFFFFFFFFFFFFFFull, 0xFFFFFFFFFFFFFFFFull, 0xFFFFFFFFFFFFFFFFull, 0xFFFFFFFFFFFFFFFFull)
 
@@ -366,17 +366,17 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint16_t SHUFFLE_EPI16_TABLE_L[128 * 16] = {";
-    for (size_t i = 0; i <= (mask16L.size() - 144); i += 144) {
+    for (size_t i = 0; i <= (mask16L.size() - 72); i += 72) {
         std::cout << "\n\
-                    " << mask16L.substr(i, 144);
+                    " << mask16L.substr(i, 72);
     }
     std::cout << "\n\
                 };\n\n";
     std::cout << "\
                 const uint16_t SHUFFLE_EPI16_TABLE_H[128 * 16] = {";
-    for (size_t i = 0; i <= (mask16H.size() - 144); i += 144) {
+    for (size_t i = 0; i <= (mask16H.size() - 72); i += 72) {
         std::cout << "\n\
-                    " << mask16H.substr(i, 144);
+                    " << mask16H.substr(i, 72);
     }
     std::cout << "\n\
                 };\n\n";
