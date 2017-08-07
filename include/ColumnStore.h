@@ -123,7 +123,7 @@ namespace ahead {
     align_to(
             T * const pT) {
         size_t tmp = reinterpret_cast<size_t>(pT);
-        return pT + (alignment - (tmp & (alignment - 1)));
+        return reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(pT) + (alignment - (tmp & (alignment - 1))));
     }
 }
 
