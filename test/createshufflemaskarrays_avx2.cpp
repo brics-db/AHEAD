@@ -334,7 +334,7 @@ namespace ahead {\n\
     std::string mask64 = TOSTRING(MASK_256_64);
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_LL[256 * 8] = {";
-    for (size_t i = 0; i <= (mask08LL.size() - 48); i += 48) {
+    for (size_t i = 0; i < mask08LL.size(); i += 48) {
         std::cout << "\n\
                     " << mask08LL.substr(i, 48);
     }
@@ -342,7 +342,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_LH[256 * 8] = {";
-    for (size_t i = 0; i <= (mask08LH.size() - 48); i += 48) {
+    for (size_t i = 0; i < mask08LH.size(); i += 48) {
         std::cout << "\n\
                     " << mask08LH.substr(i, 48);
     }
@@ -350,7 +350,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_HL[256 * 8] = {";
-    for (size_t i = 0; i <= (mask08HL.size() - 48); i += 48) {
+    for (size_t i = 0; i < mask08HL.size(); i += 48) {
         std::cout << "\n\
                     " << mask08HL.substr(i, 48);
     }
@@ -358,7 +358,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint8_t SHUFFLE_EPI08_TABLE_HH[256 * 8] = {";
-    for (size_t i = 0; i <= (mask08HH.size() - 48); i += 48) {
+    for (size_t i = 0; i < mask08HH.size(); i += 48) {
         std::cout << "\n\
                     " << mask08HH.substr(i, 48);
     }
@@ -366,7 +366,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint16_t SHUFFLE_EPI16_TABLE_L[128 * 16] = {";
-    for (size_t i = 0; i <= (mask16L.size() - 72); i += 72) {
+    for (size_t i = 0; i < mask16L.size(); i += 72) {
         std::cout << "\n\
                     " << mask16L.substr(i, 72);
     }
@@ -374,7 +374,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint16_t SHUFFLE_EPI16_TABLE_H[128 * 16] = {";
-    for (size_t i = 0; i <= (mask16H.size() - 72); i += 72) {
+    for (size_t i = 0; i < mask16H.size(); i += 72) {
         std::cout << "\n\
                     " << mask16H.substr(i, 72);
     }
@@ -382,7 +382,7 @@ namespace ahead {\n\
                 };\n\n";
     std::cout << "\
                 const uint32_t SHUFFLE_EPI32_TABLE[256 * 8] = {";
-    for (size_t i = 0; i <= (mask32.size() - 112); i += 112) {
+    for (size_t i = 0; i < mask32.size(); i += 112) {
         std::cout << "\n\
                     " << mask32.substr(i, 112);
     }
