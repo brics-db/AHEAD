@@ -28,5 +28,6 @@ CMakeFiles
 /test/functors
 /test/testshufflemask
 /test/testshufflemasktable
+/test/testshufflemask_distributions
 /Debug
 /Release

@@ -119,4 +119,5 @@ column_operators/AN/hashjoinAN_resint.cpp \
 column_operators/AN/hashjoinAN_resbigint.cpp \
 column_operators/AN/matchjoinAN.cpp \
 column_operators/AN/selectAN.cpp \
+column_operators/SSE/SSE.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
