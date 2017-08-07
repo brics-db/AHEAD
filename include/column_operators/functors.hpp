@@ -22,6 +22,7 @@
 #define INCLUDE_COLUMN_OPERATORS_FUNCTORS_HPP_
 
 #include <util/v2types.hpp>
+#include <cstring>
 
 namespace ahead {
     namespace bat {
@@ -244,17 +245,17 @@ namespace ahead {
                         _Types && ... args) const noexcept(noexcept(std::forward<str_t>(__t) == _Op().operator()(std::forward<_Types>(args)...)))
                         -> decltype(std::forward<str_t>(__t) == _Op().operator()(std::forward<_Types>(args)...))
                         {
-                    return EQ()(strcmp(std::forward<str_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0);
+                    return EQ()(std::strcmp(std::forward<str_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0);
                 }
 
                 template<typename ... _Types>
                 constexpr
                 auto operator()(
                         cstr_t && __t,
-                        _Types && ... args) const noexcept(noexcept(EQ()(strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0)))
-                        -> decltype(EQ()(strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0))
+                        _Types && ... args) const noexcept(noexcept(EQ()(std::strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0)))
+                        -> decltype(EQ()(std::strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0))
                         {
-                    return EQ()(strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0);
+                    return EQ()(std::strcmp(std::forward<cstr_t>(__t), _Op().operator()(std::forward<_Types>(args)...)), 0);
                 }
             };
 
@@ -274,37 +275,37 @@ namespace ahead {
                 constexpr
                 auto operator()(
                         str_t && __t,
-                        str_t && __u) const noexcept(noexcept(strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0))
-                        -> decltype(strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0)
+                        str_t && __u) const noexcept(noexcept(std::strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0))
+                        -> decltype(std::strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0)
                         {
-                    return strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0;
+                    return std::strcmp(std::forward<str_t>(__t), std::forward<str_t>(__u)) == 0;
                 }
 
                 constexpr
                 auto operator()(
                         cstr_t && __t,
-                        str_t && __u) const noexcept(noexcept(strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0))
-                        -> decltype(strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0)
+                        str_t && __u) const noexcept(noexcept(std::strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0))
+                        -> decltype(std::strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0)
                         {
-                    return strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0;
+                    return std::strcmp(std::forward<cstr_t>(__t), std::forward<str_t>(__u)) == 0;
                 }
 
                 constexpr
                 auto operator()(
                         str_t && __t,
-                        cstr_t && __u) const noexcept(noexcept(strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0))
-                        -> decltype(strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0)
+                        cstr_t && __u) const noexcept(noexcept(std::strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0))
+                        -> decltype(std::strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0)
                         {
-                    return strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0;
+                    return std::strcmp(std::forward<str_t>(__t), std::forward<cstr_t>(__u)) == 0;
                 }
 
                 constexpr
                 auto operator()(
                         cstr_t && __t,
-                        cstr_t && __u) const noexcept(noexcept(strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0))
-                        -> decltype(strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0)
+                        cstr_t && __u) const noexcept(noexcept(std::strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0))
+                        -> decltype(std::strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0)
                         {
-                    return strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0;
+                    return std::strcmp(std::forward<cstr_t>(__t), std::forward<cstr_t>(__u)) == 0;
                 }
             };
 

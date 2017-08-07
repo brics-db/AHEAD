@@ -2,10 +2,11 @@
 
 rm -Rf ./build
 
-g++ -std=c++14 -O3 -march=native -o createshufflemaskarrays createshufflemaskarrays.cpp &>createshufflemaskarrays.build &
-g++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask testshufflemask.cpp ../lib/util/stopwatch.cpp ../lib/column_operators/SSE.cpp -I../include -I../lib/column_operators -fopenmp &>testshufflemask.build &
-g++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_dbg testshufflemask.cpp ../lib/util/stopwatch.cpp ../lib/column_operators/SSE.cpp -I../include -I../lib/column_operators -fopenmp &>testshufflemask_dbg.build &
-g++ -std=c++14 -O3 -march=native -o functors -I../include functors.cpp &>functors.build &
+c++ -std=c++14 -O3 -march=native -o createshufflemaskarrays createshufflemaskarrays.cpp &>createshufflemaskarrays.build &
+c++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask testshufflemask.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask.build &
+c++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_dbg testshufflemask.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_dbg.build &
+c++ -std=c++14 -O3 -march=native -o functors -I../include functors.cpp &>functors.build &
+c++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask_distributions testshufflemask_distributions.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions.build &
 
 wait $(jobs -p)
 
@@ -30,6 +31,12 @@ fi
 if [[ -e functors.build ]] && [[ -s functors.build ]]; then
 	echo "functors:"
 	cat functors.build
+	echo
+fi
+
+if [[ -e testshufflemask_distributions.build ]] && [[ -s testshufflemask_distributions.build ]]; then
+	echo "testshufflemask_distributions:"
+	cat testshufflemask_distributions.build
 	echo
 fi
 

@@ -183,6 +183,16 @@ namespace ahead {
                         return static_cast<uint16_t>(_mm_extract_epi8(mm, 0));
                     }
 
+                    static inline __m128i pack_right(
+                            __m128i a,
+                            mask_t mask) {
+                        static const uint64_t ALL_ONES = 0xFFFFFFFFFFFFFFFFull;
+                        uint64_t shuffleMaskL = SHUFFLE_TABLE_L[static_cast<uint8_t>(mask)];
+                        int clzb = __builtin_clzll(~shuffleMaskL); // number of unmatched bytes (if a value matches, the leading bits are zero and the inversion makes it ones, so only full bytes are counted)
+                        uint64_t shuffleMaskH = SHUFFLE_TABLE_H[static_cast<uint8_t>(mask >> 8)];
+                        return _mm_shuffle_epi8(a, _mm_set_epi64x(((shuffleMaskH >> clzb) | (ALL_ONES << (64 - clzb))), shuffleMaskL & ((shuffleMaskH << (64 - clzb)) | (ALL_ONES >> clzb))));
+                    }
+
                     static inline void pack_right2(
                             uint8_t * & result,
                             __m128i a,
@@ -191,6 +201,10 @@ namespace ahead {
                             Private::pack_right2_uint8(result, a, mask);
                         }
                     }
+
+                private:
+                    static const uint64_t * const SHUFFLE_TABLE_L;
+                    static const uint64_t * const SHUFFLE_TABLE_H;
                 };
 
                 template<>
@@ -258,6 +272,12 @@ namespace ahead {
                         return static_cast<uint16_t>(_mm_extract_epi16(mm, 0));
                     }
 
+                    static inline __m128i pack_right(
+                            __m128i a,
+                            mask_t mask) {
+                        return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
+                    }
+
                     static inline void pack_right2(
                             uint16_t * & result,
                             __m128i a,
@@ -266,6 +286,9 @@ namespace ahead {
                             Private::pack_right2_uint16(result, a, mask);
                         }
                     }
+
+                private:
+                    static const __m128i * const SHUFFLE_TABLE;
                 };
 
                 template<>
@@ -341,6 +364,12 @@ namespace ahead {
                         return static_cast<uint32_t>(_mm_extract_epi32(mm, 0));
                     }
 
+                    static inline __m128i pack_right(
+                            __m128i a,
+                            mask_t mask) {
+                        return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
+                    }
+
                     static inline void pack_right2(
                             uint32_t * & result,
                             __m128i a,
@@ -349,6 +378,9 @@ namespace ahead {
                             Private::pack_right2_uint32(result, a, mask);
                         }
                     }
+
+                private:
+                    static const __m128i * const SHUFFLE_TABLE;
                 };
 
                 template<>
@@ -422,6 +454,12 @@ namespace ahead {
                         return static_cast<uint64_t>(_mm_extract_epi64(a, 0)) + static_cast<uint64_t>(_mm_extract_epi64(a, 1));
                     }
 
+                    static inline __m128i pack_right(
+                            __m128i a,
+                            mask_t mask) {
+                        return _mm_shuffle_epi8(a, SHUFFLE_TABLE[mask]);
+                    }
+
                     static inline void pack_right2(
                             uint64_t * & result,
                             __m128i a,
@@ -430,6 +468,9 @@ namespace ahead {
                             Private::pack_right2_uint64(result, a, mask);
                         }
                     }
+
+                private:
+                    static const __m128i * const SHUFFLE_TABLE;
                 };
 
                 namespace Private {
