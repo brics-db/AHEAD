@@ -34,10 +34,9 @@ namespace ahead {
                 struct v2_mm;
 
                 template<typename T>
-                struct v2_mm<__m128i, T> :
-                        public ahead::bat::ops::sse::v2_mm128<T> {
+                struct v2_mm<__m128i, T> {
                     typedef ahead::bat::ops::sse::v2_mm128<T> BASE;
-                    using mask_t = typename BASE::mask_t;
+                    typedef typename BASE::mask_t mask_t;
 
                     static inline __m128i set1(
                             T value) {
@@ -114,10 +113,9 @@ namespace ahead {
 
 #ifdef __AVX2__
                 template<typename T>
-                struct v2_mm<__m256i, T> :
-                        public ahead::bat::ops::avx2::v2_mm256<T> {
+                struct v2_mm<__m256i, T> {
                     typedef ahead::bat::ops::avx2::v2_mm256<T> BASE;
-                    using mask_t = typename BASE::mask_t;
+                    typedef typename BASE::mask_t mask_t;
 
                     static inline __m256i set1(
                             T value) {

@@ -96,6 +96,36 @@ struct ac_helper<__m128i, uint64_t, uint8_t> {
     static const size_t FULL = 0x03;
 };
 
+#ifdef __AVX2__
+template<>
+struct ac_helper<__m256i, uint8_t, uint32_t> {
+    static const size_t SHIFT = 5;
+    static const size_t MASK = 0x1F;
+    static const size_t FULL = 0xFFFFFFFF;
+};
+
+template<>
+struct ac_helper<__m256i, uint16_t, uint16_t> {
+    static const size_t SHIFT = 4;
+    static const size_t MASK = 0x0F;
+    static const size_t FULL = 0xFFFF;
+};
+
+template<>
+struct ac_helper<__m256i, uint32_t, uint8_t> {
+    static const size_t SHIFT = 3;
+    static const size_t MASK = 0x07;
+    static const size_t FULL = 0xFF;
+};
+
+template<>
+struct ac_helper<__m256i, uint64_t, uint8_t> {
+    static const size_t SHIFT = 2;
+    static const size_t MASK = 0x03;
+    static const size_t FULL = 0x0F;
+};
+#endif
+
 template<typename V, typename T>
 struct abstract_context_t {
     typedef typename ahead::bat::ops::simd::v2_mm<V, T>::mask_t mask_t;
@@ -112,48 +142,49 @@ struct abstract_context_t {
             : paac(&aac),
               mm(ahead::bat::ops::simd::v2_mm<V, T>::set_inc(0)),
               numMM(aac.numValues / (sizeof(V) / sizeof(T))),
-              rndDistr(0, abstract_abstract_context_t::NUM_RND * (sizeof(__m128i) / sizeof(T)) - 1) {
-            }
+              rndDistr(0, abstract_abstract_context_t::NUM_RND * (sizeof(V) / sizeof(T)) - 1) {
+    }
 
-            void setSelectivity(size_t selectivity) {
-                if (selectivity > 100) {
-                    throw std::runtime_error("abstract_context_t::setSelectivity : Selectivity must not be >100");
-                } else if (selectivity == 0) {
-                    // set no bit
-                    for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
-                        randoms[i] = static_cast<mask_t>(0);
-                    }
-                } else if (selectivity == 100) {
-                    // set all bits
-                    for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
-                        randoms[i] = helper::FULL;
-                    }
-                } else {
-                    for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
-                        randoms[i] = static_cast<mask_t>(0);
-                    }
-                    double dSel = static_cast<double>(selectivity) / 100.0;
-                    size_t numMaskBitsTotal = abstract_abstract_context_t::NUM_RND * (sizeof(V) / sizeof(T));
-                    size_t numMaskBitsSet = 0;
-                    double ratio = 0.0;
-                    do {
-                        size_t bit = rndDistr(paac->rndEngine);
-                        mask_t subMask = randoms[bit >> helper::SHIFT];
-                        if (0 == (subMask & (1 << (bit & helper::MASK)))) {
-                            randoms[bit >> helper::SHIFT] = subMask | (1 << (bit & helper::MASK));
-                            ++numMaskBitsSet;
-                            ratio = static_cast<double>(numMaskBitsSet) / static_cast<double>(numMaskBitsTotal);
-                        }
-                    }while (ratio < dSel);
-                }
-                size_t numMaskBitsTotal = abstract_abstract_context_t::NUM_RND * (sizeof(V) / sizeof(T));
-                size_t numMaskBitsSet = 0;
-                for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
-                    numMaskBitsSet += __builtin_popcountll(static_cast<size_t>(randoms[i]));
-                }
-                std::cout << std::fixed << (static_cast<double>(numMaskBitsSet) / static_cast<double>(numMaskBitsTotal)) << std::defaultfloat;
+    void setSelectivity(
+            size_t selectivity) {
+        if (selectivity > 100) {
+            throw std::runtime_error("abstract_context_t::setSelectivity : Selectivity must not be >100");
+        } else if (selectivity == 0) {
+            // set no bit
+            for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
+                randoms[i] = static_cast<mask_t>(0);
             }
-        };
+        } else if (selectivity == 100) {
+            // set all bits
+            for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
+                randoms[i] = helper::FULL;
+            }
+        } else {
+            for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
+                randoms[i] = static_cast<mask_t>(0);
+            }
+            double dSel = static_cast<double>(selectivity) / 100.0;
+            size_t numMaskBitsTotal = abstract_abstract_context_t::NUM_RND * (sizeof(V) / sizeof(T));
+            size_t numMaskBitsSet = 0;
+            double ratio = 0.0;
+            do {
+                size_t bit = rndDistr(paac->rndEngine);
+                mask_t subMask = randoms[bit >> helper::SHIFT];
+                if (0 == (subMask & (1 << (bit & helper::MASK)))) {
+                    randoms[bit >> helper::SHIFT] = subMask | (1 << (bit & helper::MASK));
+                    ++numMaskBitsSet;
+                    ratio = static_cast<double>(numMaskBitsSet) / static_cast<double>(numMaskBitsTotal);
+                }
+            } while (ratio < dSel);
+        }
+        size_t numMaskBitsTotal = abstract_abstract_context_t::NUM_RND * (sizeof(V) / sizeof(T));
+        size_t numMaskBitsSet = 0;
+        for (size_t i = 0; i < abstract_abstract_context_t::NUM_RND; ++i) {
+            numMaskBitsSet += __builtin_popcountll(static_cast<size_t>(randoms[i]));
+        }
+        std::cout << std::fixed << (static_cast<double>(numMaskBitsSet) / static_cast<double>(numMaskBitsTotal)) << std::defaultfloat;
+    }
+};
 
 template<typename V, typename M1, typename M2>
 struct column_initializer {
@@ -227,12 +258,12 @@ struct concrete_context_t {
               pmmOut(ahead::align_to<sizeof(V)>(pmmOutUnaligned)) {
         if (pmmIn) {
             for (size_t i = 0; i < ac.numMM; ++i) {
-                _mm_storeu_si128(&pmmIn[i], ac.mm);
+                pmmIn[i] = ac.mm;
             }
         }
         if (pmmOut) {
             for (size_t i = 0; i < ac.numMM; ++i) {
-                _mm_storeu_si128(&pmmOut[i], ac.mm);
+                pmmOut[i] = ac.mm;
             }
         }
     }
@@ -299,8 +330,8 @@ void testPack1ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        auto mmResult = ahead::bat::ops::simd::v2_mm<V, T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
-        _mm_storeu_si128(pmmOut, mmResult);
+        auto mmResult = ahead::bat::ops::simd::v2_mm<V, T>::pack_right(*pmmIn++, tmpMask);
+        *pmmOut = mmResult;
         pmmOut = reinterpret_cast<V*>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
 }
@@ -314,7 +345,7 @@ void testPack2ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        ahead::bat::ops::simd::v2_mm<V, T>::pack_right2(pOut, _mm_lddqu_si128(pmmIn++), tmpMask);
+        ahead::bat::ops::simd::v2_mm<V, T>::pack_right2(pOut, *pmmIn++, tmpMask);
     }
 }
 

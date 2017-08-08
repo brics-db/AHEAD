@@ -19,8 +19,8 @@
  * Created on 23. Februar 2017, 22:43
  */
 
-#ifndef SSE_HPP
-#define SSE_HPP
+#ifndef LIB_COLUMN_OPERATORS_SIMD_SSE_HPP_
+#define LIB_COLUMN_OPERATORS_SIMD_SSE_HPP_
 
 #include <algorithm>
 #include <cstdint>
@@ -763,4 +763,4 @@ namespace ahead {
     }
 }
 
-#endif /* SSE_HPP */
+#endif /* LIB_COLUMN_OPERATORS_SIMD_SSE_HPP_ */

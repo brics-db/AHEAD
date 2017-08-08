@@ -19,8 +19,12 @@
  * Created on 23. Februar 2017, 22:43
  */
 
-#ifndef SSE_HPP
-#define SSE_HPP
+#ifndef LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_
+#define LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_
+
+#ifndef __AVX2__
+#error "AVX2 not supported by requested!"
+#endif
 
 #include <algorithm>
 #include <cstdint>
@@ -40,7 +44,7 @@ namespace ahead {
                             uint8_t * & result,
                             __m256i & a,
                             uint32_t mask) {
-                        *result = reinterpret_cast<uint8_t*>(a)[current];
+                        *result = reinterpret_cast<uint8_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint8<current + 1>(result, a, mask);
                     }
@@ -50,7 +54,7 @@ namespace ahead {
                             uint8_t * & result,
                             __m256i & a,
                             uint32_t mask) {
-                        *result = reinterpret_cast<uint8_t*>(a)[31];
+                        *result = reinterpret_cast<uint8_t*>(&a)[31];
                         result += (mask >> 31) & 0x1;
                     }
 
@@ -59,7 +63,7 @@ namespace ahead {
                             uint16_t * & result,
                             __m256i & a,
                             uint16_t mask) {
-                        *result = reinterpret_cast<uint16_t*>(a)[current];
+                        *result = reinterpret_cast<uint16_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint16<current + 1>(result, a, mask);
                     }
@@ -69,7 +73,7 @@ namespace ahead {
                             uint16_t * & result,
                             __m256i & a,
                             uint16_t mask) {
-                        *result = reinterpret_cast<uint16_t*>(a)[15];
+                        *result = reinterpret_cast<uint16_t*>(&a)[15];
                         result += (mask >> 15) & 0x1;
                     }
 
@@ -78,7 +82,7 @@ namespace ahead {
                             uint32_t * & result,
                             __m256i & a,
                             uint8_t mask) {
-                        *result = reinterpret_cast<uint32_t*>(a)[current];
+                        *result = reinterpret_cast<uint32_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint32<current + 1>(result, a, mask);
                     }
@@ -88,7 +92,7 @@ namespace ahead {
                             uint32_t * & result,
                             __m256i & a,
                             uint8_t mask) {
-                        *result = reinterpret_cast<uint32_t*>(a)[7];
+                        *result = reinterpret_cast<uint32_t*>(&a)[7];
                         result += (mask >> 7) & 0x1;
                     }
 
@@ -97,7 +101,7 @@ namespace ahead {
                             uint64_t * & result,
                             __m256i & a,
                             uint8_t mask) {
-                        *result = reinterpret_cast<uint64_t*>(a)[current];
+                        *result = reinterpret_cast<uint64_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint64<current + 1>(result, a, mask);
                     }
@@ -107,7 +111,7 @@ namespace ahead {
                             uint64_t * & result,
                             __m256i & a,
                             uint8_t mask) {
-                        *result = reinterpret_cast<uint64_t*>(a)[3];
+                        *result = reinterpret_cast<uint64_t*>(&a)[3];
                         result += (mask >> 3) & 0x1;
                     }
 
@@ -131,7 +135,7 @@ namespace ahead {
 
                     static inline __m256i set1(
                             uint8_t value) {
-                        return _mm_set1_epi8(value);
+                        return _mm256_set1_epi8(value);
                     }
 
                     static inline __m256i set(
@@ -176,7 +180,7 @@ namespace ahead {
                                 v0 + 14, v0 + 13, v0 + 12, v0 + 11, v0 + 10, v0 + 9, v0 + 8, v0 + 7, v0 + 6, v0 + 5, v0 + 4, v0 + 3, v0 + 2, v0 + 1, v0);
                     }
 
-                    static inline __m128i set_inc(
+                    static inline __m256i set_inc(
                             uint8_t v0,
                             uint16_t inc) {
                         return _mm256_set_epi8(v0 + 31 * inc, v0 + 30 * inc, v0 + 29 * inc, v0 + 28 * inc, v0 + 27 * inc, v0 + 26 * inc, v0 + 25 * inc, v0 + 24 * inc, v0 + 23 * inc, v0 + 22 * inc,
@@ -206,23 +210,23 @@ namespace ahead {
                         return _mm256_set_epi64x(_mm256_extract_epi64(res2, 2), _mm256_extract_epi64(res2, 0), _mm256_extract_epi64(res1, 2), _mm256_extract_epi64(res1, 0));
                     }
 
-                    static inline uint16_t sum(
+                    static inline uint8_t sum(
                             __m256i a) {
                         auto mm1 = _mm256_cvtepi8_epi32(_mm256_extractf128_si256(a, 0));
-                        auto mm2 = _mm256_cvtepi8_epi32(_mm_srli_si128(_mm256_extractf128_si256(a, 0), 64));
+                        auto mm2 = _mm256_cvtepi8_epi32(_mm_srli_si128(_mm256_extractf128_si256(a, 0), 8));
                         auto mm3 = _mm256_cvtepi8_epi32(_mm256_extractf128_si256(a, 1));
-                        auto mm4 = _mm256_cvtepi8_epi32(_mm_srli_si128(_mm256_extractf128_si256(a, 1), 64));
+                        auto mm4 = _mm256_cvtepi8_epi32(_mm_srli_si128(_mm256_extractf128_si256(a, 1), 8));
                         mm1 = _mm256_add_epi32(mm1, mm2);
                         mm3 = _mm256_add_epi32(mm3, mm4);
                         mm1 = _mm256_add_epi32(mm1, mm3);
                         mm1 = _mm256_add_epi32(mm1, _mm256_srli_si256(mm1, 8));
                         mm1 = _mm256_add_epi32(mm1, _mm256_srli_si256(mm1, 4));
                         auto mm128 = _mm_add_epi32(_mm256_extractf128_si256(mm1, 1), _mm256_extractf128_si256(mm1, 0));
-                        return static_cast<uint16_t>(_mm_extract_epi32(mm1, 0));
+                        return static_cast<uint8_t>(_mm_extract_epi32(mm128, 0));
                     }
 
                     static inline __m256i pack_right(
-                            __m128i a,
+                            __m256i a,
                             mask_t mask) {
                         const uint64_t ALL_ONES = 0xFFFFFFFFFFFFFFFFull;
                         int MAX0[2] = {0, 1};
@@ -249,37 +253,37 @@ namespace ahead {
                         int nSelLLLHHL = nSelLL + nSelLH + nSelHL;
                         MAX0[1] = 64 - nSelLLLHHL;
                         int clzLLLHHL = MAX0[MAX0[1] > 0];
-                        uint64_t shufMask0_sub0 = shuffleMaskLL;
-                        uint64_t shufMask0_sub1 = ((shuffleMaskLH << nSelLL) | (ALL_ONES >> clzLL));
-                        uint64_t shufMask0_sub2 = ((shuffleMaskHL << nSelLLLH) | (ALL_ONES >> clzLLLH));
-                        uint64_t shufMask0_sub3 = ((shuffleMaskHH << nSelLLLHHL) | (ALL_ONES >> clzLLLHHL));
-                        uint64_t shufMask0 = shufMask0_sub0 & shufMask0_sub1 & shufMask0_sub2 & shufMask0_sub3;
+                        int64_t shufMask0_sub0 = shuffleMaskLL;
+                        int64_t shufMask0_sub1 = ((shuffleMaskLH << nSelLL) | (ALL_ONES >> clzLL));
+                        int64_t shufMask0_sub2 = ((shuffleMaskHL << nSelLLLH) | (ALL_ONES >> clzLLLH));
+                        int64_t shufMask0_sub3 = ((shuffleMaskHH << nSelLLLHHL) | (ALL_ONES >> clzLLLHHL));
+                        int64_t shufMask0 = shufMask0_sub0 & shufMask0_sub1 & shufMask0_sub2 & shufMask0_sub3;
 
-                        uint64_t shufMask1_sub0 = shuffleMaskLH >> clzLL;
+                        int64_t shufMask1_sub0 = shuffleMaskLH >> clzLL;
                         MAX32a[1] = clzLL - nSelLH; // amount of right-shift
                         MAX32b[1] = nSelLLLH - 64; // amount of left-shift
                         MAX32c[1] = 128 - nSelLLLH;
-                        uint64_t shufMask1_sub1 = (shuffleMaskHL >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHL << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
+                        int64_t shufMask1_sub1 = (shuffleMaskHL >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHL << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
                         MAX32a[1] = clzLL - (nSelLH + nSelHL);
                         MAX32b[1] = nSelLLLHHL - 64;
                         MAX32c[1] = 128 - nSelLLLHHL;
-                        uint64_t shufMask1_sub2 = (shuffleMaskHH >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHH << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
-                        uint64_t shufMask1 = shufMask1_sub0 & shufMask1_sub1 & shufMask1_sub2;
+                        int64_t shufMask1_sub2 = (shuffleMaskHH >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHH << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
+                        int64_t shufMask1 = shufMask1_sub0 & shufMask1_sub1 & shufMask1_sub2;
 
-                        uint64_t shufMask2_sub0 = shuffleMaskHL >> (clzLL + clzLH);
+                        int64_t shufMask2_sub0 = shuffleMaskHL >> (clzLL + clzLH);
                         MAX32a[1] = (clzLL + clzLH) - (nSelLH + nSelHL);
                         MAX32b[1] = nSelLLLHHL - 128;
                         MAX32c[1] = 192 - nSelLLLHHL;
-                        uint64_t shufMask2_sub1 = (shuffleMaskHH >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHH << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
-                        uint64_t shufMask2 = shufMask2_sub0 & shufMask2_sub1;
+                        int64_t shufMask2_sub1 = (shuffleMaskHH >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHH << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
+                        int64_t shufMask2 = shufMask2_sub0 & shufMask2_sub1;
 
-                        uint64_t shufMask3 = shuffleMaskHH >> (clzLL + clzLH + clzHL);
+                        int64_t shufMask3 = shuffleMaskHH >> (clzLL + clzLH + clzHL);
                         return Private::_mm256_shuffle256_epi8(a, _mm256_set_epi64x(shufMask3, shufMask2, shufMask1, shufMask0));
                     }
 
                     static inline void pack_right2(
                             uint8_t * & result,
-                            __m128i a,
+                            __m256i a,
                             mask_t mask) {
                         if (mask) {
                             Private::pack_right2_uint8(result, a, mask);
@@ -287,10 +291,10 @@ namespace ahead {
                     }
 
                 private:
-                    static const uint64_t * const SHUFFLE_TABLE_LL;
-                    static const uint64_t * const SHUFFLE_TABLE_LH;
-                    static const uint64_t * const SHUFFLE_TABLE_HL;
-                    static const uint64_t * const SHUFFLE_TABLE_HH;
+                    static const int64_t * const SHUFFLE_TABLE_LL;
+                    static const int64_t * const SHUFFLE_TABLE_LH;
+                    static const int64_t * const SHUFFLE_TABLE_HL;
+                    static const int64_t * const SHUFFLE_TABLE_HH;
                 };
 
                 template<>
@@ -359,7 +363,7 @@ namespace ahead {
                         return _mm256_mullo_epi16(a, b);
                     }
 
-                    static inline uint32_t sum(
+                    static inline uint16_t sum(
                             __m256i a) {
                         auto mm1 = _mm256_cvtepi16_epi32(_mm256_extractf128_si256(a, 0));
                         auto mm2 = _mm256_cvtepi16_epi32(_mm256_extractf128_si256(a, 1));
@@ -367,21 +371,65 @@ namespace ahead {
                         mm1 = _mm256_add_epi32(mm1, _mm256_srli_si256(mm1, 8));
                         mm1 = _mm256_add_epi32(mm1, _mm256_srli_si256(mm1, 4));
                         auto mm128 = _mm_add_epi32(_mm256_extractf128_si256(mm1, 1), _mm256_extractf128_si256(mm1, 0));
-                        return static_cast<uint32_t>(_mm_extract_epi32(mm1, 0));
+                        return static_cast<uint16_t>(_mm_extract_epi32(mm128, 0));
                     }
 
                     static inline __m256i pack_right(
                             __m256i a,
                             mask_t mask) {
                         static const uint64_t ALL_ONES = 0xFFFFFFFFFFFFFFFFull;
-                        uint8_t mask_L = static_cast<uint8_t>(mask);
-                        auto mmShuffleMaskL = SHUFFLE_TABLE_L[mask_L];
-                        int effBytes_L = __builtin_popcount(mask_L) * 2;
-                        int clzb_L = sizeof(__m128i) - effBytes_L;
+                        int MAX0[2] = {0, 1};
+                        int MAX32a[2] = {32, 1}; // used for shifts where we may have to "erase" the argument by shifting it out of the register
+                        int MAX32b[2] = {32, 1}; // used for shifts where we may have to "erase" the argument by shifting it out of the register
+                        int MAX32c[2] = {32, 1}; // used for shifts where we may have to "erase" the argument by shifting it out of the register
+                        auto mmShuffleMaskL = SHUFFLE_TABLE_L[static_cast<uint8_t>(mask)];
                         auto mmShuffleMaskH = SHUFFLE_TABLE_H[static_cast<uint8_t>(mask >> 8)];
-                        auto mm_L = _mm_and_si128(mmShuffleMaskL, _mm_or_si128(_mm_slli_si128(mmShuffleMaskH, effBytes_L), _mm_srli_si128(_mm_set1_epi64x(ALL_ONES), clzb_L)));
-                        auto mm_H = _mm_or_si128(_mm_srli_si128(mmShuffleMaskH, clzb_L), _mm_slli_si128(_mm_set1_epi64x(ALL_ONES), effBytes_L));
-                        return Private::_mm256_shuffle256_epi8(a, _mm256_set_m128i(mm_H, mm_L));
+                        int64_t shuffleMaskLL = static_cast<int64_t>(_mm_extract_epi64(mmShuffleMaskL, 0));
+                        // number of unmatched bytes in bits (if a value matches, the leading bits are zero and the inversion makes it ones, so only full bytes are counted)
+                        int clzLL = __builtin_clzll(~shuffleMaskLL);
+                        int64_t shuffleMaskLH = static_cast<int64_t>(_mm_extract_epi64(mmShuffleMaskL, 1));
+                        int clzLH = __builtin_clzll(~shuffleMaskLH);
+                        int64_t shuffleMaskHL = static_cast<int64_t>(_mm_extract_epi64(mmShuffleMaskH, 0));
+                        int clzHL = __builtin_clzll(~shuffleMaskHL);
+                        int64_t shuffleMaskHH = static_cast<int64_t>(_mm_extract_epi64(mmShuffleMaskH, 1));
+                        int clzHH = __builtin_clzll(~shuffleMaskHH);
+
+                        int nSelLL = 64 - clzLL;
+                        int nSelLH = 64 - clzLH;
+                        int nSelHL = 64 - clzHL;
+                        int nSelHH = 64 - clzHH;
+                        int nSelLLLH = nSelLL + nSelLH;
+                        MAX0[1] = 64 - nSelLLLH;
+                        int clzLLLH = MAX0[MAX0[1] > 0];
+                        int nSelLLLHHL = nSelLL + nSelLH + nSelHL;
+                        MAX0[1] = 64 - nSelLLLHHL;
+                        int clzLLLHHL = MAX0[MAX0[1] > 0];
+                        int64_t shufMask0_sub0 = shuffleMaskLL;
+                        int64_t shufMask0_sub1 = ((shuffleMaskLH << nSelLL) | (ALL_ONES >> clzLL));
+                        int64_t shufMask0_sub2 = ((shuffleMaskHL << nSelLLLH) | (ALL_ONES >> clzLLLH));
+                        int64_t shufMask0_sub3 = ((shuffleMaskHH << nSelLLLHHL) | (ALL_ONES >> clzLLLHHL));
+                        int64_t shufMask0 = shufMask0_sub0 & shufMask0_sub1 & shufMask0_sub2 & shufMask0_sub3;
+
+                        int64_t shufMask1_sub0 = shuffleMaskLH >> clzLL;
+                        MAX32a[1] = clzLL - nSelLH; // amount of right-shift
+                        MAX32b[1] = nSelLLLH - 64; // amount of left-shift
+                        MAX32c[1] = 128 - nSelLLLH;
+                        int64_t shufMask1_sub1 = (shuffleMaskHL >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHL << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
+                        MAX32a[1] = clzLL - (nSelLH + nSelHL);
+                        MAX32b[1] = nSelLLLHHL - 64;
+                        MAX32c[1] = 128 - nSelLLLHHL;
+                        int64_t shufMask1_sub2 = (shuffleMaskHH >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHH << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
+                        int64_t shufMask1 = shufMask1_sub0 & shufMask1_sub1 & shufMask1_sub2;
+
+                        int64_t shufMask2_sub0 = shuffleMaskHL >> (clzLL + clzLH);
+                        MAX32a[1] = (clzLL + clzLH) - (nSelLH + nSelHL);
+                        MAX32b[1] = nSelLLLHHL - 128;
+                        MAX32c[1] = 192 - nSelLLLHHL;
+                        int64_t shufMask2_sub1 = (shuffleMaskHH >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHH << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
+                        int64_t shufMask2 = shufMask2_sub0 & shufMask2_sub1;
+
+                        int64_t shufMask3 = shuffleMaskHH >> (clzLL + clzLH + clzHL);
+                        return Private::_mm256_shuffle256_epi8(a, _mm256_set_epi64x(shufMask3, shufMask2, shufMask1, shufMask0));
                     }
 
                     static inline void pack_right2(
@@ -473,10 +521,10 @@ namespace ahead {
                         auto mm = _mm256_add_epi32(a, _mm256_srli_si256(a, 8));
                         mm = _mm256_add_epi32(mm, _mm256_srli_si256(mm, 4));
                         auto mm128 = _mm_add_epi32(_mm256_extractf128_si256(mm, 1), _mm256_extractf128_si256(mm, 0));
-                        return static_cast<uint32_t>(_mm_extract_epi32(mm, 0));
+                        return static_cast<uint32_t>(_mm_extract_epi32(mm128, 0));
                     }
 
-                    static inline __m128i pack_right(
+                    static inline __m256i pack_right(
                             __m256i a,
                             mask_t mask) {
                         return Private::_mm256_shuffle256_epi8(a, SHUFFLE_TABLE[mask]);
@@ -484,7 +532,7 @@ namespace ahead {
 
                     static inline void pack_right2(
                             uint32_t * & result,
-                            __m128i a,
+                            __m256i a,
                             mask_t mask) {
                         if (mask) {
                             Private::pack_right2_uint32(result, a, mask);
@@ -575,7 +623,7 @@ namespace ahead {
 
                     static inline void pack_right2(
                             uint64_t * & result,
-                            __m128i a,
+                            __m256i a,
                             mask_t mask) {
                         if (mask) {
                             Private::pack_right2_uint64(result, a, mask);
@@ -591,4 +639,4 @@ namespace ahead {
     }
 }
 
-#endif /* SSE_HPP */
+#endif /* LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_ */
