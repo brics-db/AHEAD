@@ -2,16 +2,16 @@
 #include <iostream>
 #include <iomanip>
 #include <random>
-#include "SSE.hpp"
-#include "../../include/util/stopwatch.hpp"
+#include <column_operators/SIMD/SSE.hpp>
+#include <util/stopwatch.hpp>
 
 template<typename T>
 void test(
         const size_t NUM) {
-    typedef typename ahead::bat::ops::v2_mm128<T>::mask_t mask_t;
+    typedef typename ahead::bat::ops::sse::v2_mm128<T>::mask_t mask_t;
     const size_t NUM128 = (NUM / (sizeof(__m128i ) / sizeof(T)));
 
-    __m128i vector = ahead::bat::ops::v2_mm128<T>::set_inc(static_cast<T>(1));
+    __m128i vector = ahead::bat::ops::sse::v2_mm128<T>::set_inc(static_cast<T>(1));
     size_t maskMax = 1ull << (sizeof(__m128i) / sizeof(T));
 
     std::random_device rndDevice;
@@ -28,7 +28,7 @@ void test(
     __m128i * pmmOutAligned = reinterpret_cast<__m128i *>((reinterpret_cast<size_t>(pmmOutOrg) + (sizeof(__m128i) - 1)) & ~(sizeof(__m128i) - 1));
     __m128i * pmmOut = pmmOutAligned;
     for (i = 0; i < NUM128; ++i) {
-        _mm_storeu_si128(pmmOut++, ahead::bat::ops::v2_mm128<T>::set1(rndValueDistr(rndEngine)));
+        _mm_storeu_si128(pmmOut++, ahead::bat::ops::sse::v2_mm128<T>::set1(rndValueDistr(rndEngine)));
     }
 
     ahead::StopWatch sw;
@@ -43,7 +43,7 @@ void test(
             mask_t tmpMask = randoms[i & MASK_ARR];
             // mask_t tmpMask = mask;
             size_t nMaskOnes = __builtin_popcountll(tmpMask);
-            __m128i mmResult = ahead::bat::ops::v2_mm128<T>::pack_right(vector, tmpMask);
+            __m128i mmResult = ahead::bat::ops::sse::v2_mm128<T>::pack_right(vector, tmpMask);
             _mm_storeu_si128(pmmOut, mmResult);
             pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
             // mask = (mask * mask) % curMaskMax;

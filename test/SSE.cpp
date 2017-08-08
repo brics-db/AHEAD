@@ -15,13 +15,13 @@
  */
 
 /* 
- * File:   SSE.cpp
+ * File:   createshufflemaskarrays.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 25. Februar 2017, 23:48
  */
 
-#include <column_operators/SSE/SSE.hpp>
+#include <column_operators/SIMD/SSE.hpp>
 
 namespace ahead {
     namespace bat {

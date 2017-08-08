@@ -180,7 +180,7 @@ int main() {
  * Created on 25. Februar 2017, 23:48\n\
  */\n\
 \n\
-#include <column_operators/SSE/SSE.hpp>\n\
+#include <column_operators/SIMD/SSE.hpp>\n\
 \n\
 namespace ahead {\n\
     namespace bat {\n\

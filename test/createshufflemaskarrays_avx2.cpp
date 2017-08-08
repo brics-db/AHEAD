@@ -318,7 +318,7 @@ int main() {
  * Created on 07. August 2017, 14:35\n\
  */\n\
 \n\
-#include <column_operators/SSE/AVX2.hpp>\n\
+#include <column_operators/SIMD/AVX2.hpp>\n\
 \n\
 namespace ahead {\n\
     namespace bat {\n\
@@ -397,14 +397,14 @@ namespace ahead {\n\
     std::cout
             << "\n\
                 };\n\n\
-                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LL = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_LL);\n\
-                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LH = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_LH);\n\
-                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HL = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_HL);\n\
-                const uint64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HH = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_HH);\n\
+                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LL = reinterpret_cast<const int64_t*>(SHUFFLE_EPI08_TABLE_LL);\n\
+                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LH = reinterpret_cast<const int64_t*>(SHUFFLE_EPI08_TABLE_LH);\n\
+                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HL = reinterpret_cast<const int64_t*>(SHUFFLE_EPI08_TABLE_HL);\n\
+                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HH = reinterpret_cast<const int64_t*>(SHUFFLE_EPI08_TABLE_HH);\n\
                 const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_L = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE_L);\n\
                 const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_H = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE_H);\n\
-                const __m256i * const v2_mm256<uint32_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI32_TABLE);\n\
-                const __m256i * const v2_mm256<uint64_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI64_TABLE);\n\
+                const __m256i * const v2_mm256<uint32_t>::SHUFFLE_TABLE = reinterpret_cast<const __m256i*>(SHUFFLE_EPI32_TABLE);\n\
+                const __m256i * const v2_mm256<uint64_t>::SHUFFLE_TABLE = reinterpret_cast<const __m256i*>(SHUFFLE_EPI64_TABLE);\n\
 \n\
             }\n\
         }\n\

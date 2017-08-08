@@ -40,7 +40,7 @@ namespace ahead {
                             uint8_t * & result,
                             __m128i & a,
                             uint16_t mask) {
-                        *result = _mm_extract_epi8(a, current);
+                        *result = reinterpret_cast<uint8_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint8<current + 1>(result, a, mask);
                     }
@@ -50,7 +50,7 @@ namespace ahead {
                             uint8_t * & result,
                             __m128i & a,
                             uint16_t mask) {
-                        *result = _mm_extract_epi8(a, 15);
+                        *result = reinterpret_cast<uint8_t*>(&a)[15];
                         result += (mask >> 15) & 0x1;
                     }
 
@@ -59,7 +59,7 @@ namespace ahead {
                             uint16_t * & result,
                             __m128i & a,
                             uint8_t mask) {
-                        *result = _mm_extract_epi16(a, current);
+                        *result = reinterpret_cast<uint16_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint16<current + 1>(result, a, mask);
                     }
@@ -69,7 +69,7 @@ namespace ahead {
                             uint16_t * & result,
                             __m128i & a,
                             uint8_t mask) {
-                        *result = _mm_extract_epi16(a, 7);
+                        *result = reinterpret_cast<uint16_t*>(&a)[7];
                         result += (mask >> 7) & 0x1;
                     }
 
@@ -78,7 +78,7 @@ namespace ahead {
                             uint32_t * & result,
                             __m128i & a,
                             uint8_t mask) {
-                        *result = _mm_extract_epi32(a, current);
+                        *result = reinterpret_cast<uint32_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint32<current + 1>(result, a, mask);
                     }
@@ -88,7 +88,7 @@ namespace ahead {
                             uint32_t * & result,
                             __m128i & a,
                             uint8_t mask) {
-                        *result = _mm_extract_epi32(a, 3);
+                        *result = reinterpret_cast<uint32_t*>(&a)[3];
                         result += (mask >> 3) & 0x1;
                     }
 
@@ -97,7 +97,7 @@ namespace ahead {
                             uint64_t * & result,
                             __m128i & a,
                             uint8_t mask) {
-                        *result = _mm_extract_epi64(a, current);
+                        *result = reinterpret_cast<uint64_t*>(&a)[current];
                         result += (mask >> current) & 0x1;
                         pack_right2_uint64<current + 1>(result, a, mask);
                     }
@@ -107,7 +107,7 @@ namespace ahead {
                             uint64_t * & result,
                             __m128i & a,
                             uint8_t mask) {
-                        *result = _mm_extract_epi64(a, 1);
+                        *result = reinterpret_cast<uint64_t*>(&a)[1];
                         result += (mask >> 1) & 0x1;
                     }
                 }
@@ -197,9 +197,7 @@ namespace ahead {
                             uint8_t * & result,
                             __m128i a,
                             mask_t mask) {
-                        if (mask) {
-                            Private::pack_right2_uint8(result, a, mask);
-                        }
+                        Private::pack_right2_uint8(result, a, mask);
                     }
 
                 private:
@@ -282,9 +280,7 @@ namespace ahead {
                             uint16_t * & result,
                             __m128i a,
                             mask_t mask) {
-                        if (mask) {
-                            Private::pack_right2_uint16(result, a, mask);
-                        }
+                        Private::pack_right2_uint16(result, a, mask);
                     }
 
                 private:
@@ -374,9 +370,7 @@ namespace ahead {
                             uint32_t * & result,
                             __m128i a,
                             mask_t mask) {
-                        if (mask) {
-                            Private::pack_right2_uint32(result, a, mask);
-                        }
+                        Private::pack_right2_uint32(result, a, mask);
                     }
 
                 private:
@@ -464,9 +458,7 @@ namespace ahead {
                             uint64_t * & result,
                             __m128i a,
                             mask_t mask) {
-                        if (mask) {
-                            Private::pack_right2_uint64(result, a, mask);
-                        }
+                        Private::pack_right2_uint64(result, a, mask);
                     }
 
                 private:
