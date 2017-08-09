@@ -27,8 +27,8 @@
 #include <ColumnStore.h>
 #include <column_storage/Storage.hpp>
 #include "../miscellaneous.hpp"
-#include "../SSE/SSE.hpp"
-#include "../SSE/SSECMP.hpp"
+#include "../SIMD/SSE.hpp"
+#include "../SIMD/SSECMP.hpp"
 
 #ifdef __GNUC__
 #pragma GCC target "sse4.2"

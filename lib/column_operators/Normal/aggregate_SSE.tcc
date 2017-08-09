@@ -23,7 +23,7 @@
 #define AGGREGATE_SSE_TCC
 
 #include <column_storage/Storage.hpp>
-#include "../SSE/SSE.hpp"
+#include "../SIMD/SSE.hpp"
 #include "../miscellaneous.hpp"
 
 #ifdef __GNUC__
