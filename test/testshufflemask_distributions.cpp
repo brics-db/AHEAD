@@ -330,8 +330,8 @@ void testPack1ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        auto mmResult = ahead::bat::ops::simd::v2_mm<V, T>::pack_right(*pmmIn++, tmpMask);
-        *pmmOut = mmResult;
+        auto mmResult = ahead::bat::ops::simd::v2_mm<V, T>::pack_right(ahead::bat::ops::simd::v2_mm<V, T>::loadu(pmmIn++), tmpMask);
+        ahead::bat::ops::simd::v2_mm<V, T>::storeu(pmmOut, mmResult);
         pmmOut = reinterpret_cast<V*>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
 }
@@ -345,7 +345,7 @@ void testPack2ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        ahead::bat::ops::simd::v2_mm<V, T>::pack_right2(pOut, *pmmIn++, tmpMask);
+        ahead::bat::ops::simd::v2_mm<V, T>::pack_right2(pOut, ahead::bat::ops::simd::v2_mm<V, T>::loadu(pmmIn++), tmpMask);
     }
 }
 

@@ -109,6 +109,17 @@ namespace ahead {
                             mask_t mask) {
                         BASE::pack_right2(result, a, mask);
                     }
+
+                    static inline __m128i loadu(
+                            __m128i * src) {
+                        return _mm_lddqu_si128(src);
+                    }
+
+                    static inline void storeu(
+                            __m128i * dst,
+                            __m128i src) {
+                        _mm_storeu_si128(dst, src);
+                    }
                 };
 
 #ifdef __AVX2__
@@ -187,6 +198,17 @@ namespace ahead {
                             __m256i a,
                             mask_t mask) {
                         BASE::pack_right2(result, a, mask);
+                    }
+
+                    static inline __m256i loadu(
+                            __m256i * src) {
+                        return _mm256_lddqu_si256(src);
+                    }
+
+                    static inline void storeu(
+                            __m256i * dst,
+                            __m256i src) {
+                        _mm256_storeu_si256(dst, src);
                     }
                 };
 #endif
