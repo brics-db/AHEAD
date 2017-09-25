@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Till Kolditz
+// Copyright 2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,30 +13,25 @@
 // limitations under the License.
 
 /*
- * File:   SSE.cpp
- * Author: Till Kolditz <till.kolditz@gmail.com>
+ * SIMDBase.hpp
  *
- * Created on 07. August 2017, 06:11
+ *  Created on: 25.09.2017
+ *      Author: Till Kolditz - Till.Kolditz@gmail.com
  */
 
-#include "SSE.hpp"
+#pragma once
 
 namespace ahead {
     namespace bat {
         namespace ops {
             namespace simd {
-                namespace sse {
 
-                    const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_L = nullptr;
-                    const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_H = nullptr;
+                template<typename V, typename T>
+                struct v2_mm;
 
-                    const __m128i * const v2_mm128<uint16_t>::SHUFFLE_TABLE = nullptr;
+                template<typename V, typename T>
+                struct v2_mmx;
 
-                    const __m128i * const v2_mm128<uint32_t>::SHUFFLE_TABLE = nullptr;
-
-                    const __m128i * const v2_mm128<uint64_t>::SHUFFLE_TABLE = nullptr;
-
-                }
             }
         }
     }
