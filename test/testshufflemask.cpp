@@ -9,7 +9,7 @@
 #ifndef NPROCS
 #error "You must define the maximum number of threads you want to test! Use: -DNRPOCS=xxx"
 // let's provide at least a default NPROCS value which should be valid for all modern CPUs
-#define NPROCS 2
+#define NPROCS 1
 #endif
 
 struct initcolumns_t {

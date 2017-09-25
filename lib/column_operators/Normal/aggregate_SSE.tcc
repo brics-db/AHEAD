@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   aggregate.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -23,7 +23,8 @@
 #define AGGREGATE_SSE_TCC
 
 #include <column_storage/Storage.hpp>
-#include "../SIMD/SSE.hpp"
+#include "../SIMD/SIMD.hpp"
+#include "../SIMD/SSECMP.hpp"
 #include "../miscellaneous.hpp"
 
 #ifdef __GNUC__
@@ -84,12 +85,12 @@ namespace ahead {
                         auto pT2End = pT2 + numValues;
                         auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
                         auto pmmT2End = reinterpret_cast<__m128i *>(pT2End);
-                        auto mmTotal = v2_mm128<result_t>::set1(0);
+                        auto mmTotal = ahead::bat::ops::simd::v2_mm<__m128i, result_t>::set1(0);
                         size_t inc1 = 0, inc2 = 0;
                         for (; (pmmT1 <= (pmmT1End - 1)) && (pmmT2 <= (pmmT2End - 1)); pmmT1 += inc1, pmmT2 += inc2) {
-                            mmTotal = v2_mm128<result_t>::add(mmTotal, v2_mm128_mul_add<tail1_t, tail2_t, result_t>(pmmT1, pmmT2, inc1, inc2));
+                            mmTotal = ahead::bat::ops::simd::v2_mm<__m128i, result_t>::add(mmTotal, v2_mm128_mul_add<tail1_t, tail2_t, result_t>(pmmT1, pmmT2, inc1, inc2));
                         }
-                        result_t total = init + v2_mm128<result_t>::sum(mmTotal);
+                        result_t total = init + ahead::bat::ops::simd::v2_mm<__m128i, result_t>::sum(mmTotal);
                         pT1 = reinterpret_cast<tail1_t*>(pmmT1);
                         pT2 = reinterpret_cast<tail2_t*>(pmmT2);
                         for (; pT1 < pT1End && pT2 < pT2End; ++pT1, ++pT2) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * File:   SSECMP.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -26,8 +26,9 @@
 
 #include <immintrin.h>
 
-#include "SSE.hpp"
 #include <column_operators/functors.hpp>
+
+#include "SSE.hpp"
 
 namespace ahead {
     namespace bat {

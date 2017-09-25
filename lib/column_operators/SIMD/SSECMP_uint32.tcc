@@ -5,14 +5,9 @@
  *      Author: till
  */
 
-#ifndef LIB_COLUMN_OPERATORS_SSE_SSECMP_UINT32_TCC_
-#define LIB_COLUMN_OPERATORS_SSE_SSECMP_UINT32_TCC_
-
-#include <immintrin.h>
-
-#include "SSE.hpp"
-#include "SSECMP.hpp"
-#include <column_operators/functors.hpp>
+#ifndef SSECMP_HPP
+#error "This file must be included from SSECMP.hpp only"
+#endif
 
 namespace ahead {
     namespace bat {
@@ -166,7 +161,13 @@ namespace ahead {
                 template<>
                 struct v2_mm128_cmp<uint32_t, ahead::bat::ops::ADD> {
 
-                    static inline __m128i cmp(
+                    static inline __m128i doIt(
+                            __m128i a,
+                            __m128i b) {
+                        return add(a, b);
+                    }
+
+                    static inline __m128i add(
                             __m128i a,
                             __m128i b) {
                         return _mm_add_epi32(a, b);
@@ -176,7 +177,13 @@ namespace ahead {
                 template<>
                 struct v2_mm128_cmp<uint32_t, ahead::bat::ops::SUB> {
 
-                    static inline __m128i cmp(
+                    static inline __m128i doIt(
+                            __m128i a,
+                            __m128i b) {
+                        return sub(a, b);
+                    }
+
+                    static inline __m128i sub(
                             __m128i a,
                             __m128i b) {
                         return _mm_sub_epi32(a, b);
@@ -186,17 +193,29 @@ namespace ahead {
                 template<>
                 struct v2_mm128_cmp<uint32_t, ahead::bat::ops::MUL> {
 
-                    static inline __m128i cmp(
+                    static inline __m128i doIt(
                             __m128i a,
                             __m128i b) {
-                        return v2_mm128<uint32_t>::mullo(a, b);
+                        return mullo(a, b);
+                    }
+
+                    static inline __m128i mullo(
+                            __m128i a,
+                            __m128i b) {
+                        return _mm_mullo_epi32(a, b);
                     }
                 };
 
                 template<>
                 struct v2_mm128_cmp<uint32_t, ahead::bat::ops::DIV> {
 
-                    static inline __m128i cmp(
+                    static inline __m128i doIt(
+                            __m128i a,
+                            __m128i b) {
+                        return div(a, b);
+                    }
+
+                    static inline __m128i div(
                             __m128i a,
                             __m128i b) {
                         return _mm_cvtps_epi32(_mm_div_ps(_mm_cvtepi32_ps(a), _mm_cvtepi32_ps(b)));
@@ -207,5 +226,3 @@ namespace ahead {
         }
     }
 }
-
-#endif /* LIB_COLUMN_OPERATORS_SSE_SSECMP_UINT32_TCC_ */

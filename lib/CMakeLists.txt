@@ -54,6 +54,18 @@ MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
     cotire(${LIBNAME})
 ENDMACRO( add_shared_lib )
 
+MACRO(append_target_property arg_target arg_property arg_setting)
+	GET_TARGET_PROPERTY(TEMP ${arg_target} ${arg_property})
+	IF(TEMP STREQUAL "TEMP-NOTFOUND")
+		SET(TEMP "") # set to empty string
+	ELSE()
+		SET(TEMP "${TEMP} ") # a space to cleanly separate from existing content
+	ENDIF()
+	# append our values
+	SET(TEMP "${TEMP}${arg_setting}")
+	SET_TARGET_PROPERTIES(${arg_target} PROPERTIES ${arg_property} ${TEMP})
+ENDMACRO(append_target_property)
+
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
 #add_static_lib(AHEAD "util/resilience.cpp \
@@ -63,6 +75,7 @@ util/rss.cpp \
 util/stopwatch.cpp \
 util/v2types.cpp \
 util/argumentparser.cpp \
+util/cpuid.cpp \
 column_storage/ColumnManager.cpp \
 column_storage/BucketManager.cpp \
 column_storage/ColumnManager.cpp \
@@ -122,3 +135,4 @@ column_operators/AN/selectAN.cpp \
 column_operators/SIMD/SSE.cpp \
 column_operators/SIMD/AVX2.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
+append_target_property(AHEAD "GCC_COMPILE_FLAGS" "-Wno-ignored-attributes")

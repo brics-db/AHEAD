@@ -7,8 +7,12 @@ c++ -std=c++14 -O3 -mavx2 -o createshufflemaskarrays_avx2 createshufflemaskarray
 c++ -std=c++14 -O3 -march=native -DNPROCS=$(nproc) -o testshufflemask testshufflemask.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask.build &
 c++ -std=c++14 -O2 -g3 -march=native -DNPROCS=$(nproc) -o testshufflemask_dbg testshufflemask.cpp SSE.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_dbg.build &
 c++ -std=c++14 -O3 -march=native -o functors -I../include functors.cpp &>functors.build &
-c++ -std=c++14 -O3 -mavx2 -DNPROCS=$(nproc) -o testshufflemask_distributions testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions.build &
-c++ -std=c++14 -O2 -g3 -mavx2 -DNPROCS=$(nproc) -o testshufflemask_distributions_dbg testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions_dbg.build &
+c++ -std=c++14 -O3 -march=native -o testshufflemask_distributions_native testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions.build &
+c++ -std=c++14 -O2 -g3 -march=native -o testshufflemask_distributions_native_dbg testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions_dbg.build &
+c++ -std=c++14 -O3 -mavx2 -o testshufflemask_distributions_avx2 testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions.build &
+c++ -std=c++14 -O2 -g3 -mavx2 -o testshufflemask_distributions_avx2_dbg testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include -I../lib -fopenmp &>testshufflemask_distributions_dbg.build &
+c++ -std=c++14 -O3 -march=knl -o testshufflemask_distributions_knl testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include &>testshufflemask_distributions.build &
+c++ -std=c++14 -O2 -g3 -march=knl -o testshufflemask_distributions_knl_dbg testshufflemask_distributions.cpp SSE.cpp AVX2.cpp ../lib/util/stopwatch.cpp -I../include &>testshufflemask_distributions_dbg.build &
 
 wait $(jobs -p)
 

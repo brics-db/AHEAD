@@ -19,6 +19,8 @@
  * Created on 07. August 2017, 15:47
  */
 
+#ifdef __AVX2__
+
 #include "AVX2.hpp"
 
 namespace ahead {
@@ -40,3 +42,5 @@ namespace ahead {
         }
     }
 }
+
+#endif

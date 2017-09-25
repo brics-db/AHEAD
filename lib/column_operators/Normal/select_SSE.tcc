@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   select.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -76,9 +76,9 @@ namespace ahead {
                                 auto mm = _mm_lddqu_si128(pmmT);
                                 auto mask = v2_mm128_cmp<tail_t, Op>::cmp_mask(mm, mmThreshold);
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
-                                    constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
-                                    constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                    constexpr const tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
+                                    const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
+                                    const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
+                                    const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     if (mask) {
                                         auto maskTmp = mask;
                                         for (size_t i = 0; i < factor; ++i) {
@@ -186,9 +186,9 @@ namespace ahead {
                                 auto res2 = v2_mm128_cmp<tail_t, Op2>::cmp(mm, mmThreshold2);
                                 auto mask = v2_mm128_cmp<tail_t, OpCombine>::cmp_mask(res1, res2);
                                 if (larger_type<head_select_t, tail_t>::isFirstLarger) {
-                                    constexpr const size_t factor = sizeof(head_select_t) / sizeof(tail_t);
-                                    constexpr const size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                    constexpr const tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
+                                    const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
+                                    const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
+                                    const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                     if (mask) {
                                         auto maskTmp = mask;
                                         for (size_t i = 0; i < factor; ++i) {
@@ -201,7 +201,8 @@ namespace ahead {
                                         }
                                         v2_mm128<tail_t>::pack_right2(pRT, mm, mask);
                                     } else {
-                                        mmOID = v2_mm128<head_select_t>::add(mmOID, v2_mm128<head_select_t>::mullo(mmInc, v2_mm128<head_select_t>::set1(factor)));
+                                        mmOID = ahead::bat::ops::simd::v2_mm<__m128i, head_select_t>::add(mmOID,
+                                                ahead::bat::ops::simd::v2_mm<__m128i, head_select_t>::mullo(mmInc, v2_mm128<head_select_t>::set1(factor)));
                                     }
                                 } else {
                                     if (mask) {

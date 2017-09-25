@@ -21,7 +21,7 @@
  * Created on 25. Februar 2017, 23:48
  */
 
-#include <column_operators/SIMD/SSE.hpp>
+#include "../lib/column_operators/SIMD/SSE.hpp"
 
 namespace ahead {
     namespace bat {

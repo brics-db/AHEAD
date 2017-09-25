@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Till Kolditz <till.kolditz@gmail.com>.
+ * Copyright 2017 Till Kolditz <till.kolditz@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -318,7 +318,9 @@ int main() {
  * Created on 07. August 2017, 14:35\n\
  */\n\
 \n\
-#include <column_operators/SIMD/AVX2.hpp>\n\
+#ifdef __AVX2__\n\
+\n\
+#include \"../lib/column_operators/SIMD/AVX2.hpp\"\n\
 \n\
 namespace ahead {\n\
     namespace bat {\n\
@@ -409,7 +411,9 @@ namespace ahead {\n\
             }\n\
         }\n\
     }\n\
-}"
+}\n\
+\n\
+#endif\n\
+"
             << std::endl;
 }
-

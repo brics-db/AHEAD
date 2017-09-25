@@ -23,7 +23,7 @@
 #define LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_
 
 #ifndef __AVX2__
-#error "AVX2 not supported by requested!"
+#error "AVX2 requested but not supported!"
 #endif
 
 #include <algorithm>
@@ -246,7 +246,6 @@ namespace ahead {
                         int nSelLL = 64 - clzLL;
                         int nSelLH = 64 - clzLH;
                         int nSelHL = 64 - clzHL;
-                        int nSelHH = 64 - clzHH;
                         int nSelLLLH = nSelLL + nSelLH;
                         MAX0[1] = 64 - nSelLLLH;
                         int clzLLLH = MAX0[MAX0[1] > 0];
@@ -397,7 +396,6 @@ namespace ahead {
                         int nSelLL = 64 - clzLL;
                         int nSelLH = 64 - clzLH;
                         int nSelHL = 64 - clzHL;
-                        int nSelHH = 64 - clzHH;
                         int nSelLLLH = nSelLL + nSelLH;
                         MAX0[1] = 64 - nSelLLLH;
                         int clzLLLH = MAX0[MAX0[1] > 0];
@@ -612,7 +610,7 @@ namespace ahead {
                     static inline uint64_t sum(
                             __m256i a) {
                         auto mm = _mm256_add_epi64(a, _mm256_srli_si256(a, 8));
-                        return static_cast<uint64_t>(_mm256_extract_epi64(a, 0)) + static_cast<uint64_t>(_mm256_extract_epi64(a, 2));
+                        return static_cast<uint64_t>(_mm256_extract_epi64(mm, 0)) + static_cast<uint64_t>(_mm256_extract_epi64(mm, 2));
                     }
 
                     static inline __m256i pack_right(
