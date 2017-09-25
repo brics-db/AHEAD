@@ -22,13 +22,13 @@
 #ifndef LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_
 #define LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_
 
-#ifndef __AVX2__
-#error "AVX2 requested but not supported!"
-#endif
+#ifdef __AVX2__
 
 #include <algorithm>
 #include <cstdint>
 #include <immintrin.h>
+
+#include "SIMD.hpp"
 
 namespace ahead {
     namespace bat {
@@ -260,8 +260,8 @@ namespace ahead {
                             int64_t shufMask0 = shufMask0_sub0 & shufMask0_sub1 & shufMask0_sub2 & shufMask0_sub3;
 
                             int64_t shufMask1_sub0 = shuffleMaskLH >> clzLL;
-                            MAX32a[1] = clzLL - nSelLH; // amount of right-shift
-                            MAX32b[1] = nSelLLLH - 64; // amount of left-shift
+                            MAX32a[1] = clzLL - nSelLH;// amount of right-shift
+                            MAX32b[1] = nSelLLLH - 64;// amount of left-shift
                             MAX32c[1] = 128 - nSelLLLH;
                             int64_t shufMask1_sub1 = (shuffleMaskHL >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHL << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
                             MAX32a[1] = clzLL - (nSelLH + nSelHL);
@@ -410,8 +410,8 @@ namespace ahead {
                             int64_t shufMask0 = shufMask0_sub0 & shufMask0_sub1 & shufMask0_sub2 & shufMask0_sub3;
 
                             int64_t shufMask1_sub0 = shuffleMaskLH >> clzLL;
-                            MAX32a[1] = clzLL - nSelLH; // amount of right-shift
-                            MAX32b[1] = nSelLLLH - 64; // amount of left-shift
+                            MAX32a[1] = clzLL - nSelLH;// amount of right-shift
+                            MAX32b[1] = nSelLLLH - 64;// amount of left-shift
                             MAX32c[1] = 128 - nSelLLLH;
                             int64_t shufMask1_sub1 = (shuffleMaskHL >> MAX32a[MAX32a[1] > 0]) | (shuffleMaskHL << MAX32b[MAX32b[1] > 0]) | (ALL_ONES >> MAX32c[MAX32c[1] > 0]);
                             MAX32a[1] = clzLL - (nSelLH + nSelHL);
@@ -634,7 +634,173 @@ namespace ahead {
                     };
 
                 }
+
+                template<typename T>
+                struct v2_mm<__m256i, T> {
+                    typedef ahead::bat::ops::avx2::v2_mm256<T> BASE;
+                    typedef typename BASE::mask_t mask_t;
+
+                    static inline __m256i set1(
+                            T value) {
+                        return BASE::set1(value);
+                    }
+
+                    static inline __m256i set_inc(
+                            T v0) {
+                        return BASE::set_inc(v0);
+                    }
+
+                    static inline __m256i set_inc(
+                            T v0,
+                            uint16_t inc) {
+                        return BASE::set_inc(v0, inc);
+                    }
+
+                    static inline __m256i min(
+                            __m256i a,
+                            __m256i b) {
+                        return BASE::min(a, b);
+                    }
+
+                    static inline __m256i max(
+                            __m256i a,
+                            __m256i b) {
+                        return BASE::max(a, b);
+                    }
+
+                    static inline __m256i add(
+                            __m256i a,
+                            __m256i b) {
+                        return BASE::add(a, b);
+                    }
+
+                    static inline __m256i mullo(
+                            __m256i a,
+                            __m256i b) {
+                        return BASE::mullo(a, b);
+                    }
+
+                    static inline T sum(
+                            __m256i a) {
+                        return BASE::sum(a);
+                    }
+
+                    static inline __m256i pack_right(
+                            __m256i a,
+                            mask_t mask) {
+                        return BASE::pack_right(a, mask);
+                    }
+
+                    static inline void pack_right2(
+                            T * & result,
+                            __m256i a,
+                            mask_t mask) {
+                        BASE::pack_right2(result, a, mask);
+                    }
+
+                    static inline __m256i loadu(
+                            __m256i * src) {
+                        return _mm256_lddqu_si256(src);
+                    }
+
+                    static inline void storeu(
+                            __m256i * dst,
+                            __m256i src) {
+                        _mm256_storeu_si256(dst, src);
+                    }
+                };
+
+                template<>
+                struct v2_mmx<__m256i, uint8_t> {
+                    static inline __m256i set(
+                            uint8_t v31,
+                            uint8_t v30,
+                            uint8_t v29,
+                            uint8_t v28,
+                            uint8_t v27,
+                            uint8_t v26,
+                            uint8_t v25,
+                            uint8_t v24,
+                            uint8_t v23,
+                            uint8_t v22,
+                            uint8_t v21,
+                            uint8_t v20,
+                            uint8_t v19,
+                            uint8_t v18,
+                            uint8_t v17,
+                            uint8_t v16,
+                            uint8_t v15,
+                            uint8_t v14,
+                            uint8_t v13,
+                            uint8_t v12,
+                            uint8_t v11,
+                            uint8_t v10,
+                            uint8_t v9,
+                            uint8_t v8,
+                            uint8_t v7,
+                            uint8_t v6,
+                            uint8_t v5,
+                            uint8_t v4,
+                            uint8_t v3,
+                            uint8_t v2,
+                            uint8_t v1,
+                            uint8_t v0) {
+                        return _mm256_set_epi8(v31, v30, v29, v28, v27, v26, v25, v24, v23, v22, v21, v20, v19, v18, v17, v16, v15, v14, v13, v12, v11, v10, v9, v8, v7, v6, v5, v4, v3, v2, v1, v0);
+                    }
+                };
+
+                template<>
+                struct v2_mmx<__m256i, uint16_t> {
+                    static inline __m256i set(
+                            uint16_t v15,
+                            uint16_t v14,
+                            uint16_t v13,
+                            uint16_t v12,
+                            uint16_t v11,
+                            uint16_t v10,
+                            uint16_t v9,
+                            uint16_t v8,
+                            uint16_t v7,
+                            uint16_t v6,
+                            uint16_t v5,
+                            uint16_t v4,
+                            uint16_t v3,
+                            uint16_t v2,
+                            uint16_t v1,
+                            uint16_t v0) {
+                        return _mm256_set_epi16(v15, v14, v13, v12, v11, v10, v9, v8, v7, v6, v5, v4, v3, v2, v1, v0);
+                    }
+                };
+
+                template<>
+                struct v2_mmx<__m256i, uint32_t> {
+                    static inline __m256i set(
+                            uint32_t v7,
+                            uint32_t v6,
+                            uint32_t v5,
+                            uint32_t v4,
+                            uint32_t v3,
+                            uint32_t v2,
+                            uint32_t v1,
+                            uint32_t v0) {
+                        return _mm256_set_epi32(v7, v6, v5, v4, v3, v2, v1, v0);
+                    }
+                };
+
+                template<>
+                struct v2_mmx<__m256i, uint64_t> {
+                    static inline __m256i set(
+                            uint64_t v3,
+                            uint64_t v2,
+                            uint64_t v1,
+                            uint64_t v0) {
+                        return _mm256_set_epi64x(v3, v2, v1, v0);
+                    }
+                };
+
             }
         }
     }
 }
+
+#endif

@@ -29,7 +29,7 @@
 
 #include <column_operators/functors.hpp>
 
-#include "SIMDBase.hpp"
+#include "SIMD.hpp"
 
 namespace ahead {
     namespace bat {
@@ -169,7 +169,7 @@ namespace ahead {
             namespace simd {
 
                 template<>
-                struct v2_mmx<__m128i, uint8_t> {
+                struct v2_mm_set<__m128i, uint8_t> {
                     static inline __m128i set(
                             uint8_t v15,
                             uint8_t v14,
@@ -192,7 +192,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mmx<__m128i, uint16_t> {
+                struct v2_mm_set<__m128i, uint16_t> {
                     static inline __m128i set(
                             uint16_t v7,
                             uint16_t v6,
@@ -207,7 +207,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mmx<__m128i, uint32_t> {
+                struct v2_mm_set<__m128i, uint32_t> {
                     static inline __m128i set(
                             uint32_t v3,
                             uint32_t v2,
@@ -218,7 +218,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mmx<__m128i, uint64_t> {
+                struct v2_mm_set<__m128i, uint64_t> {
                     static inline __m128i set(
                             uint64_t v1,
                             uint64_t v0) {
@@ -227,11 +227,13 @@ namespace ahead {
                 };
 
                 template<typename T>
-                struct v2_mm<__m128i, T> {
+                struct v2_mm<__m128i, T> :
+                        public v2_mm_set<__m128i, T> {
+
                     typedef ahead::bat::ops::simd::sse::v2_mm128<T> BASE;
                     typedef typename BASE::mask_t mask_t;
 
-                    using v2_mmx<__m128i, T>::set;
+                    using v2_mm_set<__m128i, T>::set;
 
                     static inline __m128i set1(
                             T value) {
