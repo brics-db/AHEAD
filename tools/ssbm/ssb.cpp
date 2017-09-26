@@ -240,8 +240,8 @@ namespace ssb {
         ssb::tailTypes.clear();
     }
 
-    void load_tables(
-            std::vector<std::string> & tables,
+    void loadTables(
+            std::vector<std::string> && tables,
             std::string query) {
         ahead::StopWatch sw;
         sw.start();

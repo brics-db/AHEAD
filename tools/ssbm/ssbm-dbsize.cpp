@@ -27,7 +27,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Database Size Printer");
 
-    ssb::load_tables(std::vector<std::string>( {"customer", "date", "lineorder", "part", "supplier", "customerAN", "dateAN", "lineorderAN", "partAN", "supplierAN"}));
+    ssb::loadTables(std::vector<std::string>( {"customer", "date", "lineorder", "part", "supplier", "customerAN", "dateAN", "lineorderAN", "partAN", "supplierAN"}));
 
     ///////////////
     // Unencoded //

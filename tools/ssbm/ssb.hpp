@@ -228,8 +228,8 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
             architecture_t arch = DEFAULT_ARCHITECTURE);
     void init_pcm();
     void clear_stats();
-    void load_tables(
-            std::vector<std::string> & tables,
+    void loadTables(
+            std::vector<std::string> && tables,
             std::string query = std::string());
     void before_load();
     void after_load();
