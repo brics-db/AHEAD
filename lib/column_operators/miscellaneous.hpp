@@ -126,7 +126,10 @@ namespace ahead {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
-                return new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
+                auto * result = new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
+                result->head.metaData.width = sizeof(typename TargetHead::type_t);
+                result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+                return result;
             }
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
@@ -136,7 +139,9 @@ namespace ahead {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
-                return new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t());
+                auto * result = new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t());
+                result->head.metaData.width = sizeof(typename TargetHead::type_t);
+                return result;
             }
 
             template<typename TargetHead, typename TargetTail, typename Head, typename Tail>
@@ -146,7 +151,9 @@ namespace ahead {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
-                return new bat_t(coldesc_head_t(), coldesc_tail_t(arg->tail.metaData));
+                auto * result = new bat_t(coldesc_head_t(), coldesc_tail_t(arg->tail.metaData));
+                result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+                return result;
             }
 
             template<typename TargetHead, typename TargetTail, typename Head1, typename Tail1, typename Head2, typename Tail2>
@@ -157,7 +164,10 @@ namespace ahead {
                 typedef TempBAT<TargetHead, TargetTail> bat_t;
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
-                return new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
+                auto * result = new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
+                result->head.metaData.width = sizeof(typename TargetHead::type_t);
+                result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+                return result;
             }
 
             template<typename Head, typename Tail>

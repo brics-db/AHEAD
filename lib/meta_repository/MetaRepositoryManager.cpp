@@ -253,17 +253,18 @@ namespace ahead {
         id_t tableId = this->selectPKId(tables_id_pk, batIdForTableName);
 
         if (tableId != ID_INVALID) {
-            auto batForTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
+            auto * batForTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
 
             // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
             // reverse will not work here, because we need the bat id, not the table id
-            auto mirrorTableIdBat = batForTableId->mirror_head();
+            auto * mirrorTableIdBat = batForTableId->mirror_head();
             delete batForTableId;
             auto attributesForTable = ahead::bat::ops::hashjoin(mirrorTableIdBat, attributes_name);
+            // auto * attributesForTable = this->nestedLoopJoin(mirrorTableIdBat, attributes_name);
             delete mirrorTableIdBat;
             id_t batId = this->selectBatId(attributesForTable, attribute);
             delete attributesForTable;
-            auto reverseBat = attributes_column_id->reverse();
+            auto * reverseBat = attributes_column_id->reverse();
             batNrPair = this->unique_selection(reverseBat, batId);
             delete reverseBat;
         } else {
@@ -346,7 +347,7 @@ namespace ahead {
     }
     std::optional<oid_t> MetaRepositoryManager::TablesIterator::position() {
         if (hasNext()) {
-            return std::optional < oid_t > (pKeyIter->position());
+            return std::optional<oid_t>(pKeyIter->position());
         }
         return std::optional<oid_t>();
     }

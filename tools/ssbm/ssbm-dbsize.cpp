@@ -110,78 +110,78 @@ int main(
     // AN-Encoded //
     ////////////////
 
-    // custkey|name|address|city|nation|region|phone|mktsegment
-    // RESINT|STRING:25|STRING:25|STRING:10|STRING:15|STRING:12|STRING:15|STRING:10
-    MEASURE_OP(batCA1, new resint_colbat_t("customerAN", "custkey"));
-    MEASURE_OP(batCA2, new str_colbat_t("customerAN", "name"));
-    MEASURE_OP(batCA3, new str_colbat_t("customerAN", "address"));
-    MEASURE_OP(batCA4, new str_colbat_t("customerAN", "city"));
-    MEASURE_OP(batCA5, new str_colbat_t("customerAN", "nation"));
-    MEASURE_OP(batCA6, new str_colbat_t("customerAN", "region"));
-    MEASURE_OP(batCA7, new str_colbat_t("customerAN", "phone"));
-    MEASURE_OP(batCA8, new str_colbat_t("customerAN", "mktsegment"));
-
-    // datekey|date|dayofweek|month|year|yearmonthnum|yearmonth|daynuminweek|daynuminmonth|daynuminyear|monthnuminyear|weeknuminyear|sellingseason|lastdayinweekfl|lastdayinmonthfl|holidayfl|weekdayfl
-    // RESINT|STRING:18|STRING:9|STRING:9|RESSHORT|RESINT|STRING:7|RESTINY|RESTINY|RESSHORT|RESTINY|RESTINY|STRING:12|CHAR|CHAR|CHAR|CHAR
-    MEASURE_OP(batDA1, new resint_colbat_t("dateAN", "datekey"));
-    MEASURE_OP(batDA2, new str_colbat_t("dateAN", "date"));
-    MEASURE_OP(batDA3, new str_colbat_t("dateAN", "dayofweek"));
-    MEASURE_OP(batDA4, new str_colbat_t("dateAN", "month"));
-    MEASURE_OP(batDA5, new resshort_colbat_t("dateAN", "year"));
-    MEASURE_OP(batDA6, new resint_colbat_t("dateAN", "yearmonthnum"));
-    MEASURE_OP(batDA7, new str_colbat_t("dateAN", "yearmonth"));
-    MEASURE_OP(batDA8, new restiny_colbat_t("dateAN", "daynuminweek"));
-    MEASURE_OP(batDA9, new restiny_colbat_t("dateAN", "daynuminmonth"));
-    MEASURE_OP(batDAA, new shortint_colbat_t("dateAN", "daynuminyear"));
-    MEASURE_OP(batDAB, new restiny_colbat_t("dateAN", "monthnuminyear"));
-    MEASURE_OP(batDAC, new restiny_colbat_t("dateAN", "weeknuminyear"));
-    MEASURE_OP(batDAD, new str_colbat_t("dateAN", "sellingseason"));
-    MEASURE_OP(batDAE, new char_colbat_t("dateAN", "lastdayinweekfl"));
-    MEASURE_OP(batDAF, new char_colbat_t("dateAN", "lastdayinmonthfl"));
-    MEASURE_OP(batDAG, new char_colbat_t("dateAN", "holidayfl"));
-    MEASURE_OP(batDAH, new char_colbat_t("dateAN", "weekdayfl"));
-
-    // orderkey|linenumber|custkey|partkey|suppkey|orderdate|orderpriority|shippriority|quantity|extendedprice|ordertotalprice|discount|revenue|supplycost|tax|commitdate|shipmode
-    // INTEGER|TINYINT|INTEGER|INTEGER|INTEGER|INTEGER|STRING:15|CHAR|TINYINT|INTEGER|INTEGER|TINYINT|INTEGER|INTEGER|TINYINT|INTEGER|STRING:10
-    MEASURE_OP(batLA1, new resint_colbat_t("lineorderAN", "orderkey"));
-    MEASURE_OP(batLA2, new restiny_colbat_t("lineorderAN", "linenumber"));
-    MEASURE_OP(batLA3, new resint_colbat_t("lineorderAN", "custkey"));
-    MEASURE_OP(batLA4, new resint_colbat_t("lineorderAN", "partkey"));
-    MEASURE_OP(batLA5, new resint_colbat_t("lineorderAN", "suppkey"));
-    MEASURE_OP(batLA6, new resint_colbat_t("lineorderAN", "orderdate"));
-    MEASURE_OP(batLA7, new str_colbat_t("lineorderAN", "orderpriority"));
-    MEASURE_OP(batLA8, new char_colbat_t("lineorderAN", "shippriority"));
-    MEASURE_OP(batLA9, new restiny_colbat_t("lineorderAN", "quantity"));
-    MEASURE_OP(batLAA, new resint_colbat_t("lineorderAN", "extendedprice"));
-    MEASURE_OP(batLAB, new resint_colbat_t("lineorderAN", "ordertotalprice"));
-    MEASURE_OP(batLAC, new restiny_colbat_t("lineorderAN", "discount"));
-    MEASURE_OP(batLAD, new resint_colbat_t("lineorderAN", "revenue"));
-    MEASURE_OP(batLAE, new resint_colbat_t("lineorderAN", "supplycost"));
-    MEASURE_OP(batLAF, new restiny_colbat_t("lineorderAN", "tax"));
-    MEASURE_OP(batLAG, new resint_colbat_t("lineorderAN", "commitdate"));
-    MEASURE_OP(batLAH, new str_colbat_t("lineorderAN", "shipmode"));
-
-    // partkey|name|mfgr|category|brand|color|type|size|container
-    // RESINT|STRING:22|STRING:6|STRING:7|STRING:9|STRING:11|STRING:25|RESTINY|STRING:10
-    MEASURE_OP(batPA1, new resint_colbat_t("partAN", "partkey"));
-    MEASURE_OP(batPA2, new str_colbat_t("partAN", "name"));
-    MEASURE_OP(batPA3, new str_colbat_t("partAN", "mfgr"));
-    MEASURE_OP(batPA4, new str_colbat_t("partAN", "category"));
-    MEASURE_OP(batPA5, new str_colbat_t("partAN", "brand"));
-    MEASURE_OP(batPA6, new str_colbat_t("partAN", "color"));
-    MEASURE_OP(batPA7, new str_colbat_t("partAN", "type"));
-    MEASURE_OP(batPA8, new restiny_colbat_t("partAN", "size"));
-    MEASURE_OP(batPA9, new str_colbat_t("partAN", "container"));
-
-    // suppkey|name|address|city|nation|region|phone
-    // RESINT|STRING:25|STRING:25|STRING:10|STRING:15|STRING:12|STRING:15
-    MEASURE_OP(batSA1, new resint_colbat_t("supplierAN", "suppkey"));
-    MEASURE_OP(batSA2, new str_colbat_t("supplierAN", "name"));
-    MEASURE_OP(batSA3, new str_colbat_t("supplierAN", "address"));
-    MEASURE_OP(batSA4, new str_colbat_t("supplierAN", "city"));
-    MEASURE_OP(batSA5, new str_colbat_t("supplierAN", "nation"));
-    MEASURE_OP(batSA6, new str_colbat_t("supplierAN", "region"));
-    MEASURE_OP(batSA7, new str_colbat_t("supplierAN", "phone"));
+    // // custkey|name|address|city|nation|region|phone|mktsegment
+    // // RESINT|STRING:25|STRING:25|STRING:10|STRING:15|STRING:12|STRING:15|STRING:10
+    // MEASURE_OP(batCA1, new resint_colbat_t("customerAN", "custkey"));
+    // MEASURE_OP(batCA2, new str_colbat_t("customerAN", "name"));
+    // MEASURE_OP(batCA3, new str_colbat_t("customerAN", "address"));
+    // MEASURE_OP(batCA4, new str_colbat_t("customerAN", "city"));
+    // MEASURE_OP(batCA5, new str_colbat_t("customerAN", "nation"));
+    // MEASURE_OP(batCA6, new str_colbat_t("customerAN", "region"));
+    // MEASURE_OP(batCA7, new str_colbat_t("customerAN", "phone"));
+    // MEASURE_OP(batCA8, new str_colbat_t("customerAN", "mktsegment"));
+    //
+    // // datekey|date|dayofweek|month|year|yearmonthnum|yearmonth|daynuminweek|daynuminmonth|daynuminyear|monthnuminyear|weeknuminyear|sellingseason|lastdayinweekfl|lastdayinmonthfl|holidayfl|weekdayfl
+    // // RESINT|STRING:18|STRING:9|STRING:9|RESSHORT|RESINT|STRING:7|RESTINY|RESTINY|RESSHORT|RESTINY|RESTINY|STRING:12|CHAR|CHAR|CHAR|CHAR
+    // MEASURE_OP(batDA1, new resint_colbat_t("dateAN", "datekey"));
+    // MEASURE_OP(batDA2, new str_colbat_t("dateAN", "date"));
+    // MEASURE_OP(batDA3, new str_colbat_t("dateAN", "dayofweek"));
+    // MEASURE_OP(batDA4, new str_colbat_t("dateAN", "month"));
+    // MEASURE_OP(batDA5, new resshort_colbat_t("dateAN", "year"));
+    // MEASURE_OP(batDA6, new resint_colbat_t("dateAN", "yearmonthnum"));
+    // MEASURE_OP(batDA7, new str_colbat_t("dateAN", "yearmonth"));
+    // MEASURE_OP(batDA8, new restiny_colbat_t("dateAN", "daynuminweek"));
+    // MEASURE_OP(batDA9, new restiny_colbat_t("dateAN", "daynuminmonth"));
+    // MEASURE_OP(batDAA, new shortint_colbat_t("dateAN", "daynuminyear"));
+    // MEASURE_OP(batDAB, new restiny_colbat_t("dateAN", "monthnuminyear"));
+    // MEASURE_OP(batDAC, new restiny_colbat_t("dateAN", "weeknuminyear"));
+    // MEASURE_OP(batDAD, new str_colbat_t("dateAN", "sellingseason"));
+    // MEASURE_OP(batDAE, new char_colbat_t("dateAN", "lastdayinweekfl"));
+    // MEASURE_OP(batDAF, new char_colbat_t("dateAN", "lastdayinmonthfl"));
+    // MEASURE_OP(batDAG, new char_colbat_t("dateAN", "holidayfl"));
+    // MEASURE_OP(batDAH, new char_colbat_t("dateAN", "weekdayfl"));
+    //
+    // // orderkey|linenumber|custkey|partkey|suppkey|orderdate|orderpriority|shippriority|quantity|extendedprice|ordertotalprice|discount|revenue|supplycost|tax|commitdate|shipmode
+    // // INTEGER|TINYINT|INTEGER|INTEGER|INTEGER|INTEGER|STRING:15|CHAR|TINYINT|INTEGER|INTEGER|TINYINT|INTEGER|INTEGER|TINYINT|INTEGER|STRING:10
+    // MEASURE_OP(batLA1, new resint_colbat_t("lineorderAN", "orderkey"));
+    // MEASURE_OP(batLA2, new restiny_colbat_t("lineorderAN", "linenumber"));
+    // MEASURE_OP(batLA3, new resint_colbat_t("lineorderAN", "custkey"));
+    // MEASURE_OP(batLA4, new resint_colbat_t("lineorderAN", "partkey"));
+    // MEASURE_OP(batLA5, new resint_colbat_t("lineorderAN", "suppkey"));
+    // MEASURE_OP(batLA6, new resint_colbat_t("lineorderAN", "orderdate"));
+    // MEASURE_OP(batLA7, new str_colbat_t("lineorderAN", "orderpriority"));
+    // MEASURE_OP(batLA8, new char_colbat_t("lineorderAN", "shippriority"));
+    // MEASURE_OP(batLA9, new restiny_colbat_t("lineorderAN", "quantity"));
+    // MEASURE_OP(batLAA, new resint_colbat_t("lineorderAN", "extendedprice"));
+    // MEASURE_OP(batLAB, new resint_colbat_t("lineorderAN", "ordertotalprice"));
+    // MEASURE_OP(batLAC, new restiny_colbat_t("lineorderAN", "discount"));
+    // MEASURE_OP(batLAD, new resint_colbat_t("lineorderAN", "revenue"));
+    // MEASURE_OP(batLAE, new resint_colbat_t("lineorderAN", "supplycost"));
+    // MEASURE_OP(batLAF, new restiny_colbat_t("lineorderAN", "tax"));
+    // MEASURE_OP(batLAG, new resint_colbat_t("lineorderAN", "commitdate"));
+    // MEASURE_OP(batLAH, new str_colbat_t("lineorderAN", "shipmode"));
+    //
+    // // partkey|name|mfgr|category|brand|color|type|size|container
+    // // RESINT|STRING:22|STRING:6|STRING:7|STRING:9|STRING:11|STRING:25|RESTINY|STRING:10
+    // MEASURE_OP(batPA1, new resint_colbat_t("partAN", "partkey"));
+    // MEASURE_OP(batPA2, new str_colbat_t("partAN", "name"));
+    // MEASURE_OP(batPA3, new str_colbat_t("partAN", "mfgr"));
+    // MEASURE_OP(batPA4, new str_colbat_t("partAN", "category"));
+    // MEASURE_OP(batPA5, new str_colbat_t("partAN", "brand"));
+    // MEASURE_OP(batPA6, new str_colbat_t("partAN", "color"));
+    // MEASURE_OP(batPA7, new str_colbat_t("partAN", "type"));
+    // MEASURE_OP(batPA8, new restiny_colbat_t("partAN", "size"));
+    // MEASURE_OP(batPA9, new str_colbat_t("partAN", "container"));
+    //
+    // // suppkey|name|address|city|nation|region|phone
+    // // RESINT|STRING:25|STRING:25|STRING:10|STRING:15|STRING:12|STRING:15
+    // MEASURE_OP(batSA1, new resint_colbat_t("supplierAN", "suppkey"));
+    // MEASURE_OP(batSA2, new str_colbat_t("supplierAN", "name"));
+    // MEASURE_OP(batSA3, new str_colbat_t("supplierAN", "address"));
+    // MEASURE_OP(batSA4, new str_colbat_t("supplierAN", "city"));
+    // MEASURE_OP(batSA5, new str_colbat_t("supplierAN", "nation"));
+    // MEASURE_OP(batSA6, new str_colbat_t("supplierAN", "region"));
+    // MEASURE_OP(batSA7, new str_colbat_t("supplierAN", "phone"));
 
     ssb::after_create_columnbats();
 }
