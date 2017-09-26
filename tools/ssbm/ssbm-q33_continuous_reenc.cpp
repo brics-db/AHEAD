@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q33_continuous_reenc.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -82,7 +82,7 @@ int main(
         ssb::before_query();
 
         // s_city = 'UNITED KI1' or s_city = 'UNITED KI5'
-        MEASURE_OP_TUPLE(tuple1, (selectAN<std::equal_to, std::equal_to, OR>(batSC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
+        MEASURE_OP_TUPLE(tuple1, (selectAN<std::equal_to, std::equal_to, ahead::or_is>(batSC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
         CLEAR_SELECT_AN(tuple1);
         auto bat2 = std::get<0>(tuple1)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(tuple1);
@@ -99,7 +99,7 @@ int main(
         delete std::get<0>(tuple5);
 
         // c_city = 'UNITED KI1' or c_city = 'UNITED KI5'
-        MEASURE_OP_TUPLE(tuple7, (selectAN<std::equal_to, std::equal_to, OR>(batCC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
+        MEASURE_OP_TUPLE(tuple7, (selectAN<std::equal_to, std::equal_to, ahead::or_is>(batCC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
         CLEAR_SELECT_AN(tuple7);
         auto bat8 = std::get<0>(tuple7)->mirror_head(); // OID customer | OID customer
         delete std::get<0>(tuple7);
@@ -121,7 +121,7 @@ int main(
 
         // d_year >= 1992 and d_year <= 1997
         MEASURE_OP_TUPLE(tuple13,
-                (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992ull * batDY->tail.metaData.AN_A, 1997ull * batDY->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As),
+                (selectAN<std::greater_equal, std::less_equal, ahead::and_is>(batDY, 1992ull * batDY->tail.metaData.AN_A, 1997ull * batDY->tail.metaData.AN_A, std::get<14>(*v2_resshort_t::As),
                         std::get<14>(*v2_resshort_t::Ainvs)))); // OID date | d_year
         CLEAR_SELECT_AN(tuple13);
         auto bat14 = std::get<0>(tuple13)->mirror_head(); // OID date | OID date

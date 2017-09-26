@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   selectAN_seq.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -163,7 +163,7 @@ namespace ahead {
                                 tail_select_t ATInvR = 1) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                             static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
-                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
+                            static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                             // always encode head (void -> resoid)
                             const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
@@ -218,7 +218,7 @@ namespace ahead {
                                 str_t ATR = nullptr,
                                 str_t ATInvR = nullptr) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
+                            static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                             // always encode head (void -> resoid)
                             (void) ATR;

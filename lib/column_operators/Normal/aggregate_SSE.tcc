@@ -85,12 +85,12 @@ namespace ahead {
                             auto pT2End = pT2 + numValues;
                             auto pmmT2 = reinterpret_cast<__m128i *>(pT2);
                             auto pmmT2End = reinterpret_cast<__m128i *>(pT2End);
-                            auto mmTotal = v2_mm<__m128i, result_t>::set1(0);
+                            auto mmTotal = mm<__m128i, result_t>::set1(0);
                             size_t inc1 = 0, inc2 = 0;
                             for (; (pmmT1 <= (pmmT1End - 1)) && (pmmT2 <= (pmmT2End - 1)); pmmT1 += inc1, pmmT2 += inc2) {
-                                mmTotal = v2_mm<__m128i, result_t>::add(mmTotal, v2_mm128<tail1_t, tail2_t, result_t>::mul_add(pmmT1, pmmT2, inc1, inc2));
+                                mmTotal = mm<__m128i, result_t>::add(mmTotal, mm128<tail1_t, tail2_t, result_t>::mul_add(pmmT1, pmmT2, inc1, inc2));
                             }
-                            result_t total = init + v2_mm<__m128i, result_t>::sum(mmTotal);
+                            result_t total = init + mm<__m128i, result_t>::sum(mmTotal);
                             pT1 = reinterpret_cast<tail1_t*>(pmmT1);
                             pT2 = reinterpret_cast<tail2_t*>(pmmT2);
                             for (; pT1 < pT1End && pT2 < pT2End; ++pT1, ++pT2) {

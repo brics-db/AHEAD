@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssb.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -34,7 +34,7 @@ namespace ssb {
 
     void handler(
             int sig) {
-        constexpr const int BACKTRACE_SIZE = 64;
+        const constexpr int BACKTRACE_SIZE = 64;
         void *array[BACKTRACE_SIZE];
         std::size_t size;
 
@@ -62,15 +62,15 @@ namespace ssb {
         exit(1);
     }
 
-    constexpr const char * const SSB_CONF::ID_NUMRUNS;
-    constexpr const char * const SSB_CONF::ID_LENTIMES;
-    constexpr const char * const SSB_CONF::ID_LENTYPES;
-    constexpr const char * const SSB_CONF::ID_LENSIZES;
-    constexpr const char * const SSB_CONF::ID_LENPCM;
-    constexpr const char * const SSB_CONF::ID_DBPATH;
-    constexpr const char * const SSB_CONF::ID_VERBOSE;
-    constexpr const char * const SSB_CONF::ID_PRINTRESULT;
-    constexpr const char * const SSB_CONF::ID_CONVERTTABLEFILES;
+    const constexpr char * const SSB_CONF::ID_NUMRUNS;
+    const constexpr char * const SSB_CONF::ID_LENTIMES;
+    const constexpr char * const SSB_CONF::ID_LENTYPES;
+    const constexpr char * const SSB_CONF::ID_LENSIZES;
+    const constexpr char * const SSB_CONF::ID_LENPCM;
+    const constexpr char * const SSB_CONF::ID_DBPATH;
+    const constexpr char * const SSB_CONF::ID_VERBOSE;
+    const constexpr char * const SSB_CONF::ID_PRINTRESULT;
+    const constexpr char * const SSB_CONF::ID_CONVERTTABLEFILES;
 
     SSB_CONF::SSB_CONF()
             : NUM_RUNS(0),
@@ -127,6 +127,17 @@ namespace ssb {
         return sw.duration();
     }
 
+    void loadTable(
+            const std::string & tableName) {
+        StopWatch sw;
+        sw.start();
+        std::size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
+        sw.stop();
+        if (ssb_config.VERBOSE) {
+            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
+        }
+    }
+
     SSB_CONF ssb_config;
     PCM * m = nullptr;
     PCM::ErrorCode pcmStatus = PCM::UnknownError;
@@ -161,7 +172,7 @@ namespace ssb {
         rssAfterCopy = 0;
         rssAfterQueries = 0;
 
-        constexpr const std::size_t numOpsDefault = 64;
+        const constexpr std::size_t numOpsDefault = 64;
         ssb::opTimes.reserve(numOpsDefault);
         ssb::batSizes.reserve(numOpsDefault);
         ssb::batConsumptions.reserve(numOpsDefault);
@@ -227,6 +238,23 @@ namespace ssb {
         ssb::hasTwoTypes.clear();
         ssb::headTypes.clear();
         ssb::tailTypes.clear();
+    }
+
+    void load_tables(
+            std::vector<std::string> & tables,
+            std::string query) {
+        ahead::StopWatch sw;
+        sw.start();
+        ssb::before_load();
+        for (std::string & tab : tables) {
+            ssb::loadTable(tab);
+        }
+        ssb::after_load();
+        sw.stop();
+        std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;
+        if (ssb::ssb_config.VERBOSE && query.size() != std::string::npos) {
+            std::cout << query << std::endl;
+        }
     }
 
     void before_load() {

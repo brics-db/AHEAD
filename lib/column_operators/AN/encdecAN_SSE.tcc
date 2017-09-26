@@ -174,16 +174,16 @@ namespace ahead {
                                 head_t hUnencMaxU = static_cast<head_t>(arg->head.metaData.AN_unencMaxU);
                                 tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                                 tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
-                                auto mmASinv = isHeadSmaller ? v2_mm128<head_t>::set1(hAinv) : v2_mm128<tail_t>::set1(tAinv);
-                                auto mmALinv = isHeadSmaller ? v2_mm128<tail_t>::set1(tAinv) : v2_mm128<head_t>::set1(hAinv);
-                                auto mmASDmax = isHeadSmaller ? v2_mm128<head_t>::set1(hUnencMaxU) : v2_mm128<tail_t>::set1(tUnencMaxU);
-                                auto mmALDmax = isHeadSmaller ? v2_mm128<tail_t>::set1(tUnencMaxU) : v2_mm128<head_t>::set1(hUnencMaxU);
+                                auto mmASinv = isHeadSmaller ? mm128<head_t>::set1(hAinv) : mm128<tail_t>::set1(tAinv);
+                                auto mmALinv = isHeadSmaller ? mm128<tail_t>::set1(tAinv) : mm128<head_t>::set1(hAinv);
+                                auto mmASDmax = isHeadSmaller ? mm128<head_t>::set1(hUnencMaxU) : mm128<tail_t>::set1(tUnencMaxU);
+                                auto mmALDmax = isHeadSmaller ? mm128<tail_t>::set1(tUnencMaxU) : mm128<head_t>::set1(hUnencMaxU);
                                 size_t pos = 0;
                                 while (pmmS <= (pmmSEnd - 1)) {
                                     auto mm = _mm_lddqu_si128(pmmS++);
                                     if (isSmallerEncoded) {
                                         v2_mm128_AN<smaller_t>::detect(mmDecS, mm, mmASinv, mmASDmax, vecS, pos);
-                                        mmDecS = v2_mm128<smaller_t, smaller_unenc_t>::convert(mmDecS);
+                                        mmDecS = mm128<smaller_t, smaller_unenc_t>::convert(mmDecS);
                                     } else {
                                         mmDecS = mm;
                                     }
@@ -193,7 +193,7 @@ namespace ahead {
                                         mm = _mm_lddqu_si128(pmmL++);
                                         if (isLargerEncoded) {
                                             v2_mm128_AN<larger_t>::detect(mmDecL, mm, mmALinv, mmALDmax, vecL, pos);
-                                            mmDecL = v2_mm128<larger_t, larger_unenc_t>::convert(mmDecL);
+                                            mmDecL = mm128<larger_t, larger_unenc_t>::convert(mmDecL);
                                         } else {
                                             mmDecL = mm;
                                         }
@@ -246,8 +246,8 @@ namespace ahead {
                                 auto pTEnd = pT + szArg;
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
-                                auto mmATInv = v2_mm128<tail_t>::set1(tAinv);
-                                auto mmATDmax = v2_mm128<tail_t>::set1(tUnencMaxU);
+                                auto mmATInv = mm128<tail_t>::set1(tAinv);
+                                auto mmATDmax = mm128<tail_t>::set1(tUnencMaxU);
                                 __m128i mmDec;
                                 auto pRT = reinterpret_cast<tail_unenc_t *>(result->tail.container->data());
                                 auto pmmRT = reinterpret_cast<__m128i *>(pRT);
@@ -255,7 +255,7 @@ namespace ahead {
                                 size_t pos = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT, pos += tailsPerMM128) {
                                     v2_mm128_AN<tail_t>::detect(mmDec, _mm_lddqu_si128(pmmT), mmATInv, mmATDmax, vec, pos);
-                                    mmDec = v2_mm128<tail_t, tail_unenc_t>::convert(mmDec);
+                                    mmDec = mm128<tail_t, tail_unenc_t>::convert(mmDec);
                                     _mm_storeu_si128(pmmRT, mmDec);
                                     pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_unenc_t *>(pmmRT) + tailsPerMM128);
                                 }

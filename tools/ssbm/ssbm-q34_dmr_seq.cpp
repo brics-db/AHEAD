@@ -104,7 +104,7 @@ int main(
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // s_city = 'UNITED KI1' or s_city = 'UNITED KI5'
-            MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batSC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
+            MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, ahead::or_is>(batSC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
             auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
             delete bat1;
             auto bat3 = batSS[k]->reverse(); // s_suppkey | VOID supplier
@@ -117,7 +117,7 @@ int main(
             delete bat5;
 
             // c_city = 'UNITED KI1' or c_city = 'UNITED KI5'
-            MEASURE_OP(bat7, (select<std::equal_to, std::equal_to, OR>(batCC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
+            MEASURE_OP(bat7, (select<std::equal_to, std::equal_to, ahead::or_is>(batCC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
             auto bat8 = bat7->mirror_head(); // OID customer | OID customer
             delete bat7;
             auto bat9 = batCK[k]->reverse(); // c_custkey | VOID customer

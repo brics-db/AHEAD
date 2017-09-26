@@ -27,13 +27,13 @@ namespace ahead {
             namespace simd {
 
                 template<typename V, typename T>
-                struct v2_mm;
+                struct mm;
 
                 template<typename V, typename T>
-                struct v2_mm_set;
+                struct mm_set;
 
                 template<typename V, typename T, template<typename > class Op>
-                struct v2_mm_op;
+                struct mm_op;
 
             }
         }

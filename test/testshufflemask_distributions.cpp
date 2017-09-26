@@ -152,7 +152,7 @@ struct ac_helper<__m512i, uint64_t, uint8_t> {
 
 template<typename V, typename T>
 struct abstract_context_t {
-    typedef typename ahead::bat::ops::simd::v2_mm<V, T>::mask_t mask_t;
+    typedef typename ahead::bat::ops::simd::mm<V, T>::mask_t mask_t;
     typedef ac_helper<V, T, mask_t> helper;
 
     abstract_abstract_context_t * paac;
@@ -164,7 +164,7 @@ struct abstract_context_t {
     abstract_context_t(
             abstract_abstract_context_t & aac)
             : paac(&aac),
-              mm(ahead::bat::ops::simd::v2_mm<V, T>::set_inc(0)),
+              mm(ahead::bat::ops::simd::mm<V, T>::set_inc(0)),
               numMM(aac.numValues / (sizeof(V) / sizeof(T))),
               rndDistr(0, abstract_abstract_context_t::NUM_RND * (sizeof(V) / sizeof(T)) - 1) {
     }
@@ -316,7 +316,7 @@ using TestFn = void (*)(concrete_context_t<V, T, M> &);
 
 template<typename V, typename T, typename M, TestFn<V, T, M> F>
 struct Test {
-    typedef typename ahead::bat::ops::simd::v2_mm<V, T>::mask_t mask_t;
+    typedef typename ahead::bat::ops::simd::mm<V, T>::mask_t mask_t;
 
     static void run(
             abstract_context_t<V, T> & ac) {
@@ -339,8 +339,8 @@ void testPack1ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        auto mmResult = ahead::bat::ops::simd::v2_mm<V, T>::pack_right(ahead::bat::ops::simd::v2_mm<V, T>::loadu(pmmIn++), tmpMask);
-        ahead::bat::ops::simd::v2_mm<V, T>::storeu(pmmOut, mmResult);
+        auto mmResult = ahead::bat::ops::simd::mm<V, T>::pack_right(ahead::bat::ops::simd::mm<V, T>::loadu(pmmIn++), tmpMask);
+        ahead::bat::ops::simd::mm<V, T>::storeu(pmmOut, mmResult);
         pmmOut = reinterpret_cast<V*>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
 }
@@ -354,7 +354,7 @@ void testPack2ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        ahead::bat::ops::simd::v2_mm<V, T>::pack_right2(pOut, ahead::bat::ops::simd::v2_mm<V, T>::loadu(pmmIn++), tmpMask);
+        ahead::bat::ops::simd::mm<V, T>::pack_right2(pOut, ahead::bat::ops::simd::mm<V, T>::loadu(pmmIn++), tmpMask);
     }
 }
 

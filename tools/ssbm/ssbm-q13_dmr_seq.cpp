@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q13_dmr_seq.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -86,8 +86,8 @@ int main(
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // 1) select from lineorder
-            MEASURE_OP(bat1, (select<std::greater_equal, std::less_equal, AND>(batLQs[k], 26, 35))); // lo_quantity between 26 and 35
-            MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, AND>(batLDs[k], 5, 7))); // lo_discount between 5 and 7
+            MEASURE_OP(bat1, (select<std::greater_equal, std::less_equal, ahead::and_is>(batLQs[k], 26, 35))); // lo_quantity between 26 and 35
+            MEASURE_OP(bat2, (select<std::greater_equal, std::less_equal, ahead::and_is>(batLDs[k], 5, 7))); // lo_discount between 5 and 7
             auto bat3 = bat1->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
             delete bat1;
             MEASURE_OP(bat4, matchjoin(bat3, bat2)); // join selection
@@ -119,7 +119,7 @@ int main(
             // batE now has in the Head the positions from lineorder and in the Tail the positions from date
             auto batF = batE->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
             delete batE;
-            // BatF only contains the 
+            // BatF only contains the
             MEASURE_OP(batG, matchjoin(batF, batLEs[k]));
             MEASURE_OP(batH, matchjoin(batF, bat4));
             delete batF;

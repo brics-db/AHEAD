@@ -164,7 +164,7 @@ int main(
         delete bat12;
 
         // d_year = 1997 or d_year = 1998
-        MEASURE_OP(bat21, (select<std::equal_to, std::equal_to, OR>(batDY, 1997, 1998))); // OID date | d_year
+        MEASURE_OP(bat21, (select<std::equal_to, std::equal_to, ahead::or_is>(batDY, 1997, 1998))); // OID date | d_year
         auto bat22 = bat21->mirror_head(); // OID date | OID date
         delete bat21;
         auto bat23 = batDD->reverse(); // d_datekey | VOID date
@@ -186,7 +186,7 @@ int main(
         // profit
         MEASURE_OP(batAR, fetchjoin(bat28, batLR)); // VOID | lo_revenue
         MEASURE_OP(batAS, fetchjoin(bat28, batLSC)); // VOID | lo_supplycost
-        MEASURE_OP(batAP, (arithmetic<SUB, v2_int_t>(batAR, batAS))); // VOID | lo_revenue - lo_supplycost (profit !!!)
+        MEASURE_OP(batAP, (arithmetic<ahead::sub, v2_int_t>(batAR, batAS))); // VOID | lo_revenue - lo_supplycost (profit !!!)
         delete batAR;
         delete batAS;
         // s_nation

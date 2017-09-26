@@ -135,4 +135,4 @@ column_operators/AN/selectAN.cpp \
 column_operators/SIMD/SSE.cpp \
 column_operators/SIMD/AVX2.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
-append_target_property(AHEAD "GCC_COMPILE_FLAGS" "-Wno-ignored-attributes")
+TARGET_COMPILE_OPTIONS(AHEAD PUBLIC "-Wno-ignored-attributes")

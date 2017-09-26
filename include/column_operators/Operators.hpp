@@ -20,7 +20,7 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 //
@@ -125,40 +125,42 @@ namespace ahead {
                         typename Result::type_t init = typename Result::type_t(0));
             }
 
-            namespace sse {
-                // SELECT
-                template<template<typename > class Op, typename Head, typename Tail>
-                BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
-                select(
-                        BAT<Head, Tail>* arg,
-                        typename Tail::type_t th1);
+            namespace simd {
+                namespace sse {
+                    // SELECT
+                    template<template<typename > class Op, typename Head, typename Tail>
+                    BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+                    select(
+                            BAT<Head, Tail>* arg,
+                            typename Tail::type_t th1);
 
-                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
-                BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
-                select(
-                        BAT<Head, Tail>* arg,
-                        typename Tail::type_t th1,
-                        typename Tail::type_t th2);
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
+                    BAT<typename Head::v2_select_t, typename Tail::v2_select_t>*
+                    select(
+                            BAT<Head, Tail>* arg,
+                            typename Tail::type_t th1,
+                            typename Tail::type_t th2);
 
-                // ARITHMETIC
-                template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-                BAT<v2_void_t, Result> *
-                arithmetic(
-                        BAT<Head1, Tail1> * bat1,
-                        BAT<Head2, Tail2> * bat2);
+                    // ARITHMETIC
+                    template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                    BAT<v2_void_t, Result> *
+                    arithmetic(
+                            BAT<Head1, Tail1> * bat1,
+                            BAT<Head2, Tail2> * bat2);
 
-                // AGGREGATE
-                template<typename v2_result_t, typename Head, typename Tail>
-                typename v2_result_t::type_t
-                aggregate_sum(
-                        BAT<Head, Tail>* arg);
+                    // AGGREGATE
+                    template<typename v2_result_t, typename Head, typename Tail>
+                    typename v2_result_t::type_t
+                    aggregate_sum(
+                            BAT<Head, Tail>* arg);
 
-                template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-                BAT<v2_void_t, Result>*
-                aggregate_mul_sum(
-                        BAT<Head1, Tail1>* arg1,
-                        BAT<Head2, Tail2>* arg2,
-                        typename Result::type_t init = typename Result::type_t(0));
+                    template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                    BAT<v2_void_t, Result>*
+                    aggregate_mul_sum(
+                            BAT<Head1, Tail1>* arg1,
+                            BAT<Head2, Tail2>* arg2,
+                            typename Result::type_t init = typename Result::type_t(0));
+                }
             }
 
         }

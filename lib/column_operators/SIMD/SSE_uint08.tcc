@@ -32,7 +32,7 @@ namespace ahead {
                 namespace sse {
 
                     template<>
-                    struct v2_mm128<uint8_t> {
+                    struct mm128<uint8_t> {
 
                         typedef uint16_t mask_t;
 
@@ -99,6 +99,15 @@ namespace ahead {
                             return static_cast<uint16_t>(_mm_extract_epi8(mm, 0));
                         }
 
+                        static inline __m128i mullo(
+                                __m128i a,
+                                __m128i b) {
+                            auto mm1 = _mm_shuffle_epi8(_mm_mullo_epi16(_mm_cvtepi8_epi16(a), _mm_cvtepi8_epi16(b)), _mm_set_epi64x(0xFFFFFFFFFFFFFFFFull, 0x0D0C090805040100ull));
+                            auto mm2 = _mm_shuffle_epi8(_mm_mullo_epi16(_mm_cvtepi8_epi16(_mm_srli_si128(a, 8)), _mm_cvtepi8_epi16(_mm_srli_si128(b, 8))),
+                                    _mm_set_epi64x(0x0D0C090805040100ull, 0xFFFFFFFFFFFFFFFFull));
+                            return _mm_and_si128(mm1, mm2);
+                        }
+
                         static inline __m128i pack_right(
                                 __m128i a,
                                 mask_t mask) {
@@ -124,7 +133,7 @@ namespace ahead {
                 }
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, std::greater> {
+                struct mm_op<__m128i, uint8_t, std::greater> {
 
                     typedef uint16_t mask_t;
 
@@ -142,14 +151,14 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, std::greater_equal> {
+                struct mm_op<__m128i, uint8_t, std::greater_equal> {
 
                     typedef uint16_t mask_t;
 
                     static inline __m128i cmp(
                             __m128i a,
                             __m128i b) {
-                        auto mm = sse::v2_mm128<uint8_t>::max(a, b);
+                        auto mm = sse::mm128<uint8_t>::max(a, b);
                         return _mm_cmpeq_epi8(a, mm);
                     }
 
@@ -161,7 +170,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, std::less> {
+                struct mm_op<__m128i, uint8_t, std::less> {
 
                     typedef uint16_t mask_t;
 
@@ -179,14 +188,14 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, std::less_equal> {
+                struct mm_op<__m128i, uint8_t, std::less_equal> {
 
                     typedef uint16_t mask_t;
 
                     static inline __m128i cmp(
                             __m128i a,
                             __m128i b) {
-                        auto mm = sse::v2_mm128<uint8_t>::min(a, b);
+                        auto mm = sse::mm128<uint8_t>::min(a, b);
                         return _mm_cmpeq_epi8(a, mm);
                     }
 
@@ -198,7 +207,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, std::equal_to> {
+                struct mm_op<__m128i, uint8_t, std::equal_to> {
 
                     typedef uint16_t mask_t;
 
@@ -216,7 +225,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, std::not_equal_to> {
+                struct mm_op<__m128i, uint8_t, std::not_equal_to> {
 
                     typedef uint16_t mask_t;
 
@@ -234,7 +243,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, ahead::and_is> {
+                struct mm_op<__m128i, uint8_t, ahead::and_is> {
 
                     typedef uint16_t mask_t;
 
@@ -252,7 +261,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, ahead::or_is> {
+                struct mm_op<__m128i, uint8_t, ahead::or_is> {
 
                     typedef uint16_t mask_t;
 
@@ -270,7 +279,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, ahead::add> {
+                struct mm_op<__m128i, uint8_t, ahead::add> {
 
                     static inline __m128i compute(
                             __m128i a,
@@ -286,7 +295,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, ahead::sub> {
+                struct mm_op<__m128i, uint8_t, ahead::sub> {
 
                     static inline __m128i compute(
                             __m128i a,
@@ -302,7 +311,7 @@ namespace ahead {
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, ahead::mul> {
+                struct mm_op<__m128i, uint8_t, ahead::mul> {
 
                     static inline __m128i compute(
                             __m128i a,
@@ -313,15 +322,12 @@ namespace ahead {
                     static inline __m128i mullo(
                             __m128i a,
                             __m128i b) {
-                        auto mm1 = _mm_shuffle_epi8(_mm_mullo_epi16(_mm_cvtepi8_epi16(a), _mm_cvtepi8_epi16(b)), _mm_set_epi64x(0xFFFFFFFFFFFFFFFFull, 0x0D0C090805040100ull));
-                        auto mm2 = _mm_shuffle_epi8(_mm_mullo_epi16(_mm_cvtepi8_epi16(_mm_srli_si128(a, 8)), _mm_cvtepi8_epi16(_mm_srli_si128(b, 8))),
-                                _mm_set_epi64x(0x0D0C090805040100ull, 0xFFFFFFFFFFFFFFFFull));
-                        return _mm_and_si128(mm1, mm2);
+                        return sse::mm128<uint8_t>::mullo(a, b);
                     }
                 };
 
                 template<>
-                struct v2_mm_op<__m128i, uint8_t, ahead::div> {
+                struct mm_op<__m128i, uint8_t, ahead::div> {
 
                     static inline __m128i compute(
                             __m128i a,

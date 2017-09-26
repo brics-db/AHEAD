@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   select_seq.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -116,7 +116,7 @@ namespace ahead {
                                 BAT<v2_void_t, Tail>* arg,
                                 tail_t th1,
                                 tail_t th2) {
-                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
+                            static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();
@@ -145,7 +145,7 @@ namespace ahead {
                                 BAT<v2_void_t, v2_str_t>* arg,
                                 tail_select_t th1,
                                 tail_select_t th2) {
-                            static_assert(std::is_base_of<ahead::bat::ops::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
+                            static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                             result->reserve(arg->size());
                             auto iter = arg->begin();

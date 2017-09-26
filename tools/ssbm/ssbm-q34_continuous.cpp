@@ -84,7 +84,7 @@ int main(
         ssb::before_query();
 
         // s_city = 'UNITED KI1' or s_city = 'UNITED KI5'
-        MEASURE_OP_TUPLE(tuple1, (selectAN<std::equal_to, std::equal_to, OR>(batSC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
+        MEASURE_OP_TUPLE(tuple1, (selectAN<std::equal_to, std::equal_to, ahead::or_is>(batSC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
         CLEAR_SELECT_AN(tuple1);
         auto bat2 = std::get<0>(tuple1)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(tuple1);
@@ -103,7 +103,7 @@ int main(
         delete std::get<0>(tuple5);
 
         // c_city = 'UNITED KI1' or c_city = 'UNITED KI5'
-        MEASURE_OP_TUPLE(tuple7, (selectAN<std::equal_to, std::equal_to, OR>(batCC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
+        MEASURE_OP_TUPLE(tuple7, (selectAN<std::equal_to, std::equal_to, ahead::or_is>(batCC, const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
         CLEAR_SELECT_AN(tuple7);
         auto bat8 = std::get<0>(tuple7)->mirror_head(); // OID customer | OID customer
         delete std::get<0>(tuple7);

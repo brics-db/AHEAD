@@ -72,7 +72,7 @@ namespace ahead {
                                 auto pR = result->tail.container->data();
                                 auto pmmR = reinterpret_cast<__m128i *>(pR);
                                 for (; pmmT1 <= (pmmT1End - 1); pmmT1++, pmmT2++, pmmR++) {
-                                    _mm_storeu_si128(pmmR, v2_mm_op<__m128i, tail_t, Op>::compute(*pmmT1, *pmmT2));
+                                    _mm_storeu_si128(pmmR, mm_op<__m128i, tail_t, Op>::compute(*pmmT1, *pmmT2));
                                 }
                                 auto iter1 = bat1->begin();
                                 auto iter2 = bat2->begin();
