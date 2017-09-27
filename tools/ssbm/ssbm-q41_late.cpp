@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q41_late.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -98,7 +98,7 @@ int main(
         ssb::before_query();
 
         // p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2'
-        MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batPM, const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
+        MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, ahead::or_is>(batPM, const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batPPenc->reverse(); // p_partkey | VOID part
@@ -151,7 +151,7 @@ int main(
         delete bat20;
         MEASURE_OP(batARenc, fetchjoin(bat21, batLRenc)); // VOID | lo_revenue
         MEASURE_OP(batASenc, fetchjoin(bat21, batLSCenc)); // VOID | lo_supplycost
-        MEASURE_OP(batAPenc, (arithmetic<SUB, v2_resint_t>(batARenc, batASenc))); // VOID | lo_revenue - lo_supplycost !!
+        MEASURE_OP(batAPenc, (arithmetic<ahead::sub, v2_resint_t>(batARenc, batASenc))); // VOID | lo_revenue - lo_supplycost !!
         delete batARenc;
         delete batASenc;
         MEASURE_OP(bat22, fetchjoin(bat21, batLCenc)); // VOID | lo_custkey

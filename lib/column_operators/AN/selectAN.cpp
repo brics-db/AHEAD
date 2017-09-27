@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   selectAN.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -48,14 +48,14 @@ selectAN<Operator>( \
 #define SELECT2_AN(Head, Tail, Operator1, Operator2) \
 template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
-selectAN<Operator1, Operator2, AND, Head, Tail>( \
+selectAN<Operator1, Operator2, ahead::and_is, Head, Tail>( \
         BAT<Head, Tail> *, \
         typename Tail::type_t, \
         typename Tail::type_t \
         ); \
 template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
-selectAN<Operator1, Operator2, OR, Head, Tail>( \
+selectAN<Operator1, Operator2, ahead::or_is, Head, Tail>( \
         BAT<Head, Tail> *, \
         typename Tail::type_t, \
         typename Tail::type_t \
@@ -64,7 +64,7 @@ selectAN<Operator1, Operator2, OR, Head, Tail>( \
 #define SELECT2_AN_REENC(Head, Tail, Operator1, Operator2) \
 template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
-selectAN<Operator1, Operator2, AND, Head, Tail>( \
+selectAN<Operator1, Operator2, ahead::and_is, Head, Tail>( \
         BAT<Head, Tail> *, \
         typename Tail::type_t, \
         typename Tail::type_t, \
@@ -73,7 +73,7 @@ selectAN<Operator1, Operator2, AND, Head, Tail>( \
         ); \
 template \
 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*> \
-selectAN<Operator1, Operator2, OR, Head, Tail>( \
+selectAN<Operator1, Operator2, ahead::or_is, Head, Tail>( \
         BAT<Head, Tail> *, \
         typename Tail::type_t, \
         typename Tail::type_t, \
@@ -135,14 +135,16 @@ SELECT2_AN_REENC_SUB(Head, Tail, std::greater)
                 SELECT_AN(v2_void_t, v2_str_t)
             }
 
-            namespace sse {
-                SELECT_AN(v2_void_t, v2_restiny_t)
-                SELECT_AN_REENC(v2_void_t, v2_restiny_t)
-                SELECT_AN(v2_void_t, v2_resshort_t)
-                SELECT_AN_REENC(v2_void_t, v2_resshort_t)
-                SELECT_AN(v2_void_t, v2_resint_t)
-                SELECT_AN_REENC(v2_void_t, v2_resint_t)
-                SELECT_AN(v2_void_t, v2_str_t)
+            namespace simd {
+                namespace sse {
+                    SELECT_AN(v2_void_t, v2_restiny_t)
+                    SELECT_AN_REENC(v2_void_t, v2_restiny_t)
+                    SELECT_AN(v2_void_t, v2_resshort_t)
+                    SELECT_AN_REENC(v2_void_t, v2_resshort_t)
+                    SELECT_AN(v2_void_t, v2_resint_t)
+                    SELECT_AN_REENC(v2_void_t, v2_resint_t)
+                    SELECT_AN(v2_void_t, v2_str_t)
+                }
             }
 
         }

@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q33_dmr_seq.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -101,7 +101,7 @@ int main(
 
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // s_city = 'UNITED KI1' or s_city = 'UNITED KI5'
-            MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batSC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
+            MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, ahead::or_is>(batSC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID supplier | s_city
             auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
             delete bat1;
             auto bat3 = batSS[k]->reverse(); // s_suppkey | VOID supplier
@@ -114,7 +114,7 @@ int main(
             delete bat5;
 
             // c_city = 'UNITED KI1' or c_city = 'UNITED KI5'
-            MEASURE_OP(bat7, (select<std::equal_to, std::equal_to, OR>(batCC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
+            MEASURE_OP(bat7, (select<std::equal_to, std::equal_to, ahead::or_is>(batCC[k], const_cast<str_t>("UNITED KI1"), const_cast<str_t>("UNITED KI5")))); // OID customer | c_city
             auto bat8 = bat7->mirror_head(); // OID customer | OID customer
             delete bat7;
             auto bat9 = batCK[k]->reverse(); // c_custkey | VOID customer
@@ -129,7 +129,7 @@ int main(
             delete bat11;
 
             // d_year >= 1992 and d_year <= 1997
-            MEASURE_OP(bat13, (select<std::greater_equal, std::less_equal, AND>(batDY[k], 1992, 1997))); // OID date | d_year
+            MEASURE_OP(bat13, (select<std::greater_equal, std::less_equal, ahead::and_is>(batDY[k], 1992, 1997))); // OID date | d_year
             auto bat14 = bat13->mirror_head(); // OID date | OID date
             delete bat13;
             MEASURE_OP(bat15, matchjoin(bat14, batDD[k])); // OID date | d_datekey

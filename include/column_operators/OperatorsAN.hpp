@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   operatorsAN.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -203,77 +203,79 @@ namespace ahead {
                         typename ResEnc::type_t RAInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs));
             }
 
-            namespace sse {
-                template<typename Head, typename Tail>
-                BAT<Head, typename TypeMap<Tail>::v2_encoded_t>*
-                encodeAN(
-                        BAT<Head, Tail> * arg,
-                        typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<Tail::As->size() - 1>(*Tail::As));
+            namespace simd {
+                namespace sse {
+                    template<typename Head, typename Tail>
+                    BAT<Head, typename TypeMap<Tail>::v2_encoded_t>*
+                    encodeAN(
+                            BAT<Head, Tail> * arg,
+                            typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<Tail::As->size() - 1>(*Tail::As));
 
-                template<typename Head, typename ResTail>
-                std::vector<bool>*
-                checkAN(
-                        BAT<Head, ResTail> * arg,
-                        typename ResTail::type_t aInv = ResTail::A_INV,
-                        typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U);
+                    template<typename Head, typename ResTail>
+                    std::vector<bool>*
+                    checkAN(
+                            BAT<Head, ResTail> * arg,
+                            typename ResTail::type_t aInv = ResTail::A_INV,
+                            typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U);
 
-                template<typename Head, typename ResTail>
-                std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*>
-                decodeAN(
-                        BAT<Head, ResTail> * arg);
+                    template<typename Head, typename ResTail>
+                    std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*>
+                    decodeAN(
+                            BAT<Head, ResTail> * arg);
 
-                template<typename Head, typename Tail>
-                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
-                checkAndDecodeAN(
-                        BAT<Head, Tail> * arg);
+                    template<typename Head, typename Tail>
+                    std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
+                    checkAndDecodeAN(
+                            BAT<Head, Tail> * arg);
 
-                template<template<typename > class Op, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
-                selectAN(
-                        BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold);
+                    template<template<typename > class Op, typename Head, typename Tail>
+                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                    selectAN(
+                            BAT<Head, Tail> * arg,
+                            typename Tail::type_t threshold);
 
-                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
-                selectAN(
-                        BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold1,
-                        typename Tail::type_t threshold2);
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
+                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                    selectAN(
+                            BAT<Head, Tail> * arg,
+                            typename Tail::type_t threshold1,
+                            typename Tail::type_t threshold2);
 
-                template<template<typename > class Op, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
-                selectAN(
-                        BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold,
-                        typename Tail::v2_select_t::type_t ATReenc,
-                        typename Tail::v2_select_t::type_t ATReencInv);
+                    template<template<typename > class Op, typename Head, typename Tail>
+                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                    selectAN(
+                            BAT<Head, Tail> * arg,
+                            typename Tail::type_t threshold,
+                            typename Tail::v2_select_t::type_t ATReenc,
+                            typename Tail::v2_select_t::type_t ATReencInv);
 
-                template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
-                selectAN(
-                        BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold1,
-                        typename Tail::type_t threshold2,
-                        typename Tail::v2_select_t::type_t ATReenc,
-                        typename Tail::v2_select_t::type_t ATReencInv);
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
+                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                    selectAN(
+                            BAT<Head, Tail> * arg,
+                            typename Tail::type_t threshold1,
+                            typename Tail::type_t threshold2,
+                            typename Tail::v2_select_t::type_t ATReenc,
+                            typename Tail::v2_select_t::type_t ATReencInv);
 
-                template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
-                std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> arithmeticAN(
-                        BAT<Head1, Tail1> * bat1,
-                        BAT<Head2, Tail2> * bat2,
-                        typename Result::type_t AResult = std::get<Result::As->size() - 1>(*Result::As),
-                        typename Result::type_t AResultInv = std::get<Result::Ainvs->size() - 1>(*Result::Ainvs),
-                        resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                    template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
+                    std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> arithmeticAN(
+                            BAT<Head1, Tail1> * bat1,
+                            BAT<Head2, Tail2> * bat2,
+                            typename Result::type_t AResult = std::get<Result::As->size() - 1>(*Result::As),
+                            typename Result::type_t AResultInv = std::get<Result::Ainvs->size() - 1>(*Result::Ainvs),
+                            resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
 
-                template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<
-                        Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*>
-                aggregate_mul_sumAN(
-                        BAT<Head1, Tail1> * arg1,
-                        BAT<Head2, Tail2> * arg2,
-                        typename Result::type_t init = typename Result::type_t(0),
-                        typename ResEnc::type_t AResult = std::get<ResEnc::As->size() - 1>(*ResEnc::As),
-                        typename ResEnc::type_t AResultInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs));
+                    template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t,
+                            typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
+                    std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*>
+                    aggregate_mul_sumAN(
+                            BAT<Head1, Tail1> * arg1,
+                            BAT<Head2, Tail2> * arg2,
+                            typename Result::type_t init = typename Result::type_t(0),
+                            typename ResEnc::type_t AResult = std::get<ResEnc::As->size() - 1>(*ResEnc::As),
+                            typename ResEnc::type_t AResultInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs));
+                }
             }
 
         }

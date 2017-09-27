@@ -142,6 +142,39 @@ namespace ahead {
         return false;
     }
 
+    template<typename TargetHead, typename TargetTail, typename Head1, typename Tail1, typename Head2, typename Tail2>
+    TempBAT<TargetHead, TargetTail> *
+    skeletonJoin(
+            BAT<Head1, Tail1> * arg1,
+            BAT<Head2, Tail2> * arg2) {
+        typedef TempBAT<TargetHead, TargetTail> bat_t;
+        typedef typename bat_t::coldesc_head_t coldesc_head_t;
+        typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
+        auto * result = new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
+        result->head.metaData.width = sizeof(typename TargetHead::type_t);
+        result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+        return result;
+    }
+
+    template<typename Head1, typename Tail1, typename Head2, typename Tail2>
+    TempBAT<Head1, Tail2> * MetaRepositoryManager::nestedLoopJoin(
+            BAT<Head1, Tail1> * bat1,
+            BAT<Head2, Tail2> * bat2) {
+        auto * result = skeletonJoin<typename Head1::v2_select_t, typename Tail2::v2_select_t>(bat1, bat2);
+        auto * iter1 = bat1->begin();
+        for (; iter1->hasNext(); ++*iter1) {
+            auto * iter2 = bat2->begin();
+            for (; iter2->hasNext(); ++*iter2) {
+                if (iter1->tail() == iter2->head()) {
+                    result->append(std::make_pair(iter1->head(), iter2->tail()));
+                }
+            }
+            delete iter2;
+        }
+        delete iter1;
+        return result;
+    }
+
 }
 
 #endif /* METAREPOSITORYMANAGER_TCC */

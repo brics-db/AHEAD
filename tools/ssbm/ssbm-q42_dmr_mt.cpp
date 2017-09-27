@@ -129,7 +129,7 @@ int main(
 #pragma omp parallel for
         for (size_t k = 0; k < DMR::modularity; ++k) {
             // p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2'
-            MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batPM[k], const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
+            MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, ahead::or_is>(batPM[k], const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
             auto bat2 = bat1->mirror_head(); // OID part | OID part
             delete bat1;
             auto bat3 = batPP[k]->reverse(); // p_partkey | VOID part
@@ -178,7 +178,7 @@ int main(
             delete bat19;
 
             // d_year = 1997 or d_year = 1998
-            MEASURE_OP(bat21, (select<std::equal_to, std::equal_to, OR>(batDY[k], 1997, 1998))); // OID date | d_year
+            MEASURE_OP(bat21, (select<std::equal_to, std::equal_to, ahead::or_is>(batDY[k], 1997, 1998))); // OID date | d_year
             auto bat22 = bat21->mirror_head(); // OID date | OID date
             delete bat21;
             auto bat23 = batDD[k]->reverse(); // d_datekey | VOID date
@@ -200,7 +200,7 @@ int main(
             // profit
             MEASURE_OP(batAR, fetchjoin(bat28, batLR[k])); // VOID | lo_revenue
             MEASURE_OP(batAS, fetchjoin(bat28, batLSC[k])); // VOID | lo_supplycost
-            MEASURE_OP(batAP, (arithmetic<SUB, v2_int_t>(batAR, batAS))); // VOID | lo_revenue - lo_supplycost
+            MEASURE_OP(batAP, (arithmetic<ahead::sub, v2_int_t>(batAR, batAS))); // VOID | lo_revenue - lo_supplycost
             delete batAR;
             delete batAS;
             // s_nation

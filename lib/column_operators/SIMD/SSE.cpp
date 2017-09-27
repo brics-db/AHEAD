@@ -24,15 +24,19 @@
 namespace ahead {
     namespace bat {
         namespace ops {
-            namespace sse {
-                const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_L = nullptr;
-                const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_H = nullptr;
+            namespace simd {
+                namespace sse {
 
-                const __m128i * const v2_mm128<uint16_t>::SHUFFLE_TABLE = nullptr;
+                    const uint64_t * const mm128<uint8_t>::SHUFFLE_TABLE_L = nullptr;
+                    const uint64_t * const mm128<uint8_t>::SHUFFLE_TABLE_H = nullptr;
 
-                const __m128i * const v2_mm128<uint32_t>::SHUFFLE_TABLE = nullptr;
+                    const __m128i * const mm128<uint16_t>::SHUFFLE_TABLE = nullptr;
 
-                const __m128i * const v2_mm128<uint64_t>::SHUFFLE_TABLE = nullptr;
+                    const __m128i * const mm128<uint32_t>::SHUFFLE_TABLE = nullptr;
+
+                    const __m128i * const mm128<uint64_t>::SHUFFLE_TABLE = nullptr;
+
+                }
             }
         }
     }

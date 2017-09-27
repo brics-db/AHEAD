@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q22_early.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -124,7 +124,7 @@ int main(
         delete bat6;
 
         // p_brand between 'MFGR#2221' and 'MFGR#2228'
-        MEASURE_OP(bat8, (select<std::greater_equal, std::less_equal, AND>(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228")))); // OID part | p_brand
+        MEASURE_OP(bat8, (select<std::greater_equal, std::less_equal, ahead::and_is>(batPB, const_cast<str_t>("MFGR#2221"), const_cast<str_t>("MFGR#2228")))); // OID part | p_brand
         auto bat9 = bat8->mirror_head(); // OID part | OID part
         auto batA = batPP->reverse(); // p_partkey | OID part
         MEASURE_OP(batB, matchjoin(batA, bat9)); // p_partkey | OID Part where p_category = 'MFGR#12'

@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q12_continuous.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -67,9 +67,9 @@ int main(
         ssb::before_query();
 
         // 1) select from lineorder
-        MEASURE_OP_PAIR(pair1, (selectAN<std::greater_equal, std::less_equal, AND>(batLQenc, 26ull * batLQenc->tail.metaData.AN_A, 35ull * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
+        MEASURE_OP_PAIR(pair1, (selectAN<std::greater_equal, std::less_equal, ahead::and_is>(batLQenc, 26ull * batLQenc->tail.metaData.AN_A, 35ull * batLQenc->tail.metaData.AN_A))); // lo_quantity between 26 and 35
         CLEAR_SELECT_AN(pair1);
-        MEASURE_OP_PAIR(pair2, (selectAN<std::greater_equal, std::less_equal, AND>(batLDenc, 4ull * batLDenc->tail.metaData.AN_A, 6ull * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
+        MEASURE_OP_PAIR(pair2, (selectAN<std::greater_equal, std::less_equal, ahead::and_is>(batLDenc, 4ull * batLDenc->tail.metaData.AN_A, 6ull * batLDenc->tail.metaData.AN_A))); // lo_discount between 4 and 6
         CLEAR_SELECT_AN(pair2);
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
         delete pair1.first;
@@ -101,7 +101,7 @@ int main(
         // batE now has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = std::get<0>(tupleB)->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete std::get<0>(tupleB);
-        // BatF only contains the 
+        // BatF only contains the
         MEASURE_OP_TUPLE(tupleD, (matchjoinAN(batC, batLEenc)));
         CLEAR_JOIN_AN(tupleD);
         MEASURE_OP_TUPLE(tupleE, (matchjoinAN(batC, std::get<0>(tuple4))));

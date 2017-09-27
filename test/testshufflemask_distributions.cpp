@@ -5,14 +5,8 @@
 #include <exception>
 #include <omp.h>
 #include <ColumnStore.h>
-#include <column_operators/SIMD/SIMD.hpp>
+#include "../lib/column_operators/SIMD/SIMD.hpp"
 #include <util/stopwatch.hpp>
-
-#ifndef NPROCS
-#error "You must define the maximum number of threads you want to test! Use: -DNRPOCS=xxx"
-// let's provide at least a default NPROCS value which should be valid for all modern CPUs
-#define NPROCS 2
-#endif
 
 struct initcolumns_t {
 };
@@ -31,8 +25,8 @@ struct initcolumns_inout_t :
 
 struct abstract_abstract_context_t {
 
-    constexpr static const size_t NUM_RND = 64;
-    constexpr static const size_t MASK_ARR = NUM_RND - 1;
+    static const constexpr size_t NUM_RND = 64;
+    static const constexpr size_t MASK_ARR = NUM_RND - 1;
 
     ahead::StopWatch sw;
     std::random_device rndDevice;
@@ -126,9 +120,39 @@ struct ac_helper<__m256i, uint64_t, uint8_t> {
 };
 #endif
 
+#ifdef AHEAD_AVX512
+template<>
+struct ac_helper<__m512i, uint8_t, uint64_t> {
+    static const size_t SHIFT = 6;
+    static const size_t MASK = 0x2F;
+    static const size_t FULL = 0xFFFFFFFFFFFFFFFF;
+};
+
+template<>
+struct ac_helper<__m512i, uint16_t, uint32_t> {
+    static const size_t SHIFT = 5;
+    static const size_t MASK = 0x1F;
+    static const size_t FULL = 0xFFFFFFFF;
+};
+
+template<>
+struct ac_helper<__m512i, uint32_t, uint16_t> {
+    static const size_t SHIFT = 4;
+    static const size_t MASK = 0x0F;
+    static const size_t FULL = 0xFFFF;
+};
+
+template<>
+struct ac_helper<__m512i, uint64_t, uint8_t> {
+    static const size_t SHIFT = 3;
+    static const size_t MASK = 0x07;
+    static const size_t FULL = 0xFF;
+};
+#endif
+
 template<typename V, typename T>
 struct abstract_context_t {
-    typedef typename ahead::bat::ops::simd::v2_mm<V, T>::mask_t mask_t;
+    typedef typename ahead::bat::ops::simd::mm<V, T>::mask_t mask_t;
     typedef ac_helper<V, T, mask_t> helper;
 
     abstract_abstract_context_t * paac;
@@ -140,7 +164,7 @@ struct abstract_context_t {
     abstract_context_t(
             abstract_abstract_context_t & aac)
             : paac(&aac),
-              mm(ahead::bat::ops::simd::v2_mm<V, T>::set_inc(0)),
+              mm(ahead::bat::ops::simd::mm<V, T>::set_inc(0)),
               numMM(aac.numValues / (sizeof(V) / sizeof(T))),
               rndDistr(0, abstract_abstract_context_t::NUM_RND * (sizeof(V) / sizeof(T)) - 1) {
     }
@@ -290,34 +314,19 @@ struct concrete_context_t {
 template<typename V, typename T, typename M>
 using TestFn = void (*)(concrete_context_t<V, T, M> &);
 
-template<typename V, typename T, typename M, TestFn<V, T, M> F, size_t N>
+template<typename V, typename T, typename M, TestFn<V, T, M> F>
 struct Test {
-    typedef typename ahead::bat::ops::simd::v2_mm<V, T>::mask_t mask_t;
+    typedef typename ahead::bat::ops::simd::mm<V, T>::mask_t mask_t;
 
     static void run(
             abstract_context_t<V, T> & ac) {
-        Test<V, T, M, F, N - 1>::run(ac);
-
-        std::array<concrete_context_t<V, T, M>, N> ccs = {};
-        std::for_each(ccs.begin(), ccs.end(), [&ac = ac] (concrete_context_t<V, T, M> & cc) {
-                    cc.init(ac);
-                });
+        concrete_context_t<V, T, M> cc(ac);
         ac.paac->sw.start();
-#pragma omp parallel for
-        for (size_t i = 0; i < N; ++i) {
-            for (size_t r = 0; r < ac.paac->numRepititions; ++r) {
-                F(ccs[i]);
-            }
+        for (size_t r = 0; r < ac.paac->numRepititions; ++r) {
+            F(cc);
         }
         ac.paac->sw.stop();
         std::cout << ',' << ac.paac->sw.duration();
-    }
-};
-
-template<typename V, typename T, typename M, TestFn<V, T, M> F>
-struct Test<V, T, M, F, 0> {
-    static void run(
-            abstract_context_t<V, T> & ac) {
     }
 };
 
@@ -330,8 +339,8 @@ void testPack1ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        auto mmResult = ahead::bat::ops::simd::v2_mm<V, T>::pack_right(ahead::bat::ops::simd::v2_mm<V, T>::loadu(pmmIn++), tmpMask);
-        ahead::bat::ops::simd::v2_mm<V, T>::storeu(pmmOut, mmResult);
+        auto mmResult = ahead::bat::ops::simd::mm<V, T>::pack_right(ahead::bat::ops::simd::mm<V, T>::loadu(pmmIn++), tmpMask);
+        ahead::bat::ops::simd::mm<V, T>::storeu(pmmOut, mmResult);
         pmmOut = reinterpret_cast<V*>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
 }
@@ -345,21 +354,44 @@ void testPack2ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        ahead::bat::ops::simd::v2_mm<V, T>::pack_right2(pOut, ahead::bat::ops::simd::v2_mm<V, T>::loadu(pmmIn++), tmpMask);
+        ahead::bat::ops::simd::mm<V, T>::pack_right2(pOut, ahead::bat::ops::simd::mm<V, T>::loadu(pmmIn++), tmpMask);
     }
 }
+
+template<typename V>
+struct vector_length_string;
+
+template<>
+struct vector_length_string<__m128i> {
+static const constexpr char * const value = "128";
+};
+
+#ifdef __AVX2__
+template<>
+struct vector_length_string<__m256i> {
+static constexpr const char * const value = "256";
+};
+#endif
+
+#ifdef __AVX512F__
+template<>
+struct vector_length_string<__m512i> {
+static constexpr const char * const value = "512";
+};
+#endif
 
 template<typename V, typename T>
 void test(
         abstract_abstract_context_t & aac) {
-    constexpr static const size_t nprocs = 1; // NPROCS;
     abstract_context_t<V, T> ac(aac);
-    std::cout << "# #data bits\t" << (sizeof(T) * 8) << "\n#128-bit vectors\t" << (ac.numMM * aac.numRepititions) << "\t(" << ac.numMM << " repeated " << aac.numRepititions << " times)" << std::endl;
-    std::cout << "selectivity,lookup table,iteration\n";
+    std::cout << "# " << std::setw(20) << "data bits: " << (sizeof(T) * 8);
+    std::cout << "\n#" << std::setw(6) << vector_length_string<V>::value << "-bit vectors: " << (ac.numMM * aac.numRepititions) << " (" << ac.numMM << " repeated " << aac.numRepititions
+            << " times)\n";
+    std::cout << "selectivity,lookup table,iteration" << std::endl;
     for (size_t selectivity = 0; selectivity <= 100; selectivity++) {
         ac.setSelectivity(selectivity);
-        Test<V, T, initcolumns_inout_t, testPack1ColumnArray, nprocs>::run(ac);
-        Test<V, T, initcolumns_inout_t, testPack2ColumnArray, nprocs>::run(ac);
+        Test<V, T, initcolumns_inout_t, testPack1ColumnArray>::run(ac);
+        Test<V, T, initcolumns_inout_t, testPack2ColumnArray>::run(ac);
         std::cout << '\n';
     }
     std::cout << "\n\n" << std::endl;
@@ -405,5 +437,12 @@ int main(
     test<__m256i, uint16_t>(aac);
     test<__m256i, uint32_t>(aac);
     test<__m256i, uint64_t>(aac);
+#endif
+
+#ifdef AHEAD_AVX512
+    test<__m512i, uint8_t>(aac);
+    test<__m512i, uint16_t>(aac);
+    test<__m512i, uint32_t>(aac);
+    test<__m512i, uint64_t>(aac);
 #endif
 }

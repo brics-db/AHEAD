@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q41_early.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -133,7 +133,7 @@ int main(
         auto batSS = std::get<0>(tupleSS);
 
         // p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2'
-        MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, OR>(batPM, const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
+        MEASURE_OP(bat1, (select<std::equal_to, std::equal_to, ahead::or_is>(batPM, const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
         auto bat2 = bat1->mirror_head(); // OID supplier | OID supplier
         delete bat1;
         auto bat3 = batPP->reverse(); // p_partkey | VOID part
@@ -186,7 +186,7 @@ int main(
         delete bat20;
         MEASURE_OP(batAR, fetchjoin(bat21, batLR)); // VOID | lo_revenue
         MEASURE_OP(batAS, fetchjoin(bat21, batLSC)); // VOID | lo_supplycost
-        MEASURE_OP(batAP, (arithmetic<SUB, v2_int_t>(batAR, batAS))); // VOID | lo_revenue - lo_supplycost !!
+        MEASURE_OP(batAP, (arithmetic<ahead::sub, v2_int_t>(batAR, batAS))); // VOID | lo_revenue - lo_supplycost !!
         delete batAR;
         delete batAS;
         MEASURE_OP(bat22, fetchjoin(bat21, batLC)); // VOID | lo_custkey

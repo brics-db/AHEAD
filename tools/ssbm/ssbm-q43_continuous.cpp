@@ -138,7 +138,7 @@ int main(
         delete std::get<0>(tuple12);
 
         // d_year = 1997 or d_year = 1998
-        MEASURE_OP_TUPLE(tuple21, (selectAN<std::equal_to, std::equal_to, OR>(batDY, 1997ull * batDY->tail.metaData.AN_A, 1998ull * batDY->tail.metaData.AN_A))); // OID date | d_year
+        MEASURE_OP_TUPLE(tuple21, (selectAN<std::equal_to, std::equal_to, ahead::or_is>(batDY, 1997ull * batDY->tail.metaData.AN_A, 1998ull * batDY->tail.metaData.AN_A))); // OID date | d_year
         CLEAR_SELECT_AN(tuple21);
         auto bat22 = std::get<0>(tuple21)->mirror_head(); // OID date | OID date
         delete std::get<0>(tuple21);
@@ -166,7 +166,7 @@ int main(
         CLEAR_FETCHJOIN_AN(tupleAR);
         MEASURE_OP_TUPLE(tupleAS, fetchjoinAN(bat28, batLSC)); // VOID | lo_supplycost
         CLEAR_FETCHJOIN_AN(tupleAS);
-        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<SUB, v2_resint_t>(std::get<0>(tupleAR), std::get<0>(tupleAS)))); // VOID | lo_revenue - lo_supplycost (profit !!!)
+        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<ahead::sub, v2_resint_t>(std::get<0>(tupleAR), std::get<0>(tupleAS)))); // VOID | lo_revenue - lo_supplycost (profit !!!)
         delete std::get<0>(tupleAR);
         delete std::get<0>(tupleAS);
         CLEAR_ARITHMETIC_AN(tupleAP);

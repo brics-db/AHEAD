@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -53,7 +53,7 @@
 namespace boost {
 
     void throw_exception(
-            std::exception const & e) { // user defined
+            const std::exception & e) { // user defined
         throw e;
     }
 }
@@ -61,7 +61,7 @@ namespace boost {
 using namespace ahead;
 using namespace ahead::bat::ops;
 #ifdef FORCE_SSE
-using namespace ahead::bat::ops::sse;
+using namespace ahead::bat::ops::simd::sse;
 #else
 using namespace ahead::bat::ops::scalar;
 #endif
@@ -105,15 +105,15 @@ namespace ssb {
     private:
         ArgumentParser parser;
 
-        constexpr static const char * const ID_NUMRUNS = "numruns";
-        constexpr static const char * const ID_LENTIMES = "lentimes";
-        constexpr static const char * const ID_LENTYPES = "lentypes";
-        constexpr static const char * const ID_LENSIZES = "lensizes";
-        constexpr static const char * const ID_LENPCM = "lenpcm";
-        constexpr static const char * const ID_DBPATH = "numruns";
-        constexpr static const char * const ID_VERBOSE = "verbose";
-        constexpr static const char * const ID_PRINTRESULT = "printresult";
-        constexpr static const char * const ID_CONVERTTABLEFILES = "converttablefiles";
+        static const constexpr char * const ID_NUMRUNS = "numruns";
+        static const constexpr char * const ID_LENTIMES = "lentimes";
+        static const constexpr char * const ID_LENTYPES = "lentypes";
+        static const constexpr char * const ID_LENSIZES = "lensizes";
+        static const constexpr char * const ID_LENPCM = "lenpcm";
+        static const constexpr char * const ID_DBPATH = "numruns";
+        static const constexpr char * const ID_VERBOSE = "verbose";
+        static const constexpr char * const ID_PRINTRESULT = "printresult";
+        static const constexpr char * const ID_CONVERTTABLEFILES = "converttablefiles";
 
     public:
 
@@ -130,6 +130,9 @@ namespace ssb {
     StopWatch::rep loadTable(
             const char* const tableName,
             const SSB_CONF & CONFIG);
+
+    void loadTable(
+            const std::string & tableName);
 
     template<typename T>
     struct PrintBatHelper {
@@ -158,11 +161,11 @@ namespace ssb {
             fout << '\n';
         }
         oid_t i = 0;
-        constexpr const size_t wOID = std::numeric_limits<oid_t>::digits10;
-        constexpr const bool isHeadLT16 = ahead::larger_type<head_t, uint16_t>::isSecondLarger;
-        constexpr const size_t wHead = isHeadLT16 ? std::numeric_limits<uint16_t>::digits10 : std::numeric_limits<head_t>::digits10;
-        constexpr const bool isTailLT16 = ahead::larger_type<tail_t, uint16_t>::isSecondLarger;
-        constexpr const size_t wTail = isTailLT16 ? std::numeric_limits<uint16_t>::digits10 : std::numeric_limits<tail_t>::digits10;
+        const constexpr size_t wOID = std::numeric_limits<oid_t>::digits10;
+        const constexpr bool isHeadLT16 = ahead::larger_type<head_t, uint16_t>::isSecondLarger;
+        const constexpr size_t wHead = isHeadLT16 ? std::numeric_limits<uint16_t>::digits10 : std::numeric_limits<head_t>::digits10;
+        const constexpr bool isTailLT16 = ahead::larger_type<tail_t, uint16_t>::isSecondLarger;
+        const constexpr size_t wTail = isTailLT16 ? std::numeric_limits<uint16_t>::digits10 : std::numeric_limits<tail_t>::digits10;
         auto iter = bat->begin();
         fout << std::right;
         fout << std::setw(wOID) << "void";
@@ -225,6 +228,9 @@ extern template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, 
             architecture_t arch = DEFAULT_ARCHITECTURE);
     void init_pcm();
     void clear_stats();
+    void loadTables(
+            std::vector<std::string> && tables,
+            std::string query = std::string());
     void before_load();
     void after_load();
     void after_create_columnbats();

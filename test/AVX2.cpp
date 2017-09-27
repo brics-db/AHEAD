@@ -21,7 +21,9 @@
  * Created on 07. August 2017, 14:35
  */
 
-#include <column_operators/SIMD/AVX2.hpp>
+#ifdef __AVX2__
+
+#include "../lib/column_operators/SIMD/AVX2.hpp"
 
 namespace ahead {
     namespace bat {
@@ -1873,3 +1875,6 @@ namespace ahead {
         }
     }
 }
+
+#endif
+

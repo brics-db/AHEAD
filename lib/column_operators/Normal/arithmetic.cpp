@@ -28,17 +28,19 @@ namespace ahead {
         namespace ops {
 
 #define ARITHMETIC_SUB(Result, Head1, Tail1, Head2, Tail2) \
-template BAT<v2_void_t, Result> * arithmetic<ADD, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2); \
-template BAT<v2_void_t, Result> * arithmetic<SUB, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2); \
-template BAT<v2_void_t, Result> * arithmetic<MUL, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2); \
-template BAT<v2_void_t, Result> * arithmetic<DIV, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2);
+template BAT<v2_void_t, Result> * arithmetic<ahead::add, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2); \
+template BAT<v2_void_t, Result> * arithmetic<ahead::sub, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2); \
+template BAT<v2_void_t, Result> * arithmetic<ahead::mul, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2); \
+template BAT<v2_void_t, Result> * arithmetic<ahead::div, Result>(BAT<Head1, Tail1> * bat1, BAT<Head2, Tail2> * bat2);
 
 #define ARITHMETIC(Result, Tail1, Tail2) \
         namespace scalar { \
             ARITHMETIC_SUB(Result, v2_void_t, Tail1, v2_void_t, Tail2) \
         } \
-        namespace sse { \
-            ARITHMETIC_SUB(Result, v2_void_t, Tail1, v2_void_t, Tail2) \
+        namespace simd { \
+            namespace sse { \
+                ARITHMETIC_SUB(Result, v2_void_t, Tail1, v2_void_t, Tail2) \
+            } \
         }
 
             ARITHMETIC(v2_int_t, v2_int_t, v2_int_t)

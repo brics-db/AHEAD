@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q41_continuous_reenc.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -98,7 +98,7 @@ int main(
         ssb::before_query();
 
         // p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2'
-        MEASURE_OP_TUPLE(tuple1, (selectAN<std::equal_to, std::equal_to, OR>(batPM, const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
+        MEASURE_OP_TUPLE(tuple1, (selectAN<std::equal_to, std::equal_to, ahead::or_is>(batPM, const_cast<str_t>("MFGR#1"), const_cast<str_t>("MFGR#2")))); // OID part | p_mfgr
         CLEAR_SELECT_AN(tuple1);
         auto bat2 = std::get<0>(tuple1)->mirror_head(); // OID supplier | OID supplier
         delete std::get<0>(tuple1);
@@ -167,7 +167,7 @@ int main(
         CLEAR_FETCHJOIN_AN(tupleAR);
         MEASURE_OP_TUPLE(tupleAS, fetchjoinAN(bat21, batLSC, std::get<9>(*v2_resint_t::As), std::get<9>(*v2_resint_t::Ainvs))); // VOID | lo_supplycost
         CLEAR_FETCHJOIN_AN(tupleAS);
-        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<SUB, v2_resint_t>(std::get<0>(tupleAR), std::get<0>(tupleAS), std::get<8>(*v2_resint_t::As), std::get<8>(*v2_resint_t::Ainvs)))); // VOID | lo_revenue - lo_supplycost !!
+        MEASURE_OP_TUPLE(tupleAP, (arithmeticAN<ahead::sub, v2_resint_t>(std::get<0>(tupleAR), std::get<0>(tupleAS), std::get<8>(*v2_resint_t::As), std::get<8>(*v2_resint_t::Ainvs)))); // VOID | lo_revenue - lo_supplycost !!
         delete std::get<0>(tupleAR);
         delete std::get<0>(tupleAS);
         CLEAR_ARITHMETIC_AN(tupleAP);

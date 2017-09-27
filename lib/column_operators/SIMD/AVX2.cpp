@@ -26,18 +26,22 @@
 namespace ahead {
     namespace bat {
         namespace ops {
-            namespace avx2 {
-                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LL = nullptr;
-                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LH = nullptr;
-                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HL = nullptr;
-                const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HH = nullptr;
+            namespace simd {
+                namespace avx2 {
 
-                const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_L = nullptr;
-                const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_H = nullptr;
+                    const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LL = nullptr;
+                    const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_LH = nullptr;
+                    const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HL = nullptr;
+                    const int64_t * const v2_mm256<uint8_t>::SHUFFLE_TABLE_HH = nullptr;
 
-                const __m256i * const v2_mm256<uint32_t>::SHUFFLE_TABLE = nullptr;
+                    const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_L = nullptr;
+                    const __m128i * const v2_mm256<uint16_t>::SHUFFLE_TABLE_H = nullptr;
 
-                const __m256i * const v2_mm256<uint64_t>::SHUFFLE_TABLE = nullptr;
+                    const __m256i * const v2_mm256<uint32_t>::SHUFFLE_TABLE = nullptr;
+
+                    const __m256i * const v2_mm256<uint64_t>::SHUFFLE_TABLE = nullptr;
+
+                }
             }
         }
     }

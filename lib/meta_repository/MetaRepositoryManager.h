@@ -196,6 +196,11 @@ namespace ahead {
                 BAT<Head, Tail> *bat,
                 cstr_t name_value);
 
+        template<typename Head1, typename Tail1, typename Head2, typename Tail2>
+        TempBAT<Head1, Tail2> * nestedLoopJoin(
+                BAT<Head1, Tail1> *bat1,
+                BAT<Head2, Tail2> *bat2);
+
     public:
 
         class TablesIterator :

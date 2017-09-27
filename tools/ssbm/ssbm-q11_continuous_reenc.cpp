@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q11_continuous_reenc.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -70,7 +70,7 @@ int main(
         MEASURE_OP_PAIR(pair1, selectAN<std::less>(batLQenc, 25ull * batLQenc->tail.metaData.AN_A, std::get<6>(*v2_restiny_t::As), std::get<6>(*v2_restiny_t::Ainvs))); // lo_quantity < 25
         CLEAR_SELECT_AN(pair1);
         MEASURE_OP_PAIR(pair2,
-                (selectAN<std::greater_equal, std::less_equal, AND>(batLDenc, 1ull * batLDenc->tail.metaData.AN_A, 3ull * batLDenc->tail.metaData.AN_A, std::get<5>(*v2_restiny_t::As),
+                (selectAN<std::greater_equal, std::less_equal, ahead::and_is>(batLDenc, 1ull * batLDenc->tail.metaData.AN_A, 3ull * batLDenc->tail.metaData.AN_A, std::get<5>(*v2_restiny_t::As),
                         std::get<5>(*v2_restiny_t::Ainvs)))); // lo_discount between 1 and 3
         CLEAR_SELECT_AN(pair2);
         auto bat3 = pair1.first->mirror_head(); // prepare joined selection (select from lineorder where lo_quantity... and lo_discount)

@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ssbm-q32_continuous.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -124,7 +124,7 @@ int main(
         delete std::get<0>(tuple11);
 
         // d_year >= 1992 and d_year <= 1997
-        MEASURE_OP_TUPLE(tuple13, (selectAN<std::greater_equal, std::less_equal, AND>(batDY, 1992ull * batDY->tail.metaData.AN_A, 1997ull * batDY->tail.metaData.AN_A))); // OID date | d_year
+        MEASURE_OP_TUPLE(tuple13, (selectAN<std::greater_equal, std::less_equal, ahead::and_is>(batDY, 1992ull * batDY->tail.metaData.AN_A, 1997ull * batDY->tail.metaData.AN_A))); // OID date | d_year
         CLEAR_SELECT_AN(tuple13);
         auto bat14 = std::get<0>(tuple13)->mirror_head(); // OID date | OID date
         delete std::get<0>(tuple13);
