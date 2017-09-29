@@ -28,7 +28,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Query 3.4 Late Detection");
 
-    SSBM_LOAD("customerAN", "lineorderAN", "supplierAN", "dateAN", "SSBM Q3.4:\n"
+    ssb::loadTables( {"customerAN", "lineorderAN", "supplierAN", "dateAN"}, "SSBM Q3.4:\n"
             "select c_city, s_city, d_year, sum(lo_revenue) as revenue\n"
             "  from customer, lineorder, supplier, date\n"
             "  where lo_custkey = c_custkey\n"

@@ -19,8 +19,9 @@
  * Created on 27. Juli 2016, 18:42
  */
 
-#ifndef METAREPOSITORYMANAGER_TCC
-#define METAREPOSITORYMANAGER_TCC
+#ifndef METAREPOSITORYMANAGER_H
+#error "This file must only be included by MetaRepositoryManager.h!"
+#endif
 
 namespace ahead {
 
@@ -46,9 +47,9 @@ namespace ahead {
             typename Tail::type_t value) {
         auto iter = bat->begin();
         for (; iter->hasNext(); ++*iter) {
-            if (iter->tail() == value) {
+            auto t = iter->tail();
+            if (t == value) {
                 auto h = iter->head();
-                auto t = iter->tail();
                 delete iter;
                 return std::make_pair(h, t);
             }
@@ -162,10 +163,11 @@ namespace ahead {
             BAT<Head2, Tail2> * bat2) {
         auto * result = skeletonJoin<typename Head1::v2_select_t, typename Tail2::v2_select_t>(bat1, bat2);
         auto * iter1 = bat1->begin();
+        auto eq_op = ahead::eq<>();
         for (; iter1->hasNext(); ++*iter1) {
             auto * iter2 = bat2->begin();
             for (; iter2->hasNext(); ++*iter2) {
-                if (iter1->tail() == iter2->head()) {
+                if (eq_op(iter1->tail(), iter2->head())) {
                     result->append(std::make_pair(iter1->head(), iter2->tail()));
                 }
             }
@@ -176,6 +178,4 @@ namespace ahead {
     }
 
 }
-
-#endif /* METAREPOSITORYMANAGER_TCC */
 

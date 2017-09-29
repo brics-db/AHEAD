@@ -30,7 +30,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Query 1.2 DMR Sequential");
 
-    SSBM_LOAD("date", "lineorder", "SSBM Q1.2:\n"
+    ssb::loadTables( {"date", "lineorder"}, "SSBM Q1.2:\n"
             "select sum(lo_extendedprice * lo_discount) as revenue\n"
             "  from lineorder, date\n"
             "  where lo_orderdate = d_datekey\n"

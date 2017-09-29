@@ -28,7 +28,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Query 4.2 Continuous Detection With Reencoding");
 
-    SSBM_LOAD("dateAN", "customerAN", "supplierAN", "partAN", "lineorderAN", "SSBM Q4.2:\n"
+    ssb::loadTables( {"dateAN", "customerAN", "supplierAN", "partAN", "lineorderAN"}, "SSBM Q4.2:\n"
             "select d_year, s_nation, p_category, sum(lo_revenue - lo_supplycost) as profit\n"
             "  from date, customer, supplier, part, lineorder\n"
             "  where lo_custkey = c_custkey\n"

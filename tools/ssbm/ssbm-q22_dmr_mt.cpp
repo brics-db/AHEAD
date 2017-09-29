@@ -32,7 +32,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Query 2.2 DMR Parallel");
 
-    SSBM_LOAD("date", "lineorder", "part", "supplier", "SSBM Q2.2:\n"
+    ssb::loadTables( {"date", "lineorder", "part", "supplier"}, "SSBM Q2.2:\n"
             "select sum(lo_revenue), d_year, p_brand\n"
             "  from lineorder, date, part, supplier\n"
             "  where lo_orderdate = d_datekey\n"

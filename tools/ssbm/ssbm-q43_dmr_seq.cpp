@@ -31,7 +31,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Query 4.3 DMR Sequential");
 
-    SSBM_LOAD("date", "customer", "supplier", "part", "lineorder", "SSBM Q4.3:\n"
+    ssb::loadTables( {"date", "customer", "supplier", "part", "lineorder"}, "SSBM Q4.3:\n"
             "select d_year, s_city, p_brand, sum(lo_revenue - lo_supplycost) as profit\n"
             "  from date, customer, supplier, part, lineorder\n"
             "  where lo_custkey = c_custkey\n"

@@ -20,6 +20,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <execinfo.h>
 #include <signal.h>
 #include <exception>
@@ -114,30 +115,6 @@ namespace ssb {
         CONVERT_TABLE_FILES = parser.get_bool(ID_CONVERTTABLEFILES);
     }
 
-    StopWatch::rep loadTable(
-            const char* const tableName,
-            const SSB_CONF & CONFIG) {
-        StopWatch sw;
-        sw.start();
-        std::size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
-        sw.stop();
-        if (CONFIG.VERBOSE) {
-            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
-        }
-        return sw.duration();
-    }
-
-    void loadTable(
-            const std::string & tableName) {
-        StopWatch sw;
-        sw.start();
-        std::size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
-        sw.stop();
-        if (ssb_config.VERBOSE) {
-            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
-        }
-    }
-
     SSB_CONF ssb_config;
     PCM * m = nullptr;
     PCM::ErrorCode pcmStatus = PCM::UnknownError;
@@ -229,6 +206,53 @@ namespace ssb {
         }
     }
 
+    void loadTable(
+            const char* tableName,
+            const SSB_CONF & config) {
+        ahead::StopWatch sw;
+        sw.start();
+        std::size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
+        sw.stop();
+        if (config.VERBOSE) {
+            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
+        }
+    }
+
+    void loadTable(
+            const std::string & tableName,
+            const SSB_CONF & config) {
+        loadTable(tableName.c_str(), config);
+    }
+
+    void loadTables(
+            std::vector<std::string> && tableNames) {
+        if (ssb::ssb_config.VERBOSE) {
+            std::cout << "Loading Tables:";
+            for (const std::string & tab : tableNames) {
+                std::cout << " '" << tab << "'";
+            }
+            std::cout << std::endl;
+        }
+        ahead::StopWatch sw;
+        sw.start();
+        ssb::before_load();
+        for (const std::string & tab : tableNames) {
+            ssb::loadTable(tab);
+        }
+        ssb::after_load();
+        sw.stop();
+        std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;
+    }
+
+    void loadTables(
+            std::vector<std::string> && tableNames,
+            std::string && query) {
+        loadTables(std::forward<std::vector<std::string>>(tableNames));
+        if (ssb::ssb_config.VERBOSE && query.size() != 0) {
+            std::cout << query << std::endl;
+        }
+    }
+
     void clear_stats() {
         ssb::opTimes.clear();
         ssb::batSizes.clear();
@@ -238,23 +262,6 @@ namespace ssb {
         ssb::hasTwoTypes.clear();
         ssb::headTypes.clear();
         ssb::tailTypes.clear();
-    }
-
-    void loadTables(
-            std::vector<std::string> && tables,
-            std::string query) {
-        ahead::StopWatch sw;
-        sw.start();
-        ssb::before_load();
-        for (std::string & tab : tables) {
-            ssb::loadTable(tab);
-        }
-        ssb::after_load();
-        sw.stop();
-        std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;
-        if (ssb::ssb_config.VERBOSE && query.size() != std::string::npos) {
-            std::cout << query << std::endl;
-        }
     }
 
     void before_load() {
@@ -406,5 +413,32 @@ namespace ssb {
         }
         std::cout << std::flush;
     }
+
+#define PRINTBAT_TEMPLATES(v2_head_t) \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_void_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_oid_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_tinyint_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_shortint_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_int_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_bigint_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_str_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_restinyint_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resshortint_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resint_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resbigint_t> *bat, const char* filename, const char* message); \
+template void printBat(StopWatch & sw, BAT<v2_head_t, v2_resstr_t> *bat, const char* filename, const char* message);
+
+    PRINTBAT_TEMPLATES(v2_void_t)
+    PRINTBAT_TEMPLATES(v2_oid_t)
+    PRINTBAT_TEMPLATES(v2_tinyint_t)
+    PRINTBAT_TEMPLATES(v2_shortint_t)
+    PRINTBAT_TEMPLATES(v2_int_t)
+    PRINTBAT_TEMPLATES(v2_bigint_t)
+    PRINTBAT_TEMPLATES(v2_str_t)
+    PRINTBAT_TEMPLATES(v2_restinyint_t)
+    PRINTBAT_TEMPLATES(v2_resshortint_t)
+    PRINTBAT_TEMPLATES(v2_resint_t)
+    PRINTBAT_TEMPLATES(v2_resbigint_t)
+    PRINTBAT_TEMPLATES(v2_resstr_t)
 
 }
