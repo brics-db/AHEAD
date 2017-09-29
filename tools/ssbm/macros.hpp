@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   macros.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -22,54 +22,6 @@
 #define TOOLS_SSBM_MACROS_HPP_
 
 #include <tuple>
-
-///////////////
-// SSBM_LOAD //
-///////////////
-#define SSBM_LOAD_PRINTQUERYSTRING(...) VFUNC(SSBM_LOAD_PRINTQUERYSTRING, __VA_ARGS__)
-#define SSBM_LOAD_PRINTQUERYSTRING6(tab1, tab2, tab3, tab4, tab5, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING5(tab1, tab2, tab3, tab4, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING4(tab1, tab2, tab3,  QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING3(tab1, tab2, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD_PRINTQUERYSTRING2(tab1, QueryString) \
-std::cout << QueryString << std::endl;
-#define SSBM_LOAD(...)                                                         \
-do {                                                                           \
-    ahead::StopWatch sw;                                                       \
-    sw.start();                                                                \
-    ssb::before_load();                                                        \
-    VFUNC(SSBM_LOAD, __VA_ARGS__)                                              \
-    ssb::after_load();                                                         \
-    sw.stop();                                                                 \
-    std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;        \
-    if (ssb::ssb_config.VERBOSE) {                                             \
-        SSBM_LOAD_PRINTQUERYSTRING(__VA_ARGS__);                               \
-    }                                                                          \
-} while (false)
-#define SSBM_LOAD6(tab1, tab2, tab3, tab4, tab5, QueryString)                  \
-loadTable(tab1, ssb::ssb_config);                                              \
-loadTable(tab2, ssb::ssb_config);                                              \
-loadTable(tab3, ssb::ssb_config);                                              \
-loadTable(tab4, ssb::ssb_config);                                              \
-loadTable(tab5, ssb::ssb_config);
-#define SSBM_LOAD5(tab1, tab2, tab3, tab4, QueryString)                        \
-loadTable(tab1, ssb::ssb_config);                                              \
-loadTable(tab2, ssb::ssb_config);                                              \
-loadTable(tab3, ssb::ssb_config);                                              \
-loadTable(tab4, ssb::ssb_config);
-#define SSBM_LOAD4(tab1, tab2, tab3, QueryString)                              \
-loadTable(tab1, ssb::ssb_config);                                              \
-loadTable(tab2, ssb::ssb_config);                                              \
-loadTable(tab3, ssb::ssb_config);
-#define SSBM_LOAD3(tab1, tab2, QueryString)                                    \
-loadTable(tab1, ssb::ssb_config);                                              \
-loadTable(tab2, ssb::ssb_config);
-#define SSBM_LOAD2(tab1, QueryString)                                          \
-loadTable(tab1, ssb::ssb_config);
 
 #ifdef _OPENMP
 #define BEFORE_SAVE_STATS ssb::lock_for_stats();

@@ -27,7 +27,7 @@ int main(
         char** argv) {
     ssb::init(argc, argv, "SSBM Query 4.1 Normal");
 
-    SSBM_LOAD("date", "customer", "supplier", "part", "lineorder", "SSBM Q4.1:\n"
+    ssb::loadTables( {"date", "customer", "supplier", "part", "lineorder"}, "SSBM Q4.1:\n"
             "select d_year, c_nation, sum(lo_revenue - lo_supplycost) as profit\n"
             "  from date, customer, supplier, part, lineorder\n"
             "  where lo_custkey = c_custkey\n"

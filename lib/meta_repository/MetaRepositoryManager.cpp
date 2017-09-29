@@ -3,9 +3,9 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -85,20 +85,28 @@ namespace ahead {
 
     MetaRepositoryManager::~MetaRepositoryManager() {
         delete tables_id_pk;
+        for (auto * str : *tables_name->tail.container) {
+            delete str;
+        }
         delete tables_name;
         delete attributes_id_pk;
-        auto vec = attributes_name->tail.container.get();
-        for (auto name : *vec) {
-            delete name;
+        for (auto * str : *attributes_name->tail.container) {
+            delete str;
         }
         delete attributes_name;
         delete attributes_table_id_fk;
         delete attributes_type_id_fk;
         delete attributes_column_id;
         delete layout_id_pk;
+        for (auto * str : *layout_name->tail.container) {
+            delete str;
+        }
         delete layout_name;
         delete layout_size;
         delete operator_id_pk;
+        for (auto * str : *operator_name->tail.container) {
+            delete str;
+        }
         delete operator_name;
         delete datatype_id_pk;
         delete datatype_name;
@@ -128,14 +136,15 @@ namespace ahead {
     void MetaRepositoryManager::init(
             cstr_t strBaseDir) {
         if (this->strBaseDir == nullptr) {
-            size_t len = strlen(strBaseDir);
+            size_t len = strnlen(strBaseDir, MetaRepositoryManager::MAXLEN_PATH);
             this->strBaseDir = new char[len + 1];
             memcpy(this->strBaseDir, strBaseDir, len + 1); // includes NULL character
 
-            size_t len3 = strlen(PATH_INFORMATION_SCHEMA);
-            META_PATH = new char[len + len3 + 1];
+            size_t len3 = strnlen(PATH_INFORMATION_SCHEMA, MAXLEN_NAME);
+            META_PATH = new char[len + len3 + 2];
             memcpy(META_PATH, strBaseDir, len); // excludes NULL character
-            memcpy(META_PATH + len, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
+            META_PATH[len + 1] = '/';
+            memcpy(META_PATH + len + 1, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
         }
     }
 
@@ -223,6 +232,11 @@ namespace ahead {
     }
 
     id_t MetaRepositoryManager::createTable(
+            const std::string & name) {
+        return createTable(name.c_str());
+    }
+
+    id_t MetaRepositoryManager::createTable(
             cstr_t name) {
         id_t newTableId = ID_INVALID;
 
@@ -235,50 +249,21 @@ namespace ahead {
             newTableId = value.second + 1;
 
             tables_id_pk->append(std::make_pair(newId, newTableId));
-            tables_name->append(std::make_pair(newId, const_cast<str_t>(name)));
+            size_t nameLen = strnlen(name, MAXLEN_NAME);
+            str_t nameCopy = new char[nameLen + 1];
+            strncpy(nameCopy, name, nameLen + 1);
+            tables_name->append(std::make_pair(newId, nameCopy));
         } else {
-            // table already exists
-            throw std::runtime_error("Table already exist!");
+            std::stringstream sserr;
+            sserr << "MetaRepositoryManager::createTable(" << __FILE__ << ":" << __LINE__ << ") Table '" << name << "' already exists!" << std::endl;
+            throw std::runtime_error(sserr.str().c_str());
         }
 
         return newTableId;
     }
 
-    id_t MetaRepositoryManager::getBatIdOfAttribute(
-            cstr_t nameOfTable,
-            cstr_t attribute) {
-        std::pair<id_t, id_t> batNrPair;
-
-        id_t batIdForTableName = this->selectBatId(tables_name, nameOfTable);
-        id_t tableId = this->selectPKId(tables_id_pk, batIdForTableName);
-
-        if (tableId != ID_INVALID) {
-            auto * batForTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
-
-            // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
-            // reverse will not work here, because we need the bat id, not the table id
-            auto * mirrorTableIdBat = batForTableId->mirror_head();
-            delete batForTableId;
-            auto attributesForTable = ahead::bat::ops::hashjoin(mirrorTableIdBat, attributes_name);
-            // auto * attributesForTable = this->nestedLoopJoin(mirrorTableIdBat, attributes_name);
-            delete mirrorTableIdBat;
-            id_t batId = this->selectBatId(attributesForTable, attribute);
-            delete attributesForTable;
-            auto * reverseBat = attributes_column_id->reverse();
-            batNrPair = this->unique_selection(reverseBat, batId);
-            delete reverseBat;
-        } else {
-            std::stringstream sserr;
-            sserr << CONCAT("MetaRepositoryManager::getBatIdOfAttribute(", __FILE__, "@", TOSTRING(__LINE__), "): ");
-            sserr << "Unknown table \"" << nameOfTable << "\" or attribute \"" << attribute << "\"!";
-            throw std::runtime_error(sserr.str());
-        }
-
-        return batNrPair.first;
-    }
-
     void MetaRepositoryManager::createAttribute(
-            std::string & name,
+            cstr_t name,
             cstr_t datatype,
             id_t columnID,
             id_t tableID) {
@@ -293,18 +278,75 @@ namespace ahead {
         id_t idNewAttribute = getLastValue(attributes_id_pk).second + 1;
 
         attributes_id_pk->append(idNewAttribute);
-        str_t nameCopy = new char_t[name.size() + 1];
-        strncpy(nameCopy, name.c_str(), name.size() + 1);
+        size_t nameLen = strnlen(name, MetaRepositoryManager::MAXLEN_NAME);
+        if (nameLen == MetaRepositoryManager::MAXLEN_NAME) {
+            std::stringstream sserr;
+            sserr << "MetaRepositoryManager::createAttribute(" << __FILE__ << ":" << __LINE__ << ") attribute name is too large! Because it is too large, it is not included here." << std::endl;
+            throw std::runtime_error(sserr.str().c_str());
+        }
+        str_t nameCopy = new char_t[nameLen + 1];
+        strncpy(nameCopy, name, nameLen + 1);
         attributes_name->append(nameCopy);
         attributes_table_id_fk->append(tableID);
         attributes_type_id_fk->append(idDataType);
         attributes_column_id->append(columnID);
     }
 
-    char*
-    MetaRepositoryManager::getDataTypeForAttribute(
+    void MetaRepositoryManager::createAttribute(
+            const std::string & name,
+            const std::string & datatype,
+            id_t columnID,
+            id_t tableID) {
+        createAttribute(name.c_str(), datatype.c_str(), columnID, tableID);
+    }
+
+    str_t MetaRepositoryManager::getDataTypeForAttribute(
             __attribute__ ((unused)) cstr_t name) {
         return nullptr;
+    }
+
+    str_t MetaRepositoryManager::getDataTypeForAttribute(
+            const std::string & name) {
+        return getDataTypeForAttribute(name.c_str());
+    }
+
+    id_t MetaRepositoryManager::getBatIdOfAttribute(
+            cstr_t tableName,
+            cstr_t attributeName) {
+        std::pair<id_t, id_t> batNrPair;
+
+        id_t batIdForTableName = this->selectBatId(tables_name, tableName);
+        id_t tableId = this->selectPKId(tables_id_pk, batIdForTableName);
+
+        if (tableId != ID_INVALID) {
+            auto * batForTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
+
+            // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
+            // reverse will not work here, because we need the bat id, not the table id
+            auto * mirrorTableIdBat = batForTableId->mirror_head();
+            delete batForTableId;
+            // auto attributesForTable = ahead::bat::ops::hashjoin(mirrorTableIdBat, attributes_name);
+            auto * attributesForTable = this->nestedLoopJoin(mirrorTableIdBat, attributes_name);
+            delete mirrorTableIdBat;
+            id_t batId = this->selectBatId(attributesForTable, attributeName);
+            delete attributesForTable;
+            auto * reverseBat = attributes_column_id->reverse();
+            batNrPair = this->unique_selection(reverseBat, batId);
+            delete reverseBat;
+        } else {
+            std::stringstream sserr;
+            sserr << CONCAT("MetaRepositoryManager::getBatIdOfAttribute(", __FILE__, "@", TOSTRING(__LINE__), "): ");
+            sserr << "Unknown table \"" << tableName << "\"!";
+            throw std::runtime_error(sserr.str());
+        }
+
+        return batNrPair.first;
+    }
+
+    id_t MetaRepositoryManager::getBatIdOfAttribute(
+            const std::string & tableName,
+            const std::string & attributeName) {
+        return getBatIdOfAttribute(tableName.c_str(), attributeName.c_str());
     }
 
     MetaRepositoryManager::TablesIterator::TablesIterator()

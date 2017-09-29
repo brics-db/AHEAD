@@ -27,6 +27,7 @@
 
 #include <ColumnStore.h>
 #include <column_storage/TempStorage.hpp>
+#include <column_operators/functors.hpp>
 
 namespace ahead {
 
@@ -61,66 +62,10 @@ namespace ahead {
      */
     class MetaRepositoryManager {
 
-    public:
-        friend class TransactionManager;
-        friend class AHEAD;
-
-        /**
-         * @author Christian Vogel
-         *
-         * @return pointer for only one object of the MetaRepositoryManager class
-         *
-         * The function returns a pointer of the one and only existing instance of the class. In the case that no instance
-         * exists, it will be created and afterwards returned from the function.
-         */
-        static MetaRepositoryManager* getInstance();
-
-        void init(
-                const char* strBaseDir);
-
-        void init(
-                const std::string & strBaseDir);
-
-        /**
-         * @author Christian Vogel
-         *
-         * @return unique id of the created table
-         *
-         * Creates an entry for a table into the meta repository.
-         */
-        id_t createTable(
-                const char *name);
-
-        /**
-         * @author Christian Vogel
-         *
-         * Creates an entry for an attribute of a specified table into the meta repository.
-         */
-        void createAttribute(
-                std::string & name,
-                cstr_t datatype,
-                unsigned BATId,
-                unsigned table_id);
-
-        char* getDataTypeForAttribute(
-                cstr_t name);
-
-        unsigned getBatIdOfAttribute(
-                cstr_t nameOfTable,
-                cstr_t attribute);
-
-    private:
         static MetaRepositoryManager *instance;
 
-        static void destroyInstance();
-
-        MetaRepositoryManager();
-        MetaRepositoryManager(
-                const MetaRepositoryManager &copy);
-        virtual
-        ~MetaRepositoryManager();
-        MetaRepositoryManager& operator=(
-                const MetaRepositoryManager &copy);
+        static const size_t MAXLEN_NAME = 1024; // table and attribute name
+        static const size_t MAXLEN_PATH = 64 * 1024; // table and attribute name
 
         str_t strBaseDir;
 
@@ -153,6 +98,16 @@ namespace ahead {
         // path where all table files are located
         char* META_PATH;
         // char* TEST_DATABASE_PATH;
+
+        static void destroyInstance();
+
+        MetaRepositoryManager();
+        MetaRepositoryManager(
+                const MetaRepositoryManager &copy);
+        virtual ~MetaRepositoryManager();
+
+        MetaRepositoryManager& operator=(
+                const MetaRepositoryManager &copy);
 
         void createRepository();
 
@@ -202,6 +157,64 @@ namespace ahead {
                 BAT<Head2, Tail2> *bat2);
 
     public:
+        friend class TransactionManager;
+        friend class AHEAD;
+
+        /**
+         * @author Christian Vogel
+         *
+         * @return pointer for only one object of the MetaRepositoryManager class
+         *
+         * The function returns a pointer of the one and only existing instance of the class. In the case that no instance
+         * exists, it will be created and afterwards returned from the function.
+         */
+        static MetaRepositoryManager* getInstance();
+
+        void init(
+                const char* strBaseDir);
+
+        void init(
+                const std::string & strBaseDir);
+
+        /**
+         * @author Christian Vogel
+         *
+         * @return unique id of the created table
+         *
+         * Creates an entry for a table into the meta repository.
+         */
+        id_t createTable(
+                cstr_t name);
+        id_t createTable(
+                const std::string & name);
+
+        /**
+         * @author Christian Vogel
+         *
+         * Creates an entry for an attribute of a specified table into the meta repository.
+         */
+        void createAttribute(
+                cstr_t name,
+                cstr_t datatype,
+                unsigned BATId,
+                unsigned table_id);
+        void createAttribute(
+                const std::string & name,
+                const std::string & datatype,
+                unsigned BATId,
+                unsigned table_id);
+
+        str_t getDataTypeForAttribute(
+                cstr_t name);
+        str_t getDataTypeForAttribute(
+                const std::string & name);
+
+        unsigned getBatIdOfAttribute(
+                cstr_t nameOfTable,
+                cstr_t attribute);
+        unsigned getBatIdOfAttribute(
+                const std::string & nameOfTable,
+                const std::string & attribute);
 
         class TablesIterator :
                 public BATIterator<v2_id_t, v2_str_t> {

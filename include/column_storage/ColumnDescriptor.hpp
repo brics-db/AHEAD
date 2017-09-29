@@ -6,7 +6,7 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 //
@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-/* 
+/*
  * File:   ColumnDescriptor.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -32,6 +32,7 @@
 #include <vector>
 #include <atomic>
 #include <utility>
+#include <memory>
 
 #include <ColumnStore.h>
 #include <column_storage/ColumnMetaData.hpp>
@@ -169,7 +170,7 @@ namespace ahead {
         virtual ~ColumnDescriptor() {
         }
 
-        ColumnDescriptor<v2_void_t, void> & operator=(
+        ColumnDescriptor<V2Type, void> & operator=(
                 const ColumnDescriptor<V2Type, void> &) = default;
     };
 
