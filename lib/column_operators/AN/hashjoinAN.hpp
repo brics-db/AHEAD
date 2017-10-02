@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   hashjoinAN.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -28,16 +28,16 @@ namespace ahead {
         namespace ops {
 
 #define V2_HASHJOIN_IMPL0(V2H1, V2T1, V2H2, V2T2) \
-template std::tuple<TempBAT<typename V2H1::v2_select_t, typename V2T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-hashjoinAN(BAT<V2H1, V2T1> *, BAT<V2H2, V2T2> *, hash_side_t);
+template std::tuple<TempBAT<typename V2H1::v2_select_t, typename V2T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> \
+hashjoinAN(BAT<V2H1, V2T1> *, BAT<V2H2, V2T2> *, hash_side_t, resoid_t);
 
 #define V2_HASHJOIN_IMPL1(V2H1, V2T1, V2H2, V2T2) \
-template std::tuple<TempBAT<typename TypeMap<V2H1>::v2_encoded_t::v2_select_t, typename V2T2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-hashjoinAN(BAT<V2H1, V2T1> *, BAT<V2H2, V2T2> *, typename TypeMap<V2H1>::v2_encoded_t::type_t, typename TypeMap<V2H1>::v2_encoded_t::type_t, hash_side_t);
+template std::tuple<TempBAT<typename TypeMap<V2H1>::v2_encoded_t::v2_select_t, typename V2T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> \
+hashjoinAN(BAT<V2H1, V2T1> *, BAT<V2H2, V2T2> *, typename TypeMap<V2H1>::v2_encoded_t::type_t, typename TypeMap<V2H1>::v2_encoded_t::type_t, hash_side_t, resoid_t);
 
 #define V2_HASHJOIN_IMPL2(V2H1, V2T1, V2H2, V2T2) \
-template std::tuple<TempBAT<typename TypeMap<V2H1>::v2_encoded_t::v2_select_t, typename TypeMap<V2T2>::v2_encoded_t::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*> \
-hashjoinAN(BAT<V2H1, V2T1> *, BAT<V2H2, V2T2> *, typename TypeMap<V2H1>::v2_encoded_t::type_t, typename TypeMap<V2H1>::v2_encoded_t::type_t, typename TypeMap<V2T2>::v2_encoded_t::type_t, typename TypeMap<V2T2>::v2_encoded_t::type_t, hash_side_t);
+template std::tuple<TempBAT<typename TypeMap<V2H1>::v2_encoded_t::v2_select_t, typename TypeMap<V2T2>::v2_encoded_t::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> \
+hashjoinAN(BAT<V2H1, V2T1> *, BAT<V2H2, V2T2> *, typename TypeMap<V2H1>::v2_encoded_t::type_t, typename TypeMap<V2H1>::v2_encoded_t::type_t, typename TypeMap<V2T2>::v2_encoded_t::type_t, typename TypeMap<V2T2>::v2_encoded_t::type_t, hash_side_t, resoid_t);
 
 #define V2_HASHJOIN_SUB_AN0(V2HEAD, V2TAIL) \
 V2_HASHJOIN_IMPL0(V2HEAD, v2_void_t, v2_void_t, V2TAIL) \

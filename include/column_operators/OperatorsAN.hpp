@@ -35,7 +35,7 @@ namespace ahead {
             matchjoinAN(
                     BAT<H1, T1> * arg1,
                     BAT<H2, T2> * arg2,
-                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename H1, typename T1, typename H2, typename T2>
             std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
@@ -44,7 +44,7 @@ namespace ahead {
                     BAT<H2, T2> * arg2,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1reenc,
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc,
-                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename H1, typename T1, typename H2, typename T2>
             std::tuple<BAT<typename H1::v2_select_t, typename T2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
@@ -55,27 +55,30 @@ namespace ahead {
                     typename TypeMap<H1>::v2_encoded_t::type_t AH1InvReenc,
                     typename TypeMap<T2>::v2_encoded_t::type_t AT2Reenc,
                     typename TypeMap<T2>::v2_encoded_t::type_t AT2InvReenc,
-                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-            std::tuple<TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
             hashjoinAN(
                     BAT<Head1, Tail1> * arg1,
                     BAT<Head2, Tail2> * arg2,
-                    hash_side_t hashside = hash_side_t::right);
+                    hash_side_t hashside = hash_side_t::right,
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename Tail2::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*>
+            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename Tail2::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *,
+                    AN_indicator_vector *>
             hashjoinAN(
                     BAT<Head1, Tail1> * arg1,
                     BAT<Head2, Tail2> * arg2,
                     typename TypeMap<Head1>::v2_encoded_t::type_t AH1reenc,
                     typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc,
-                    hash_side_t hashside = hash_side_t::right);
+                    hash_side_t hashside = hash_side_t::right,
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename TypeMap<Tail2>::v2_encoded_t::v2_select_t>*, std::vector<bool>*, std::vector<bool>*, std::vector<bool>*,
-                    std::vector<bool>*>
+            std::tuple<TempBAT<typename TypeMap<Head1>::v2_encoded_t::v2_select_t, typename TypeMap<Tail2>::v2_encoded_t::v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *,
+                    AN_indicator_vector *, AN_indicator_vector *>
             hashjoinAN(
                     BAT<Head1, Tail1> * arg1,
                     BAT<Head2, Tail2> * arg2,
@@ -83,14 +86,15 @@ namespace ahead {
                     typename TypeMap<Head1>::v2_encoded_t::type_t AH1InvReenc,
                     typename TypeMap<Tail2>::v2_encoded_t::type_t AT2Reenc,
                     typename TypeMap<Tail2>::v2_encoded_t::type_t AT2InvReenc,
-                    hash_side_t hashside = hash_side_t::right);
+                    hash_side_t hashside = hash_side_t::right,
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename T2>
             std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *>
             fetchjoinAN(
                     BAT<v2_void_t, v2_resoid_t> * arg1,
                     BAT<v2_void_t, T2> * arg2,
-                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename T2>
             std::tuple<BAT<v2_void_t, typename TypeMap<T2>::v2_encoded_t> *, AN_indicator_vector *, AN_indicator_vector *>
@@ -99,7 +103,7 @@ namespace ahead {
                     BAT<v2_void_t, T2> * arg2,
                     typename TypeMap<T2>::v2_encoded_t::type_t ATReenc,
                     typename TypeMap<T2>::v2_encoded_t::type_t ATReencInv,
-                    resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
             template<typename Head, typename Tail>
             std::tuple<BAT<v2_void_t, v2_resoid_t>*, BAT<v2_void_t, v2_resoid_t> *, AN_indicator_vector *, AN_indicator_vector *>
@@ -137,51 +141,58 @@ namespace ahead {
                         typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<Tail::As->size() - 1>(*Tail::As));
 
                 template<typename Head, typename ResTail>
-                std::vector<bool>*
+                AN_indicator_vector *
                 checkAN(
                         BAT<Head, ResTail> * arg,
                         typename ResTail::type_t aInv = ResTail::A_INV,
-                        typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U);
+                        typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U,
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<typename Head, typename ResTail>
-                std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*>
+                std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, AN_indicator_vector *>
                 decodeAN(
-                        BAT<Head, ResTail> * arg);
+                        BAT<Head, ResTail> * arg,
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<typename Head, typename Tail>
-                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
+                std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *>
                 checkAndDecodeAN(
-                        BAT<Head, Tail> * arg);
+                        BAT<Head, Tail> * arg,
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<template<typename > class Op, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector *>
                 selectAN(
                         BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold);
+                        typename Tail::type_t threshold,
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector *>
                 selectAN(
                         BAT<Head, Tail> * arg,
                         typename Tail::type_t threshold1,
-                        typename Tail::type_t threshold2);
+                        typename Tail::type_t threshold2,
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<template<typename > class Op, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector *>
                 selectAN(
                         BAT<Head, Tail> * arg,
                         typename Tail::type_t threshold,
                         typename Tail::v2_select_t::type_t ATR,
-                        typename Tail::v2_select_t::type_t ATInvR);
+                        typename Tail::v2_select_t::type_t ATInvR,
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
-                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector *>
                 selectAN(
                         BAT<Head, Tail> * arg,
                         typename Tail::type_t threshold1,
                         typename Tail::type_t threshold2,
                         typename Tail::v2_select_t::type_t ATR,
-                        typename Tail::v2_select_t::type_t ATInvR);
+                        typename Tail::v2_select_t::type_t ATInvR,
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
                 std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *>
@@ -190,17 +201,18 @@ namespace ahead {
                         BAT<Head2, Tail2> * bat2,
                         typename Result::type_t AResult = std::get<Result::As->size() - 1>(*Result::As),
                         typename Result::type_t AResultInv = std::get<Result::Ainvs->size() - 1>(*Result::Ainvs),
-                        resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<
                         Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*>
+                std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *>
                 aggregate_mul_sumAN(
                         BAT<Head1, Tail1> * arg1,
                         BAT<Head2, Tail2> * arg2,
                         typename Result::type_t init = typename Result::type_t(0),
                         typename ResEnc::type_t RA = std::get<ResEnc::As->size() - 1>(*ResEnc::As),
-                        typename ResEnc::type_t RAInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs));
+                        typename ResEnc::type_t RAInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs),
+                        resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
             }
 
             namespace simd {
@@ -212,51 +224,58 @@ namespace ahead {
                             typename TypeMap<Tail>::v2_encoded_t::type_t A = std::get<Tail::As->size() - 1>(*Tail::As));
 
                     template<typename Head, typename ResTail>
-                    std::vector<bool>*
+                    AN_indicator_vector *
                     checkAN(
                             BAT<Head, ResTail> * arg,
                             typename ResTail::type_t aInv = ResTail::A_INV,
-                            typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U);
+                            typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U,
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                     template<typename Head, typename ResTail>
-                    std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*>
+                    std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, AN_indicator_vector *>
                     decodeAN(
-                            BAT<Head, ResTail> * arg);
+                            BAT<Head, ResTail> * arg,
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                     template<typename Head, typename Tail>
-                    std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>
+                    std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *>
                     checkAndDecodeAN(
-                            BAT<Head, Tail> * arg);
-
-                    template<template<typename > class Op, typename Head, typename Tail>
-                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
-                    selectAN(
                             BAT<Head, Tail> * arg,
-                            typename Tail::type_t threshold);
-
-                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
-                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
-                    selectAN(
-                            BAT<Head, Tail> * arg,
-                            typename Tail::type_t threshold1,
-                            typename Tail::type_t threshold2);
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                     template<template<typename > class Op, typename Head, typename Tail>
                     std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
                     selectAN(
                             BAT<Head, Tail> * arg,
                             typename Tail::type_t threshold,
-                            typename Tail::v2_select_t::type_t ATReenc,
-                            typename Tail::v2_select_t::type_t ATReencInv);
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                     template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
-                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t>*, AN_indicator_vector*>
+                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *>
+                    selectAN(
+                            BAT<Head, Tail> * arg,
+                            typename Tail::type_t threshold1,
+                            typename Tail::type_t threshold2,
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
+
+                    template<template<typename > class Op, typename Head, typename Tail>
+                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *>
+                    selectAN(
+                            BAT<Head, Tail> * arg,
+                            typename Tail::type_t threshold,
+                            typename Tail::v2_select_t::type_t ATReenc,
+                            typename Tail::v2_select_t::type_t ATReencInv,
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
+
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
+                    std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *>
                     selectAN(
                             BAT<Head, Tail> * arg,
                             typename Tail::type_t threshold1,
                             typename Tail::type_t threshold2,
                             typename Tail::v2_select_t::type_t ATReenc,
-                            typename Tail::v2_select_t::type_t ATReencInv);
+                            typename Tail::v2_select_t::type_t ATReencInv,
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                     template<template<typename > class Op, typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2>
                     std::tuple<BAT<v2_void_t, Result> *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> arithmeticAN(
@@ -264,17 +283,18 @@ namespace ahead {
                             BAT<Head2, Tail2> * bat2,
                             typename Result::type_t AResult = std::get<Result::As->size() - 1>(*Result::As),
                             typename Result::type_t AResultInv = std::get<Result::Ainvs->size() - 1>(*Result::Ainvs),
-                            resoid_t AOID = std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As));
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
 
                     template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t,
                             typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                    std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*>
+                    std::tuple<BAT<v2_void_t, Result>*, AN_indicator_vector *, AN_indicator_vector *>
                     aggregate_mul_sumAN(
                             BAT<Head1, Tail1> * arg1,
                             BAT<Head2, Tail2> * arg2,
                             typename Result::type_t init = typename Result::type_t(0),
                             typename ResEnc::type_t AResult = std::get<ResEnc::As->size() - 1>(*ResEnc::As),
-                            typename ResEnc::type_t AResultInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs));
+                            typename ResEnc::type_t AResultInv = std::get<ResEnc::Ainvs->size() - 1>(*ResEnc::Ainvs),
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW));
                 }
             }
 

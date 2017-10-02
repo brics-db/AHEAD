@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   encdecAN_SSE.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -67,7 +67,7 @@ namespace ahead {
                      }
 
                      template<typename Head, typename ResTail>
-                     std::vector<bool>*
+                     AN_indicator_vector *
                      checkAN(BAT<Head, ResTail>* arg, typename ResTail::type_t aInv = ResTail::A_INV, typename ResTail::type_t unEncMaxU = ResTail::A_UNENC_MAX_U) {
 
                      typedef typename ResTail::type_t res_t;
@@ -77,11 +77,11 @@ namespace ahead {
 
                      res_t Ainv = static_cast<res_t>(arg->tail.metaData.AN_Ainv);
 
-                     auto result = new std::vector<bool>(arg->size());
+                     auto result = new AN_indicator_vector;
                      auto iter = arg->begin();
                      for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
                      if (static_cast<res_t>(iter->tail() * aInv) > unEncMaxU) {
-                     (*result)[i] = true;
+                     result->push_back(i * AOID);
                      }
                      }
                      delete iter;
@@ -89,7 +89,7 @@ namespace ahead {
                      }
 
                      template<typename Head, typename ResTail>
-                     std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, std::vector<bool>*> decodeAN(BAT<Head, ResTail>* arg) {
+                     std::pair<TempBAT<Head, typename ResTail::v2_unenc_t>*, AN_indicator_vector *> decodeAN(BAT<Head, ResTail>* arg) {
 
                      typedef typename ResTail::type_t restail_t;
                      typedef typename ResTail::v2_unenc_t Tail;
@@ -102,14 +102,14 @@ namespace ahead {
                      restail_t unencMaxU = static_cast<restail_t>(arg->tail.metaData.AN_unencMaxU);
                      auto result = skeletonHead<Head, Tail>(arg);
                      result->reserve(arg->size());
-                     auto vec = new std::vector<bool>(arg->size());
+                     auto vec = new AN_indicator_vector;
                      auto iter = arg->begin();
                      size_t pos = 0;
                      for (; iter->hasNext(); ++*iter, ++pos) {
                      auto t = static_cast<restail_t>(iter->tail() * Ainv);
                      result->append(std::make_pair(iter->head(), static_cast<tail_t>(t)));
                      if (t > unencMaxU) {
-                     (*vec)[pos] = true;
+                     vec->push_back(pos * AOID);
                      }
                      }
                      delete iter;
@@ -130,27 +130,30 @@ namespace ahead {
                             typedef typename smaller_type<head_unenc_t, tail_unenc_t>::type_t smaller_unenc_t;
                             typedef typename larger_type<head_t, tail_t>::type_t larger_t;
                             typedef typename larger_type<head_unenc_t, tail_unenc_t>::type_t larger_unenc_t;
-                            typedef typename v2_mm128_AN<smaller_t>::mask_t smaller_mask_t;
-                            typedef typename v2_mm128_AN<larger_t>::mask_t larger_mask_t;
-                            typedef typename std::tuple<BAT<v2_head_unenc_t, v2_tail_unenc_t>*, std::vector<bool>*, std::vector<bool>*> result_t;
+                            typedef typename mmAN<__m128i, smaller_t>::mask_t smaller_mask_t;
+                            typedef typename mmAN<__m128i, larger_t>::mask_t larger_mask_t;
+                            typedef typename std::tuple<BAT<v2_head_unenc_t, v2_tail_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *> result_t;
 
                             static result_t doIt(
-                                    BAT<Head, Tail>* arg) {
+                                    BAT<Head, Tail>* arg,
+                                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
                                 static_assert(std::is_base_of<v2_anencoded_t, Head>::value || std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
 
-                                constexpr const bool isHeadSmaller = larger_type<head_t, tail_t>::isSecondLarger;
-                                constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
-                                constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
-                                constexpr const size_t smallersPerMM128 = sizeof(__m128i) / sizeof (smaller_t);
-                                constexpr const size_t largersPerMM128 = sizeof(__m128i) / sizeof (larger_t);
-                                constexpr const size_t factor = sizeof(larger_t) / sizeof(smaller_t);
-                                constexpr const bool isSmallerEncoded = isHeadSmaller ? isHeadEncoded : isTailEncoded;
-                                constexpr const bool isLargerEncoded = isHeadSmaller ? isTailEncoded : isHeadEncoded;
+                                const constexpr bool isHeadSmaller = larger_type<head_t, tail_t>::isSecondLarger;
+                                const constexpr bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
+                                const constexpr bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
+                                const constexpr size_t smallersPerMM128 = sizeof(__m128i) / sizeof (smaller_t);
+                                const constexpr size_t largersPerMM128 = sizeof(__m128i) / sizeof (larger_t);
+                                const constexpr size_t factor = sizeof(larger_t) / sizeof(smaller_t);
+                                const constexpr bool isSmallerEncoded = isHeadSmaller ? isHeadEncoded : isTailEncoded;
+                                const constexpr bool isLargerEncoded = isHeadSmaller ? isTailEncoded : isHeadEncoded;
 
                                 oid_t szArg = arg->size();
 
-                                std::vector<bool> *vec1 = (isHeadEncoded ? new std::vector<bool>(szArg) : nullptr);
-                                std::vector<bool> *vec2 = (isTailEncoded ? new std::vector<bool>(szArg) : nullptr);
+                                AN_indicator_vector * vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
+                                vec1->reserve(64);
+                                AN_indicator_vector * vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
+                                vec2->reserve(64);
                                 auto vecS = isHeadSmaller ? vec1 : vec2;
                                 auto vecL = isHeadSmaller ? vec2 : vec1;
 
@@ -182,7 +185,7 @@ namespace ahead {
                                 while (pmmS <= (pmmSEnd - 1)) {
                                     auto mm = _mm_lddqu_si128(pmmS++);
                                     if (isSmallerEncoded) {
-                                        v2_mm128_AN<smaller_t>::detect(mmDecS, mm, mmASinv, mmASDmax, vecS, pos);
+                                        mmAN<__m128i, smaller_t>::detect(mmDecS, mm, mmASinv, mmASDmax, vecS, pos, AOID);
                                         mmDecS = mm128<smaller_t, smaller_unenc_t>::convert(mmDecS);
                                     } else {
                                         mmDecS = mm;
@@ -192,7 +195,7 @@ namespace ahead {
                                     for (size_t i = 0; i < factor; ++i) {
                                         mm = _mm_lddqu_si128(pmmL++);
                                         if (isLargerEncoded) {
-                                            v2_mm128_AN<larger_t>::detect(mmDecL, mm, mmALinv, mmALDmax, vecL, pos);
+                                            mmAN<__m128i, larger_t>::detect(mmDecL, mm, mmALinv, mmALDmax, vecL, pos, AOID);
                                             mmDecL = mm128<larger_t, larger_unenc_t>::convert(mmDecL);
                                         } else {
                                             mmDecL = mm;
@@ -208,10 +211,10 @@ namespace ahead {
                                     head_t decH = isHeadEncoded ? static_cast<head_t>(iter->head() * hAinv) : iter->head();
                                     tail_t decT = isTailEncoded ? static_cast<tail_t>(iter->tail() * tAinv) : iter->tail();
                                     if (isHeadEncoded && (decH > hUnencMaxU)) {
-                                        (*vec1)[pos] = true;
+                                        vec1->push_back(pos * AOID);
                                     }
                                     if (isTailEncoded && (decT > tUnencMaxU)) {
-                                        (*vec2)[pos] = true;
+                                        vec2->push_back(pos + AOID);
                                     }
                                     result->append(std::make_pair(static_cast<head_unenc_t>(decH), static_cast<tail_unenc_t>(decT)));
                                 }
@@ -226,20 +229,22 @@ namespace ahead {
                             typedef typename Tail::type_t tail_t;
                             typedef typename Tail::v2_unenc_t v2_tail_unenc_t;
                             typedef typename v2_tail_unenc_t::type_t tail_unenc_t;
-                            typedef typename v2_mm128_AN<tail_t>::mask_t tail_mask_t;
-                            typedef typename std::tuple<BAT<v2_void_t, v2_tail_unenc_t>*, std::vector<bool>*, std::vector<bool>*> result_t;
+                            typedef typename mmAN<__m128i, tail_t>::mask_t tail_mask_t;
+                            typedef typename std::tuple<BAT<v2_void_t, v2_tail_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *> result_t;
 
                             static result_t doIt(
-                                    BAT<Head, Tail>* arg) {
+                                    BAT<Head, Tail>* arg,
+                                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
                                 static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "Tail must be an AN-encoded type");
 
-                                constexpr const size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_t);
+                                const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_t);
 
                                 tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                                 tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
 
                                 oid_t szArg = arg->size();
-                                std::vector<bool> *vec = new std::vector<bool>(szArg);
+                                AN_indicator_vector * vec = new AN_indicator_vector;
+                                vec->reserve(64);
                                 auto result = new TempBAT<v2_void_t, v2_tail_unenc_t>();
                                 result->reserve(szArg + tailsPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
                                 auto pT = arg->tail.container->data();
@@ -254,7 +259,7 @@ namespace ahead {
 
                                 size_t pos = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT, pos += tailsPerMM128) {
-                                    v2_mm128_AN<tail_t>::detect(mmDec, _mm_lddqu_si128(pmmT), mmATInv, mmATDmax, vec, pos);
+                                    mmAN<__m128i, tail_t>::detect(mmDec, _mm_lddqu_si128(pmmT), mmATInv, mmATDmax, vec, pos, AOID);
                                     mmDec = mm128<tail_t, tail_unenc_t>::convert(mmDec);
                                     _mm_storeu_si128(pmmRT, mmDec);
                                     pmmRT = reinterpret_cast<__m128i *>(reinterpret_cast<tail_unenc_t *>(pmmRT) + tailsPerMM128);
@@ -264,7 +269,7 @@ namespace ahead {
                                 for (*iter += pos; iter->hasNext(); ++*iter, ++pos) {
                                     tail_t decT = static_cast<tail_t>(iter->tail() * tAinv);
                                     if (decT > tUnencMaxU) {
-                                        (*vec)[pos] = true;
+                                        vec->push_back(pos * AOID);
                                     }
                                     result->append(static_cast<tail_unenc_t>(decT));
                                 }
@@ -275,9 +280,10 @@ namespace ahead {
                     }
 
                     template<typename Head, typename Tail>
-                    std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*> checkAndDecodeAN(
-                            BAT<Head, Tail>* arg) {
-                        return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg);
+                    std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *> checkAndDecodeAN(
+                            BAT<Head, Tail>* arg,
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
+                        return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg, AOID);
                     }
 
                 }

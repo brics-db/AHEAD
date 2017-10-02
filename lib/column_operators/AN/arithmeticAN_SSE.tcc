@@ -106,8 +106,8 @@ namespace ahead {
                                 while (pmmT1 <= (pmmT1End - 1)) {
                                     __m128i mmDec1 = *pmmT1++;
                                     __m128i mmDec2 = *pmmT2++;
-                                    v2_mm128_AN<t1_t>::detect(mmDec1, mmAT1inv, mmDMax1, vecT1, pos, AOID);
-                                    v2_mm128_AN<t2_t>::detect(mmDec2, mmAT2inv, mmDMax2, vecT2, pos, AOID);
+                                    mmAN<__m128i, t1_t>::detect(mmDec1, mmAT1inv, mmDMax1, vecT1, pos, AOID);
+                                    mmAN<__m128i, t2_t>::detect(mmDec2, mmAT2inv, mmDMax2, vecT2, pos, AOID);
                                     if (std::is_same<Tail1, Result>::value) {
                                         auto mmR = mm_op<__m128i, t1_t, Op>::compute(mmDec1, mmDec2);
                                         *pmmRT++ = mm_op<__m128i, t1_t, ahead::mul>::compute(mmR, mmREnc);

@@ -64,6 +64,7 @@ namespace ahead {
                         static result_t filter(
                                 BAT<Head, Tail>* arg,
                                 typename Tail::type_t threshold,
+                                resoid_t AOID,
                                 tail_select_t ATR = 1,
                                 tail_select_t ATInvR = 1) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -74,7 +75,6 @@ namespace ahead {
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                             const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
-                            const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
                             auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                             result.first->reserve(arg->size());
@@ -89,7 +89,7 @@ namespace ahead {
                             for (size_t pos = 0; iter->hasNext(); ++*iter, ++pos) {
                                 auto t = iter->tail();
                                 if (static_cast<tail_t>(t * ATailInv) > TailUnencMaxU) {
-                                    result.second->push_back(pos * Aoid);
+                                    result.second->push_back(pos * AOID);
                                 }
                                 if (op(t, threshold)) {
                                     if (reencode) {
@@ -116,6 +116,7 @@ namespace ahead {
                         static result_t filter(
                                 BAT<Head, v2_str_t> * arg,
                                 str_t threshold,
+                                __attribute__ ((unused)) resoid_t AOID,
                                 __attribute__ ((unused)) str_t ATR = nullptr,
                                 __attribute__ ((unused)) str_t ATInvR = nullptr) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -159,6 +160,7 @@ namespace ahead {
                                 BAT<Head, Tail> * arg,
                                 tail_t threshold1,
                                 tail_t threshold2,
+                                resoid_t AOID,
                                 tail_select_t ATR = 1,
                                 tail_select_t ATInvR = 1) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
@@ -170,7 +172,6 @@ namespace ahead {
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                             const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
-                            const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
                             auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                             result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                             result.first->reserve(arg->size());
@@ -186,7 +187,7 @@ namespace ahead {
                             for (size_t pos = 0; iter->hasNext(); ++*iter, ++pos) {
                                 auto t = iter->tail();
                                 if (static_cast<tail_t>(t * ATailInv) > TailUnencMaxU) {
-                                    result.second->push_back(pos * Aoid);
+                                    result.second->push_back(pos * AOID);
                                 }
                                 if (OpCombine<void>()(op1(t, std::forward<tail_select_t>(threshold1)), op2(t, std::forward<tail_select_t>(threshold2)))) {
                                     if (reencode) {
@@ -215,14 +216,13 @@ namespace ahead {
                                 BAT<Head, v2_str_t> * arg,
                                 tail_select_t threshold1,
                                 tail_select_t threshold2,
-                                str_t ATR = nullptr,
-                                str_t ATInvR = nullptr) {
+                                __attribute__ ((unused)) resoid_t AOID,
+                                __attribute__ ((unused)) str_t ATR = nullptr,
+                                __attribute__ ((unused)) str_t ATInvR = nullptr) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                             static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                             // always encode head (void -> resoid)
-                            (void) ATR;
-                            (void) ATInvR;
                             const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);
