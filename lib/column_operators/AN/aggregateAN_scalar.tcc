@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   aggregateAN_seq.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -53,12 +53,13 @@ namespace ahead {
                  */
                 template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t, typename T1Enc = typename TypeMap<
                         Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> aggregate_mul_sumAN(
+                std::tuple<BAT<v2_void_t, Result>*, AN_indicator_vector *, AN_indicator_vector *> aggregate_mul_sumAN(
                         BAT<Head1, Tail1>* arg1,
                         BAT<Head2, Tail2>* arg2,
                         typename Result::type_t init,
                         typename ResEnc::type_t RA,
-                        typename ResEnc::type_t RAInv) {
+                        typename ResEnc::type_t RAInv,
+                        resoid_t AOID) {
                     typedef typename Result::type_t result_t;
                     typedef typename T1Enc::type_t t1enc_t;
                     typedef typename T2Enc::type_t t2enc_t;
@@ -70,12 +71,14 @@ namespace ahead {
                     t2enc_t AT2inv = static_cast<t2enc_t>(arg2->tail.metaData.AN_Ainv);
                     t2enc_t AT2unencMaxU = static_cast<t2enc_t>(arg2->tail.metaData.AN_unencMaxU);
 
-                    constexpr const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
-                    constexpr const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
-                    constexpr const bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
+                    const constexpr bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
+                    const constexpr bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
+                    const constexpr bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
                     result_t total = init;
-                    std::vector<bool>* vec1 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
-                    std::vector<bool>* vec2 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
+                    AN_indicator_vector * vec1 = (isTail1Encoded ? new AN_indicator_vector : nullptr);
+                    vec1->reserve(64);
+                    AN_indicator_vector * vec2 = (isTail2Encoded ? new AN_indicator_vector : nullptr);
+                    vec2->reserve(64);
 
                     const result_t AResultEncode = (isResultEncoded ? RA : result_t(1)) * (isTail1Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT1), sizeof(result_t) * 8))) : result_t(1))
                             * (isTail2Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT2), sizeof(result_t) * 8))) : result_t(1));
@@ -88,10 +91,10 @@ namespace ahead {
                         auto t1 = iter1->tail();
                         auto t2 = iter2->tail();
                         if (isTail1Encoded && static_cast<t1enc_t>(t1 * AT1inv) > AT1unencMaxU) {
-                            (*vec1)[i] = true;
+                            vec1->push_back(i * AOID);
                         }
                         if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2inv) > AT2unencMaxU) {
-                            (*vec2)[i] = true;
+                            vec2->push_back(i * AOID);
                         }
 #ifdef AN_TEST_ARITH
                         if (isTail1Encoded || isTail2Encoded) {

@@ -26,9 +26,11 @@ namespace ahead {
     namespace bat {
         namespace ops {
 
-#define CHECK_AND_DECODE_AN_SUB(V2Head, V2Tail)                                                                              \
-template std::tuple<BAT<typename V2Head::v2_unenc_t, typename V2Tail::v2_unenc_t>*, std::vector<bool>*, std::vector<bool>*>  \
-checkAndDecodeAN(BAT<V2Head, V2Tail>* arg)
+#define CHECK_AND_DECODE_AN_SUB(V2Head, V2Tail)                                                                                    \
+template std::tuple<BAT<typename V2Head::v2_unenc_t, typename V2Tail::v2_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *>  \
+checkAndDecodeAN(                                                                                                                  \
+            BAT<V2Head, V2Tail>* arg,                                                                                              \
+            resoid_t AOID)
 
 #define CHECK_AND_DECODE_AN(V2Tail) \
 CHECK_AND_DECODE_AN_SUB(v2_void_t, V2Tail); \

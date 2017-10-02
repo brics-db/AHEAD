@@ -13,19 +13,15 @@
 // limitations under the License.
 
 /*
- * File:   selectAN.cpp
+ * File:   selectAN.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
- * Created on 10-04-2017 22:10
+ * Created on 02-10-2017 13:18
  */
 
 #include <column_operators/ANbase.hpp>
 #include <column_operators/functors.hpp>
 #include "selectAN.tcc"
-
-namespace ahead {
-    namespace bat {
-        namespace ops {
 
 #define SELECT1_AN(Head, Tail, Operator) \
 template \
@@ -130,29 +126,3 @@ SELECT2_AN_REENC_SUB(Head, Tail, std::equal_to) \
 SELECT2_AN_REENC_SUB(Head, Tail, std::not_equal_to) \
 SELECT2_AN_REENC_SUB(Head, Tail, std::greater_equal) \
 SELECT2_AN_REENC_SUB(Head, Tail, std::greater)
-
-            namespace scalar {
-                SELECT_AN(v2_void_t, v2_restiny_t)
-                SELECT_AN_REENC(v2_void_t, v2_restiny_t)
-                SELECT_AN(v2_void_t, v2_resshort_t)
-                SELECT_AN_REENC(v2_void_t, v2_resshort_t)
-                SELECT_AN(v2_void_t, v2_resint_t)
-                SELECT_AN_REENC(v2_void_t, v2_resint_t)
-                SELECT_AN(v2_void_t, v2_str_t)
-            }
-
-            namespace simd {
-                namespace sse {
-                    SELECT_AN(v2_void_t, v2_restiny_t)
-                    SELECT_AN_REENC(v2_void_t, v2_restiny_t)
-                    SELECT_AN(v2_void_t, v2_resshort_t)
-                    SELECT_AN_REENC(v2_void_t, v2_resshort_t)
-                    SELECT_AN(v2_void_t, v2_resint_t)
-                    SELECT_AN_REENC(v2_void_t, v2_resint_t)
-                    SELECT_AN(v2_void_t, v2_str_t)
-                }
-            }
-
-        }
-    }
-}

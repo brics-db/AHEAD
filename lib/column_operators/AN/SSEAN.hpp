@@ -35,8 +35,8 @@ namespace ahead {
             namespace simd {
                 namespace sse {
 
-                    template<typename T>
-                    struct v2_mm128_AN {
+                    template<typename V, typename T>
+                    struct mmAN {
 
                         static const constexpr size_t steps = sizeof(__m128i ) / sizeof(T);
 

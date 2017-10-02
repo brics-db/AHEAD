@@ -131,7 +131,10 @@ column_operators/AN/hashjoinAN_resshort.cpp \
 column_operators/AN/hashjoinAN_resint.cpp \
 column_operators/AN/hashjoinAN_resbigint.cpp \
 column_operators/AN/matchjoinAN.cpp \
-column_operators/AN/selectAN.cpp \
+column_operators/AN/selectAN_restiny.cpp \
+column_operators/AN/selectAN_resshort.cpp \
+column_operators/AN/selectAN_resint.cpp \
+column_operators/AN/selectAN_str.cpp \
 column_operators/SIMD/SSE.cpp \
 column_operators/SIMD/AVX2.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")

@@ -62,6 +62,7 @@ namespace ahead {
                             static result_t filter(
                                     BAT<Head, Tail>* arg,
                                     typename Tail::type_t th,
+                                    resoid_t AOID,
                                     tail_select_t ATR = 1, // for reencoding
                                     tail_select_t ATInvR = 1 // for reencoding
                                     ) {
@@ -74,7 +75,6 @@ namespace ahead {
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 const tail_select_t ATailInv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                                 const tail_select_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
-                                const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
                                 auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                                 result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result.first->reserve(arg->size());
@@ -109,7 +109,7 @@ namespace ahead {
                                     auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (head_select_t)) * AHead);
                                     for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                         auto mmTmp = _mm_lddqu_si128(pmmT);
-                                        v2_mm128_AN<tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, Aoid); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
                                         if (mask) {
@@ -136,7 +136,7 @@ namespace ahead {
                                     auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (tail_select_t)) * AHead);
                                     for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                         auto mmTmp = _mm_lddqu_si128(pmmT);
-                                        v2_mm128_AN<tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, Aoid); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
                                         if (mask) {
@@ -160,7 +160,7 @@ namespace ahead {
                                 for (; iter->hasNext(); ++*iter, ++pos) {
                                     auto t = iter->tail();
                                     if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
-                                        result.second->push_back(pos * Aoid);
+                                        result.second->push_back(pos * AOID);
                                     }
                                     if (op(t, th)) {
                                         if (reencode) {
@@ -187,6 +187,7 @@ namespace ahead {
                             static result_t filter(
                                     BAT<Head, v2_str_t> * arg,
                                     str_t threshold,
+                                    __attribute__ ((unused)) resoid_t AOID,
                                     __attribute__ ((unused)) str_t ATR = nullptr,
                                     __attribute__ ((unused)) str_t ATInvR = nullptr) {
                                 // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
@@ -232,6 +233,7 @@ namespace ahead {
                                     BAT<Head, Tail> * arg,
                                     tail_t threshold1,
                                     tail_t threshold2,
+                                    resoid_t AOID,
                                     tail_select_t ATR = 1, // for reencoding
                                     tail_select_t ATInvR = 1 // for reencoding
                                     ) {
@@ -245,7 +247,6 @@ namespace ahead {
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                                 const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
-                                const resoid_t Aoid = std::get<15>(*v2_resoid_t::As);
                                 auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
                                 result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result.first->reserve(arg->size());
@@ -281,7 +282,7 @@ namespace ahead {
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
-                                        v2_mm128_AN<tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, Aoid); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1),
                                                 mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2));
@@ -304,7 +305,7 @@ namespace ahead {
                                             mmOID = mm<__m128i, head_select_t>::add(mmOID, mm<__m128i, head_select_t>::mullo(mmInc, mm<__m128i, head_select_t>::set1(factor)));
                                         }
                                     } else {
-                                        v2_mm128_AN<tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, Aoid); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, Op1>::cmp_mask(mmTmp, mmThreshold1) & mm_op<__m128i, tail_t, Op2>::cmp_mask(mmTmp, mmThreshold2);
                                         if (mask) {
@@ -329,7 +330,7 @@ namespace ahead {
                                 for (; iter->hasNext(); ++*iter, ++pos) {
                                     auto t = iter->tail();
                                     if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
-                                        result.second->push_back(pos * Aoid);
+                                        result.second->push_back(pos * AOID);
                                     }
                                     if (OpCombine<void>()(op1(t, std::forward<tail_t>(threshold1)), op2(t, std::forward<tail_t>(threshold2)))) {
                                         if (reencode) {
@@ -359,16 +360,15 @@ namespace ahead {
                                     BAT<Head, v2_str_t> * arg,
                                     tail_select_t threshold1,
                                     tail_select_t threshold2,
-                                    tail_select_t ATR = nullptr, // currently only to match the signature
-                                    tail_select_t ATInvR = nullptr // cururently only to match the signature
+                                    __attribute__ ((unused)) resoid_t AOID,
+                                    __attribute__ ((unused)) tail_select_t ATR = nullptr, // currently only to match the signature
+                                    __attribute__ ((unused)) tail_select_t ATInvR = nullptr // cururently only to match the signature
                                     ) {
                                 // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                                 // always encode head (will usually be a conversion from void -> oid)
-                                (void) ATR;
-                                (void) ATInvR;
                                 const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);

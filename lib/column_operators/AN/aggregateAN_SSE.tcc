@@ -51,17 +51,18 @@ namespace ahead {
                                     __m128i * & pmmT1,
                                     __m128i & mmAT1inv,
                                     __m128i & mmDMax1,
-                                    std::vector<bool> * vec1,
+                                    AN_indicator_vector * vec1,
                                     __m128i * & pmmT2,
                                     __m128i & mmAT2inv,
                                     __m128i & mmDMax2,
-                                    std::vector<bool> * vec2,
-                                    size_t & i) {
+                                    AN_indicator_vector * vec2,
+                                    size_t & i,
+                                    resoid_t AOID) {
                                 if (isTail1Encoded) {
-                                    v2_mm128_AN<tail1_t>::detect(*pmmT1, mmAT1inv, mmDMax1, vec1, i);
+                                    mmAN<__m128i, tail1_t>::detect(*pmmT1, mmAT1inv, mmDMax1, vec1, i, AOID);
                                 }
                                 if (isTail2Encoded) {
-                                    v2_mm128_AN<tail2_t>::detect(*pmmT2, mmAT2inv, mmDMax2, vec2, i);
+                                    mmAN<__m128i, tail2_t>::detect(*pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
                                 }
                                 __m128i mmTemp;
                                 if (larger_type<tail1_t, tail2_t>::isFirstLarger) {
@@ -75,7 +76,7 @@ namespace ahead {
                                 i += increment;
                                 // if both types have the same size, the following yields in the call below, so there is no recursion
                                 partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, isTail1Encoded, isTail2Encoded, increment, maxFactor, factor - 1>::doIt(mmTotal, pmmT1, mmAT1inv, mmDMax1, vec1,
-                                        pmmT2, mmAT2inv, mmDMax2, vec2, i);
+                                        pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
                             }
                         };
 
@@ -86,12 +87,13 @@ namespace ahead {
                                     __m128i * & pmmT1,
                                     __m128i & mmAT1inv,
                                     __m128i & mmDMax1,
-                                    std::vector<bool> * vec1,
+                                    AN_indicator_vector * vec1,
                                     __m128i * & pmmT2,
                                     __m128i & mmAT2inv,
                                     __m128i & mmDMax2,
-                                    std::vector<bool> * vec2,
-                                    size_t & i) {
+                                    AN_indicator_vector * vec2,
+                                    size_t & i,
+                                    resoid_t AOID) {
                                 (void) mmTotal;
                                 (void) pmmT1;
                                 (void) mmAT1inv;
@@ -102,6 +104,7 @@ namespace ahead {
                                 (void) mmDMax2;
                                 (void) vec2;
                                 (void) i;
+                                (void) AOID;
                                 if (larger_type<tail1_t, tail2_t>::isFirstLarger) {
                                     pmmT2++;
                                 } else if (larger_type<tail1_t, tail2_t>::isSecondLarger) {
@@ -123,12 +126,13 @@ namespace ahead {
                      */
                     template<typename Result, typename Head1, typename Tail1, typename Head2, typename Tail2, typename ResEnc = typename TypeMap<Result>::v2_encoded_t,
                             typename T1Enc = typename TypeMap<Tail1>::v2_encoded_t, typename T2Enc = typename TypeMap<Tail2>::v2_encoded_t>
-                    std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> aggregate_mul_sumAN(
+                    std::tuple<BAT<v2_void_t, Result>*, AN_indicator_vector *, AN_indicator_vector *> aggregate_mul_sumAN(
                             BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2,
                             typename Result::type_t init = typename Result::type_t(0),
                             typename ResEnc::type_t RA = std::get<ANParametersSelector<ResEnc>::As->size() - 8>(*ANParametersSelector<ResEnc>::As), // use largest A for encoding by default
-                            typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 8>(*ANParametersSelector<ResEnc>::Ainvs)) {
+                            typename ResEnc::type_t RAInv = std::get<ANParametersSelector<ResEnc>::Ainvs->size() - 8>(*ANParametersSelector<ResEnc>::Ainvs),
+                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
                         typedef typename Tail1::type_t tail1_t;
                         typedef typename Tail2::type_t tail2_t;
                         typedef typename Result::type_t result_t;
@@ -145,8 +149,10 @@ namespace ahead {
                         const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
                         const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
                         const bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
-                        std::vector<bool>* vec1 = (isTail1Encoded ? new std::vector<bool>(arg1->size()) : nullptr);
-                        std::vector<bool>* vec2 = (isTail2Encoded ? new std::vector<bool>(arg2->size()) : nullptr);
+                        AN_indicator_vector * vec1 = (isTail1Encoded ? new AN_indicator_vector : nullptr);
+                        vec1->reserve(64);
+                        AN_indicator_vector * vec2 = (isTail2Encoded ? new AN_indicator_vector : nullptr);
+                        vec2->reserve(64);
                         oid_t szTail1 = arg1->tail.container->size();
                         oid_t szTail2 = arg2->tail.container->size();
                         auto pT1 = arg1->tail.container->data();
@@ -182,7 +188,7 @@ namespace ahead {
                                 const constexpr size_t factor = sizeof(tail1_t) / sizeof(tail2_t);
                                 const constexpr size_t increment = sizeof(__m128i) / sizeof (tail1_t);
                                 Private::partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, isTail1Encoded, isTail2Encoded, increment, factor, factor>::doIt(mmTotal, pmmT1, mmAT1inv, mmDMax1,
-                                        vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i);
+                                        vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
                             } else {
                                 // either the second is larger, or both have the same width
                                 // the code is the same since for the latter the for-loop runs only once
@@ -190,7 +196,7 @@ namespace ahead {
                                 const constexpr size_t factor = sizeof(tail2_t) / sizeof(tail1_t);
                                 const constexpr size_t increment = sizeof(__m128i) / sizeof (tail2_t);
                                 Private::partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, isTail1Encoded, isTail2Encoded, increment, factor, factor>::doIt(mmTotal, pmmT1, mmAT1inv, mmDMax1,
-                                        vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i);
+                                        vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
                             }
                         }
                         auto total = init + mm128<result_t>::sum(mmTotal);

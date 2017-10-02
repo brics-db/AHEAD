@@ -27,8 +27,8 @@ namespace ahead {
         namespace ops {
 
 #define V2_AGGREGATE_MUL_SUM_AN(Result, ResEnc, Head1, Tail1, Head2, Tail2) \
-template std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> scalar::aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init, typename ResEnc::type_t RA, typename ResEnc::type_t RAInv); \
-template std::tuple<BAT<v2_void_t, Result>*, std::vector<bool>*, std::vector<bool>*> simd::sse::aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init, typename ResEnc::type_t RA, typename ResEnc::type_t RAInv);
+template std::tuple<BAT<v2_void_t, Result>*, AN_indicator_vector *, AN_indicator_vector *> scalar::aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init, typename ResEnc::type_t RA, typename ResEnc::type_t RAInv, resoid_t AOID); \
+template std::tuple<BAT<v2_void_t, Result>*, AN_indicator_vector *, AN_indicator_vector *> simd::sse::aggregate_mul_sumAN(BAT<Head1, Tail1>* arg1, BAT<Head2, Tail2>* arg2, typename Result::type_t init, typename ResEnc::type_t RA, typename ResEnc::type_t RAInv, resoid_t AOID);
 
 #define V2_AGGREGATE_MUL_SUM_AN_SUB(Result, Tail1, Tail2) \
 V2_AGGREGATE_MUL_SUM_AN(CONCAT(v2_, Result, _t), CONCAT(v2_, Result, _t), v2_void_t, CONCAT(v2_, Tail1, _t), v2_void_t, CONCAT(v2_, Tail2, _t)) \
