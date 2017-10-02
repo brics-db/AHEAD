@@ -136,13 +136,14 @@ namespace ahead {
 
                             static result_t doIt(
                                     BAT<Head, Tail>* arg,
-                                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
+                                    resoid_t AOID) {
                                 static_assert(std::is_base_of<v2_anencoded_t, Head>::value || std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
 
                                 const constexpr bool isHeadSmaller = larger_type<head_t, tail_t>::isSecondLarger;
                                 const constexpr bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
                                 const constexpr bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
                                 const constexpr size_t smallersPerMM128 = sizeof(__m128i) / sizeof (smaller_t);
+                                const constexpr size_t smallersUnencPerMM128 = sizeof(__m128i) / sizeof (smaller_unenc_t);
                                 const constexpr size_t largersPerMM128 = sizeof(__m128i) / sizeof (larger_t);
                                 const constexpr size_t factor = sizeof(larger_t) / sizeof(smaller_t);
                                 const constexpr bool isSmallerEncoded = isHeadSmaller ? isHeadEncoded : isTailEncoded;
@@ -158,7 +159,7 @@ namespace ahead {
                                 auto vecL = isHeadSmaller ? vec2 : vec1;
 
                                 auto result = new TempBAT<v2_head_unenc_t, v2_tail_unenc_t>();
-                                result->reserve(szArg + smallersPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
+                                result->reserve(szArg + smallersUnencPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
 
                                 auto pmmH = reinterpret_cast<__m128i *>(arg->head.container->data());
                                 auto pmmHEnd = reinterpret_cast<__m128i *>(arg->head.container->data() + szArg);
@@ -234,10 +235,11 @@ namespace ahead {
 
                             static result_t doIt(
                                     BAT<Head, Tail>* arg,
-                                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
+                                    resoid_t AOID) {
                                 static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "Tail must be an AN-encoded type");
 
                                 const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_t);
+                                const constexpr size_t unencTailsPerMM128 = sizeof(__m128i) / sizeof (tail_unenc_t);
 
                                 tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                                 tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
@@ -246,7 +248,7 @@ namespace ahead {
                                 AN_indicator_vector * vec = new AN_indicator_vector;
                                 vec->reserve(64);
                                 auto result = new TempBAT<v2_void_t, v2_tail_unenc_t>();
-                                result->reserve(szArg + tailsPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
+                                result->reserve(szArg + unencTailsPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
                                 auto pT = arg->tail.container->data();
                                 auto pTEnd = pT + szArg;
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
@@ -282,7 +284,7 @@ namespace ahead {
                     template<typename Head, typename Tail>
                     std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *> checkAndDecodeAN(
                             BAT<Head, Tail>* arg,
-                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
+                            resoid_t AOID) {
                         return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg, AOID);
                     }
 
