@@ -28,6 +28,7 @@
 #include <column_operators/ANbase.hpp>
 #include "SSEAN.hpp"
 #include "../miscellaneous.hpp"
+#include "ANhelper.tcc"
 
 #ifdef __GNUC__
 #pragma GCC target "sse4.2"
@@ -58,6 +59,7 @@ namespace ahead {
                             typedef typename v2_tail_select_t::type_t tail_select_t;
                             typedef typename mm_op<__m128i, tail_t, Op>::mask_t tail_mask_t;
                             typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, AN_indicator_vector*> result_t;
+                            typedef ANhelper<Tail> tail_helper_t;
 
                             static result_t filter(
                                     BAT<Head, Tail>* arg,
@@ -68,21 +70,21 @@ namespace ahead {
                                     ) {
                                 // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                                static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
+                                static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
 
                                 // always encode head (will usually be a conversion from void -> oid)
                                 const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 const tail_select_t ATailInv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                                 const tail_select_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
-                                auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
-                                result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result.first->reserve(arg->size());
+                                auto vec = tail_helper_t::createIndicatorVector();
+                                auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
+                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->reserve(arg->size());
                                 if (reencode) {
-                                    result.first->tail.metaData.AN_A = ATR;
-                                    result.first->tail.metaData.AN_Ainv = ATInvR;
+                                    result->tail.metaData.AN_A = ATR;
+                                    result->tail.metaData.AN_Ainv = ATInvR;
                                 }
-                                result.second->reserve(32);
                                 tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
 
                                 auto mmATInv = mm<__m128i, tail_select_t>::set1(ATailInv);
@@ -94,8 +96,8 @@ namespace ahead {
                                 auto pTEnd = pT + szTail;
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
-                                auto pRH = reinterpret_cast<head_select_t*>(result.first->head.container->data());
-                                auto pRT = reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
+                                auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
+                                auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 // we encode the OIDs here already and increase accordingly by multiples of AHead
                                 auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
 
@@ -109,7 +111,7 @@ namespace ahead {
                                     auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (head_select_t)) * AHead);
                                     for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                         auto mmTmp = _mm_lddqu_si128(pmmT);
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
                                         if (mask) {
@@ -136,7 +138,7 @@ namespace ahead {
                                     auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (tail_select_t)) * AHead);
                                     for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                         auto mmTmp = _mm_lddqu_si128(pmmT);
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
                                         if (mask) {
@@ -151,8 +153,8 @@ namespace ahead {
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
                                 }
-                                const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
-                                result.first->overwrite_size(numSelectedValues); // "register" the number of values we added
+                                const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
+                                result->overwrite_size(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
                                 const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                                 *iter += (numFilteredValues);
@@ -160,17 +162,17 @@ namespace ahead {
                                 for (; iter->hasNext(); ++*iter, ++pos) {
                                     auto t = iter->tail();
                                     if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
-                                        result.second->push_back(pos * AOID);
+                                        vec->push_back(pos * AOID);
                                     }
                                     if (op(t, th)) {
                                         if (reencode) {
                                             t *= Areenc;
                                         }
-                                        result.first->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append(std::make_pair(iter->head() * AHead, t));
                                     }
                                 }
                                 delete iter;
-                                return result;
+                                return std::make_pair(result, vec);
                             }
                         };
 
@@ -196,19 +198,19 @@ namespace ahead {
                                 // always encode head (will usually be a conversion from void -> oid)
                                 const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
-                                auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);
-                                result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result.first->reserve(arg->size());
+                                auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
+                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->reserve(arg->size());
                                 auto iter = arg->begin();
                                 Op<int> op;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (op(strcmp(t, threshold), 0)) {
-                                        result.first->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append(std::make_pair(iter->head() * AHead, t));
                                     }
                                 }
                                 delete iter;
-                                return result;
+                                return std::make_pair(result, nullptr);
                             }
                         };
 
@@ -228,6 +230,7 @@ namespace ahead {
                             typedef typename v2_tail_select_t::type_t tail_select_t;
                             typedef typename mm_op<__m128i, tail_t, Op1>::mask_t tail_mask_t;
                             typedef typename std::pair<BAT<v2_head_select_t, v2_tail_select_t>*, AN_indicator_vector*> result_t;
+                            typedef ANhelper<Tail> tail_helper_t;
 
                             static result_t filter(
                                     BAT<Head, Tail> * arg,
@@ -239,7 +242,7 @@ namespace ahead {
                                     ) {
                                 // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                                static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "ResTail must be an AN-encoded type");
+                                static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
                                 // always encode head (will usually be a conversion from void -> oid)
@@ -247,14 +250,14 @@ namespace ahead {
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                                 const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
-                                auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg), new AN_indicator_vector);
-                                result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result.first->reserve(arg->size());
+                                auto vec = tail_helper_t::createIndicatorVector();
+                                auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
+                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->reserve(arg->size());
                                 if (reencode) {
-                                    result.first->tail.metaData.AN_A = ATR;
-                                    result.first->tail.metaData.AN_Ainv = ATInvR;
+                                    result->tail.metaData.AN_A = ATR;
+                                    result->tail.metaData.AN_Ainv = ATInvR;
                                 }
-                                result.second->reserve(32);
                                 tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
 
                                 auto mmATInv = mm<__m128i, tail_select_t>::set1(ATailInv);
@@ -267,8 +270,8 @@ namespace ahead {
                                 auto pTEnd = pT + szTail;
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
-                                auto pRH = reinterpret_cast<head_select_t*>(result.first->head.container->data());
-                                auto pRT = reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
+                                auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
+                                auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 // we encode the OIDs here already and increase accordingly by multiples of AHead
                                 auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
                                 auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead);
@@ -282,7 +285,7 @@ namespace ahead {
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1),
                                                 mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2));
@@ -305,7 +308,7 @@ namespace ahead {
                                             mmOID = mm<__m128i, head_select_t>::add(mmOID, mm<__m128i, head_select_t>::mullo(mmInc, mm<__m128i, head_select_t>::set1(factor)));
                                         }
                                     } else {
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, result.second, pos, AOID); // we only need to check the tail types since the head is virtual anyways
+                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                         // comparison on encoded values
                                         auto mask = mm_op<__m128i, tail_t, Op1>::cmp_mask(mmTmp, mmThreshold1) & mm_op<__m128i, tail_t, Op2>::cmp_mask(mmTmp, mmThreshold2);
                                         if (mask) {
@@ -320,8 +323,8 @@ namespace ahead {
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
                                 }
-                                size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result.first->tail.container->data());
-                                result.first->overwrite_size(numSelectedValues); // "register" the number of values we added
+                                size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
+                                result->overwrite_size(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
                                 const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                                 *iter += (numFilteredValues);
@@ -330,18 +333,18 @@ namespace ahead {
                                 for (; iter->hasNext(); ++*iter, ++pos) {
                                     auto t = iter->tail();
                                     if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
-                                        result.second->push_back(pos * AOID);
+                                        vec->push_back(pos * AOID);
                                     }
                                     if (OpCombine<void>()(op1(t, std::forward<tail_t>(threshold1)), op2(t, std::forward<tail_t>(threshold2)))) {
                                         if (reencode) {
                                             t *= Areenc;
                                         }
-                                        result.first->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append(std::make_pair(iter->head() * AHead, t));
                                     }
                                 }
                                 delete iter;
 
-                                return result;
+                                return std::make_pair(result, vec);
                             }
                         };
 
@@ -371,20 +374,20 @@ namespace ahead {
                                 // always encode head (will usually be a conversion from void -> oid)
                                 const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
-                                auto result = std::make_pair(ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg), nullptr);
-                                result.first->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result.first->reserve(arg->size());
+                                auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
+                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->reserve(arg->size());
                                 auto iter = arg->begin();
                                 Op1<int> op1;
                                 Op2<int> op2;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(threshold1)), 0), op2(strcmp(t, std::forward<tail_select_t>(threshold2)), 0))) {
-                                        result.first->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append(std::make_pair(iter->head() * AHead, t));
                                     }
                                 }
                                 delete iter;
-                                return result;
+                                return std::make_pair(result, nullptr);
                             }
                         };
 

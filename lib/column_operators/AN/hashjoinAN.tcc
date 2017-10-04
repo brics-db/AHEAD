@@ -32,6 +32,7 @@
 #include <util/v2typeconversion.hpp>
 #include <column_operators/ANbase.hpp>
 #include "../miscellaneous.hpp"
+#include "ANhelper.tcc"
 
 namespace ahead {
     namespace bat {
@@ -68,6 +69,10 @@ namespace ahead {
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename TypeMap<Tail2>::v2_base_t::type_t t2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+                    typedef ANhelper<Head1> head1_helper_t;
+                    typedef ANhelper<Tail1> tail1_helper_t;
+                    typedef ANhelper<Head2> head2_helper_t;
+                    typedef ANhelper<Tail2> tail2_helper_t;
                     static const constexpr bool reencode = reencodeHead | reencodeTail;
 
                     static std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> run(
@@ -80,18 +85,13 @@ namespace ahead {
                             t2enc_t AT2R = 1, // for reencode
                             t2enc_t AT2InvR = 1 // for reencode
                             ) {
-                        const
-                        bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
-                        const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
-                        const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
-                        const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
-                        const h1enc_t AH1Inv = isHead1Encoded ? arg1->head.metaData.AN_Ainv : 1;
+                        const h1enc_t AH1Inv = head1_helper_t::getIfEncoded(arg1->head.metaData.AN_Ainv);
                         const h1enc_t AH1UnencMaxU = arg1->head.metaData.AN_unencMaxU;
-                        const t1enc_t AT1Inv = isTail1Encoded ? arg1->tail.metaData.AN_Ainv : 1;
+                        const t1enc_t AT1Inv = tail1_helper_t::getIfEncoded(arg1->tail.metaData.AN_Ainv);
                         const t1enc_t AT1UnencMaxU = arg1->tail.metaData.AN_unencMaxU;
-                        const h2enc_t AH2Inv = isHead2Encoded ? arg2->head.metaData.AN_Ainv : 1;
+                        const h2enc_t AH2Inv = head2_helper_t::getIfEncoded(arg2->head.metaData.AN_Ainv);
                         const h2enc_t AH2UnencMaxU = arg2->head.metaData.AN_unencMaxU;
-                        const t2enc_t AT2Inv = isTail2Encoded ? arg2->tail.metaData.AN_Ainv : 1;
+                        const t2enc_t AT2Inv = tail2_helper_t::getIfEncoded(arg2->tail.metaData.AN_Ainv);
                         const t2enc_t AT2UnencMaxU = arg2->tail.metaData.AN_unencMaxU;
                         // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
                         const h1enc_t reencFactorH1 = AH1R * AH1Inv;
@@ -106,14 +106,10 @@ namespace ahead {
                         } else {
                             bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
                         }
-                        AN_indicator_vector * vec1 = (isHead1Encoded ? new AN_indicator_vector : nullptr);
-                        vec1->reserve(64);
-                        AN_indicator_vector * vec2 = (isTail1Encoded ? new AN_indicator_vector : nullptr);
-                        vec2->reserve(64);
-                        AN_indicator_vector * vec3 = (isHead2Encoded ? new AN_indicator_vector : nullptr);
-                        vec3->reserve(64);
-                        AN_indicator_vector * vec4 = (isTail2Encoded ? new AN_indicator_vector : nullptr);
-                        vec4->reserve(64);
+                        AN_indicator_vector * vec1 = head1_helper_t::createIndicatorVector();
+                        AN_indicator_vector * vec2 = tail1_helper_t::createIndicatorVector();
+                        AN_indicator_vector * vec3 = head2_helper_t::createIndicatorVector();
+                        AN_indicator_vector * vec4 = tail2_helper_t::createIndicatorVector();
                         auto iter1 = arg1->begin();
                         auto iter2 = arg2->begin();
                         if (iter1->hasNext() && iter2->hasNext()) { // only really continue when both BATs are not empty
@@ -124,14 +120,14 @@ namespace ahead {
                                 hashMap.set_empty_key(Tail1::dhm_emptykey);
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // build
                                     auto h1 = iter1->head();
-                                    if (isHead1Encoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
+                                    if (head1_helper_t::isEncoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
                                         vec1->push_back(pos * AOID);
                                     }
-                                    auto t1 = isTail1Encoded ? static_cast<t1enc_t>(iter1->tail() * AT1Inv) : iter1->tail();
-                                    if (isTail1Encoded && t1 > AT1UnencMaxU) {
+                                    auto t1 = tail1_helper_t::mulIfEncoded(iter1->tail(), AT1Inv);
+                                    if (tail1_helper_t::isEncoded && t1 > AT1UnencMaxU) {
                                         vec2->push_back(pos * AOID);
                                     }
-                                    if (isHead2Encoded) {
+                                    if (head2_helper_t::isEncoded) {
                                         hashMap[static_cast<t1unenc_t>(t1)].push_back(h1);
                                     } else {
                                         hashMap[t1].push_back(h1);
@@ -140,12 +136,12 @@ namespace ahead {
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // probe
-                                    auto h2 = isHead2Encoded ? static_cast<h2enc_t>(iter2->head() * AH2Inv) : iter2->head();
-                                    if (isHead2Encoded && h2 > AH2UnencMaxU) {
+                                    auto h2 = head2_helper_t::mulIfEncoded(iter2->head(), AH2Inv);
+                                    if (head2_helper_t::isEncoded && h2 > AH2UnencMaxU) {
                                         vec3->push_back(pos * AOID);
                                     }
                                     auto t2 = iter2->tail();
-                                    if (isTail2Encoded && (t2 * AT2Inv) > AT2UnencMaxU) {
+                                    if (tail2_helper_t::isEncoded && (t2 * AT2Inv) > AT2UnencMaxU) {
                                         vec4->push_back(pos * AOID);
                                     }
                                     if (static_cast<larger_t>(h2) <= t1max) { // do not probe values which are too large anyways
@@ -166,12 +162,12 @@ namespace ahead {
                                 google::dense_hash_map<h2unenc_t, std::vector<typename Tail2::type_t> > hashMap(arg2->size());
                                 hashMap.set_empty_key(Head2::dhm_emptykey);
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // build
-                                    auto h2 = isHead2Encoded ? static_cast<h2enc_t>(iter2->head() * AH2Inv) : iter2->head();
-                                    if (isHead2Encoded && h2 > AH2UnencMaxU) {
+                                    auto h2 = head2_helper_t::mulIfEncoded(iter2->head(), AH2Inv);
+                                    if (head2_helper_t::isEncoded && h2 > AH2UnencMaxU) {
                                         vec3->push_back(pos * AOID);
                                     }
                                     auto t2 = iter2->tail();
-                                    if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2Inv) > AT2UnencMaxU) {
+                                    if (tail2_helper_t::isEncoded && static_cast<t2enc_t>(t2 * AT2Inv) > AT2UnencMaxU) {
                                         vec4->push_back(pos * AOID);
                                     }
                                     hashMap[static_cast<h2unenc_t>(h2)].push_back(t2);
@@ -180,11 +176,11 @@ namespace ahead {
                                 pos = 0;
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // probe
                                     auto h1 = iter1->head();
-                                    if (isHead1Encoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
+                                    if (head1_helper_t::isEncoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
                                         vec1->push_back(pos * AOID);
                                     }
-                                    auto t1 = isTail1Encoded ? static_cast<t1enc_t>(iter1->tail() * AT1Inv) : iter1->tail();
-                                    if (isTail1Encoded && t1 > AT1UnencMaxU) {
+                                    auto t1 = tail1_helper_t::mulIfEncoded(iter1->tail(), AT1Inv);
+                                    if (tail1_helper_t::isEncoded && t1 > AT1UnencMaxU) {
                                         vec2->push_back(pos * AOID);
                                     }
                                     if (static_cast<larger_t>(t1) <= h2max) { // do not probe values which are too large anyways
@@ -224,6 +220,9 @@ namespace ahead {
                     typedef typename TypeMap<Tail1>::v2_base_t::type_t t1unenc_t;
                     typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                     typedef typename ahead::larger_type<t1unenc_t, h2unenc_t>::type_t larger_t;
+                    typedef ANhelper<Head1> head1_helper_t;
+                    typedef ANhelper<Tail1> tail1_helper_t;
+                    typedef ANhelper<Head2> head2_helper_t;
 
                     static std::tuple<TempBAT<head1_v2_select_t, v2_str_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> run(
                             BAT<Head1, Tail1>* arg1,
@@ -237,9 +236,6 @@ namespace ahead {
                             ) {
                         (void) AT2R;
                         (void) AT2InvR;
-                        const bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
-                        const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
-                        const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
                         const h1enc_t AH1Inv = arg1->head.metaData.AN_Ainv;
                         const h1enc_t AH1UnencMaxU = arg1->head.metaData.AN_unencMaxU;
                         const t1enc_t AT1Inv = arg1->tail.metaData.AN_Ainv;
@@ -257,12 +253,9 @@ namespace ahead {
                         } else {
                             bat = skeletonJoin<head1_v2_select_t, v2_str_t>(arg1, arg2);
                         }
-                        AN_indicator_vector *vec1 = (isHead1Encoded ? new AN_indicator_vector : nullptr);
-                        vec1->reserve(64);
-                        AN_indicator_vector *vec2 = (isTail1Encoded ? new AN_indicator_vector : nullptr);
-                        vec2->reserve(64);
-                        AN_indicator_vector *vec3 = (isHead2Encoded ? new AN_indicator_vector : nullptr);
-                        vec3->reserve(64);
+                        AN_indicator_vector *vec1 = head1_helper_t::createIndicatorVector();
+                        AN_indicator_vector *vec2 = tail1_helper_t::createIndicatorVector();
+                        AN_indicator_vector *vec3 = head2_helper_t::createIndicatorVector();
                         auto iter1 = arg1->begin();
                         auto iter2 = arg2->begin();
                         if (iter1->hasNext() && iter2->hasNext()) { // only really continue when both BATs are not empty
@@ -274,13 +267,13 @@ namespace ahead {
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // build
                                     auto h1 = iter1->head();
                                     auto t1 = iter1->tail();
-                                    if (isHead1Encoded && (h1 * AH1Inv) > AH1UnencMaxU) {
+                                    if (head1_helper_t::isEncoded && (h1 * AH1Inv) > AH1UnencMaxU) {
                                         vec1->push_back(pos * AOID);
                                     }
-                                    if (isTail1Encoded && (t1 * AT1Inv) > AT1UnencMaxU) {
+                                    if (tail1_helper_t::isEncoded && (t1 * AT1Inv) > AT1UnencMaxU) {
                                         vec2->push_back(pos * AOID);
                                     }
-                                    if (isHead2Encoded) {
+                                    if (head2_helper_t::isEncoded) {
                                         hashMap[static_cast<t1unenc_t>(t1 * AT1Inv)].push_back(h1);
                                     } else {
                                         hashMap[t1].push_back(h1);
@@ -289,9 +282,9 @@ namespace ahead {
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // probe
-                                    h2enc_t h2 = isHead2Encoded ? static_cast<h2enc_t>(iter2->head() * AH2Inv) : iter2->head();
+                                    h2enc_t h2 = head2_helper_t::mulIfEncoded(iter2->head(), AH2Inv);
                                     auto t2 = iter2->tail();
-                                    if (isHead2Encoded && h2 > AH2UnencMaxU) {
+                                    if (head2_helper_t::isEncoded && h2 > AH2UnencMaxU) {
                                         vec3->push_back(pos * AOID);
                                     }
                                     if (static_cast<larger_t>(h2) <= t1max) {
@@ -312,12 +305,12 @@ namespace ahead {
                                 google::dense_hash_map<h2unenc_t, std::vector<str_t> > hashMap(arg2->size());
                                 hashMap.set_empty_key(Head2::dhm_emptykey);
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // build
-                                    h2enc_t h2 = isHead2Encoded ? static_cast<h2enc_t>(iter2->head() * AH2Inv) : iter2->head();
+                                    h2enc_t h2 = head2_helper_t::mulIfEncoded(iter2->head(), AH2Inv);
                                     auto t2 = iter2->tail();
-                                    if (isHead2Encoded && static_cast<h2enc_t>(h2) > AH2UnencMaxU) {
+                                    if (head2_helper_t::isEncoded && static_cast<h2enc_t>(h2) > AH2UnencMaxU) {
                                         vec3->push_back(pos * AOID);
                                     }
-                                    if (isHead2Encoded) {
+                                    if (head2_helper_t::isEncoded) {
                                         hashMap[static_cast<h2unenc_t>(h2)].push_back(t2);
                                     } else {
                                         hashMap[h2].push_back(t2);
@@ -326,12 +319,12 @@ namespace ahead {
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // probe
-                                    h1enc_t h1 = isHead1Encoded ? static_cast<h1enc_t>(iter1->head() * AH1Inv) : iter1->head();
-                                    t1enc_t t1 = isTail1Encoded ? static_cast<t1enc_t>(iter1->tail() * AT1Inv) : iter1->tail();
-                                    if (isHead1Encoded && h1 > AH1UnencMaxU) {
+                                    h1enc_t h1 = head1_helper_t::mulIfEncoded(iter1->head(), AH1Inv);
+                                    t1enc_t t1 = tail1_helper_t::mulIfEncoded(iter1->tail(), AT1Inv);
+                                    if (head1_helper_t::isEncoded && h1 > AH1UnencMaxU) {
                                         vec1->push_back(pos * AOID);
                                     }
-                                    if (isTail1Encoded && t1 > AT1UnencMaxU) {
+                                    if (tail1_helper_t::isEncoded && t1 > AT1UnencMaxU) {
                                         vec2->push_back(pos * AOID);
                                     }
                                     if (static_cast<larger_t>(t1) <= h2max) {
@@ -371,6 +364,10 @@ namespace ahead {
                     typedef typename T2Enc::type_t t2enc_t;
                     typedef ahead::larger_type<t1enc_t, h2enc_t> larger_type_t;
                     typedef typename larger_type_t::type_t hash_t;
+                    typedef ANhelper<Head1> head1_helper_t;
+                    typedef ANhelper<Tail1> tail1_helper_t;
+                    typedef ANhelper<Head2> head2_helper_t;
+                    typedef ANhelper<Tail2> tail2_helper_t;
 
                     static std::tuple<TempBAT<head1_v2_select_t, tail2_v2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> run(
                             BAT<Head1, Tail1>* arg1,
@@ -382,20 +379,15 @@ namespace ahead {
                             t2enc_t AT2R = 1, // for reencode
                             h1enc_t AT2InvR = 1 // for reencode
                             ) {
-                        const
-                        bool isHead1Encoded = std::is_base_of<v2_anencoded_t, Head1>::value;
-                        const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
-                        const bool isHead2Encoded = std::is_base_of<v2_anencoded_t, Head2>::value;
-                        const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
-                        const h1enc_t AH1Inv = isHead1Encoded ? arg1->head.metaData.AN_A : 1;
+                        const h1enc_t AH1Inv = head1_helper_t::getIfEncoded(arg1->head.metaData.AN_Ainv);
                         const h1enc_t AH1UnencMaxU = arg1->head.metaData.AN_unencMaxU;
-                        const t1enc_t AT1 = isTail1Encoded ? arg1->tail.metaData.AN_A : 1;
-                        const t1enc_t AT1Inv = isTail1Encoded ? arg1->tail.metaData.AN_Ainv : 1;
+                        const t1enc_t AT1 = tail1_helper_t::getIfEncoded(arg1->tail.metaData.AN_A);
+                        const t1enc_t AT1Inv = tail1_helper_t::getIfEncoded(arg1->tail.metaData.AN_Ainv);
                         const t1enc_t AT1UnencMaxU = arg1->tail.metaData.AN_unencMaxU;
-                        const h2enc_t AH2 = isHead2Encoded ? arg2->head.metaData.AN_A : 1;
-                        const h2enc_t AH2Inv = isHead2Encoded ? arg2->head.metaData.AN_A : 1;
+                        const t1enc_t AH2 = head2_helper_t::getIfEncoded(arg2->head.metaData.AN_A);
+                        const h2enc_t AH2Inv = head2_helper_t::getIfEncoded(arg2->head.metaData.AN_Ainv);
                         const h2enc_t AH2UnencMaxU = arg2->head.metaData.AN_unencMaxU;
-                        const t2enc_t AT2Inv = isTail2Encoded ? arg2->tail.metaData.AN_Ainv : 1;
+                        const t2enc_t AT2Inv = tail2_helper_t::getIfEncoded(arg2->tail.metaData.AN_Ainv);
                         const t2enc_t AT2UnencMaxU = arg2->tail.metaData.AN_unencMaxU;
                         // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
                         const h1enc_t reencFactorH1 = AH1R * AH1Inv;
@@ -410,14 +402,10 @@ namespace ahead {
                         } else {
                             bat = skeletonJoin<head1_v2_select_t, tail2_v2_select_t>(arg1, arg2);
                         }
-                        AN_indicator_vector *vec1 = (isHead1Encoded ? new AN_indicator_vector : nullptr);
-                        vec1->reserve(64);
-                        AN_indicator_vector *vec2 = (isTail1Encoded ? new AN_indicator_vector : nullptr);
-                        vec2->reserve(64);
-                        AN_indicator_vector *vec3 = (isHead2Encoded ? new AN_indicator_vector : nullptr);
-                        vec3->reserve(64);
-                        AN_indicator_vector *vec4 = (isTail2Encoded ? new AN_indicator_vector : nullptr);
-                        vec4->reserve(64);
+                        AN_indicator_vector * vec1 = head1_helper_t::createIndicatorVector();
+                        AN_indicator_vector * vec2 = tail1_helper_t::createIndicatorVector();
+                        AN_indicator_vector * vec3 = head2_helper_t::createIndicatorVector();
+                        AN_indicator_vector * vec4 = tail2_helper_t::createIndicatorVector();
                         auto iter1 = arg1->begin();
                         auto iter2 = arg2->begin();
                         if (iter1->hasNext() && iter2->hasNext()) { // only really continue when both BATs are not empty
@@ -442,10 +430,10 @@ namespace ahead {
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // build
                                     auto h1 = iter1->head();
                                     auto t1 = iter1->tail();
-                                    if (isHead1Encoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
+                                    if (head1_helper_t::isEncoded && static_cast<h1enc_t>(h1 * AH1Inv) > AH1UnencMaxU) {
                                         vec1->push_back(pos * AOID);
                                     }
-                                    if (isTail1Encoded && static_cast<t1enc_t>(t1 * AT1Inv) > AT1UnencMaxU) {
+                                    if (tail1_helper_t::isEncoded && static_cast<t1enc_t>(t1 * AT1Inv) > AT1UnencMaxU) {
                                         vec2->push_back(pos * AOID);
                                     }
                                     // the above checking for the probe factor requires that we convert here to the A we need for probing
@@ -456,10 +444,10 @@ namespace ahead {
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // probe
                                     auto h2 = iter2->head();
                                     auto t2 = iter2->tail();
-                                    if (isHead2Encoded && static_cast<h2enc_t>(h2 * AH2Inv) > AH2UnencMaxU) {
+                                    if (head2_helper_t::isEncoded && static_cast<h2enc_t>(h2 * AH2Inv) > AH2UnencMaxU) {
                                         vec3->push_back(pos * AOID);
                                     }
-                                    if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2Inv) > AT2UnencMaxU) {
+                                    if (tail2_helper_t::isEncoded && static_cast<t2enc_t>(t2 * AT2Inv) > AT2UnencMaxU) {
                                         vec4->push_back(pos * AOID);
                                     }
                                     auto mapIter = hashMap.find(static_cast<hash_t>(h2));
@@ -482,8 +470,7 @@ namespace ahead {
                                 const constexpr bool isHead2Smaller = sizeof(h2enc_t) < sizeof(t1enc_t);
                                 if (needConvert || isHead2Smaller) {
                                     // we need to convert (e.g. different A's or Tail1 is smaller type than Head2 --> recompute the inverse for larger ring)
-                                    // TODO auto newAinv = ext_euclidean(uint128_t(AH2), sizeof (hash_t) * 8);
-                                    auto newAinv = ext_euclidean(uint128_t(AT1), sizeof(h2enc_t) * 8);
+                                    auto newAinv = ext_euclidean(uint128_t(AT1), sizeof(hash_t) * 8);
                                     Ainv = v2convert<hash_t>(newAinv);
                                 } else {
                                     // TODO Ainv = AH2Inv;
@@ -491,21 +478,20 @@ namespace ahead {
                                 }
                                 typedef typename TypeMap<Head2>::v2_base_t::type_t h2unenc_t;
                                 const h2unenc_t h2max = std::numeric_limits<h2unenc_t>::max();
-                                // TODO const hash_t probeFactor = (needConvert || isHead2Smaller) ? (Ainv * static_cast<hash_t>(AT1)) : 1;
                                 const hash_t probeFactor = (needConvert || isHead2Smaller) ? (Ainv * static_cast<hash_t>(AH2)) : 1;
                                 google::dense_hash_map<h2unenc_t, std::vector<typename Tail2::type_t> > hashMap(arg2->size());
                                 hashMap.set_empty_key(Head2::dhm_emptykey);
                                 for (; iter2->hasNext(); ++*iter2, ++pos) { // build
                                     auto h = iter2->head();
                                     auto t = iter2->tail();
-                                    if (isHead2Encoded && static_cast<h2enc_t>(h * AH2Inv) > AH2UnencMaxU) {
+                                    if (head2_helper_t::isEncoded && static_cast<h2enc_t>(h * AH2Inv) > AH2UnencMaxU) {
                                         vec3->push_back(pos * AOID);
                                     }
-                                    if (isTail2Encoded && static_cast<t2enc_t>(t * AT2Inv) > AT2UnencMaxU) {
+                                    if (tail2_helper_t::isEncoded && static_cast<t2enc_t>(t * AT2Inv) > AT2UnencMaxU) {
                                         vec4->push_back(pos * AOID);
                                     }
                                     // the above checking for the probe factor requires that we convert here to the A we need for probing
-                                    if (isHead2Encoded) {
+                                    if (head2_helper_t::isEncoded) {
                                         hashMap[static_cast<h2unenc_t>(h * AH2Inv)].push_back(t);
                                     } else {
                                         hashMap[h].push_back(t);
@@ -516,13 +502,13 @@ namespace ahead {
                                 for (; iter1->hasNext(); ++*iter1, ++pos) { // probe
                                     auto h = iter1->head();
                                     auto t = iter1->tail();
-                                    if (isHead1Encoded && static_cast<h1enc_t>(h * AH1Inv) > AH1UnencMaxU) {
+                                    if (head1_helper_t::isEncoded && static_cast<h1enc_t>(h * AH1Inv) > AH1UnencMaxU) {
                                         vec1->push_back(pos * AOID);
                                     }
-                                    if (isTail1Encoded && static_cast<t1enc_t>(t * AT1Inv) > AT1UnencMaxU) {
+                                    if (tail1_helper_t::isEncoded && static_cast<t1enc_t>(t * AT1Inv) > AT1UnencMaxU) {
                                         vec2->push_back(pos * AOID);
                                     }
-                                    h2unenc_t t1 = static_cast<h2unenc_t>(isTail1Encoded ? (t * AT1Inv) : t);
+                                    h2unenc_t t1 = static_cast<h2unenc_t>(tail1_helper_t::isEncoded ? (t * AT1Inv) : t);
                                     if (t1 <= h2max) {
                                         auto mapIter = hashMap.find(t1);
                                         if (mapIter != mapEnd) {

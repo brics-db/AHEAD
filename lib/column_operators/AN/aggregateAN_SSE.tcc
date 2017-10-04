@@ -138,6 +138,9 @@ namespace ahead {
                         typedef typename Result::type_t result_t;
                         typedef typename T1Enc::type_t t1enc_t;
                         typedef typename T2Enc::type_t t2enc_t;
+                        typedef ANhelper<Tail1> tail1_helper_t;
+                        typedef ANhelper<Tail2> tail2_helper_t;
+                        typedef ANhelper<Result> result_helper_t;
 
                         t1enc_t AT1 = static_cast<t1enc_t>(arg1->tail.metaData.AN_A);
                         t1enc_t AT1inv = static_cast<t1enc_t>(arg1->tail.metaData.AN_Ainv);
@@ -146,13 +149,8 @@ namespace ahead {
                         t2enc_t AT2inv = static_cast<t2enc_t>(arg2->tail.metaData.AN_Ainv);
                         t2enc_t AT2unencMaxU = static_cast<t2enc_t>(arg2->tail.metaData.AN_unencMaxU);
 
-                        const bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
-                        const bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
-                        const bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
-                        AN_indicator_vector * vec1 = (isTail1Encoded ? new AN_indicator_vector : nullptr);
-                        vec1->reserve(64);
-                        AN_indicator_vector * vec2 = (isTail2Encoded ? new AN_indicator_vector : nullptr);
-                        vec2->reserve(64);
+                        AN_indicator_vector * vec1 = tail1_helper_t::createIndicatorVector();
+                        AN_indicator_vector * vec2 = tail2_helper_t::createIndicatorVector();
                         oid_t szTail1 = arg1->tail.container->size();
                         oid_t szTail2 = arg2->tail.container->size();
                         auto pT1 = arg1->tail.container->data();
@@ -173,30 +171,30 @@ namespace ahead {
                         uint128_t AT2_ui128(AT2);
                         result_t AT1InvR(1);
                         result_t AT2InvR(1);
-                        if (isTail1Encoded) {
+                        if (tail1_helper_t::isEncoded) {
                             uint128_t temp = ext_euclidean(AT1_ui128, codeWidth);
                             AT1InvR = v2convert<result_t>(temp);
                         }
-                        if (isTail2Encoded) {
+                        if (tail2_helper_t::isEncoded) {
                             uint128_t temp = ext_euclidean(AT2_ui128, codeWidth);
                             AT2InvR = v2convert<result_t>(temp);
                         }
-                        const result_t AResultEncode = AT1InvR * AT2InvR * (isResultEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
+                        const result_t AResultEncode = AT1InvR * AT2InvR * (result_helper_t::isEncoded ? RA : result_t(1)); // a single factor for converting the total at the end
                         size_t i = 0;
                         for (; pmmT1 <= (pmmT1End - 1) && pmmT2 <= (pmmT2End - 1);) {
                             if (larger_type<tail1_t, tail2_t>::isFirstLarger) {
                                 const constexpr size_t factor = sizeof(tail1_t) / sizeof(tail2_t);
                                 const constexpr size_t increment = sizeof(__m128i) / sizeof (tail1_t);
-                                Private::partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, isTail1Encoded, isTail2Encoded, increment, factor, factor>::doIt(mmTotal, pmmT1, mmAT1inv, mmDMax1,
-                                        vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
+                                Private::partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, tail1_helper_t::isEncoded, tail2_helper_t::isEncoded, increment, factor, factor>::doIt(mmTotal, pmmT1,
+                                        mmAT1inv, mmDMax1, vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
                             } else {
                                 // either the second is larger, or both have the same width
                                 // the code is the same since for the latter the for-loop runs only once
                                 // the compiler should compile the loop away in that case
                                 const constexpr size_t factor = sizeof(tail2_t) / sizeof(tail1_t);
                                 const constexpr size_t increment = sizeof(__m128i) / sizeof (tail2_t);
-                                Private::partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, isTail1Encoded, isTail2Encoded, increment, factor, factor>::doIt(mmTotal, pmmT1, mmAT1inv, mmDMax1,
-                                        vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
+                                Private::partial_aggregate_mul_sumAN<tail1_t, tail2_t, result_t, tail1_helper_t::isEncoded, tail2_helper_t::isEncoded, increment, factor, factor>::doIt(mmTotal, pmmT1,
+                                        mmAT1inv, mmDMax1, vec1, pmmT2, mmAT2inv, mmDMax2, vec2, i, AOID);
                             }
                         }
                         auto total = init + mm128<result_t>::sum(mmTotal);
@@ -205,10 +203,10 @@ namespace ahead {
                         for (; pT1 < pT1End && pT2 < pT2End; ++pT1, ++pT2, ++i) {
                             auto t1 = *pT1;
                             auto t2 = *pT2;
-                            if (isTail1Encoded && static_cast<t1enc_t>(t1 * AT1inv) > AT1unencMaxU) {
+                            if (tail1_helper_t::isEncoded && static_cast<t1enc_t>(t1 * AT1inv) > AT1unencMaxU) {
                                 (*vec1)[i] = true;
                             }
-                            if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2inv) > AT2unencMaxU) {
+                            if (tail2_helper_t::isEncoded && static_cast<t2enc_t>(t2 * AT2inv) > AT2unencMaxU) {
                                 (*vec2)[i] = true;
                             }
                             total += static_cast<result_t>(t1) * static_cast<result_t>(t2);

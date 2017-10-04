@@ -27,6 +27,7 @@
 #include <column_storage/TempStorage.hpp>
 #include <column_operators/ANbase.hpp>
 #include "../miscellaneous.hpp"
+#include "ANhelper.tcc"
 
 #ifdef __GNUC__
 #pragma GCC target "no-sse"
@@ -73,13 +74,14 @@ namespace ahead {
                         resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
 
                     typedef typename ResTail::type_t res_t;
+                    typedef ANhelper<ResTail> tail_helper_t;
 
                     static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                    static_assert(std::is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                    static_assert(tail_helper_t::isEncoded, "ResTail must be an AN-encoded type");
 
                     res_t Ainv = static_cast<res_t>(arg->tail.metaData.AN_Ainv);
 
-                    auto result = new AN_indicator_vector(arg->size());
+                    auto result = tail_helper_t::createIndicatorVector();
                     auto iter = arg->begin();
                     for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
                         if (static_cast<res_t>(iter->tail() * aInv) > unEncMaxU) {
@@ -98,16 +100,17 @@ namespace ahead {
                     typedef typename ResTail::type_t restail_t;
                     typedef typename ResTail::v2_unenc_t Tail;
                     typedef typename Tail::type_t tail_t;
+                    typedef ANhelper<Head> head_helper_t;
+                    typedef ANhelper<ResTail> tail_helper_t;
 
-                    static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
-                    static_assert(std::is_base_of<v2_anencoded_t, ResTail>::value, "ResTail must be an AN-encoded type");
+                    static_assert(head_helper_t::isEncoded, "Head must be a base type");
+                    static_assert(tail_helper_t::isEncoded, "ResTail must be an AN-encoded type");
 
                     restail_t Ainv = static_cast<restail_t>(arg->tail.metaData.AN_Ainv);
                     restail_t unencMaxU = static_cast<restail_t>(arg->tail.metaData.AN_unencMaxU);
                     auto result = skeletonHead<Head, Tail>(arg);
                     result->reserve(arg->size());
-                    auto vec = new AN_indicator_vector;
-                    vec->reserve(64);
+                    auto vec = tail_helper_t::createIndicatorVector();
                     auto iter = arg->begin();
                     size_t pos = 0;
                     for (; iter->hasNext(); ++*iter, ++pos) {
@@ -137,30 +140,28 @@ namespace ahead {
 
                             typedef typename Head::type_t head_t;
                             typedef typename Tail::type_t tail_t;
+                            typedef ANhelper<Head> head_helper_t;
+                            typedef ANhelper<Tail> tail_helper_t;
 
-                            static_assert(std::is_base_of<v2_anencoded_t, Head>::value || std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
+                            static_assert(head_helper_t::isEncoded || tail_helper_t::isEncoded, "At least one of Head and Tail must be an AN-encoded type");
 
-                            const constexpr bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
-                            const constexpr bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
                             head_t hAinv = static_cast<head_t>(arg->head.metaData.AN_Ainv);
                             head_t hUnencMaxU = static_cast<head_t>(arg->head.metaData.AN_unencMaxU);
                             tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                             tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
-                            AN_indicator_vector * vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
-                            vec1->reserve(64);
-                            AN_indicator_vector * vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
-                            vec2->reserve(64);
+                            AN_indicator_vector * vec1 = head_helper_t::createIndicatorVector();
+                            AN_indicator_vector * vec2 = tail_helper_t::createIndicatorVector();
                             auto result = new TempBAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>();
                             result->reserve(arg->size());
                             auto iter = arg->begin();
                             for (size_t pos = 0; iter->hasNext(); ++*iter, ++pos) {
-                                head_t decH = isHeadEncoded ? static_cast<head_t>(iter->head() * hAinv) : iter->head();
-                                tail_t decT = isTailEncoded ? static_cast<tail_t>(iter->tail() * tAinv) : iter->tail();
-                                bool isHeadOK = !isHeadEncoded || (decH <= hUnencMaxU);
+                                head_t decH = head_helper_t::mulIfEncoded(iter->head(), hAinv);
+                                tail_t decT = tail_helper_t::mulIfEncoded(iter->tail(), tAinv);
+                                bool isHeadOK = !head_helper_t::isEncoded || (decH <= hUnencMaxU);
                                 if (!isHeadOK) {
                                     vec1->push_back(pos * AOID);
                                 }
-                                bool isTailOK = !isTailEncoded || (decT <= tUnencMaxU);
+                                bool isTailOK = !tail_helper_t::isEncoded || (decT <= tUnencMaxU);
                                 if (!isTailOK) {
                                     vec2->push_back(pos * AOID);
                                 }
@@ -185,14 +186,13 @@ namespace ahead {
                                 resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
 
                             typedef typename Tail::type_t tail_t;
+                            typedef ANhelper<Tail> tail_helper_t;
 
                             static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "Tail must be an AN-encoded type");
 
-                            const constexpr bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
                             tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                             tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
-                            AN_indicator_vector * vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
-                            vec2->reserve(64);
+                            AN_indicator_vector * vec2 = tail_helper_t::createIndicatorVector();
                             auto result = new TempBAT<v2_void_t, v2_tail_unenc_t>();
                             result->reserve(arg->size());
                             auto iter = arg->begin();

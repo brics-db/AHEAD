@@ -33,6 +33,7 @@
 #include <util/v2typeconversion.hpp>
 #include "../miscellaneous.hpp"
 #include <column_operators/ANbase.hpp>
+#include "ANhelper.tcc"
 
 #ifdef __GNUC__
 #pragma GCC target "no-sse"
@@ -63,6 +64,9 @@ namespace ahead {
                     typedef typename Result::type_t result_t;
                     typedef typename T1Enc::type_t t1enc_t;
                     typedef typename T2Enc::type_t t2enc_t;
+                    typedef ANhelper<Tail1> tail1_helper_t;
+                    typedef ANhelper<Tail2> tail2_helper_t;
+                    typedef ANhelper<Result> result_helper_t;
 
                     t1enc_t AT1 = static_cast<t1enc_t>(arg1->tail.metaData.AN_A);
                     t1enc_t AT1inv = static_cast<t1enc_t>(arg1->tail.metaData.AN_Ainv);
@@ -71,17 +75,13 @@ namespace ahead {
                     t2enc_t AT2inv = static_cast<t2enc_t>(arg2->tail.metaData.AN_Ainv);
                     t2enc_t AT2unencMaxU = static_cast<t2enc_t>(arg2->tail.metaData.AN_unencMaxU);
 
-                    const constexpr bool isTail1Encoded = std::is_base_of<v2_anencoded_t, Tail1>::value;
-                    const constexpr bool isTail2Encoded = std::is_base_of<v2_anencoded_t, Tail2>::value;
-                    const constexpr bool isResultEncoded = std::is_base_of<v2_anencoded_t, Result>::value;
                     result_t total = init;
-                    AN_indicator_vector * vec1 = (isTail1Encoded ? new AN_indicator_vector : nullptr);
-                    vec1->reserve(64);
-                    AN_indicator_vector * vec2 = (isTail2Encoded ? new AN_indicator_vector : nullptr);
-                    vec2->reserve(64);
+                    AN_indicator_vector * vec1 = tail1_helper_t::createIndicatorVector();
+                    AN_indicator_vector * vec2 = tail2_helper_t::createIndicatorVector();
 
-                    const result_t AResultEncode = (isResultEncoded ? RA : result_t(1)) * (isTail1Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT1), sizeof(result_t) * 8))) : result_t(1))
-                            * (isTail2Encoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT2), sizeof(result_t) * 8))) : result_t(1));
+                    const result_t AResultEncode = (result_helper_t::isEncoded ? RA : result_t(1))
+                            * (tail1_helper_t::isEncoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT1), sizeof(result_t) * 8))) : result_t(1))
+                            * (tail2_helper_t::isEncoded ? (v2convert<result_t>(ext_euclidean(uint128_t(AT2), sizeof(result_t) * 8))) : result_t(1));
 #ifdef AN_TEST_ARITH
                     const result_t ATempResultTest = AT1InvR * AT2InvR;
 #endif
@@ -90,10 +90,10 @@ namespace ahead {
                     for (size_t i = 0; iter1->hasNext() && iter2->hasNext(); ++*iter1, ++*iter2, ++i) {
                         auto t1 = iter1->tail();
                         auto t2 = iter2->tail();
-                        if (isTail1Encoded && static_cast<t1enc_t>(t1 * AT1inv) > AT1unencMaxU) {
+                        if (tail1_helper_t::isEncoded && static_cast<t1enc_t>(t1 * AT1inv) > AT1unencMaxU) {
                             vec1->push_back(i * AOID);
                         }
-                        if (isTail2Encoded && static_cast<t2enc_t>(t2 * AT2inv) > AT2unencMaxU) {
+                        if (tail2_helper_t::isEncoded && static_cast<t2enc_t>(t2 * AT2inv) > AT2unencMaxU) {
                             vec2->push_back(i * AOID);
                         }
 #ifdef AN_TEST_ARITH

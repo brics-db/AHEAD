@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   matchjoinAN.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -65,17 +65,18 @@ namespace ahead {
                             h1_t AH1InvR = h1_t(0), // for reencode
                             t2_t AT2R = h2_t(0), // for reencode
                             t2_t AT2InvR = h2_t(0)) { // for reencode
-                        h1_t const AH1Inv = Head1Helper::getIfEncoded(arg1->head.metaData.AN_Ainv);
-                        h1_t const AH1UnencMaxU = Head1Helper::getIfEncoded(arg1->head.metaData.AN_unencMaxU);
-                        t1_t const AT1Inv = Tail1Helper::getIfEncoded(arg1->tail.metaData.AN_Ainv);
-                        t1_t const AT1UnencMaxU = Tail1Helper::getIfEncoded(arg1->tail.metaData.AN_unencMaxU);
-                        h2_t const AH2Inv = Head2Helper::getIfEncoded(arg2->head.metaData.AN_Ainv);
-                        h2_t const AH2UnencMaxU = Head2Helper::getIfEncoded(arg2->head.metaData.AN_unencMaxU);
-                        t2_t const AT2Inv = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_Ainv);
-                        t2_t const AT2UnencMaxU = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_unencMaxU);
+                            const
+                        h1_t AH1Inv = Head1Helper::getIfEncoded(arg1->head.metaData.AN_Ainv);
+                        const h1_t AH1UnencMaxU = Head1Helper::getIfEncoded(arg1->head.metaData.AN_unencMaxU);
+                        const t1_t AT1Inv = Tail1Helper::getIfEncoded(arg1->tail.metaData.AN_Ainv);
+                        const t1_t AT1UnencMaxU = Tail1Helper::getIfEncoded(arg1->tail.metaData.AN_unencMaxU);
+                        const h2_t AH2Inv = Head2Helper::getIfEncoded(arg2->head.metaData.AN_Ainv);
+                        const h2_t AH2UnencMaxU = Head2Helper::getIfEncoded(arg2->head.metaData.AN_unencMaxU);
+                        const t2_t AT2Inv = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_Ainv);
+                        const t2_t AT2UnencMaxU = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_unencMaxU);
                         // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
-                        h1_t const reencFactorH1 = Head1Helper::mulIfEncoded(AH1R, AH1Inv);
-                        t2_t const reencFactorT2 = Tail2Helper::mulIfEncoded(AT2R, AT2Inv);
+                        const h1_t reencFactorH1 = Head1Helper::mulIfEncoded(AH1R, AH1Inv);
+                        const t2_t reencFactorT2 = Tail2Helper::mulIfEncoded(AT2R, AT2Inv);
                         TempBAT<v2_h1_t, v2_t2_t> * bat = nullptr;
                         if (reencode) {
                             typedef typename TempBAT<v2_h1_t, v2_t2_t>::coldesc_head_t bat_coldesc_head_t;
@@ -162,12 +163,13 @@ namespace ahead {
                             h1_t AH1InvR = typename Head1Helper::type_t(0), // for reencode
                             t2_t AT2R = typename Tail2Helper::type_t(0), // for reencode
                             t2_t AT2InvR = typename Tail2Helper::type_t(0)) { // for reencode
-                        h1_t const AH1Inv = Head1Helper::getIfEncoded(arg1->head.metaData.AN_Ainv);
-                        h1_t const AH1UnencMaxU = Head1Helper::getIfEncoded(arg1->head.metaData.AN_unencMaxU);
-                        t2_t const AT2Inv = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_Ainv);
-                        t2_t const AT2UnencMaxU = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_unencMaxU);
-                        h1_t const reencFactorH1 = Head1Helper::mulIfEncoded(AH1R, AH1Inv);
-                        t2_t const reencFactorT2 = Tail2Helper::mulIfEncoded(AT2R, AT2Inv);
+                            const
+                        h1_t AH1Inv = Head1Helper::getIfEncoded(arg1->head.metaData.AN_Ainv);
+                        const h1_t AH1UnencMaxU = Head1Helper::getIfEncoded(arg1->head.metaData.AN_unencMaxU);
+                        const t2_t AT2Inv = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_Ainv);
+                        const t2_t AT2UnencMaxU = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_unencMaxU);
+                        const h1_t reencFactorH1 = Head1Helper::mulIfEncoded(AH1R, AH1Inv);
+                        const t2_t reencFactorT2 = Tail2Helper::mulIfEncoded(AT2R, AT2Inv);
                         TempBAT<v2_h1_t, v2_t2_t> * bat = nullptr;
                         if (reencode) {
                             typedef typename TempBAT<v2_h1_t, v2_t2_t>::coldesc_head_t bat_coldesc_head_t;
@@ -243,14 +245,15 @@ namespace ahead {
                             h1_t AH1InvR = h1_t(0), // for reencode
                             t2_t AT2R = t2_t(0), // for reencode
                             t2_t AT2InvR = t2_t(0)) { // for reencode
-                        h1_t const AH1Inv = Head1Helper::getIfEncoded(arg1->head.metaData.AN_Ainv);
-                        h1_t const AH1UnencMaxU = Head1Helper::getIfEncoded(arg1->head.metaData.AN_unencMaxU);
-                        t1_t const AT1Inv = Tail1Helper::getIfEncoded(arg1->tail.metaData.AN_Ainv);
-                        t2_t const AT2Inv = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_Ainv);
-                        t2_t const AT2UnencMaxU = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_unencMaxU);
+                            const
+                        h1_t AH1Inv = Head1Helper::getIfEncoded(arg1->head.metaData.AN_Ainv);
+                        const h1_t AH1UnencMaxU = Head1Helper::getIfEncoded(arg1->head.metaData.AN_unencMaxU);
+                        const t1_t AT1Inv = Tail1Helper::getIfEncoded(arg1->tail.metaData.AN_Ainv);
+                        const t2_t AT2Inv = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_Ainv);
+                        const t2_t AT2UnencMaxU = Tail2Helper::getIfEncoded(arg2->tail.metaData.AN_unencMaxU);
                         // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
-                        h1_t const reencFactorH1 = Head1Helper::mulIfEncoded(AH1R, AH1Inv);
-                        t2_t const reencFactorT2 = Tail2Helper::mulIfEncoded(AT2R, AT2Inv);
+                        const h1_t reencFactorH1 = Head1Helper::mulIfEncoded(AH1R, AH1Inv);
+                        const t2_t reencFactorT2 = Tail2Helper::mulIfEncoded(AT2R, AT2Inv);
                         TempBAT<v2_h1_t, v2_t2_t> * bat = nullptr;
                         if (reencode) {
                             typedef typename TempBAT<v2_h1_t, v2_t2_t>::coldesc_head_t bat_coldesc_head_t;
@@ -304,15 +307,15 @@ namespace ahead {
                     typedef typename TypeMap<T2>::v2_encoded_t TailEncoded;
                     typedef typename TailEncoded::type_t tailenc_t;
                     typedef typename TailEncoded::v2_select_t ReturnTail;
+                    typedef ANhelper<T2> tail2_helper_t;
 
                     static std::tuple<BAT<ReturnHead, ReturnTail> *, AN_indicator_vector *, AN_indicator_vector *> run(
                             BAT<v2_void_t, v2_resoid_t> *arg1,
                             BAT<v2_void_t, T2> *arg2,
                             resoid_t AOID,
                             tailenc_t ATReenc = tailenc_t(1),
-                            tailenc_t ATReencInv = tailenc_t(1)) {
-                        constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, T2>::value;
-                        const resoid_t AT1inv = static_cast<resoid_t>(arg1->tail.metaData.AN_Ainv);
+                            tailenc_t ATReencInv = tailenc_t(1)) { const
+                        resoid_t AT1inv = static_cast<resoid_t>(arg1->tail.metaData.AN_Ainv);
                         const tailenc_t AT2inv = static_cast<tailenc_t>(arg2->tail.metaData.AN_Ainv);
                         const tailenc_t AT2unencMaxU = static_cast<tailenc_t>(arg2->tail.metaData.AN_unencMaxU);
                         tailenc_t AT2Reenc(1);
@@ -321,15 +324,11 @@ namespace ahead {
                             result->tail.metaData.AN_A = ATReenc;
                             result->tail.metaData.AN_Ainv = ATReencInv;
                             const tailenc_t AT2invR = v2convert<tailenc_t>(ext_euclidean(uint128_t(arg2->tail.metaData.AN_A), sizeof(tailenc_t) * 8));
-                            AT2Reenc = isTailEncoded ? (AT2invR * ATReenc) : ATReenc;
+                            AT2Reenc = tail2_helper_t::mulIfEncoded(ATReenc, AT2invR);
                         }
                         result->reserve(arg1->size());
-                        auto vec1 = new AN_indicator_vector;
-                        vec1->reserve(32);
-                        auto vec2 = isTailEncoded ? new AN_indicator_vector : nullptr;
-                        if (isTailEncoded) {
-                            vec2->reserve(32);
-                        }
+                        auto vec1 = ANhelper<v2_resoid_t>::createIndicatorVector();
+                        auto vec2 = tail2_helper_t::createIndicatorVector();
                         auto iter1 = arg1->begin();
                         auto vec = arg2->tail.container.get();
                         const auto vecSize = vec->size();
@@ -340,7 +339,7 @@ namespace ahead {
                                 vec1->push_back(static_cast<resoid_t>(i) * AOID);
                             } else {
                                 tailenc_t t2 = static_cast<tailenc_t>((*vec)[t1]);
-                                if (isTailEncoded && ((t2 * AT2inv) > AT2unencMaxU)) {
+                                if (tail2_helper_t::isEncoded && ((t2 * AT2inv) > AT2unencMaxU)) {
                                     vec2->push_back(t1 * AOID);
                                 } else if (reencode) {
                                     result->append(t2 * AT2Reenc);
@@ -364,8 +363,7 @@ namespace ahead {
                         const resoid_t AT1inv = static_cast<resoid_t>(arg1->tail.metaData.AN_Ainv);
                         auto result = skeletonJoin<v2_void_t, v2_str_t>(arg1, arg2);
                         result->reserve(arg1->size());
-                        auto vec1 = new AN_indicator_vector;
-                        vec1->reserve(32);
+                        auto vec1 = ANhelper<v2_resoid_t>::createIndicatorVector();
                         auto iter1 = arg1->begin();
                         auto vec = arg2->tail.container.get();
                         const auto vecSize = vec->size();
