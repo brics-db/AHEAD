@@ -94,8 +94,8 @@ namespace ahead {
                         const t2enc_t AT2Inv = tail2_helper_t::getIfEncoded(arg2->tail.metaData.AN_Ainv);
                         const t2enc_t AT2UnencMaxU = arg2->tail.metaData.AN_unencMaxU;
                         // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
-                        const h1enc_t reencFactorH1 = AH1R * AH1Inv;
-                        const t2enc_t reencFactorT2 = AT2R * AT2Inv;
+                        const h1enc_t reencFactorH1 = head1_helper_t::mulIfEncoded(AH1R, AH1Inv);
+                        const t2enc_t reencFactorT2 = tail2_helper_t::mulIfEncoded(AT2R, AT2Inv);
                         TempBAT<v2_h1_select_t, v2_t2_select_t> * bat = nullptr;
                         if (reencode) {
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
@@ -127,11 +127,7 @@ namespace ahead {
                                     if (tail1_helper_t::isEncoded && t1 > AT1UnencMaxU) {
                                         vec2->push_back(pos * AOID);
                                     }
-                                    if (head2_helper_t::isEncoded) {
-                                        hashMap[static_cast<t1unenc_t>(t1)].push_back(h1);
-                                    } else {
-                                        hashMap[t1].push_back(h1);
-                                    }
+                                    hashMap[static_cast<t1unenc_t>(t1)].push_back(h1);
                                 }
                                 auto mapEnd = hashMap.end();
                                 pos = 0;
@@ -236,13 +232,13 @@ namespace ahead {
                             ) {
                         (void) AT2R;
                         (void) AT2InvR;
-                        const h1enc_t AH1Inv = arg1->head.metaData.AN_Ainv;
+                        const h1enc_t AH1Inv = head1_helper_t::getIfEncoded(arg1->head.metaData.AN_Ainv);
                         const h1enc_t AH1UnencMaxU = arg1->head.metaData.AN_unencMaxU;
-                        const t1enc_t AT1Inv = arg1->tail.metaData.AN_Ainv;
+                        const t1enc_t AT1Inv = tail1_helper_t::getIfEncoded(arg1->tail.metaData.AN_Ainv);
                         const t1enc_t AT1UnencMaxU = arg1->tail.metaData.AN_unencMaxU;
-                        const h2enc_t AH2Inv = arg2->head.metaData.AN_Ainv;
+                        const h2enc_t AH2Inv = head2_helper_t::getIfEncoded(arg2->head.metaData.AN_Ainv);
                         const h2enc_t AH2UnencMaxU = arg2->head.metaData.AN_unencMaxU;
-                        const h1enc_t reencFactorH1 = AH1R * AH1Inv;
+                        const h1enc_t reencFactorH1 = head1_helper_t::mulIfEncoded(AH1R, AH1Inv);
                         TempBAT<head1_v2_select_t, v2_str_t> * bat;
                         if (reencode) {
                             typedef typename TempBAT<head1_v2_select_t, v2_str_t>::coldesc_head_t bat_coldesc_head_t;
