@@ -103,6 +103,14 @@ namespace ahead {
         }
     }
 
+    ArgumentParser::ArgumentParser(
+            const ArgumentParser & other)
+            : uintArgs(other.uintArgs),
+              strArgs(other.strArgs),
+              boolArgs(other.boolArgs),
+              argTypes(other.argTypes) {
+    }
+
     ArgumentParser::~ArgumentParser() {
     }
 
@@ -124,7 +132,7 @@ namespace ahead {
 
     size_t ArgumentParser::parseint(
             const std::string& name,
-            char* arg) {
+            const char * arg) {
         if (arg == nullptr) {
             std::stringstream ss;
             ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
@@ -158,7 +166,7 @@ namespace ahead {
 
     size_t ArgumentParser::parsestr(
             const std::string& name,
-            char* arg) {
+            const char * arg) {
         if (arg == nullptr) {
             std::stringstream ss;
             ss << "Required value for parameter \"" << name << "\" missing! (on line " << __LINE__ << ')';
@@ -177,7 +185,7 @@ namespace ahead {
 
     size_t ArgumentParser::parsebool(
             const std::string& name,
-            __attribute__ ((unused)) char* arg) {
+            __attribute__ ((unused)) const char * arg) {
         size_t start = 0;
         if (boost::starts_with(name, "no-")) {
             start = 3;
@@ -195,10 +203,11 @@ namespace ahead {
 
     void ArgumentParser::parse(
             int argc,
-            char** argv,
-            size_t offset) { // no C++17 (array_view), yet :-(
+            const char * const * argv,
+            size_t offset, // no C++17 (array_view), yet :-(
+            unknown_handling_t unknownHandling) {
 #ifdef DEBUG
-            std::cout << "parse(int argc, char** argv, size_t offset)" << std::endl;
+        std::cout << "parse(int argc, char** argv, size_t offset)" << std::endl;
 #endif
         if (argc > 1) {
             for (int nArg = offset; nArg < argc; ++nArg) { // always advance at least one step
@@ -206,7 +215,7 @@ namespace ahead {
                 for (auto & p : argTypes) {
                     if (p.first.compare(argv[nArg]) == 0) {
                         recognized = true;
-                        char* arg = (nArg + 1) < argc ? argv[nArg + 1] : nullptr;
+                        const char * arg = (nArg + 1) < argc ? argv[nArg + 1] : nullptr;
                         switch (p.second) {
                             case argint:
                                 nArg += parseint(p.first, arg);
@@ -224,16 +233,26 @@ namespace ahead {
                     }
                 }
                 if (!recognized) {
-                    std::stringstream ss;
-                    ss << "Parameter \"" << argv[nArg] << "\" is unknown! (on line " << __LINE__ << ')';
-                    throw std::runtime_error(ss.str());
+                    switch (unknownHandling) {
+                        case IGNORE:
+                            break;
+
+                        case PRINT:
+                            std::cerr << "[ArgumentParser::parse(" << __FILE__ << '@' << __LINE__ << "] Parameter \"" << argv[nArg] << "\" is unknown!";
+                            break;
+
+                        case THROW:
+                            std::stringstream ss;
+                            ss << "[ArgumentParser::parse(" << __FILE__ << '@' << __LINE__ << "] Parameter \"" << argv[nArg] << "\" is unknown!";
+                            throw std::runtime_error(ss.str());
+                    }
                 }
             }
         }
     }
 
     size_t ArgumentParser::get_uint(
-            const std::string & name) {
+            const std::string & name) const {
         for (auto & tup : uintArgs) {
             if (std::get<0>(tup).compare(name) == 0) {
                 return std::get<2>(tup);
@@ -246,7 +265,7 @@ namespace ahead {
 
     const std::string &
     ArgumentParser::get_str(
-            const std::string & name) {
+            const std::string & name) const {
         for (auto & tup : strArgs) {
             if (std::get<0>(tup).compare(name) == 0) {
                 return std::get<2>(tup);
@@ -258,7 +277,7 @@ namespace ahead {
     }
 
     bool ArgumentParser::get_bool(
-            const std::string & name) {
+            const std::string & name) const {
         for (auto & tup : boolArgs) {
             if (std::get<0>(tup).compare(name) == 0) {
                 return std::get<2>(tup);

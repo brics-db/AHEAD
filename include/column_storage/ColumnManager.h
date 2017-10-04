@@ -228,7 +228,7 @@ namespace ahead {
          *
          * Die Funktion liefert einen Zeiger auf das einzig existierende Objekt der Klasse. Falls noch kein Objekt der Klasse existiert, wird ein Objekt erzeugt und anschließend ein Zeiger auf das Objekt zurückgegeben.
          */
-        static ColumnManager* getInstance();
+        static std::shared_ptr<ColumnManager> getInstance();
 
         /**
          * @author Julian Hollender
@@ -279,7 +279,7 @@ namespace ahead {
 
     private:
 
-        static ColumnManager *instance;
+        static std::shared_ptr<ColumnManager> instance;
 
         static void destroyInstance();
 
@@ -290,6 +290,8 @@ namespace ahead {
         ColumnManager();
         ColumnManager(
                 const ColumnManager &copy);
+
+    public:
         virtual ~ColumnManager();
     };
 

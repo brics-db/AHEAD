@@ -12,27 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <sstream>
+
 #include <column_storage/TransactionManager.h>
 #include "../meta_repository/MetaRepositoryManager.h"
 
 namespace ahead {
 
-    TransactionManager* TransactionManager::instance = 0;
+    std::shared_ptr<TransactionManager> TransactionManager::instance(new TransactionManager());
 
-    TransactionManager*
-    TransactionManager::getInstance() {
-        if (TransactionManager::instance == 0) {
-            TransactionManager::instance = new TransactionManager();
+    std::shared_ptr<TransactionManager> TransactionManager::getInstance() {
+        if (!TransactionManager::instance) {
+            std::stringstream ss;
+            ss << "TA manager is not available!" << std::endl;
+            throw std::runtime_error(ss.str());
         }
-
         return TransactionManager::instance;
     }
 
     void TransactionManager::destroyInstance() {
-        auto current = TransactionManager::instance;
-        if (current) {
-            TransactionManager::instance = nullptr;
-            delete current;
+        if (TransactionManager::instance) {
+            TransactionManager::instance.reset();
         }
     }
 

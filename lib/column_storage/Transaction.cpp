@@ -92,13 +92,20 @@ namespace ahead {
         }
         const char* actDelim = delim == nullptr ? "|" : delim;
 
-        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
-        ColumnManager * cm = ColumnManager::getInstance();
+        const auto & config = AHEAD::getInstance()->getConfig();
+        auto mrm = MetaRepositoryManager::getInstance();
+        auto cm = ColumnManager::getInstance();
 
         std::list<ColumnManager::ColumnIterator*> columnIters;
 
         ColumnManager::ColumnIterator *ci;
 
+        const bool doConvertTableFilesOnLoad = config.isConvertTableFilesOnLoad();
+        const size_t minBFW = config.getMinimzmBitFlipWeight();
+        const size_t minBFWtiny = std::min(v2_restiny_t::AsBFW->size(), minBFW);
+        const size_t minBFWshort = std::min(v2_resshort_t::AsBFW->size(), minBFW);
+        const size_t minBFWint = std::min(v2_resint_t::AsBFW->size(), minBFW);
+        const size_t minBFWbig = std::min(v2_resbigint_t::AsBFW->size(), minBFW);
         std::string valuesPath(path);
         valuesPath.append(".tbl");
         std::string headerPath(path);
@@ -278,7 +285,7 @@ namespace ahead {
         const size_t numColumns = column_names.size();
         bool areAllColumnFilesPresent = true;
         std::vector<bool> vecColumnPresent(column_names.size());
-        if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
+        if (doConvertTableFilesOnLoad) {
             auto columnItersIterator = columnIters.begin();
             for (size_t i = 0; i < column_names.size(); ++i) {
                 std::string columnFilePath(path);
@@ -402,26 +409,24 @@ namespace ahead {
         //////////////////////////////////////////////
         // Check for converted data for faster load //
         //////////////////////////////////////////////
-        bool areAllColumnsConverted = AHEAD::getInstance()->isConvertTableFilesOnLoad();
-        std::vector<bool> vecIscolumnAlreadyLoaded(numColumns);
+        bool areAllColumnsConverted = doConvertTableFilesOnLoad;
+        std::vector<bool> vecIsColumnAlreadyConverted(numColumns);
         nums_values.resize(column_names.size());
-        if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
-            auto columnItersIterator = columnIters.begin();
-            for (size_t i = 0; i < column_names.size(); ++i) {
-                std::string attrFilePath(path);
-                attrFilePath.append("_").append(column_names[i]).append(".ahead");
-                std::ifstream attrIStream(attrFilePath);
-                areAllColumnsConverted &= attrIStream.is_open();
-                if (attrIStream) {
-                    nums_values[i] = (*columnItersIterator)->read(attrIStream);
-                    if (attrIStream.fail() | attrIStream.bad()) {
-                        sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
-                        throw std::runtime_error(sserr.str());
-                    }
-                    vecIscolumnAlreadyLoaded[i] = true;
+        auto columnItersIterator = columnIters.begin();
+        for (size_t i = 0; i < column_names.size(); ++i) {
+            std::string attrFilePath(path);
+            attrFilePath.append("_").append(column_names[i]).append(".ahead");
+            std::ifstream attrIStream(attrFilePath);
+            areAllColumnsConverted &= attrIStream.is_open();
+            if (attrIStream) {
+                nums_values[i] = (*columnItersIterator)->read(attrIStream);
+                if (attrIStream.fail() | attrIStream.bad()) {
+                    sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
+                    throw std::runtime_error(sserr.str());
                 }
-                ++columnItersIterator;
+                vecIsColumnAlreadyConverted[i] = true;
             }
+            ++columnItersIterator;
         }
 
         ////////////////////////
@@ -460,7 +465,7 @@ namespace ahead {
                         }
                     }
 
-                    if (!vecIscolumnAlreadyLoaded[colIdx]) {
+                    if (!vecIsColumnAlreadyConverted[colIdx]) {
                         // Spaltentyp und Spaltenidentifikation bestimmen
                         type = *typesIterator;
                         ci = *columnItersIterator;
@@ -528,7 +533,7 @@ namespace ahead {
                 std::memset(line, 0, LEN_LINE);
             }
             for (size_t i = 0; i < column_names.size(); ++i) {
-                if (!vecIscolumnAlreadyLoaded[i]) {
+                if (!vecIsColumnAlreadyConverted[i]) {
                     nums_values[i] = numValues;
                 }
             }
@@ -538,10 +543,10 @@ namespace ahead {
         /////////////////////////////////////////
         // Write newly converted Contents File //
         /////////////////////////////////////////
-        if (AHEAD::getInstance()->isConvertTableFilesOnLoad() && !areAllColumnsConverted) {
+        if (doConvertTableFilesOnLoad && !areAllColumnsConverted) {
             auto columnItersIterator = columnIters.begin();
             for (size_t i = 0; i < numColumns; ++i) {
-                if (!vecIscolumnAlreadyLoaded[i]) {
+                if (!vecIsColumnAlreadyConverted[i]) {
                     std::string attrFilePath(path);
                     attrFilePath.append("_").append(column_names[i]).append(".ahead");
                     std::ofstream attrOStream(attrFilePath);
@@ -586,6 +591,36 @@ namespace ahead {
                 throw std::runtime_error(sserr.str().c_str());
             }
             previousNumValues = nums_values[i];
+        }
+
+        ////////////////////////////////////////////////
+        // Convert In-Memory Columns if minBFW is set //
+        ////////////////////////////////////////////////
+        if (minBFW) {
+            auto typesIter = column_types.begin();
+            auto namesIter = column_names.begin();
+            for (; typesIter != column_types.end(); ++typesIter, ++namesIter) {
+                type = *typesIter;
+                switch (type) {
+                    case type_restiny:
+                        if (minBFWtiny) {
+                            // TODO reencode columnBAT
+                        }
+                        break;
+
+                    case type_resshort:
+                        if (minBFWshort) {
+                            // TODO reencode columnBAT
+                        }
+                        break;
+
+                    case type_resint:
+                        if (minBFWint) {
+                            // TODO reencode columnBAT
+                        }
+                        break;
+                }
+            }
         }
 
         return nums_values[0];

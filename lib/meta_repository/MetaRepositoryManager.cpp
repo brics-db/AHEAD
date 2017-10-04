@@ -19,7 +19,7 @@
 
 namespace ahead {
 
-    MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
+    std::shared_ptr<MetaRepositoryManager> MetaRepositoryManager::instance(new MetaRepositoryManager());
 
     auto PATH_INFORMATION_SCHEMA = "INFORMATION_SCHEMA";
 
@@ -116,41 +116,30 @@ namespace ahead {
         delete[] META_PATH;
     }
 
-    MetaRepositoryManager*
-    MetaRepositoryManager::getInstance() {
-        if (MetaRepositoryManager::instance == nullptr) {
-            MetaRepositoryManager::instance = new MetaRepositoryManager();
-        }
-
+    std::shared_ptr<MetaRepositoryManager> MetaRepositoryManager::getInstance() {
         return MetaRepositoryManager::instance;
     }
 
     void MetaRepositoryManager::destroyInstance() {
-        auto current = MetaRepositoryManager::instance;
-        if (current) {
-            MetaRepositoryManager::instance = nullptr;
-            delete current;
+        if (MetaRepositoryManager::instance) {
+            MetaRepositoryManager::instance.reset();
         }
     }
 
     void MetaRepositoryManager::init(
-            cstr_t strBaseDir) {
+            const AHEAD_Config & config) {
         if (this->strBaseDir == nullptr) {
-            size_t len = strnlen(strBaseDir, MetaRepositoryManager::MAXLEN_PATH);
+            const std::string & strBaseDir = config.getDBPath();
+            size_t len = std::min(strBaseDir.size(), MetaRepositoryManager::MAXLEN_PATH);
             this->strBaseDir = new char[len + 1];
-            memcpy(this->strBaseDir, strBaseDir, len + 1); // includes NULL character
+            memcpy(this->strBaseDir, strBaseDir.c_str(), len + 1); // includes NULL character
 
             size_t len3 = strnlen(PATH_INFORMATION_SCHEMA, MAXLEN_NAME);
             META_PATH = new char[len + len3 + 2];
-            memcpy(META_PATH, strBaseDir, len); // excludes NULL character
+            memcpy(META_PATH, strBaseDir.c_str(), len); // excludes NULL character
             META_PATH[len + 1] = '/';
             memcpy(META_PATH + len + 1, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
         }
-    }
-
-    void MetaRepositoryManager::init(
-            const std::string & strBaseDir) {
-        init(strBaseDir.c_str());
     }
 
     void MetaRepositoryManager::createDefaultDataTypes() {

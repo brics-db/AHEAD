@@ -39,6 +39,12 @@ namespace ahead {
         typedef std::vector<std::tuple<std::string, alias_list_t, std::string>> str_args_t;
         typedef std::vector<std::tuple<std::string, alias_list_t, bool>> bool_args_t;
 
+        enum unknown_handling_t {
+            IGNORE,
+            PRINT,
+            THROW
+        };
+
     private:
 
         enum argtype_t {
@@ -67,6 +73,9 @@ namespace ahead {
                 const str_args_t && strArgs,
                 const bool_args_t && boolArgs);
 
+        ArgumentParser(
+                const ArgumentParser & other);
+
         virtual ~ArgumentParser();
 
         ArgumentParser& operator=(
@@ -76,31 +85,32 @@ namespace ahead {
 
         size_t parseint(
                 const std::string& name,
-                char* arg);
+                const char * arg);
 
         size_t parsestr(
                 const std::string& name,
-                char* arg);
+                const char * arg);
 
         size_t parsebool(
                 const std::string& name,
-                __attribute__ ((unused)) char* arg);
+                const char * arg);
 
     public:
 
         void parse(
                 int argc,
-                char** argv,
-                size_t offset); // no C++17 (array_view), yet :-(
+                const char * const * argv,
+                size_t offset = 0, // no C++17 (array_view), yet :-(
+                unknown_handling_t unknownHandling = unknown_handling_t::IGNORE); // only print a warning for unknown parameters by default
 
         size_t get_uint(
-                const std::string & name);
+                const std::string & name) const;
 
         const std::string & get_str(
-                const std::string & name);
+                const std::string & name) const;
 
         bool get_bool(
-                const std::string & name);
+                const std::string & name) const;
     };
 
 }

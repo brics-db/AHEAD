@@ -67,6 +67,7 @@ namespace ahead {
      * die komplette Synchronisation der Transaktionen. Bisher darf zu einem festen Zeitpunkt nur eine Update-Transaktion existieren.
      */
     class TransactionManager {
+        friend class AHEAD;
 
     public:
 
@@ -260,7 +261,7 @@ namespace ahead {
          * Die Funktion liefert einen Zeiger auf das einzig existierende Objekt der Klasse. Falls noch kein Objekt der Klasse existiert, wird
          * ein Objekt erzeugt und anschließend ein Zeiger auf das Objekt zurückgegeben.
          */
-        static TransactionManager* getInstance();
+        static std::shared_ptr<TransactionManager> getInstance();
 
         static void destroyInstance();
 
@@ -298,7 +299,7 @@ namespace ahead {
                 Transaction *transaction);
 
     private:
-        static TransactionManager *instance;
+        static std::shared_ptr<TransactionManager> instance;
 
         unsigned int currentVersion;
 
@@ -310,10 +311,9 @@ namespace ahead {
         TransactionManager();
         TransactionManager(
                 const TransactionManager &copy);
-        virtual ~TransactionManager();
 
     public:
-        friend class AHEAD;
+        virtual ~TransactionManager();
     };
 
 }

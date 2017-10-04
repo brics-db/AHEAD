@@ -27,10 +27,16 @@ namespace ahead {
 
     const constexpr std::array<uint16_t, 16> ANParameters::Atiny;
     const constexpr std::array<restiny_t, 16> ANParameters::AtinyInv;
+    const constexpr std::array<uint16_t, 7> ANParameters::AtinyBFW;
+    const constexpr std::array<restiny_t, 7> ANParameters::AtinyBFWInv;
     const constexpr std::array<uint16_t, 16> ANParameters::Ashort;
     const constexpr std::array<resshort_t, 16> ANParameters::AshortInv;
+    const constexpr std::array<uint16_t, 6> ANParameters::AshortBFW;
+    const constexpr std::array<resshort_t, 6> ANParameters::AshortBFWInv;
     const constexpr std::array<uint16_t, 16> ANParameters::Aint;
     const constexpr std::array<resint_t, 16> ANParameters::AintInv;
+    const constexpr std::array<uint16_t, 5> ANParameters::AintBFW;
+    const constexpr std::array<resint_t, 5> ANParameters::AintBFWInv;
 
     const restiny_t v2_restiny_t::dhm_emptykey = std::numeric_limits<restiny_t>::max();
     const restiny_t v2_restiny_t::dhm_deletedkey = std::numeric_limits<restiny_t>::max() - 1;

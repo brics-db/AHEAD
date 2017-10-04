@@ -14,6 +14,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <memory>
 
 #include <column_storage/ColumnManager.h>
 #include <column_storage/TransactionManager.h>
@@ -26,22 +27,15 @@ namespace ahead {
     const id_t ColumnManager::ID_BAT_COLIDENT = 2;
     const id_t ColumnManager::ID_BAT_FIRST_USER = 3;
 
-    ColumnManager* ColumnManager::instance = 0;
+    std::shared_ptr<ColumnManager> ColumnManager::instance(new ColumnManager);
 
-    ColumnManager*
-    ColumnManager::getInstance() {
-        if (ColumnManager::instance == 0) {
-            ColumnManager::instance = new ColumnManager();
-        }
-
+    std::shared_ptr<ColumnManager> ColumnManager::getInstance() {
         return ColumnManager::instance;
     }
 
     void ColumnManager::destroyInstance() {
-        auto current = ColumnManager::instance;
-        if (current) {
-            ColumnManager::instance = nullptr;
-            delete current;
+        if (ColumnManager::instance) {
+            ColumnManager::instance.reset();
         }
     }
 

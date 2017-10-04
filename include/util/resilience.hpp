@@ -89,8 +89,8 @@ namespace ahead {
 
         static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Atiny;
         static const constexpr std::array<restiny_t, 16> * Ainvs = &ANParameters::AtinyInv;
-        static const constexpr std::array<uint16_t, 16> * AsBFW = &ANParameters::Atiny;
-        static const constexpr std::array<restiny_t, 16> * AinvsBFW = &ANParameters::AtinyInv;
+        static const constexpr std::array<uint16_t, 7> * AsBFW = &ANParameters::AtinyBFW;
+        static const constexpr std::array<restiny_t, 7> * AinvsBFW = &ANParameters::AtinyBFWInv;
     };
     typedef v2_restiny_t v2_restinyint_t;
 
@@ -113,8 +113,8 @@ namespace ahead {
 
         static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Ashort;
         static const constexpr std::array<resshort_t, 16> * Ainvs = &ANParameters::AshortInv;
-        static const constexpr std::array<uint16_t, 16> * AsBFW = &ANParameters::Ashort;
-        static const constexpr std::array<resshort_t, 16> * AinvsBFW = &ANParameters::AshortInv;
+        static const constexpr std::array<uint16_t, 6> * AsBFW = &ANParameters::AshortBFW;
+        static const constexpr std::array<resshort_t, 6> * AinvsBFW = &ANParameters::AshortBFWInv;
     };
     typedef v2_resshort_t v2_resshortint_t;
 
@@ -137,8 +137,8 @@ namespace ahead {
 
         static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Aint;
         static const constexpr std::array<resint_t, 16> * Ainvs = &ANParameters::AintInv;
-        static const constexpr std::array<uint16_t, 16> * AsBFW = &ANParameters::Aint;
-        static const constexpr std::array<resint_t, 16> * AinvsBFW = &ANParameters::AintInv;
+        static const constexpr std::array<uint16_t, 5> * AsBFW = &ANParameters::AintBFW;
+        static const constexpr std::array<resint_t, 5> * AinvsBFW = &ANParameters::AintBFWInv;
     };
 
     struct v2_resbigint_t :
@@ -160,8 +160,8 @@ namespace ahead {
 
         static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Aint;
         static const constexpr std::array<resbigint_t, 16> * Ainvs = &ANParameters::AintInv;
-        static const constexpr std::array<uint16_t, 16> * AsBFW = &ANParameters::Aint;
-        static const constexpr std::array<resbigint_t, 16> * AinvsBFW = &ANParameters::AintInv;
+        static const constexpr std::array<uint16_t, 5> * AsBFW = &ANParameters::AintBFW;
+        static const constexpr std::array<resbigint_t, 5> * AinvsBFW = &ANParameters::AintBFWInv;
     };
 
     struct v2_resoid_t :
@@ -183,8 +183,8 @@ namespace ahead {
 
         static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Aint;
         static const constexpr std::array<resoid_t, 16> * Ainvs = &ANParameters::AintInv;
-        static const constexpr std::array<uint16_t, 16> * AsBFW = &ANParameters::Aint;
-        static const constexpr std::array<resbigint_t, 16> * AinvsBFW = &ANParameters::AintInv;
+        static const constexpr std::array<uint16_t, 5> * AsBFW = &ANParameters::AintBFW;
+        static const constexpr std::array<resbigint_t, 5> * AinvsBFW = &ANParameters::AintBFWInv;
     };
 
     struct v2_resstr_t :

@@ -62,6 +62,19 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.toolchain.gnu.base.641887659.2040417312" name="MetaRepositoryManager.cpp" rcbsApplicability="disable" resourcePath="lib/meta_repository/MetaRepositoryManager.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.base.713451725.2082992664">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.713451725.2082992664" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base.713451725">
+							<option id="gnu.cpp.compiler.option.include.paths.1526802149" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<listOptionValue builtIn="false" value="&quot;${workspace_loc:/AHEAD/include}&quot;"/>
+								<listOptionValue builtIn="false" value="/usr/include"/>
+								<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu"/>
+								<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+								<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+								<listOptionValue builtIn="false" value="/usr/local/include"/>
+							</option>
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.839676834" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -127,6 +140,19 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.toolchain.gnu.base.641887659.1768933168.366539386" name="MetaRepositoryManager.cpp" rcbsApplicability="disable" resourcePath="lib/meta_repository/MetaRepositoryManager.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.base.2096618438.970762457">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.2096618438.970762457" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base.2096618438">
+							<option id="gnu.cpp.compiler.option.include.paths.237847224" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<listOptionValue builtIn="false" value="&quot;${workspace_loc:/AHEAD/include}&quot;"/>
+								<listOptionValue builtIn="false" value="/usr/include"/>
+								<listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu"/>
+								<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+								<listOptionValue builtIn="false" value="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+								<listOptionValue builtIn="false" value="/usr/local/include"/>
+							</option>
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.86083876" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>

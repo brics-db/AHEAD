@@ -101,10 +101,8 @@ namespace ssb {
         size_t LEN_TYPES;
         size_t LEN_SIZES;
         size_t LEN_PCM;
-        std::string DB_PATH;
         bool VERBOSE;
         bool PRINT_RESULT;
-        bool CONVERT_TABLE_FILES;
 
     private:
         ArgumentParser parser;
@@ -114,21 +112,19 @@ namespace ssb {
         static const constexpr char * const ID_LENTYPES = "lentypes";
         static const constexpr char * const ID_LENSIZES = "lensizes";
         static const constexpr char * const ID_LENPCM = "lenpcm";
-        static const constexpr char * const ID_DBPATH = "numruns";
         static const constexpr char * const ID_VERBOSE = "verbose";
         static const constexpr char * const ID_PRINTRESULT = "printresult";
-        static const constexpr char * const ID_CONVERTTABLEFILES = "converttablefiles";
 
     public:
 
         SSB_CONF();
         SSB_CONF(
                 int argc,
-                char** argv);
+                const char * const * argv);
 
         void init(
                 int argc,
-                char** argv);
+                const char * const * argv);
     };
 
     extern SSB_CONF ssb_config;
@@ -153,7 +149,7 @@ namespace ssb {
 
     void init(
             int argc,
-            char ** argv,
+            const char * const * argv,
             const char * strHeadline,
             architecture_t arch = DEFAULT_ARCHITECTURE);
     void init_pcm();

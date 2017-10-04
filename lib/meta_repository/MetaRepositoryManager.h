@@ -28,6 +28,7 @@
 #include <ColumnStore.h>
 #include <column_storage/TempStorage.hpp>
 #include <column_operators/functors.hpp>
+#include <AHEAD_Config.hpp>
 
 namespace ahead {
 
@@ -61,8 +62,10 @@ namespace ahead {
      * The class implements the Singleton Pattern, this makes clear that only one object exists in runtime.
      */
     class MetaRepositoryManager {
+        friend class TransactionManager;
+        friend class AHEAD;
 
-        static MetaRepositoryManager *instance;
+        static std::shared_ptr<MetaRepositoryManager> instance;
 
         static const size_t MAXLEN_NAME = 1024; // table and attribute name
         static const size_t MAXLEN_PATH = 64 * 1024; // table and attribute name
@@ -104,7 +107,11 @@ namespace ahead {
         MetaRepositoryManager();
         MetaRepositoryManager(
                 const MetaRepositoryManager &copy);
+
+    public:
         virtual ~MetaRepositoryManager();
+
+    private:
 
         MetaRepositoryManager& operator=(
                 const MetaRepositoryManager &copy);
@@ -156,25 +163,14 @@ namespace ahead {
                 BAT<Head1, Tail1> *bat1,
                 BAT<Head2, Tail2> *bat2);
 
+        void init(
+                const AHEAD_Config & config);
+
     public:
-        friend class TransactionManager;
-        friend class AHEAD;
-
         /**
-         * @author Christian Vogel
-         *
-         * @return pointer for only one object of the MetaRepositoryManager class
-         *
-         * The function returns a pointer of the one and only existing instance of the class. In the case that no instance
-         * exists, it will be created and afterwards returned from the function.
+         * @return std::shared_ptr singleton of the MetaRepositoryManager class
          */
-        static MetaRepositoryManager* getInstance();
-
-        void init(
-                const char* strBaseDir);
-
-        void init(
-                const std::string & strBaseDir);
+        static std::shared_ptr<MetaRepositoryManager> getInstance();
 
         /**
          * @author Christian Vogel

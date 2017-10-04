@@ -70,6 +70,7 @@ MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode
 
 #add_static_lib(AHEAD "util/resilience.cpp \
 add_shared_lib(AHEAD "AHEAD.cpp \
+AHEAD_Config.cpp \
 util/resilience.cpp \
 util/rss.cpp \
 util/stopwatch.cpp \

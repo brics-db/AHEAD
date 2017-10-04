@@ -68,10 +68,8 @@ namespace ssb {
     const constexpr char * const SSB_CONF::ID_LENTYPES;
     const constexpr char * const SSB_CONF::ID_LENSIZES;
     const constexpr char * const SSB_CONF::ID_LENPCM;
-    const constexpr char * const SSB_CONF::ID_DBPATH;
     const constexpr char * const SSB_CONF::ID_VERBOSE;
     const constexpr char * const SSB_CONF::ID_PRINTRESULT;
-    const constexpr char * const SSB_CONF::ID_CONVERTTABLEFILES;
 
     SSB_CONF::SSB_CONF()
             : NUM_RUNS(0),
@@ -79,28 +77,24 @@ namespace ssb {
               LEN_TYPES(0),
               LEN_SIZES(0),
               LEN_PCM(0),
-              DB_PATH(),
               VERBOSE(false),
               PRINT_RESULT(0),
-              CONVERT_TABLE_FILES(true),
               parser(
                       {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, 1), std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(ID_LENTYPES,
-                              alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, 16)}, {
-                              std::forward_as_tuple(ID_DBPATH, alias_list_t {"--dbpath", "-d"}, ".")}, {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false),
-                              std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false), std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files",
-                                      "-c"}, true)}) {
+                              alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, 16)},
+                      {}, {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false)}) {
     }
 
     SSB_CONF::SSB_CONF(
             int argc,
-            char** argv)
+            const char * const * argv)
             : SSB_CONF() {
         init(argc, argv);
     }
 
     void SSB_CONF::init(
             int argc,
-            char** argv) {
+            const char * const * argv) {
         signal(SIGSEGV, handler);
         signal(SIGTERM, handler);
         parser.parse(argc, argv, 1);
@@ -109,10 +103,8 @@ namespace ssb {
         LEN_TYPES = parser.get_uint(ID_LENTYPES);
         LEN_SIZES = parser.get_uint(ID_LENSIZES);
         LEN_PCM = parser.get_uint(ID_LENPCM);
-        DB_PATH = parser.get_str(ID_DBPATH);
         VERBOSE = parser.get_bool(ID_VERBOSE);
         PRINT_RESULT = parser.get_bool(ID_PRINTRESULT);
-        CONVERT_TABLE_FILES = parser.get_bool(ID_CONVERTTABLEFILES);
     }
 
     SSB_CONF ssb_config;
@@ -139,7 +131,7 @@ namespace ssb {
 
     void init(
             int argc,
-            char ** argv,
+            const char * const * argv,
             const char * strHeadline,
             architecture_t arch) {
         set_signal_handlers();
@@ -185,8 +177,8 @@ namespace ssb {
         std::cout << strHeadline2 << '\n';
         auto fillChar = std::cout.fill('=');
         std::cout << std::setw(strHeadline2.size()) << "=" << std::setfill(fillChar) << '\n';
-        ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH);
-        std::cout << "Database path: \"" << ssb::ssb_config.DB_PATH << "\"" << std::endl;
+        auto instance = ahead::AHEAD::createInstance(argc, argv);
+        std::cout << "Database path: \"" << instance->getConfig().getDBPath() << "\"" << std::endl;
         ssb::init_pcm();
     }
 
