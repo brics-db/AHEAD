@@ -67,8 +67,8 @@ namespace ahead {
 
         static std::shared_ptr<MetaRepositoryManager> instance;
 
-        static const size_t MAXLEN_NAME = 1024; // table and attribute name
-        static const size_t MAXLEN_PATH = 64 * 1024; // table and attribute name
+        static const size_t MAXLEN_NAME; // table and attribute name
+        static const size_t MAXLEN_PATH; // table and attribute name
 
         str_t strBaseDir;
 

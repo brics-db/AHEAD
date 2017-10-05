@@ -152,8 +152,8 @@ namespace ahead {
         typedef typename bat_t::coldesc_head_t coldesc_head_t;
         typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
         auto * result = new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
-        result->head.metaData.width = sizeof(typename TargetHead::type_t);
-        result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+        result->head.metaData.width = size_bytes<typename TargetHead::type_t>;
+        result->tail.metaData.width = size_bytes<typename TargetTail::type_t>;
         return result;
     }
 

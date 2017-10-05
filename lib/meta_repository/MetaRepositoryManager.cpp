@@ -21,6 +21,9 @@ namespace ahead {
 
     std::shared_ptr<MetaRepositoryManager> MetaRepositoryManager::instance(new MetaRepositoryManager());
 
+    const size_t MetaRepositoryManager::MAXLEN_NAME = 1024; // table and attribute name
+    const size_t MetaRepositoryManager::MAXLEN_PATH = 64 * 1024; // table and attribute name
+
     auto PATH_INFORMATION_SCHEMA = "INFORMATION_SCHEMA";
 
     cstr_t NAME_TINYINT = "TINYINT";

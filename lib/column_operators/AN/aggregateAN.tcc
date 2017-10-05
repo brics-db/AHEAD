@@ -65,7 +65,7 @@ namespace ahead {
 
                         typedef typename TempBAT<v2_void_t, Result>::coldesc_head_t cd_head_t;
                         typedef typename TempBAT<v2_void_t, Result>::coldesc_tail_t cd_tail_t;
-                        auto batResult = new TempBAT<v2_void_t, Result>(cd_head_t(), cd_tail_t(ColumnMetaData(sizeof(result_t), AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN)));
+                        auto batResult = new TempBAT<v2_void_t, Result>(cd_head_t(), cd_tail_t(ColumnMetaData(size_bytes<result_t>, AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN)));
                         auto * vecHead = Hhelper::createIndicatorVector();
                         auto * vecTail = Thelper::createIndicatorVector();
                         AN_indicator_vector * vecGrouping = new AN_indicator_vector();

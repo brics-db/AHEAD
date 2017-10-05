@@ -62,9 +62,9 @@ namespace ahead {
                         google::dense_hash_map<tunenc_t, oid_t, hasher, comparator> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
                         auto batVOIDtoRGID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVOIDtoRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVOIDtoRGID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVGIDtoROID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVGIDtoROID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVGIDtoROID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
 
                         auto iter = bat->begin();
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
@@ -118,13 +118,13 @@ namespace ahead {
                         vecGrouping->reserve(32);
 
                         // auto batHashToRGID = new TempBAT<v2_largerTail_t, v2_resoid_t>();
-                        // batHashToRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        // batHashToRGID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         google::dense_hash_map<largerTail_t, oid_t> dictionary;
                         dictionary.set_empty_key(v2_largerTail_t::dhm_emptykey);
                         auto batVOIDtoRGID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVOIDtoRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVOIDtoRGID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVGIDtoROID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVGIDtoROID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVGIDtoROID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
 
                         auto iter = bat->begin();
                         auto iterG = grouping->begin();

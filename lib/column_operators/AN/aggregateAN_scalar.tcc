@@ -124,7 +124,7 @@ namespace ahead {
                     delete iter1;
                     typedef typename TempBAT<v2_void_t, Result>::coldesc_head_t cd_head_t;
                     typedef typename TempBAT<v2_void_t, Result>::coldesc_tail_t cd_tail_t;
-                    auto bat = new TempBAT<v2_void_t, Result>(cd_head_t(), cd_tail_t(ColumnMetaData(sizeof(result_t), RA, RAInv, Result::UNENC_MAX_U, Result::UNENC_MIN)));
+                    auto bat = new TempBAT<v2_void_t, Result>(cd_head_t(), cd_tail_t(ColumnMetaData(size_bytes<result_t>, RA, RAInv, Result::UNENC_MAX_U, Result::UNENC_MIN)));
                     bat->append(total);
                     return std::make_tuple(bat, vec1, vec2);
                 }

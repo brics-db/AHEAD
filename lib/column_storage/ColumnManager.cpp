@@ -3,9 +3,9 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,8 @@
 
 #include <column_storage/ColumnManager.h>
 #include <column_storage/TransactionManager.h>
+#include <util/resilience.hpp>
+#include <util/v2typeconversion.hpp>
 
 namespace ahead {
 
@@ -42,9 +44,9 @@ namespace ahead {
     ColumnManager::ColumnManager()
             : columnMetaData(),
               nextID(ID_BAT_FIRST_USER) {
-        createColumn(ID_BAT_COLNAMES, sizeof(char) * BAT_COLNAMES_MAXLEN);
-        createColumn(ID_BAT_COLTYPES, sizeof(column_type_t));
-        createColumn(ID_BAT_COLIDENT, sizeof(id_t));
+        createColumn(ID_BAT_COLNAMES, size_bytes<char[BAT_COLNAMES_MAXLEN]>);
+        createColumn(ID_BAT_COLTYPES, size_bytes<column_type_t>);
+        createColumn(ID_BAT_COLIDENT, size_bytes<id_t>);
     }
 
     ColumnManager::~ColumnManager() {
@@ -56,7 +58,7 @@ namespace ahead {
             id_t id,
             std::shared_ptr<version_t> & version) {
         if (columnMetaData.find(id) != columnMetaData.end()) {
-            return new ColumnManager::ColumnIterator(columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version));
+            return new ColumnManager::ColumnIterator(id, columnMetaData.find(id)->second, BucketManager::getInstance()->openStream(id, version));
         } else {
             // Problem : Spalte existiert nicht
             return nullptr;
@@ -86,6 +88,11 @@ namespace ahead {
 
     ColumnMetaData ColumnManager::getColumnMetaData(
             id_t id) {
+        return getColumnMetaDataRef(id);
+    }
+
+    ColumnMetaData & ColumnManager::getColumnMetaDataRef(
+            id_t id) {
         auto iter = columnMetaData.find(id);
         if (iter == columnMetaData.end()) {
             std::stringstream ss;
@@ -102,7 +109,7 @@ namespace ahead {
     ColumnMetaData &
     ColumnManager::createColumn(
             id_t id,
-            uint32_t width) {
+            data_width_t width) {
         auto iter = columnMetaData.find(id);
         if (iter != columnMetaData.end()) {
             std::stringstream ss;
@@ -133,7 +140,7 @@ namespace ahead {
     }
 
     size_t ColumnManager::ColumnIterator::size() {
-        const oid_t recordsPerBucket = (oid_t) ((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / this->columnMetaData.width);
+        const oid_t recordsPerBucket = (oid_t) ((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / ahead::get<bytes_t>(this->columnMetaData.width));
         oid_t position;
         oid_t * elementCounter;
         auto numBuckets = this->iterator->countBuckets();
@@ -169,7 +176,7 @@ namespace ahead {
                     return next();
                 }
             } else {
-                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width);
+                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * ahead::get<bytes_t>(this->columnMetaData.width));
                 this->currentPosition++;
                 return rec;
             }
@@ -203,7 +210,7 @@ namespace ahead {
                 rewind();
                 return Record(nullptr);
             } else {
-                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width);
+                Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * ahead::get<bytes_t>(this->columnMetaData.width));
                 this->currentPosition++;
                 return rec;
             }
@@ -223,7 +230,7 @@ namespace ahead {
     ColumnManager::Record ColumnManager::ColumnIterator::edit() {
         if (this->currentChunk != 0) {
             this->currentChunk = this->iterator->edit();
-            return Record(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + (this->currentPosition - 1) * this->columnMetaData.width);
+            return Record(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + (this->currentPosition - 1) * ahead::get<bytes_t>(this->columnMetaData.width));
         } else {
             // Problem : Anfang/Ende der Spalte
             return Record(nullptr);
@@ -251,7 +258,7 @@ namespace ahead {
 
         this->currentPosition = *elementCounter;
 
-        Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width);
+        Record rec(reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * ahead::get<bytes_t>(this->columnMetaData.width));
         this->currentPosition++;
         (*elementCounter)++;
         return rec;
@@ -259,14 +266,24 @@ namespace ahead {
 
     size_t ColumnManager::ColumnIterator::read(
             std::istream & inStream) {
+        return read0<false>(inStream, 1);
+    }
+
+    size_t ColumnManager::ColumnIterator::read(
+            std::istream & inStream,
+            A_t newA) {
+        return read0<true>(inStream, newA);
+    }
+
+    template<bool reencode>
+    size_t ColumnManager::ColumnIterator::read0(
+            std::istream & inStream,
+            A_t newA) {
         const size_t pos = inStream.tellg();
         inStream.seekg(0, std::ios_base::end);
         const size_t numBytesTotal = static_cast<size_t>(inStream.tellg()) - pos;
         inStream.seekg(pos, std::ios_base::beg);
-        // char * buffer = new char[numBytesTotal];
-        // istream.read(buffer, numBytesTotal);
-        size_t numTotalValues = numBytesTotal / this->columnMetaData.width;
-        // char * pSrc = buffer;
+        size_t numTotalValues = numBytesTotal / ahead::get<bytes_t>(this->columnMetaData.width);
         oid_t * elementCounter = nullptr;
 
         // find first bucket to insert. Mostly this will be the very first (initialized) bucket
@@ -294,15 +311,62 @@ namespace ahead {
             if (numValuesToInsert > static_cast<size_t>(tmpNumTotalValues)) {
                 numValuesToInsert = tmpNumTotalValues;
             }
-            size_t numBytesToInsert = numValuesToInsert * this->columnMetaData.width;
+            const auto widthBytes = ahead::get<bytes_t>(this->columnMetaData.width);
+            size_t numBytesToInsert = numValuesToInsert * widthBytes;
             *elementCounter = this->currentPosition + numValuesToInsert;
-            char * pDest = reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * this->columnMetaData.width;
-            // std::memcpy(pDest, pSrc, numValuesToInsert * this->columnMetaData.width);
+            char * pDest = reinterpret_cast<char*>(this->currentChunk->content) + sizeof(oid_t) + this->currentPosition * widthBytes;
             inStream.read(pDest, numBytesToInsert);
+            if (reencode) {
+                const auto widthBits = ahead::get<bits_t>(this->columnMetaData.width);
+                if (widthBits == 16) {
+                    uint16_t reencFactor = static_cast<uint16_t>(ext_euclidean(uint32_t(this->columnMetaData.AN_A), 16)) * static_cast<uint16_t>(newA);
+                    uint16_t * pNum = reinterpret_cast<uint16_t*>(pDest);
+                    for (size_t i = 0; i < numValuesToInsert; ++i, ++pNum) {
+                        *pNum *= reencFactor;
+                    }
+                } else if (widthBits == 32) {
+                    uint32_t reencFactor = static_cast<uint32_t>(ext_euclidean(size_t(this->columnMetaData.AN_A), 32)) * static_cast<uint32_t>(newA);
+                    uint32_t * pNum = reinterpret_cast<uint32_t*>(pDest);
+                    for (size_t i = 0; i < numValuesToInsert; ++i, ++pNum) {
+                        *pNum *= reencFactor;
+                    }
+                } else if (widthBits == 64) {
+                    uint64_t reencFactor = v2convert<uint64_t>(ext_euclidean(uint128_t(this->columnMetaData.AN_A), 64)) * static_cast<uint64_t>(newA);
+                    uint64_t * pNum = reinterpret_cast<uint64_t*>(pDest);
+                    for (size_t i = 0; i < numValuesToInsert; ++i, ++pNum) {
+                        *pNum *= reencFactor;
+                    }
+                } else {
+                    std::stringstream ss;
+                    ss << "ColumnManager::ColumnIterator::read0(" << __FILE__ << "@" << __LINE__ << ") : column width of " << widthBits << " bits not supported!";
+                    throw std::runtime_error(ss.str());
+                }
+            }
             tmpNumTotalValues -= numValuesToInsert;
             if (tmpNumTotalValues > 0) {
                 this->currentChunk = this->iterator->append();
                 elementCounter = static_cast<oid_t *>(this->currentChunk->content);
+            }
+        }
+
+        // update this Iterator's and the ColumnManager's columnMetaData!
+        if (reencode) {
+            this->columnMetaData.AN_A = newA;
+            auto & cmdRef = ColumnManager::getInstance()->getColumnMetaDataRef(columnId);
+            cmdRef.AN_A = newA;
+            const auto widthBits = ahead::get<bits_t>(this->columnMetaData.width);
+            if (widthBits == 16) {
+                auto newAinv = ext_euclidean(uint32_t(cmdRef.AN_A), 16);
+                this->columnMetaData.AN_Ainv = newAinv;
+                cmdRef.AN_Ainv = newAinv;
+            } else if (widthBits == 32) {
+                auto newAinv = ext_euclidean(size_t(cmdRef.AN_A), 32);
+                this->columnMetaData.AN_Ainv = newAinv;
+                cmdRef.AN_Ainv = newAinv;
+            } else if (widthBits == 64) {
+                auto newAinv = v2convert<uint64_t>(ext_euclidean(uint128_t(cmdRef.AN_A), 64));
+                this->columnMetaData.AN_Ainv = newAinv;
+                cmdRef.AN_Ainv = newAinv;
             }
         }
 
@@ -316,7 +380,7 @@ namespace ahead {
         while (pChunk != nullptr) {
             auto numValues = *static_cast<oid_t*>(pChunk->content);
             char * pStart = reinterpret_cast<char*>(reinterpret_cast<oid_t*>(pChunk->content) + 1);
-            outStream.write(pStart, numValues * this->columnMetaData.width);
+            outStream.write(pStart, numValues * ahead::get<bytes_t>(this->columnMetaData.width));
             pChunk = this->iterator->next();
         }
     }
@@ -328,19 +392,22 @@ namespace ahead {
     }
 
     ColumnManager::ColumnIterator::ColumnIterator(
+            id_t columnId,
             ColumnMetaData & columnMetaData,
             BucketManager::BucketIterator *iterator)
-            : iterator(iterator),
+            : columnId(columnId),
+              iterator(iterator),
               columnMetaData(columnMetaData),
               currentChunk(nullptr),
               currentPosition(0),
-              recordsPerBucket(static_cast<oid_t>((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / columnMetaData.width)) {
+              recordsPerBucket(static_cast<oid_t>((CHUNK_CONTENT_SIZE - sizeof(oid_t)) / ahead::get<bytes_t>(this->columnMetaData.width))) {
         this->iterator->rewind();
     }
 
     ColumnManager::ColumnIterator::ColumnIterator(
             const ColumnIterator & copy)
-            : iterator(new BucketManager::BucketIterator(*copy.iterator)),
+            : columnId(copy.columnId),
+              iterator(new BucketManager::BucketIterator(*copy.iterator)),
               columnMetaData(copy.columnMetaData),
               currentChunk(copy.currentChunk),
               currentPosition(copy.currentPosition),

@@ -79,7 +79,7 @@ namespace ahead {
                                 const tail_select_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
                                 auto vec = tail_helper_t::createIndicatorVector();
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
-                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve(arg->size());
                                 if (reencode) {
                                     result->tail.metaData.AN_A = ATR;
@@ -199,7 +199,7 @@ namespace ahead {
                                 const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
-                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve(arg->size());
                                 auto iter = arg->begin();
                                 Op<int> op;
@@ -252,7 +252,7 @@ namespace ahead {
                                 const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
                                 auto vec = tail_helper_t::createIndicatorVector();
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
-                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve(arg->size());
                                 if (reencode) {
                                     result->tail.metaData.AN_A = ATR;
@@ -375,7 +375,7 @@ namespace ahead {
                                 const head_select_t AHead = std::get<v2_head_select_t::As->size() - 1>(*v2_head_select_t::As);
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
-                                result->head.metaData = ColumnMetaData(sizeof(head_select_t), AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
+                                result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve(arg->size());
                                 auto iter = arg->begin();
                                 Op1<int> op1;

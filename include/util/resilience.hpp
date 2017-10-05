@@ -33,6 +33,7 @@
 
 namespace ahead {
 
+    typedef uint16_t A_t;
     typedef uint32_t restiny_t, restinyint_t, resshort_t, resshortint_t;
     typedef uint64_t resint_t;
     typedef uint64_t resbigint_t;
@@ -42,21 +43,21 @@ namespace ahead {
 
     struct ANParameters {
 
-        static const constexpr std::array<uint16_t, 16> Atiny = {1, 3, 7, 13, 29, 59, 115, 233, 487, 857, 1939, 3813, 7463, 13963, 27247, 55831};
+        static const constexpr std::array<A_t, 16> Atiny = {1, 3, 7, 13, 29, 59, 115, 233, 487, 857, 1939, 3813, 7463, 13963, 27247, 55831};
         static const constexpr std::array<restiny_t, 16> AtinyInv = {0x00000001, 0xaaaaaaab, 0xb6db6db7, 0xc4ec4ec5, 0x4f72c235, 0xa08ad8f3, 0x61f2a4bb, 0x1fdcd759, 0xb98f81d7, 0x484a14e9, 0xbc452e9b,
                 0xeecffeed, 0xfc778297, 0xb9860123, 0x833a348f, 0x4dfffda7};
-        static const constexpr std::array<uint16_t, 16> Ashort = {1, 3, 7, 13, 29, 61, 119, 233, 463, 947, 1939, 3349, 7785, 14781, 28183, 63877};
+        static const constexpr std::array<A_t, 16> Ashort = {1, 3, 7, 13, 29, 61, 119, 233, 463, 947, 1939, 3349, 7785, 14781, 28183, 63877};
         static const constexpr std::array<resshort_t, 16> AshortInv = {0x00000001, 0xaaaaaaab, 0xb6db6db7, 0xc4ec4ec5, 0x4f72c235, 0xc10c9715, 0x46fdd947, 0x1fdcd759, 0xab67652f, 0xff30637b,
                 0xbc452e9b, 0x21b5da3d, 0x392f51d9, 0x1abdc995, 0xab2da9a7, 0xd142174d};
-        static const constexpr std::array<uint16_t, 16> Aint = {1, 3, 7, 15, 21, 55, 125, 225, 445, 881, 2029, 3565, 7947, 16041, 28691, 64311};
+        static const constexpr std::array<A_t, 16> Aint = {1, 3, 7, 15, 21, 55, 125, 225, 445, 881, 2029, 3565, 7947, 16041, 28691, 64311};
         static const constexpr std::array<resint_t, 16> AintInv = {1, 0xAAAAAAAAAAAAAAAB, 0x6DB6DB6DB6DB6DB7, 0xEEEEEEEEEEEEEEEF, 0xCF3CF3CF3CF3CF3D, 0x6FB586FB586FB587, 0x1CAC083126E978D5,
                 0xFEDCBA987654321, 0x64194FF6CBA64195, 0xC87FDACE4F9E5D91, 0x49AEFF9F19DD6DE5, 0xBF4CC39BC11857E5, 0xFDD779BC079A34A3, 0xC94EE2C7649F4599, 0xBC4B7C5655ECDA1B, 0xAA86FFFEFB1FAA87};
 
-        static const constexpr std::array<uint16_t, 7> AtinyBFW = {Atiny[0], Atiny[2], Atiny[4], Atiny[7], Atiny[10], Atiny[13], Atiny[15]};
+        static const constexpr std::array<A_t, 7> AtinyBFW = {Atiny[0], Atiny[2], Atiny[4], Atiny[7], Atiny[10], Atiny[13], Atiny[15]};
         static const constexpr std::array<restiny_t, 7> AtinyBFWInv = {AtinyInv[0], AtinyInv[2], AtinyInv[4], AtinyInv[7], AtinyInv[10], AtinyInv[13], AtinyInv[15]};
-        static const constexpr std::array<uint16_t, 6> AshortBFW = {Ashort[0], Ashort[2], Ashort[5], Ashort[8], Ashort[12], Ashort[15]};
+        static const constexpr std::array<A_t, 6> AshortBFW = {Ashort[0], Ashort[2], Ashort[5], Ashort[8], Ashort[12], Ashort[15]};
         static const constexpr std::array<resshort_t, 6> AshortBFWInv = {AshortInv[0], AshortInv[2], AshortInv[5], AshortInv[8], AshortInv[12], AshortInv[15]};
-        static const constexpr std::array<uint16_t, 5> AintBFW = {Aint[0], Aint[2], Aint[6], Aint[9], Aint[13]};
+        static const constexpr std::array<A_t, 5> AintBFW = {Aint[0], Aint[2], Aint[6], Aint[9], Aint[13]};
         static const constexpr std::array<resint_t, 5> AintBFWInv = {AintInv[0], AintInv[2], AintInv[6], AintInv[9], AintInv[13]};
     };
 
@@ -87,9 +88,9 @@ namespace ahead {
         static const restiny_t UNENC_MAX;
         static const restiny_t UNENC_MAX_U;
 
-        static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Atiny;
+        static const constexpr std::array<A_t, 16> * As = &ANParameters::Atiny;
         static const constexpr std::array<restiny_t, 16> * Ainvs = &ANParameters::AtinyInv;
-        static const constexpr std::array<uint16_t, 7> * AsBFW = &ANParameters::AtinyBFW;
+        static const constexpr std::array<A_t, 7> * AsBFW = &ANParameters::AtinyBFW;
         static const constexpr std::array<restiny_t, 7> * AinvsBFW = &ANParameters::AtinyBFWInv;
     };
     typedef v2_restiny_t v2_restinyint_t;
@@ -111,9 +112,9 @@ namespace ahead {
         static const resshort_t UNENC_MAX;
         static const resshort_t UNENC_MAX_U;
 
-        static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Ashort;
+        static const constexpr std::array<A_t, 16> * As = &ANParameters::Ashort;
         static const constexpr std::array<resshort_t, 16> * Ainvs = &ANParameters::AshortInv;
-        static const constexpr std::array<uint16_t, 6> * AsBFW = &ANParameters::AshortBFW;
+        static const constexpr std::array<A_t, 6> * AsBFW = &ANParameters::AshortBFW;
         static const constexpr std::array<resshort_t, 6> * AinvsBFW = &ANParameters::AshortBFWInv;
     };
     typedef v2_resshort_t v2_resshortint_t;
@@ -135,9 +136,9 @@ namespace ahead {
         static const resint_t UNENC_MAX;
         static const resint_t UNENC_MAX_U;
 
-        static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Aint;
+        static const constexpr std::array<A_t, 16> * As = &ANParameters::Aint;
         static const constexpr std::array<resint_t, 16> * Ainvs = &ANParameters::AintInv;
-        static const constexpr std::array<uint16_t, 5> * AsBFW = &ANParameters::AintBFW;
+        static const constexpr std::array<A_t, 5> * AsBFW = &ANParameters::AintBFW;
         static const constexpr std::array<resint_t, 5> * AinvsBFW = &ANParameters::AintBFWInv;
     };
 
@@ -158,9 +159,9 @@ namespace ahead {
         static const resbigint_t UNENC_MAX;
         static const resbigint_t UNENC_MAX_U;
 
-        static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Aint;
+        static const constexpr std::array<A_t, 16> * As = &ANParameters::Aint;
         static const constexpr std::array<resbigint_t, 16> * Ainvs = &ANParameters::AintInv;
-        static const constexpr std::array<uint16_t, 5> * AsBFW = &ANParameters::AintBFW;
+        static const constexpr std::array<A_t, 5> * AsBFW = &ANParameters::AintBFW;
         static const constexpr std::array<resbigint_t, 5> * AinvsBFW = &ANParameters::AintBFWInv;
     };
 
@@ -181,9 +182,9 @@ namespace ahead {
         static const resoid_t UNENC_MAX;
         static const resoid_t UNENC_MAX_U;
 
-        static const constexpr std::array<uint16_t, 16> * As = &ANParameters::Aint;
+        static const constexpr std::array<A_t, 16> * As = &ANParameters::Aint;
         static const constexpr std::array<resoid_t, 16> * Ainvs = &ANParameters::AintInv;
-        static const constexpr std::array<uint16_t, 5> * AsBFW = &ANParameters::AintBFW;
+        static const constexpr std::array<A_t, 5> * AsBFW = &ANParameters::AintBFW;
         static const constexpr std::array<resbigint_t, 5> * AinvsBFW = &ANParameters::AintBFWInv;
     };
 
@@ -372,9 +373,9 @@ namespace ahead {
         static const constexpr type_t UNENC_MAX = V2Type::A_UNENC_MAX;
         static const constexpr type_t UNENC_MAX_U = V2Type::A_UNENC_MAX_U;
 
-        static const constexpr std::array<uint16_t, 16> * As = V2Type::As;
+        static const constexpr std::array<A_t, 16> * As = V2Type::As;
         static const constexpr std::array<type_t, 16> * Ainvs = V2Type::Ainvs;
-        static const constexpr std::array<uint16_t, 16> * AsBFW = V2Type::AsBFW;
+        static const constexpr std::array<A_t, 16> * AsBFW = V2Type::AsBFW;
         static const constexpr std::array<type_t, 16> * AinvsBFW = V2Type::AinvsBFW;
     };
 
@@ -387,9 +388,9 @@ namespace ahead {
         static const constexpr type_t UNENC_MAX = std::numeric_limits<std::make_signed<type_t>>::max();
         static const constexpr type_t UNENC_MAX_U = std::numeric_limits<std::make_unsigned<type_t>>::max();
 
-        static const constexpr std::array<uint16_t, 16> * As = nullptr;
+        static const constexpr std::array<A_t, 16> * As = nullptr;
         static const constexpr std::array<type_t, 16> * Ainvs = nullptr;
-        static const constexpr std::array<uint16_t, 16> * AsBFW = nullptr;
+        static const constexpr std::array<A_t, 16> * AsBFW = nullptr;
         static const constexpr std::array<type_t, 16> * AinvsBFW = nullptr;
     };
 
@@ -403,7 +404,7 @@ namespace ahead {
         static const constexpr type_t UNENC_MAX = selector_t::UNENC_MAX;
         static const constexpr type_t UNENC_MAX_U = selector_t::UNENC_MAX_U;
 
-        static const constexpr std::array<uint16_t, 16> * As = selector_t::As;
+        static const constexpr std::array<A_t, 16> * As = selector_t::As;
         static const constexpr std::array<type_t, 16> * Ainvs = selector_t::Ainvs;
     };
 

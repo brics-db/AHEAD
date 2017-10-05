@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   miscellaneous.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -82,12 +82,12 @@ namespace ahead {
                     typedef T hash_t;
 
                     T operator()(
-                            T const & t) const {
+                            const T & t) const {
                         return t;
                     }
 
                     static T get(
-                            T const & t) {
+                            const T & t) {
                         return t;
                     }
                 };
@@ -101,12 +101,12 @@ namespace ahead {
                     typedef size_t hash_t;
 
                     hash_t operator()(
-                            str_t const & s) const {
+                            const str_t & s) const {
                         return get(s);
                     }
 
                     static hash_t get(
-                            str_t const & s) {
+                            const str_t & s) {
                         size_t len = std::strlen(s);
                         hash_t hash(0), multiplier(1);
                         for (ssize_t i = len - 1; i >= 0; --i) {
@@ -127,8 +127,8 @@ namespace ahead {
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
                 auto * result = new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t(arg->tail.metaData));
-                result->head.metaData.width = sizeof(typename TargetHead::type_t);
-                result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+                result->head.metaData.width = bytes_t(sizeof(typename TargetHead::type_t));
+                result->tail.metaData.width = bytes_t(sizeof(typename TargetTail::type_t));
                 return result;
             }
 
@@ -140,7 +140,7 @@ namespace ahead {
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
                 auto * result = new bat_t(coldesc_head_t(arg->head.metaData), coldesc_tail_t());
-                result->head.metaData.width = sizeof(typename TargetHead::type_t);
+                result->head.metaData.width = bytes_t(sizeof(typename TargetHead::type_t));
                 return result;
             }
 
@@ -152,7 +152,7 @@ namespace ahead {
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
                 auto * result = new bat_t(coldesc_head_t(), coldesc_tail_t(arg->tail.metaData));
-                result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+                result->tail.metaData.width = bytes_t(sizeof(typename TargetTail::type_t));
                 return result;
             }
 
@@ -165,15 +165,15 @@ namespace ahead {
                 typedef typename bat_t::coldesc_head_t coldesc_head_t;
                 typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
                 auto * result = new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
-                result->head.metaData.width = sizeof(typename TargetHead::type_t);
-                result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+                result->head.metaData.width = bytes_t(sizeof(typename TargetHead::type_t));
+                result->tail.metaData.width = bytes_t(sizeof(typename TargetTail::type_t));
                 return result;
             }
 
             template<typename Head, typename Tail>
             std::optional<typename Tail::v2_select_t::type_t> findFirstHead(
                     BAT<Head, Tail> * bat,
-                    typename Head::type_t const value) {
+                    const typename Head::type_t value) {
                 auto iter = bat->begin();
                 for (; iter->hasNext(); ++*iter) {
                     if (iter->head() == value) {
@@ -189,7 +189,7 @@ namespace ahead {
             template<typename Head, typename Tail>
             std::optional<typename Head::v2_select_t::type_t> findFirstTail(
                     BAT<Head, Tail> * bat,
-                    typename Tail::type_t const value) {
+                    const typename Tail::type_t value) {
                 auto iter = bat->begin();
                 for (; iter->hasNext(); ++*iter) {
                     if (iter->tail() == value) {
