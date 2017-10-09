@@ -105,7 +105,6 @@ namespace ahead {
         const size_t minBFWtiny = std::min(v2_restiny_t::AsBFW->size(), minBFW);
         const size_t minBFWshort = std::min(v2_resshort_t::AsBFW->size(), minBFW);
         const size_t minBFWint = std::min(v2_resint_t::AsBFW->size(), minBFW);
-        const size_t minBFWbig = std::min(v2_resbigint_t::AsBFW->size(), minBFW);
         std::string valuesPath(path);
         valuesPath.append(".tbl");
         std::string headerPath(path);

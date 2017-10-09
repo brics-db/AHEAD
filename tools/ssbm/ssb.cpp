@@ -254,6 +254,8 @@ namespace ssb {
         ssb::hasTwoTypes.clear();
         ssb::headTypes.clear();
         ssb::tailTypes.clear();
+        ssb::sysstatesBeforeOp.clear();
+        ssb::sysstatesAfterOp.clear();
     }
 
     void before_load() {
