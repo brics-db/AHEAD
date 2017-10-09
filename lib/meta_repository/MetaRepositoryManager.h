@@ -32,19 +32,22 @@
 
 namespace ahead {
 
-    extern const char* NAME_TINYINT;
-    extern const char* NAME_SHORTINT;
-    extern const char* NAME_INTEGER;
-    extern const char* NAME_LARGEINT;
-    extern const char* NAME_STRING;
-    extern const char* NAME_FIXED;
-    extern const char* NAME_CHAR;
-    extern const char* NAME_RESTINY;
-    extern const char* NAME_RESSHORT;
-    extern const char* NAME_RESINT;
-    extern const char* NAME_RESBIGINT;
+    extern cstr_t NAME_TINYINT;
+    extern cstr_t NAME_SHORTINT;
+    extern cstr_t NAME_INTEGER;
+    extern cstr_t NAME_LARGEINT;
+    extern cstr_t NAME_STRING;
+    extern cstr_t NAME_FIXED;
+    extern cstr_t NAME_CHAR;
+    extern cstr_t NAME_RESTINY;
+    extern cstr_t NAME_RESSHORT;
+    extern cstr_t NAME_RESINT;
+    extern cstr_t NAME_RESBIGINT;
 
     extern const size_t MAXLEN_STRING;
+
+    template<typename T>
+    struct TypeNameSelector;
 
     /**
      * @author Christian Vogel
@@ -192,25 +195,32 @@ namespace ahead {
         void createAttribute(
                 cstr_t name,
                 cstr_t datatype,
-                unsigned BATId,
-                unsigned table_id);
+                id_t columnID,
+                id_t tableID);
         void createAttribute(
                 const std::string & name,
                 const std::string & datatype,
-                unsigned BATId,
-                unsigned table_id);
+                id_t columnID,
+                id_t tableID);
 
-        str_t getDataTypeForAttribute(
-                cstr_t name);
-        str_t getDataTypeForAttribute(
-                const std::string & name);
+        cstr_t getDataTypeForAttribute(
+                cstr_t tableName,
+                cstr_t attributeName);
+        cstr_t getDataTypeForAttribute(
+                const std::string & tableName,
+                const std::string & attributeName);
+
+        template<typename Tail>
+        void testDataTypeForAttribute(
+                const std::string & tableName,
+                const std::string & attributeName);
 
         unsigned getBatIdOfAttribute(
-                cstr_t nameOfTable,
-                cstr_t attribute);
+                cstr_t tableName,
+                cstr_t attributeName);
         unsigned getBatIdOfAttribute(
-                const std::string & nameOfTable,
-                const std::string & attribute);
+                const std::string & tableName,
+                const std::string & attributeName);
 
         class TablesIterator :
                 public BATIterator<v2_id_t, v2_str_t> {

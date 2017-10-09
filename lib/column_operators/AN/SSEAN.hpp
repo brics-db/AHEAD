@@ -41,7 +41,7 @@ namespace ahead {
                         static const constexpr size_t steps = sizeof(__m128i ) / sizeof(T);
 
                         typedef typename mm_op<__m128i, T, std::greater>::mask_t mask_t;
-
+/*
                         static inline mask_t detect(
                                 __m128i mmCol,
                                 __m128i mmInv,
@@ -60,7 +60,7 @@ namespace ahead {
                             }
                             return maskGT;
                         }
-
+*/
                         static inline mask_t detect(
                                 __m128i mmCol,
                                 __m128i mmInv,
@@ -79,7 +79,7 @@ namespace ahead {
                             }
                             return maskGT;
                         }
-
+/*
                         static inline mask_t detect(
                                 __m128i & mmDec,
                                 __m128i mmCol,
@@ -100,7 +100,7 @@ namespace ahead {
                             }
                             return maskGT;
                         }
-
+*/
                         static inline mask_t detect(
                                 __m128i & mmDec,
                                 __m128i mmCol,

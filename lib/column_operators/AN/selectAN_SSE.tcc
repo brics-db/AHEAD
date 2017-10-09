@@ -24,10 +24,8 @@
 
 #include <type_traits>
 
-#include <column_storage/Storage.hpp>
-#include <column_operators/ANbase.hpp>
-#include "SSEAN.hpp"
 #include "../miscellaneous.hpp"
+#include "SSEAN.hpp"
 #include "ANhelper.tcc"
 
 #ifdef __GNUC__
@@ -63,7 +61,7 @@ namespace ahead {
 
                             static result_t filter(
                                     BAT<Head, Tail>* arg,
-                                    typename Tail::type_t th,
+                                    tail_t th,
                                     resoid_t AOID,
                                     tail_select_t ATR = 1, // for reencoding
                                     tail_select_t ATInvR = 1 // for reencoding
@@ -100,59 +98,38 @@ namespace ahead {
                                 auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 // we encode the OIDs here already and increase accordingly by multiples of AHead
                                 auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
+                                auto mmInc = mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead); // increase OIDs by number of larger types per vector
 
                                 const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
                                 const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
 
                                 size_t pos = 0;
-                                if (larger_type<head_select_t, tail_t>::isFirstLarger) {
-                                    const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
-                                    const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
-                                    auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (head_select_t)) * AHead);
-                                    for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                        auto mmTmp = _mm_lddqu_si128(pmmT);
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
-                                        // comparison on encoded values
-                                        auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
-                                        if (mask) {
-                                            auto maskTmp = mask;
-                                            for (size_t i = 0; i < factor; ++i) {
-                                                auto actMask = maskTmp & maskMask;
-                                                if (actMask) {
-                                                    mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
-                                                }
-                                                mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
-                                                maskTmp >>= headsPerMM128;
-                                            }
-                                            pos += tailsPerMM128;
-                                            if (reencode) {
-                                                mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
-                                            }
-                                            mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
-                                        } else {
-                                            mmOID = mm<__m128i, head_select_t>::add(mmOID, mm<__m128i, head_select_t>::mullo(mmInc, mm<__m128i, head_select_t>::set1(factor)));
-                                        }
+                                for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
+                                    auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold); // comparison on encoded values
+                                    mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
+                                    pos += tailsPerMM128;
+                                    if (reencode) {
+                                        mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
                                     }
-                                } else {
-                                    // currently, resoid_t is the largest type anyways, so the tail type will be at most as large as resoid_t
-                                    auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (tail_select_t)) * AHead);
-                                    for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                        auto mmTmp = _mm_lddqu_si128(pmmT);
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
-                                        // comparison on encoded values
-                                        auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
-                                        if (mask) {
-                                            // the mask will select only the lower OIDs anyways
-                                            mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
-                                            pos += tailsPerMM128;
-                                            if (reencode) {
-                                                mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
-                                            }
-                                            mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
+                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
+                                    if (larger_type<head_select_t, tail_t>::isFirstLarger) {
+                                        const constexpr size_t ratioHeadPerTail = sizeof(head_select_t) / sizeof(tail_t);
+                                        const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
+                                        auto maskTmp = mask;
+                                        for (size_t i = 0; i < ratioHeadPerTail; ++i) {
+                                            auto actMask = maskTmp & maskMask;
+                                            mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
+                                            mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
+                                            maskTmp >>= headsPerMM128;
                                         }
+                                    } else {
+                                        // the mask will select only the lower OIDs anyways
+                                        mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
                                 }
+
                                 const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 result->overwrite_size(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
@@ -172,6 +149,7 @@ namespace ahead {
                                     }
                                 }
                                 delete iter;
+
                                 return std::make_pair(result, vec);
                             }
                         };
@@ -210,6 +188,7 @@ namespace ahead {
                                     }
                                 }
                                 delete iter;
+
                                 return std::make_pair(result, nullptr);
                             }
                         };
@@ -282,47 +261,35 @@ namespace ahead {
                                 size_t pos = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                     auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    // comparison on encoded values
+                                    auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1);
+                                    auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2);
+                                    auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(res1, res2);
+                                    mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
+                                    pos += tailsPerMM128;
+                                    if (reencode) {
+                                        mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
+                                    }
+                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
-                                        // comparison on encoded values
-                                        auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1),
-                                                mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2));
-                                        if (mask) {
-                                            auto maskTmp = mask;
-                                            for (size_t i = 0; i < factor; ++i) {
-                                                auto actMask = maskTmp & maskMask;
-                                                if (actMask) {
-                                                    mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
-                                                }
-                                                mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
-                                                maskTmp >>= headsPerMM128;
+                                        auto maskTmp = mask;
+                                        for (size_t i = 0; i < factor; ++i) {
+                                            auto actMask = maskTmp & maskMask;
+                                            if (actMask) {
+                                                mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
                                             }
-                                            pos += tailsPerMM128;
-                                            if (reencode) {
-                                                mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
-                                            }
-                                            mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
-                                        } else {
-                                            mmOID = mm<__m128i, head_select_t>::add(mmOID, mm<__m128i, head_select_t>::mullo(mmInc, mm<__m128i, head_select_t>::set1(factor)));
+                                            mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
+                                            maskTmp >>= headsPerMM128;
                                         }
                                     } else {
-                                        mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
-                                        // comparison on encoded values
-                                        auto mask = mm_op<__m128i, tail_t, Op1>::cmp_mask(mmTmp, mmThreshold1) & mm_op<__m128i, tail_t, Op2>::cmp_mask(mmTmp, mmThreshold2);
-                                        if (mask) {
-                                            // the mask will select only the lower OIDs anyways
-                                            mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
-                                            pos += tailsPerMM128;
-                                            if (reencode) {
-                                                mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
-                                            }
-                                            mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
-                                        }
+                                        // the mask will select only the lower OIDs anyways
+                                        mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
                                 }
+
                                 size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 result->overwrite_size(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
@@ -387,6 +354,7 @@ namespace ahead {
                                     }
                                 }
                                 delete iter;
+
                                 return std::make_pair(result, nullptr);
                             }
                         };

@@ -25,6 +25,61 @@
 
 namespace ahead {
 
+    template<>
+    struct TypeNameSelector<v2_tinyint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_shortint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_int_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_bigint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_str_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_fixed_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_char_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_restiny_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_resshort_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_resint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_resbigint_t> {
+        static cstr_t name;
+    };
+
     template<class Head, class Tail>
     std::pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::getLastValue(
             BAT<Head, Tail> *bat) {
@@ -177,5 +232,18 @@ namespace ahead {
         return result;
     }
 
+    template<typename Tail>
+    void MetaRepositoryManager::testDataTypeForAttribute(
+            const std::string & tableName,
+            const std::string & attributeName) {
+        cstr_t retrievedDataType = this->getDataTypeForAttribute(tableName, attributeName);
+        cstr_t desiredName = TypeNameSelector < Tail > ::name;
+        if (strcmp(desiredName, retrievedDataType)) {
+            std::stringstream sserr;
+            sserr << "MetaRepositoryManager::testDataTypeForAttribute(" << __FILE__ << "@" << __LINE__ << ") Attribute '" << tableName << "'.'" << attributeName
+                    << "' has other type than desired! Requested type is '" << desiredName << "', but the MetaRepositoryManager says it has type '" << retrievedDataType << "'!" << std::endl;
+            throw std::runtime_error(sserr.str().c_str());
+        }
+    }
 }
 

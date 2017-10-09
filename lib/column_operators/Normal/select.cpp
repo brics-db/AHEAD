@@ -19,8 +19,8 @@
  * Created on 10-04-2017 22:03
  */
 
-#include "select.tcc"
 #include <column_operators/functors.hpp>
+#include "select.tcc"
 
 namespace ahead {
     namespace bat {

@@ -19,7 +19,6 @@
  * Created on 10-04-2017 22:10
  */
 
-#include <column_operators/ANbase.hpp>
 #include <column_operators/functors.hpp>
 #include "selectAN.tcc"
 
