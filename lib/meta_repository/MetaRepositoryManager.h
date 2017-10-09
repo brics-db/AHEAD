@@ -162,7 +162,7 @@ namespace ahead {
                 cstr_t name_value);
 
         template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-        TempBAT<Head1, Tail2> * nestedLoopJoin(
+        TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t> * nestedLoopJoin(
                 BAT<Head1, Tail1> *bat1,
                 BAT<Head2, Tail2> *bat2);
 

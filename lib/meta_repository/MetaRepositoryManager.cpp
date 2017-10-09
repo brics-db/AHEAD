@@ -310,28 +310,32 @@ namespace ahead {
         if (dataAlreadyExists(tables_name, tableName)) {
             id_t oidForTableName = this->selectBatId(tables_name, tableName);
             id_t tableId = this->selectPKId(tables_id_pk, oidForTableName);
-            auto * batAttrFKTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
+            auto batAttrFKTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
             // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
             // reverse will not work here, because we need the bat id, not the table id
-            auto * batAttrOIDForTable = batAttrFKTableId->mirror_head();
+            auto batAttrOIDForTable = batAttrFKTableId->mirror_head();
             delete batAttrFKTableId;
-            auto * batAttrOIDNamesForTable = ahead::bat::ops::matchjoin(batAttrOIDForTable, attributes_name);
+            auto batAttributesNamesFiltered = ahead::bat::ops::scalar::select<std::equal_to>(attributes_name, const_cast<str_t>(attributeName));
+            auto batAttrOIDNamesForTable = ahead::bat::ops::matchjoin(batAttrOIDForTable, batAttributesNamesFiltered);
             delete batAttrOIDForTable;
+            delete batAttributesNamesFiltered;
             id_t attrNameOID = this->selectBatId(batAttrOIDNamesForTable, attributeName);
             if (attrNameOID != ID_INVALID) {
-                auto * batAttrOID = batAttrOIDNamesForTable->mirror_head();
+                auto batAttrOID = batAttrOIDNamesForTable->mirror_head();
                 delete batAttrOIDNamesForTable;
-                auto * batAttrTypeFK = ahead::bat::ops::matchjoin(batAttrOID, attributes_type_id_fk);
+                auto batAttrTypeFK = ahead::bat::ops::matchjoin(batAttrOID, attributes_type_id_fk);
                 delete batAttrOID;
-                auto * typesReverse = this->datatype_id_pk->reverse();
-                auto * batTypesID = ahead::bat::ops::matchjoin(batAttrTypeFK, typesReverse);
+                auto typesReverse = this->datatype_id_pk->reverse();
+                auto batTypesID = this->nestedLoopJoin(batAttrTypeFK, typesReverse);
                 delete batAttrTypeFK;
                 delete typesReverse;
-                auto * batTypeOID = batTypesID->mirror_tail();
+                auto batTypeOID = batTypesID->mirror_tail();
                 delete batTypesID;
-                auto batTypeName = ahead::bat::ops::matchjoin(batTypeOID, datatype_name);
+                auto batTypesForFetch = batTypeOID->clear_head();
                 delete batTypeOID;
-                auto * iter = batTypeName->begin();
+                auto batTypeName = ahead::bat::ops::fetchjoin(batTypesForFetch, datatype_name);
+                delete batTypesForFetch;
+                auto iter = batTypeName->begin();
                 if (iter->hasNext()) {
                     auto typeName = iter->tail();
                     delete iter;

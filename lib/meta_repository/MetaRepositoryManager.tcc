@@ -213,7 +213,7 @@ namespace ahead {
     }
 
     template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-    TempBAT<Head1, Tail2> * MetaRepositoryManager::nestedLoopJoin(
+    TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t> * MetaRepositoryManager::nestedLoopJoin(
             BAT<Head1, Tail1> * bat1,
             BAT<Head2, Tail2> * bat2) {
         auto * result = skeletonJoin<typename Head1::v2_select_t, typename Tail2::v2_select_t>(bat1, bat2);
@@ -238,7 +238,7 @@ namespace ahead {
             const std::string & attributeName) {
         cstr_t retrievedDataType = this->getDataTypeForAttribute(tableName, attributeName);
         cstr_t desiredName = TypeNameSelector < Tail > ::name;
-        if (strcmp(desiredName, retrievedDataType)) {
+        if (strcmp(desiredName, retrievedDataType) != 0) {
             std::stringstream sserr;
             sserr << "MetaRepositoryManager::testDataTypeForAttribute(" << __FILE__ << "@" << __LINE__ << ") Attribute '" << tableName << "'.'" << attributeName
                     << "' has other type than desired! Requested type is '" << desiredName << "', but the MetaRepositoryManager says it has type '" << retrievedDataType << "'!" << std::endl;
