@@ -206,7 +206,7 @@ namespace ssb {
         std::size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
         sw.stop();
         if (config.VERBOSE) {
-            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
+            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw.duration() << " ns." << std::endl;
         }
     }
 
@@ -233,7 +233,7 @@ namespace ssb {
         }
         ssb::after_load();
         sw.stop();
-        std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;
+        std::cout << "Total loading time: " << sw.duration() << " ns.\n" << std::endl;
     }
 
     void loadTables(
@@ -336,7 +336,7 @@ namespace ssb {
             std::size_t index,
             std::size_t result) {
         ssb::totalTimes[index] = ssb::swTotalTime.stop();
-        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::swTotalTime << " ns.\n";
+        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::swTotalTime.duration() << " ns.\n";
         ssb::print_headline();
         ssb::print_result();
     }
@@ -345,7 +345,7 @@ namespace ssb {
             std::size_t index,
             std::exception & ex) {
         ssb::totalTimes[index] = ssb::swTotalTime.stop();
-        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << ex.what() << "\n\t  time: " << ssb::swTotalTime << " ns.\n";
+        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << ex.what() << "\n\t  time: " << ssb::swTotalTime.duration() << " ns.\n";
     }
 
     void before_op() {
@@ -401,7 +401,7 @@ namespace ssb {
     void print_result() {
         for (std::size_t k = 0; k < ssb::opTimes.size(); ++k) {
             std::cout << "\top" << std::setw(2) << (k + 1);
-            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]);
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << ssb::opTimes[k];
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batSizes[k];
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptions[k];
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptionsProj[k];
