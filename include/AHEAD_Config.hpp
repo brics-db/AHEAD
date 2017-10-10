@@ -37,6 +37,7 @@ namespace ahead {
         size_t ANCODING_MINIMUM_BIT_FLIP_WEIGHT;
         std::string DB_PATH;
         bool CONVERT_TABLE_FILES;
+        bool VERBOSE;
 
         AHEAD_Config(
                 int argc,
@@ -45,14 +46,17 @@ namespace ahead {
         AHEAD_Config(
                 const AHEAD_Config & other);
 
-        static const constexpr char * const ID_CONVERTTABLEFILES = "AHEAD.ctfol";
-        static const constexpr char * const ID_DBPATH = "AHEAD.dbpath";
-        static const constexpr char * const ID_ANCODING_MINBFW = "AHEAD.AN.minbfw";
+        static const constexpr char * const ID_CONVERTTABLEFILES = "ctfol";
+        static const constexpr char * const ID_VERBOSE = "verbose";
+        static const constexpr char * const ID_DBPATH = "dbpath";
+        static const constexpr char * const ID_ANCODING_MINBFW = "AN.minbfw";
 
     public:
-        size_t getMinimzmBitFlipWeight() const;
+        size_t getMinimumBitFlipWeight() const;
 
         bool isConvertTableFilesOnLoad() const;
+
+        bool isVerbose() const;
 
         const std::string & getDBPath() const;
     };

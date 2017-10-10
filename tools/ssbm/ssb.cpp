@@ -219,7 +219,7 @@ namespace ssb {
     void loadTables(
             std::vector<std::string> && tableNames) {
         if (ssb::ssb_config.VERBOSE) {
-            std::cout << "Loading Tables:";
+            std::cout << "[VERBOSE] ssb::loadTables(@" << __LINE__ << " Loading Tables:";
             for (const std::string & tab : tableNames) {
                 std::cout << " '" << tab << "'";
             }

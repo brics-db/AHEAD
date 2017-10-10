@@ -339,9 +339,11 @@ namespace ahead {
                 if (iter->hasNext()) {
                     auto typeName = iter->tail();
                     delete iter;
+                    delete batTypeName;
                     return const_cast<cstr_t>(typeName);
                 } else {
                     delete iter;
+                    delete batTypeName;
                     std::stringstream sserr;
                     sserr << "MetaRepositoryManager::getDataTypeForAttribute(" << __FILE__ << "@" << __LINE__ << "): " << "Could not find data type for attribute \"" << tableName << "\".\""
                             << attributeName << "\"!";

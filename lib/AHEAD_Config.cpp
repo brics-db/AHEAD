@@ -31,14 +31,16 @@ namespace ahead {
             int argc,
             const char * const * argv)
             : parser( {std::forward_as_tuple(ID_ANCODING_MINBFW, alias_list_t {"--AN-minbfw"}, 0)}, {std::forward_as_tuple(ID_DBPATH, alias_list_t {"--dbpath", "-d"}, ".")},
-                      {std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files", "-c"}, true)}),
+                      {std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files", "-c"}, true), std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, true)}),
               ANCODING_MINIMUM_BIT_FLIP_WEIGHT(0),
               DB_PATH(),
-              CONVERT_TABLE_FILES(true) {
+              CONVERT_TABLE_FILES(true),
+              VERBOSE(false) {
         parser.parse(argc, argv);
         ANCODING_MINIMUM_BIT_FLIP_WEIGHT = parser.get_uint(ID_ANCODING_MINBFW);
         DB_PATH = parser.get_str(ID_DBPATH);
         CONVERT_TABLE_FILES = parser.get_bool(ID_CONVERTTABLEFILES);
+        VERBOSE = parser.get_bool(ID_VERBOSE);
     }
 
     AHEAD_Config::AHEAD_Config(
@@ -46,15 +48,20 @@ namespace ahead {
             : parser(other.parser),
               ANCODING_MINIMUM_BIT_FLIP_WEIGHT(other.ANCODING_MINIMUM_BIT_FLIP_WEIGHT),
               DB_PATH(other.DB_PATH),
-              CONVERT_TABLE_FILES(other.CONVERT_TABLE_FILES) {
+              CONVERT_TABLE_FILES(other.CONVERT_TABLE_FILES),
+              VERBOSE(other.VERBOSE) {
     }
 
-    size_t AHEAD_Config::getMinimzmBitFlipWeight() const {
+    size_t AHEAD_Config::getMinimumBitFlipWeight() const {
         return parser.get_uint(ID_ANCODING_MINBFW);
     }
 
     bool AHEAD_Config::isConvertTableFilesOnLoad() const {
         return parser.get_bool(ID_CONVERTTABLEFILES);
+    }
+
+    bool AHEAD_Config::isVerbose() const {
+        return parser.get_bool(ID_VERBOSE);
     }
 
     const std::string & AHEAD_Config::getDBPath() const {

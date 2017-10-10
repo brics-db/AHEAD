@@ -100,8 +100,9 @@ namespace ahead {
 
         ColumnManager::ColumnIterator *ci;
 
+        const bool isVerbose = AHEAD::getInstance()->getConfig().isVerbose();
         const bool doConvertTableFilesOnLoad = config.isConvertTableFilesOnLoad();
-        const size_t minBFW = config.getMinimzmBitFlipWeight();
+        const size_t minBFW = config.getMinimumBitFlipWeight();
         const size_t minBFWtiny = std::min(v2_restiny_t::AsBFW->size(), minBFW);
         const size_t minBFWshort = std::min(v2_resshort_t::AsBFW->size(), minBFW);
         const size_t minBFWint = std::min(v2_resint_t::AsBFW->size(), minBFW);
@@ -423,6 +424,9 @@ namespace ahead {
             if (attrIStream) {
                 try {
                     bool doCreate = true;
+                    if (isVerbose) {
+                        std::cerr << "[VERBOSE] TransactionManager::Transaction::load(@" << __LINE__ << ") loading binary column '" << tableName << "'.'" << column_names[i] << "'" << std::endl;
+                    }
                     if (minBFW) {
                         // reencode on-the-fly, because we assume that the binary files were created with
                         // the largest-possible A (i.e. currently the 16-bit As).
