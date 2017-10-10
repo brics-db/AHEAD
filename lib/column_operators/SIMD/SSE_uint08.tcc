@@ -163,7 +163,7 @@ namespace ahead {
                     static inline __m128i cmp(
                             __m128i a,
                             __m128i b) {
-                        return _mm_cmplt_epi8(b, a);
+                        return _mm_cmpgt_epi8(a, b);
                     }
 
                     static inline mask_t cmp_mask(
