@@ -36,31 +36,15 @@ namespace ahead {
                 namespace sse {
 
                     template<typename V, typename T>
-                    struct mmAN {
+                    struct mmAN;
+
+                    template<typename T>
+                    struct mmAN<__m128i, T> {
 
                         static const constexpr size_t steps = sizeof(__m128i ) / sizeof(T);
 
                         typedef typename mm_op<__m128i, T, std::greater>::mask_t mask_t;
-/*
-                        static inline mask_t detect(
-                                __m128i mmCol,
-                                __m128i mmInv,
-                                __m128i mmDMax,
-                                std::vector<bool> * vec,
-                                size_t pos) {
-                            mask_t maskGT = mm_op<__m128i, T, std::greater>::cmp_mask(mm<__m128i, T>::mullo(mmCol, mmInv), mmDMax);
-                            if (maskGT) {
-                                // TODO we need a different bit vector implementation where we can store whole masks and not only single boolean values!
-                                decltype(maskGT) test = 1;
-                                for (size_t k = 0; k < steps; ++k, test <<= 1) {
-                                    if (maskGT & test) {
-                                        (*vec)[pos + k] = true;
-                                    }
-                                }
-                            }
-                            return maskGT;
-                        }
-*/
+
                         static inline mask_t detect(
                                 __m128i mmCol,
                                 __m128i mmInv,
@@ -79,28 +63,7 @@ namespace ahead {
                             }
                             return maskGT;
                         }
-/*
-                        static inline mask_t detect(
-                                __m128i & mmDec,
-                                __m128i mmCol,
-                                __m128i mmInv,
-                                __m128i mmDMax,
-                                std::vector<bool> * vec,
-                                size_t pos) {
-                            mmDec = mm<__m128i, T>::mullo(mmCol, mmInv);
-                            mask_t maskGT = mm_op<__m128i, T, std::greater>::cmp_mask(mmDec, mmDMax);
-                            if (maskGT) {
-                                // TODO we need a different bit vector implementation where we can store whole masks and not only single boolean values!
-                                decltype(maskGT) test = 1;
-                                for (size_t k = 0; k < steps; ++k, test <<= 1) {
-                                    if (maskGT & test) {
-                                        (*vec)[pos + k] = true;
-                                    }
-                                }
-                            }
-                            return maskGT;
-                        }
-*/
+
                         static inline mask_t detect(
                                 __m128i & mmDec,
                                 __m128i mmCol,

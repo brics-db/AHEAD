@@ -31,6 +31,29 @@ namespace ahead {
             namespace simd {
                 namespace sse {
 
+                    namespace Private {
+
+                        template<size_t current = 0>
+                        inline void pack_right2_uint8(
+                                uint8_t * & result,
+                                __m128i & a,
+                                uint16_t mask) {
+                            *result = reinterpret_cast<uint8_t*>(&a)[current];
+                            result += (mask >> current) & 0x1;
+                            pack_right2_uint8<current + 1>(result, a, mask);
+                        }
+
+                        template<>
+                        inline void pack_right2_uint8<15>(
+                                uint8_t * & result,
+                                __m128i & a,
+                                uint16_t mask) {
+                            *result = reinterpret_cast<uint8_t*>(&a)[15];
+                            result += (mask >> 15) & 0x1;
+                        }
+
+                    }
+
                     template<>
                     struct mm128<uint8_t> {
 
