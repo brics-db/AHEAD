@@ -53,15 +53,17 @@ namespace ahead {
                                 size_t pos,
                                 resoid_t Aoid) {
                             mask_t maskGT = mm_op<__m128i, T, std::greater>::cmp_mask(mm<__m128i, T>::mullo(mmCol, mmInv), mmDMax);
-                            if (maskGT) {
+                            if (!maskGT) {
+                                return maskGT;
+                            } else {
                                 decltype(maskGT) test = 1;
                                 for (size_t k = 0; k < steps; ++k, test <<= 1) {
                                     if (maskGT & test) {
                                         vec->push_back((pos + k) * Aoid);
                                     }
                                 }
+                                return maskGT;
                             }
-                            return maskGT;
                         }
 
                         static inline mask_t detect(
@@ -74,15 +76,17 @@ namespace ahead {
                                 resoid_t Aoid) {
                             mmDec = mm<__m128i, T>::mullo(mmCol, mmInv);
                             mask_t maskGT = mm_op<__m128i, T, std::greater>::cmp_mask(mmDec, mmDMax);
-                            if (maskGT) {
+                            if (!maskGT) {
+                                return maskGT;
+                            } else {
                                 decltype(maskGT) test = 1;
                                 for (size_t k = 0; k < steps; ++k, test <<= 1) {
                                     if (maskGT & test) {
                                         vec->push_back((pos + k) * Aoid);
                                     }
                                 }
+                                return maskGT;
                             }
-                            return maskGT;
                         }
 
                     };
