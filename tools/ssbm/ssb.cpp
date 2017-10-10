@@ -390,6 +390,8 @@ namespace ssb {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles";
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles lost L2";
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles lost L3";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "L2 Hit Ratio";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "L3 Hit Ratio";
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Read [B]";
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Write [B]";
         }
@@ -412,6 +414,8 @@ namespace ssb {
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCycles(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCyclesLostDueL2CacheMisses(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCyclesLostDueL3CacheMisses(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getL2CacheHitRatio(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getL3CacheHitRatio(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesReadFromMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesWrittenToMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
             }
