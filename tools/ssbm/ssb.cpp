@@ -386,6 +386,12 @@ namespace ssb {
         std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type tail";
         if (ssb::pcmStatus == PCM::Success) {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Inst. Retired";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "IPC";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles lost L2";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles lost L3";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Read [B]";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Write [B]";
         }
         std::cout << "\n";
     }
@@ -402,6 +408,12 @@ namespace ssb {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << (ssb::hasTwoTypes[k] ? ssb::tailTypes[k].pretty_name() : ssb::emptyString);
             if (ssb::pcmStatus == PCM::Success) {
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getInstructionsRetired(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getIPC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCycles(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCyclesLostDueL2CacheMisses(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCyclesLostDueL3CacheMisses(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesReadFromMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesWrittenToMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
             }
             std::cout << '\n';
         }
