@@ -45,11 +45,13 @@ namespace ssb {
         std::exception_ptr pEx = std::current_exception();
 
         // print out all the frames to stderr
+        std::cerr << "\nError: signal " << sig << ':';
         switch (sig) {
             case SIGSEGV:
-                std::cerr << "Error: signal " << sig << ":\\n";
+                std::cerr << " SIGSEGV";
                 break;
             case SIGTERM:
+                std::cerr << " SIGTERM";
                 try {
                     std::rethrow_exception(pEx);
                 } catch (std::exception & ex) {
@@ -58,8 +60,12 @@ namespace ssb {
                     std::cerr << "Unknown exception type caught!";
                 }
                 break;
+            default:
+                std::cerr << " OTHER";
         }
+        std::cerr << '\n';
         backtrace_symbols_fd(array, size, STDERR_FILENO);
+        std::cerr << std::flush;
         exit(1);
     }
 

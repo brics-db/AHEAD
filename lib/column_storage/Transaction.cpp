@@ -100,7 +100,6 @@ namespace ahead {
 
         ColumnManager::ColumnIterator *ci;
 
-        const bool isVerbose = AHEAD::getInstance()->getConfig().isVerbose();
         const bool doConvertTableFilesOnLoad = config.isConvertTableFilesOnLoad();
         const size_t minBFW = config.getMinimumBitFlipWeight();
         const size_t minBFWtiny = std::min(v2_restiny_t::AsBFW->size(), minBFW);
@@ -424,38 +423,42 @@ namespace ahead {
             if (attrIStream) {
                 try {
                     bool doCreate = true;
-                    if (isVerbose) {
-                        std::cerr << "[VERBOSE] TransactionManager::Transaction::load(@" << __LINE__ << ") loading binary column '" << tableName << "'.'" << column_names[i] << "'" << std::endl;
-                    }
                     if (minBFW) {
                         // reencode on-the-fly, because we assume that the binary files were created with
                         // the largest-possible A (i.e. currently the 16-bit As).
                         // When we want to use an A for a desired minimum bit flip weight (BFW) we must reencode
                         // before any query (at load time)
-                        switch (column_types[i]) {
-                            case type_restiny:
-                                if (minBFWtiny) {
-                                    nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_restiny_t::AsBFW->at(minBFWtiny));
-                                    doCreate = false;
-                                }
-                                break;
+                        try {
+                            switch (column_types[i]) {
+                                case type_restiny:
+                                    if (minBFWtiny) {
+                                        nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_restiny_t::AsBFW->at(minBFWtiny));
+                                        doCreate = false;
+                                    }
+                                    break;
 
-                            case type_resshort:
-                                if (minBFWshort) {
-                                    nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_resshort_t::AsBFW->at(minBFWshort));
-                                    doCreate = false;
-                                }
-                                break;
+                                case type_resshort:
+                                    if (minBFWshort) {
+                                        nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_resshort_t::AsBFW->at(minBFWshort));
+                                        doCreate = false;
+                                    }
+                                    break;
 
-                            case type_resint:
-                                if (minBFWint) {
-                                    nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_resint_t::AsBFW->at(minBFWint));
-                                    doCreate = false;
-                                }
-                                break;
+                                case type_resint:
+                                    if (minBFWint) {
+                                        nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_resint_t::AsBFW->at(minBFWint));
+                                        doCreate = false;
+                                    }
+                                    break;
 
-                            default:
-                                ;
+                                default:
+                                    ;
+                            }
+                        } catch (std::out_of_range & e) {
+                            std::stringstream sserr;
+                            sserr << "Data type '" << column_type_names.at(column_types[i]) << "' currently does not support a minimum bit flip weight of '" << minBFW << "'. Original error:\n\t"
+                                    << e.what();
+                            throw std::runtime_error(sserr.str());
                         }
                     }
                     if (doCreate) {

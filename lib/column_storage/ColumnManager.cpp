@@ -16,6 +16,7 @@
 #include <fstream>
 #include <memory>
 
+#include <AHEAD.hpp>
 #include <column_storage/ColumnManager.h>
 #include <column_storage/TransactionManager.h>
 #include <util/resilience.hpp>
@@ -275,6 +276,9 @@ namespace ahead {
         return read0<true>(inStream, newA);
     }
 
+#pragma GCC push_options
+#pragma GCC optimize ("2")
+    // DO NOT OPTIMIZE THIS FUNCTION WITH -O3 !!! At least GCC (c++) 7.1.0 produces invalid code!
     template<bool reencode>
     size_t ColumnManager::ColumnIterator::read0(
             std::istream & inStream,
@@ -319,22 +323,22 @@ namespace ahead {
             if (reencode) {
                 const auto widthBits = ahead::get<bits_t>(this->columnMetaData.width);
                 if (widthBits == 16) {
-                    uint16_t reencFactor = static_cast<uint16_t>(ext_euclidean(uint32_t(this->columnMetaData.AN_A), 16)) * static_cast<uint16_t>(newA);
-                    uint16_t * pNum = reinterpret_cast<uint16_t*>(pDest);
-                    for (size_t i = 0; i < numValuesToInsert; ++i, ++pNum) {
-                        *pNum *= reencFactor;
+                    uint16_t reencFactor = static_cast<uint16_t>(ext_euclidean(uint32_t(this->columnMetaData.AN_A), 16)) * newA;
+                    auto pNum = reinterpret_cast<uint16_t*>(pDest);
+                    for (size_t i = 0; i < numValuesToInsert; ++i) {
+                        *pNum++ *= reencFactor;
                     }
                 } else if (widthBits == 32) {
-                    uint32_t reencFactor = static_cast<uint32_t>(ext_euclidean(size_t(this->columnMetaData.AN_A), 32)) * static_cast<uint32_t>(newA);
-                    uint32_t * pNum = reinterpret_cast<uint32_t*>(pDest);
-                    for (size_t i = 0; i < numValuesToInsert; ++i, ++pNum) {
-                        *pNum *= reencFactor;
+                    uint32_t reencFactor = static_cast<uint32_t>(ext_euclidean(size_t(this->columnMetaData.AN_A), 32)) * newA;
+                    auto pNum = reinterpret_cast<uint32_t*>(pDest);
+                    for (size_t i = 0; i < numValuesToInsert; ++i) {
+                        *pNum++ *= reencFactor;
                     }
                 } else if (widthBits == 64) {
-                    uint64_t reencFactor = v2convert<uint64_t>(ext_euclidean(uint128_t(this->columnMetaData.AN_A), 64)) * static_cast<uint64_t>(newA);
-                    uint64_t * pNum = reinterpret_cast<uint64_t*>(pDest);
-                    for (size_t i = 0; i < numValuesToInsert; ++i, ++pNum) {
-                        *pNum *= reencFactor;
+                    uint64_t reencFactor = v2convert<uint64_t>(ext_euclidean(uint128_t(this->columnMetaData.AN_A), 64)) * newA;
+                    auto pNum = reinterpret_cast<uint64_t*>(pDest);
+                    for (size_t i = 0; i < numValuesToInsert; ++i) {
+                        *pNum++ *= reencFactor;
                     }
                 } else {
                     std::stringstream ss;
@@ -372,6 +376,7 @@ namespace ahead {
 
         return numTotalValues;
     }
+#pragma GCC pop_options
 
     void ColumnManager::ColumnIterator::write(
             std::ostream & outStream) {

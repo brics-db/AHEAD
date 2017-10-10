@@ -25,6 +25,7 @@
 #include <cinttypes>
 #include <utility>
 #include <functional>
+#include <array>
 
 namespace ahead {
 
@@ -236,6 +237,8 @@ namespace ahead {
         type_resbigint,
         type_resstring
     };
+
+    extern std::array<std::string, 13> column_type_names;
 
     typedef void empty_t;
     typedef uint8_t tinyint_t;

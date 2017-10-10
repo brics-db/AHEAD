@@ -31,7 +31,7 @@ namespace ahead {
             int argc,
             const char * const * argv)
             : parser( {std::forward_as_tuple(ID_ANCODING_MINBFW, alias_list_t {"--AN-minbfw"}, 0)}, {std::forward_as_tuple(ID_DBPATH, alias_list_t {"--dbpath", "-d"}, ".")},
-                      {std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files", "-c"}, true), std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, true)}),
+                      {std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files", "-c"}, true), std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false)}),
               ANCODING_MINIMUM_BIT_FLIP_WEIGHT(0),
               DB_PATH(),
               CONVERT_TABLE_FILES(true),
