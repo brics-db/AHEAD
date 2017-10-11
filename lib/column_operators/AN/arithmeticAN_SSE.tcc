@@ -73,7 +73,7 @@ namespace ahead {
                                 }
                                 size_t numBUNs = bat1->size();
                                 auto result = new TempBAT<v2_void_t, Result>(ColumnDescriptor<v2_void_t, void>(),
-                                        ColumnDescriptor<Result>(ColumnMetaData(sizeof(result_t) * 8, AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN))); // apply meta data from first BAT
+                                        ColumnDescriptor<Result>(ColumnMetaData(size_bytes<result_t>, AResult, AResultInv, Result::UNENC_MAX_U, Result::UNENC_MIN))); // apply meta data from first BAT
                                 result->reserve(numBUNs);
                                 auto vecH1 = H1helper::createIndicatorVector();
                                 auto vecT1 = T1helper::createIndicatorVector();

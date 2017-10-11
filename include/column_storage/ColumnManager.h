@@ -6,7 +6,7 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 //
@@ -23,9 +23,9 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,6 +49,7 @@
 #include <ColumnStore.h>
 #include <column_storage/BucketManager.h>
 #include <column_storage/ColumnMetaData.hpp>
+#include <util/resilience.hpp>
 
 namespace ahead {
 
@@ -177,15 +178,27 @@ namespace ahead {
             /**
              * @author Till Kolditz
              *
-             * @param content Pointer to the contents
-             * @param lenContent length of the content array in BYTES
-             * @param dataSizeInBits length of one data item in BYTES
+             * @param istream input stream to read from
              * @return number of read values
              *
              * BULK inserts the storage and automatically splits it into bucket sizes.
              */
             size_t read(
                     std::istream & istream);
+
+            /**
+             * @author Till Kolditz
+             *
+             * @param istream input stream to read from
+             * @param oldA the A that the data was encoded with
+             * @param newA the A for reencoding
+             * @return number of read values
+             *
+             * BULK inserts the storage, reencoding on-the-fly for a desired A, given an old A and automatically splits it into bucket sizes.
+             */
+            size_t read(
+                    std::istream & istream,
+                    A_t newA);
 
             /**
              * @author Till Kolditz
@@ -203,6 +216,7 @@ namespace ahead {
             void undo();
 
         private:
+            id_t columnId;
             BucketManager::BucketIterator *iterator;
             ColumnMetaData columnMetaData;
             BucketManager::Chunk *currentChunk;
@@ -210,6 +224,7 @@ namespace ahead {
             const oid_t recordsPerBucket;
 
             ColumnIterator(
+                    id_t columnId,
                     ColumnMetaData & columnMetaData,
                     BucketManager::BucketIterator *iterator);
             ColumnIterator(
@@ -219,6 +234,17 @@ namespace ahead {
             virtual ~ColumnIterator();
             ColumnIterator& operator=(
                     const ColumnIterator & copy);
+
+        private:
+            /**
+             * @author Till Kolditz
+             *
+             * internal generic function for reading (BULK loading) data into a column
+             */
+            template<bool reencode>
+            size_t read0(
+                    std::istream & istream,
+                    A_t newA);
         };
 
         /**
@@ -228,8 +254,28 @@ namespace ahead {
          *
          * Die Funktion liefert einen Zeiger auf das einzig existierende Objekt der Klasse. Falls noch kein Objekt der Klasse existiert, wird ein Objekt erzeugt und anschließend ein Zeiger auf das Objekt zurückgegeben.
          */
-        static ColumnManager* getInstance();
+        static std::shared_ptr<ColumnManager> getInstance();
 
+    private:
+        static std::shared_ptr<ColumnManager> instance;
+
+        static void destroyInstance();
+
+        std::unordered_map<id_t, ColumnMetaData> columnMetaData;
+        std::atomic<id_t> nextID;
+
+        ColumnManager();
+        ColumnManager(
+                const ColumnManager &copy);
+
+    public:
+        virtual ~ColumnManager();
+
+    private:
+        ColumnMetaData & getColumnMetaDataRef(
+                id_t id);
+
+    public:
         /**
          * @author Julian Hollender
          *
@@ -271,26 +317,11 @@ namespace ahead {
          */
         ColumnMetaData & createColumn(
                 id_t id,
-                uint32_t width);
+                data_width_t width);
 
         ColumnMetaData & createColumn(
                 id_t id,
                 ColumnMetaData && column);
-
-    private:
-
-        static ColumnManager *instance;
-
-        static void destroyInstance();
-
-        std::unordered_map<id_t, ColumnMetaData> columnMetaData;
-
-        std::atomic<id_t> nextID;
-
-        ColumnManager();
-        ColumnManager(
-                const ColumnManager &copy);
-        virtual ~ColumnManager();
     };
 
 }

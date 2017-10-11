@@ -25,6 +25,61 @@
 
 namespace ahead {
 
+    template<>
+    struct TypeNameSelector<v2_tinyint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_shortint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_int_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_bigint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_str_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_fixed_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_char_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_restiny_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_resshort_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_resint_t> {
+        static cstr_t name;
+    };
+
+    template<>
+    struct TypeNameSelector<v2_resbigint_t> {
+        static cstr_t name;
+    };
+
     template<class Head, class Tail>
     std::pair<typename Head::type_t, typename Tail::type_t> MetaRepositoryManager::getLastValue(
             BAT<Head, Tail> *bat) {
@@ -152,13 +207,13 @@ namespace ahead {
         typedef typename bat_t::coldesc_head_t coldesc_head_t;
         typedef typename bat_t::coldesc_tail_t coldesc_tail_t;
         auto * result = new bat_t(coldesc_head_t(arg1->head.metaData), coldesc_tail_t(arg2->tail.metaData));
-        result->head.metaData.width = sizeof(typename TargetHead::type_t);
-        result->tail.metaData.width = sizeof(typename TargetTail::type_t);
+        result->head.metaData.width = size_bytes<typename TargetHead::type_t>;
+        result->tail.metaData.width = size_bytes<typename TargetTail::type_t>;
         return result;
     }
 
     template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-    TempBAT<Head1, Tail2> * MetaRepositoryManager::nestedLoopJoin(
+    TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t> * MetaRepositoryManager::nestedLoopJoin(
             BAT<Head1, Tail1> * bat1,
             BAT<Head2, Tail2> * bat2) {
         auto * result = skeletonJoin<typename Head1::v2_select_t, typename Tail2::v2_select_t>(bat1, bat2);
@@ -177,5 +232,18 @@ namespace ahead {
         return result;
     }
 
+    template<typename Tail>
+    void MetaRepositoryManager::testDataTypeForAttribute(
+            const std::string & tableName,
+            const std::string & attributeName) {
+        cstr_t retrievedDataType = this->getDataTypeForAttribute(tableName, attributeName);
+        cstr_t desiredName = TypeNameSelector < Tail > ::name;
+        if (strcmp(desiredName, retrievedDataType) != 0) {
+            std::stringstream sserr;
+            sserr << "MetaRepositoryManager::testDataTypeForAttribute(" << __FILE__ << "@" << __LINE__ << ") Attribute '" << tableName << "'.'" << attributeName
+                    << "' has other type than desired! Requested type is '" << desiredName << "', but the MetaRepositoryManager says it has type '" << retrievedDataType << "'!" << std::endl;
+            throw std::runtime_error(sserr.str().c_str());
+        }
+    }
 }
 

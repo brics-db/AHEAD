@@ -61,6 +61,7 @@ namespace ahead {
     // Fast-Forward Declarations
     // column_storage
     class AHEAD;
+    class AHEAD_Config;
     class BucketManager;
     class ColumnManager;
     class TransactionManager;

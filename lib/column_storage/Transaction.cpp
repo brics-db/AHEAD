@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   Transaction.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -92,13 +92,19 @@ namespace ahead {
         }
         const char* actDelim = delim == nullptr ? "|" : delim;
 
-        MetaRepositoryManager *mrm = MetaRepositoryManager::getInstance();
-        ColumnManager * cm = ColumnManager::getInstance();
+        const auto & config = AHEAD::getInstance()->getConfig();
+        auto mrm = MetaRepositoryManager::getInstance();
+        auto cm = ColumnManager::getInstance();
 
         std::list<ColumnManager::ColumnIterator*> columnIters;
 
         ColumnManager::ColumnIterator *ci;
 
+        const bool doConvertTableFilesOnLoad = config.isConvertTableFilesOnLoad();
+        const size_t minBFW = config.getMinimumBitFlipWeight();
+        const size_t minBFWtiny = std::min(v2_restiny_t::AsBFW->size(), minBFW);
+        const size_t minBFWshort = std::min(v2_resshort_t::AsBFW->size(), minBFW);
+        const size_t minBFWint = std::min(v2_resint_t::AsBFW->size(), minBFW);
         std::string valuesPath(path);
         valuesPath.append(".tbl");
         std::string headerPath(path);
@@ -122,7 +128,7 @@ namespace ahead {
         column_IDs.reserve(DEFAULT_RESERVE);
         std::vector<std::string> column_names;
         column_names.reserve(DEFAULT_RESERVE);
-        std::vector<size_t> column_widths;
+        std::vector<data_width_t> column_widths;
         column_widths.reserve(DEFAULT_RESERVE);
         std::vector<column_type_t> column_types;
         column_types.reserve(DEFAULT_RESERVE);
@@ -204,6 +210,10 @@ namespace ahead {
         // Zeile mit Spaltentypen einlesen aus Header-Datei
         std::memset(line, 0, LEN_LINE);
         if (std::fgets(line, LEN_LINE, headerFile) != line) {
+            std::fclose(headerFile);
+            if (valuesFile) {
+                std::fclose(valuesFile);
+            }
             sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") Error reading line" << std::endl;
             throw std::runtime_error(sserr.str());
         }
@@ -223,51 +233,51 @@ namespace ahead {
         while (buffer != nullptr) {
             size_t bufSlen = strlen(buffer);
             column_type_t columnType;
-            size_t columnWidth(0);
+            size_t columnWidthBytes(0);
             if (std::strncmp(buffer, "INTEGER", 7) == 0 || std::strncmp(buffer, "INT", 3) == 0) {
                 columnType = type_int;
-                columnWidth = sizeof(int_t);
+                columnWidthBytes = sizeof(int_t);
             } else if (std::strncmp(buffer, "TINYINT", 7) == 0) {
                 columnType = type_tinyint;
-                columnWidth = sizeof(tinyint_t);
+                columnWidthBytes = sizeof(tinyint_t);
             } else if (std::strncmp(buffer, "SHORTINT", 8) == 0) {
                 columnType = type_shortint;
-                columnWidth = sizeof(shortint_t);
+                columnWidthBytes = sizeof(shortint_t);
             } else if (std::strncmp(buffer, "LARGEINT", 8) == 0) {
                 columnType = type_largeint;
-                columnWidth = sizeof(bigint_t);
+                columnWidthBytes = sizeof(bigint_t);
             } else if (std::strncmp(buffer, "STRING", 6) == 0) {
                 columnType = type_string;
                 size_t maxlen = MAXLEN_STRING;
                 if (bufSlen > 6 && buffer[6] == ':') {
                     maxlen = atoi(&buffer[7]);
                 }
-                columnWidth = sizeof(char_t) * maxlen + 1;
+                columnWidthBytes = sizeof(char_t) * maxlen + 1;
             } else if (std::strncmp(buffer, "FIXED", 5) == 0) {
                 columnType = type_fixed;
-                columnWidth = sizeof(fixed_t);
+                columnWidthBytes = sizeof(fixed_t);
             } else if (std::strncmp(buffer, "CHAR", 4) == 0) {
                 columnType = type_char;
-                columnWidth = sizeof(char_t);
+                columnWidthBytes = sizeof(char_t);
             } else if (std::strncmp(buffer, "RESTINY", 7) == 0) {
                 columnType = type_restiny;
-                columnWidth = sizeof(restiny_t);
+                columnWidthBytes = sizeof(restiny_t);
             } else if (std::strncmp(buffer, "RESSHORT", 8) == 0) {
                 columnType = type_resshort;
-                columnWidth = sizeof(resshort_t);
+                columnWidthBytes = sizeof(resshort_t);
             } else if (std::strncmp(buffer, "RESINT", 6) == 0) {
                 columnType = type_resint;
-                columnWidth = sizeof(resint_t);
+                columnWidthBytes = sizeof(resint_t);
             } else if (std::strncmp(buffer, "RESBIGINT", 9) == 0) {
                 columnType = type_resbigint;
-                columnWidth = sizeof(resbigint_t);
+                columnWidthBytes = sizeof(resbigint_t);
             } else {
                 sserr << "TransactionManager::Transaction::load(" << __FILE__ << ":" << __LINE__ << ") data type " << buffer << " in header unknown" << std::endl;
                 throw std::runtime_error(sserr.str());
             }
 
             column_types.push_back(columnType);
-            column_widths.push_back(columnWidth);
+            column_widths.emplace_back(bytes_t(columnWidthBytes));
 
             buffer = std::strtok(nullptr, actDelim);
         }
@@ -278,8 +288,7 @@ namespace ahead {
         const size_t numColumns = column_names.size();
         bool areAllColumnFilesPresent = true;
         std::vector<bool> vecColumnPresent(column_names.size());
-        if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
-            auto columnItersIterator = columnIters.begin();
+        if (doConvertTableFilesOnLoad) {
             for (size_t i = 0; i < column_names.size(); ++i) {
                 std::string columnFilePath(path);
                 columnFilePath.append("_").append(column_names[i]).append(".ahead");
@@ -287,7 +296,6 @@ namespace ahead {
                 vecColumnPresent[i] = columnIStream.is_open();
                 areAllColumnFilesPresent &= columnIStream.is_open();
                 columnIStream.close();
-                ++columnItersIterator;
             }
         }
 
@@ -402,23 +410,69 @@ namespace ahead {
         //////////////////////////////////////////////
         // Check for converted data for faster load //
         //////////////////////////////////////////////
-        bool areAllColumnsConverted = AHEAD::getInstance()->isConvertTableFilesOnLoad();
-        std::vector<bool> vecIscolumnAlreadyLoaded(numColumns);
+        bool areAllColumnsConverted = doConvertTableFilesOnLoad;
+        std::vector<bool> vecIsColumnAlreadyConverted(numColumns);
         nums_values.resize(column_names.size());
-        if (AHEAD::getInstance()->isConvertTableFilesOnLoad()) {
-            auto columnItersIterator = columnIters.begin();
-            for (size_t i = 0; i < column_names.size(); ++i) {
-                std::string attrFilePath(path);
-                attrFilePath.append("_").append(column_names[i]).append(".ahead");
-                std::ifstream attrIStream(attrFilePath);
-                areAllColumnsConverted &= attrIStream.is_open();
-                if (attrIStream) {
-                    nums_values[i] = (*columnItersIterator)->read(attrIStream);
-                    if (attrIStream.fail() | attrIStream.bad()) {
+        auto columnItersIterator = columnIters.begin();
+        auto columnsMetaDataMap = cm->getColumnMetaData();
+        for (size_t i = 0; i < column_names.size(); ++i) {
+            std::string attrFilePath(path);
+            attrFilePath.append("_").append(column_names[i]).append(".ahead");
+            std::ifstream attrIStream(attrFilePath);
+            areAllColumnsConverted &= attrIStream.is_open();
+            if (attrIStream) {
+                try {
+                    bool doCreate = true;
+                    if (minBFW) {
+                        // reencode on-the-fly, because we assume that the binary files were created with
+                        // the largest-possible A (i.e. currently the 16-bit As).
+                        // When we want to use an A for a desired minimum bit flip weight (BFW) we must reencode
+                        // before any query (at load time)
+                        try {
+                            switch (column_types[i]) {
+                                case type_restiny:
+                                    if (minBFWtiny) {
+                                        nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_restiny_t::AsBFW->at(minBFWtiny));
+                                        doCreate = false;
+                                    }
+                                    break;
+
+                                case type_resshort:
+                                    if (minBFWshort) {
+                                        nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_resshort_t::AsBFW->at(minBFWshort));
+                                        doCreate = false;
+                                    }
+                                    break;
+
+                                case type_resint:
+                                    if (minBFWint) {
+                                        nums_values[i] = (*columnItersIterator)->read(attrIStream, v2_resint_t::AsBFW->at(minBFWint));
+                                        doCreate = false;
+                                    }
+                                    break;
+
+                                default:
+                                    ;
+                            }
+                        } catch (std::out_of_range & e) {
+                            std::stringstream sserr;
+                            sserr << "Data type '" << column_type_names.at(column_types[i]) << "' currently does not support a minimum bit flip weight of '" << minBFW << "'. Original error:\n\t"
+                                    << e.what();
+                            throw std::runtime_error(sserr.str());
+                        }
+                    }
+                    if (doCreate) {
+                        nums_values[i] = (*columnItersIterator)->read(attrIStream);
+                    }
+                    bool isFail = attrIStream.fail();
+                    if (isFail) {
                         sserr << "TransactionManager::Transaction::load(@" << __LINE__ << ") error loading binary data from file \"" << attrFilePath << "\"";
                         throw std::runtime_error(sserr.str());
                     }
-                    vecIscolumnAlreadyLoaded[i] = true;
+                    vecIsColumnAlreadyConverted[i] = true;
+                } catch (std::runtime_error & e) {
+                    attrIStream.close(); // since the stream object is a local one it will be closed by default at the end of each loop run, but here we should close it by hand
+                    throw;
                 }
                 ++columnItersIterator;
             }
@@ -428,7 +482,6 @@ namespace ahead {
         // Read Contents File //
         ////////////////////////
         // Spaltenwerte zeilenweise aus Datei einlesen
-        auto columnsMetaData = cm->getColumnMetaData();
         if (!areAllColumnsConverted) {
             numValues = 0;
             std::memset(line, 0, LEN_LINE);
@@ -460,7 +513,7 @@ namespace ahead {
                         }
                     }
 
-                    if (!vecIscolumnAlreadyLoaded[colIdx]) {
+                    if (!vecIsColumnAlreadyConverted[colIdx]) {
                         // Spaltentyp und Spaltenidentifikation bestimmen
                         type = *typesIterator;
                         ci = *columnItersIterator;
@@ -483,7 +536,7 @@ namespace ahead {
                                 break;
 
                             case type_string:
-                                std::strncpy(static_cast<str_t>(record.content), buffer, column_widths[colIdx]);
+                                std::strncpy(static_cast<str_t>(record.content), buffer, ahead::get<bytes_t>(column_widths[colIdx]));
                                 break;
 
                             case type_fixed:
@@ -495,15 +548,15 @@ namespace ahead {
                                 break;
 
                             case type_restiny:
-                                *(static_cast<restiny_t*>(record.content)) = static_cast<restiny_t>(std::atol(buffer)) * static_cast<restiny_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
+                                *(static_cast<restiny_t*>(record.content)) = static_cast<restiny_t>(std::atol(buffer)) * static_cast<restiny_t>((*columnsMetaDataMap)[column_IDs[colIdx]].AN_A);
                                 break;
 
                             case type_resshort:
-                                *(static_cast<resshort_t*>(record.content)) = static_cast<resshort_t>(std::atol(buffer)) * static_cast<resshort_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
+                                *(static_cast<resshort_t*>(record.content)) = static_cast<resshort_t>(std::atol(buffer)) * static_cast<resshort_t>((*columnsMetaDataMap)[column_IDs[colIdx]].AN_A);
                                 break;
 
                             case type_resint:
-                                *(static_cast<resint_t*>(record.content)) = static_cast<resint_t>(std::atoll(buffer)) * static_cast<resint_t>((*columnsMetaData)[column_IDs[colIdx]].AN_A);
+                                *(static_cast<resint_t*>(record.content)) = static_cast<resint_t>(std::atoll(buffer)) * static_cast<resint_t>((*columnsMetaDataMap)[column_IDs[colIdx]].AN_A);
                                 break;
 
                             case type_resbigint:
@@ -528,20 +581,20 @@ namespace ahead {
                 std::memset(line, 0, LEN_LINE);
             }
             for (size_t i = 0; i < column_names.size(); ++i) {
-                if (!vecIscolumnAlreadyLoaded[i]) {
+                if (!vecIsColumnAlreadyConverted[i]) {
                     nums_values[i] = numValues;
                 }
             }
         }
-        delete columnsMetaData;
+        delete columnsMetaDataMap;
 
         /////////////////////////////////////////
         // Write newly converted Contents File //
         /////////////////////////////////////////
-        if (AHEAD::getInstance()->isConvertTableFilesOnLoad() && !areAllColumnsConverted) {
+        if (doConvertTableFilesOnLoad && !areAllColumnsConverted) {
             auto columnItersIterator = columnIters.begin();
             for (size_t i = 0; i < numColumns; ++i) {
-                if (!vecIscolumnAlreadyLoaded[i]) {
+                if (!vecIsColumnAlreadyConverted[i]) {
                     std::string attrFilePath(path);
                     attrFilePath.append("_").append(column_names[i]).append(".ahead");
                     std::ofstream attrOStream(attrFilePath);
@@ -571,8 +624,12 @@ namespace ahead {
         ////////////////////////////////
         if (valuesFile) {
             std::fclose(valuesFile);
+            valuesFile = nullptr;
         }
-        std::fclose(headerFile);
+        if (headerFile) {
+            std::fclose(headerFile);
+            headerFile = nullptr;
+        }
 
         ////////////////////////////////////////////
         // Test if all columns have the same size //
@@ -601,9 +658,9 @@ namespace ahead {
         if (id >= this->iterators.size()) {
             this->iterators.resize(id + 1);
             this->iteratorPositions.resize(id + 1);
-            auto cm = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
-            if (cm) {
-                this->iterators[id] = cm;
+            auto pColIter = ColumnManager::getInstance()->openColumn(id, this->eotVersion);
+            if (pColIter) {
+                this->iterators[id] = pColIter;
                 this->iteratorPositions[id] = 0;
                 isOK = true;
             } else {

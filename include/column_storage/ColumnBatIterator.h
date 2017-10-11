@@ -74,12 +74,7 @@ namespace ahead {
                   Csize(0),
                   Cconsumption(0),
                   mPosition(-1) {
-            TransactionManager* tm = TransactionManager::getInstance();
-            if (tm == nullptr) {
-                std::stringstream ss;
-                ss << "TA manager is not available!" << std::endl;
-                throw std::runtime_error(ss.str());
-            }
+            auto tm = TransactionManager::getInstance();
             ta = tm->beginTransaction(false);
             if (ta == nullptr) {
                 std::stringstream ss;
@@ -104,7 +99,7 @@ namespace ahead {
 
         virtual ~ColumnBatIteratorBase() {
             if (ta) {
-                TransactionManager* tm = TransactionManager::getInstance();
+                auto tm = TransactionManager::getInstance();
                 tm->endTransaction(ta);
                 ta = nullptr;
             }

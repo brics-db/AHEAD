@@ -29,6 +29,7 @@
 #include <column_operators/ANbase.hpp>
 #include "SSEAN.hpp"
 #include "../miscellaneous.hpp"
+#include "ANhelper.tcc"
 
 #ifdef __GNUC__
 #pragma GCC target "sse4.2"
@@ -132,17 +133,20 @@ namespace ahead {
                             typedef typename larger_type<head_unenc_t, tail_unenc_t>::type_t larger_unenc_t;
                             typedef typename mmAN<__m128i, smaller_t>::mask_t smaller_mask_t;
                             typedef typename mmAN<__m128i, larger_t>::mask_t larger_mask_t;
+                            typedef ANhelper<Head> head_helper_t;
+                            typedef ANhelper<Tail> tail_helper_t;
                             typedef typename std::tuple<BAT<v2_head_unenc_t, v2_tail_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *> result_t;
 
                             static result_t doIt(
                                     BAT<Head, Tail>* arg,
-                                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
-                                static_assert(std::is_base_of<v2_anencoded_t, Head>::value || std::is_base_of<v2_anencoded_t, Tail>::value, "At least one of Head and Tail must be an AN-encoded type");
+                                    resoid_t AOID) {
+                                static_assert(head_helper_t::isEncoded || tail_helper_t::isEncoded, "At least one of Head and Tail must be an AN-encoded type");
 
                                 const constexpr bool isHeadSmaller = larger_type<head_t, tail_t>::isSecondLarger;
-                                const constexpr bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
-                                const constexpr bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
+                                const constexpr bool isHeadEncoded = head_helper_t::isEncoded;
+                                const constexpr bool isTailEncoded = tail_helper_t::isEncoded;
                                 const constexpr size_t smallersPerMM128 = sizeof(__m128i) / sizeof (smaller_t);
+                                const constexpr size_t smallersUnencPerMM128 = sizeof(__m128i) / sizeof (smaller_unenc_t);
                                 const constexpr size_t largersPerMM128 = sizeof(__m128i) / sizeof (larger_t);
                                 const constexpr size_t factor = sizeof(larger_t) / sizeof(smaller_t);
                                 const constexpr bool isSmallerEncoded = isHeadSmaller ? isHeadEncoded : isTailEncoded;
@@ -150,15 +154,13 @@ namespace ahead {
 
                                 oid_t szArg = arg->size();
 
-                                AN_indicator_vector * vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
-                                vec1->reserve(64);
-                                AN_indicator_vector * vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
-                                vec2->reserve(64);
+                                AN_indicator_vector * vec1 = head_helper_t::createIndicatorVector();
+                                AN_indicator_vector * vec2 = tail_helper_t::createIndicatorVector();
                                 auto vecS = isHeadSmaller ? vec1 : vec2;
                                 auto vecL = isHeadSmaller ? vec2 : vec1;
 
                                 auto result = new TempBAT<v2_head_unenc_t, v2_tail_unenc_t>();
-                                result->reserve(szArg + smallersPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
+                                result->reserve(szArg + smallersUnencPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
 
                                 auto pmmH = reinterpret_cast<__m128i *>(arg->head.container->data());
                                 auto pmmHEnd = reinterpret_cast<__m128i *>(arg->head.container->data() + szArg);
@@ -230,23 +232,24 @@ namespace ahead {
                             typedef typename Tail::v2_unenc_t v2_tail_unenc_t;
                             typedef typename v2_tail_unenc_t::type_t tail_unenc_t;
                             typedef typename mmAN<__m128i, tail_t>::mask_t tail_mask_t;
+                            typedef ANhelper<Tail> tail_helper_t;
                             typedef typename std::tuple<BAT<v2_void_t, v2_tail_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *> result_t;
 
                             static result_t doIt(
                                     BAT<Head, Tail>* arg,
-                                    resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
-                                static_assert(std::is_base_of<v2_anencoded_t, Tail>::value, "Tail must be an AN-encoded type");
+                                    resoid_t AOID) {
+                                static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
 
                                 const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_t);
+                                const constexpr size_t unencTailsPerMM128 = sizeof(__m128i) / sizeof (tail_unenc_t);
 
                                 tail_t tAinv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                                 tail_t tUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
 
                                 oid_t szArg = arg->size();
-                                AN_indicator_vector * vec = new AN_indicator_vector;
-                                vec->reserve(64);
+                                AN_indicator_vector * vec = tail_helper_t::createIndicatorVector();
                                 auto result = new TempBAT<v2_void_t, v2_tail_unenc_t>();
-                                result->reserve(szArg + tailsPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
+                                result->reserve(szArg + unencTailsPerMM128); // reserve more data to compensate for writing after the last bytes, since writing the very last vector will write 16 Bytes and not just the remaining ones
                                 auto pT = arg->tail.container->data();
                                 auto pTEnd = pT + szArg;
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
@@ -282,7 +285,7 @@ namespace ahead {
                     template<typename Head, typename Tail>
                     std::tuple<BAT<typename Head::v2_unenc_t, typename Tail::v2_unenc_t>*, AN_indicator_vector *, AN_indicator_vector *> checkAndDecodeAN(
                             BAT<Head, Tail>* arg,
-                            resoid_t AOID = std::get<v2_resoid_t::AsBFW->size() - 1>(*v2_resoid_t::AsBFW)) {
+                            resoid_t AOID) {
                         return Private::CheckAndDecodeAN<Head, Tail>::doIt(arg, AOID);
                     }
 

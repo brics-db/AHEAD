@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   groupbyAN.tcc
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -40,10 +40,10 @@ namespace ahead {
                 template<typename Head, typename Tail, bool reencode>
                 struct groupbyAN {
 
-                    typedef ANhelper<Head> HeadHelper;
-                    typedef ANhelper<Tail> TailHelper;
-                    typedef typename HeadHelper::type_t head_t;
-                    typedef typename TailHelper::type_t tail_t;
+                    typedef ANhelper<Head> head_helper_t;
+                    typedef ANhelper<Tail> tail_helper_t;
+                    typedef typename head_helper_t::type_t head_t;
+                    typedef typename tail_helper_t::type_t tail_t;
                     typedef typename TypeMap<Tail>::v2_base_t::type_t tunenc_t;
                     typedef ahead::bat::ops::Private::hash<tail_t> hasher;
                     typedef ahead::bat::ops::Private::equals<tail_t> comparator;
@@ -52,34 +52,28 @@ namespace ahead {
                             BAT<Head, Tail>* bat,
                             resoid_t AOID,
                             resoid_t AOIDinv) {
-                        head_t const HAInv = HeadHelper::getIfEncoded(bat->head.metaData.AN_Ainv);
-                        head_t const HUnencMaxU = HeadHelper::getIfEncoded(bat->head.metaData.AN_unencMaxU);
-                        tail_t const TAInv = TailHelper::getIfEncoded(bat->tail.metaData.AN_Ainv);
-                        tail_t const TUnencMaxU = TailHelper::getIfEncoded(bat->tail.metaData.AN_unencMaxU);
-                        AN_indicator_vector *vec1 = (HeadHelper::isEncoded ? new AN_indicator_vector : nullptr);
-                        if (HeadHelper::isEncoded) {
-                            vec1->reserve(32);
-                        }
-                        AN_indicator_vector *vec2 = (TailHelper::isEncoded ? new AN_indicator_vector : nullptr);
-                        if (TailHelper::isEncoded) {
-                            vec2->reserve(32);
-                        }
+                        const head_t HAInv = head_helper_t::getIfEncoded(bat->head.metaData.AN_Ainv);
+                        const head_t HUnencMaxU = head_helper_t::getIfEncoded(bat->head.metaData.AN_unencMaxU);
+                        const tail_t TAInv = tail_helper_t::getIfEncoded(bat->tail.metaData.AN_Ainv);
+                        const tail_t TUnencMaxU = tail_helper_t::getIfEncoded(bat->tail.metaData.AN_unencMaxU);
+                        AN_indicator_vector *vec1 = head_helper_t::createIndicatorVector();
+                        AN_indicator_vector *vec2 = tail_helper_t::createIndicatorVector();
 
                         google::dense_hash_map<tunenc_t, oid_t, hasher, comparator> dictionary;
                         dictionary.set_empty_key(Tail::dhm_emptykey);
                         auto batVOIDtoRGID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVOIDtoRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVOIDtoRGID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVGIDtoROID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVGIDtoROID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVGIDtoROID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
 
                         auto iter = bat->begin();
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++i) {
-                            head_t h = HeadHelper::mulIfEncoded(iter->head(), HAInv);
-                            if (HeadHelper::isEncoded && (h > HUnencMaxU)) {
+                            head_t h = head_helper_t::mulIfEncoded(iter->head(), HAInv);
+                            if (head_helper_t::isEncoded && (h > HUnencMaxU)) {
                                 vec1->push_back(i * AOID);
                             }
-                            tail_t t1 = TailHelper::mulIfEncoded(iter->tail(), TAInv);
-                            if (TailHelper::isEncoded && (t1 > TUnencMaxU)) {
+                            tail_t t1 = tail_helper_t::mulIfEncoded(iter->tail(), TAInv);
+                            if (tail_helper_t::isEncoded && (t1 > TUnencMaxU)) {
                                 vec2->push_back(i * AOID);
                             }
                             auto t2 = static_cast<tunenc_t>(t1); // use (potentially smaller) unencoded size
@@ -112,43 +106,35 @@ namespace ahead {
                             throw std::runtime_error("input BAT and existing grouping have different sizes!");
                         }
 
-                        constexpr const bool isHeadEncoded = std::is_base_of<v2_anencoded_t, Head>::value;
-                        constexpr const bool isTailEncoded = std::is_base_of<v2_anencoded_t, Tail>::value;
-                        head_t const HAInv = HeadHelper::getIfEncoded(bat->head.metaData.AN_Ainv);
-                        head_t const HUnencMaxU = HeadHelper::getIfEncoded(bat->head.metaData.AN_unencMaxU);
-                        tail_t const TAInv = TailHelper::getIfEncoded(bat->tail.metaData.AN_Ainv);
-                        tail_t const TUnencMaxU = TailHelper::getIfEncoded(bat->tail.metaData.AN_unencMaxU);
+                        const head_t HAInv = head_helper_t::getIfEncoded(bat->head.metaData.AN_Ainv);
+                        const head_t HUnencMaxU = head_helper_t::getIfEncoded(bat->head.metaData.AN_unencMaxU);
+                        const tail_t TAInv = tail_helper_t::getIfEncoded(bat->tail.metaData.AN_Ainv);
+                        const tail_t TUnencMaxU = tail_helper_t::getIfEncoded(bat->tail.metaData.AN_unencMaxU);
                         resoid_t GAInv = static_cast<resoid_t>(grouping->tail.metaData.AN_Ainv);
                         resoid_t GUnencMaxU = static_cast<resoid_t>(grouping->tail.metaData.AN_unencMaxU);
-                        AN_indicator_vector * vec1 = (isHeadEncoded ? new AN_indicator_vector : nullptr);
-                        if (isHeadEncoded) {
-                            vec1->reserve(32);
-                        }
-                        AN_indicator_vector * vec2 = (isTailEncoded ? new AN_indicator_vector : nullptr);
-                        if (isTailEncoded) {
-                            vec2->reserve(32);
-                        }
+                        AN_indicator_vector *vec1 = head_helper_t::createIndicatorVector();
+                        AN_indicator_vector *vec2 = tail_helper_t::createIndicatorVector();
                         AN_indicator_vector * vecGrouping = new AN_indicator_vector;
                         vecGrouping->reserve(32);
 
                         // auto batHashToRGID = new TempBAT<v2_largerTail_t, v2_resoid_t>();
-                        // batHashToRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        // batHashToRGID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         google::dense_hash_map<largerTail_t, oid_t> dictionary;
                         dictionary.set_empty_key(v2_largerTail_t::dhm_emptykey);
                         auto batVOIDtoRGID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVOIDtoRGID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVOIDtoRGID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
                         auto batVGIDtoROID = new TempBAT<v2_void_t, v2_resoid_t>();
-                        batVGIDtoROID->tail.metaData = ColumnMetaData(sizeof(resoid_t), AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
+                        batVGIDtoROID->tail.metaData = ColumnMetaData(size_bytes<resoid_t>, AOID, AOIDinv, v2_resoid_t::UNENC_MAX_U, v2_resoid_t::UNENC_MIN);
 
                         auto iter = bat->begin();
                         auto iterG = grouping->begin();
                         for (size_t i = 0; iter->hasNext(); ++*iter, ++*iterG, ++i) {
-                            head_t h = HeadHelper::mulIfEncoded(iter->head(), HAInv);
-                            if (isHeadEncoded && (h > HUnencMaxU)) {
+                            head_t h = head_helper_t::mulIfEncoded(iter->head(), HAInv);
+                            if (head_helper_t::isEncoded && (h > HUnencMaxU)) {
                                 vec1->push_back(i * AOID);
                             }
-                            tail_t t = TailHelper::mulIfEncoded(iter->tail(), TAInv);
-                            if (isTailEncoded && (t > TUnencMaxU)) {
+                            tail_t t = tail_helper_t::mulIfEncoded(iter->tail(), TAInv);
+                            if (tail_helper_t::isEncoded && (t > TUnencMaxU)) {
                                 vec2->push_back(i * AOID);
                             }
                             resoid_t g = ANhelper<v2_resoid_t, resoid_t>::mulIfEncoded(iterG->tail(), GAInv);

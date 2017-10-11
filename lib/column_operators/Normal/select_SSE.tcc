@@ -24,9 +24,8 @@
 
 #include <type_traits>
 
-#include <column_storage/Storage.hpp>
-#include "../SIMD/SSE.hpp"
 #include "../miscellaneous.hpp"
+#include "../SIMD/SSE.hpp"
 
 #ifdef __GNUC__
 #pragma GCC target "sse4.2"
@@ -61,7 +60,7 @@ namespace ahead {
                                     tail_t th) {
                                 auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->reserve(arg->size());
-                                auto mmThreshold = mm128<tail_t>::set1(th);
+                                auto mmThreshold = mm<__m128i, tail_t>::set1(th);
                                 auto szTail = arg->tail.container->size();
                                 auto pT = arg->tail.container->data();
                                 auto pTEnd = pT + szTail;
@@ -69,38 +68,28 @@ namespace ahead {
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
                                 auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
-                                auto mmOID = mm128<head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
-                                auto mmInc = mm128<head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)); // increase OIDs by number of larger types per vector
+                                auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
+                                auto mmInc = mm<__m128i, head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)); // increase OIDs by number of larger types per vector
+
+                                const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
 
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mm = _mm_lddqu_si128(pmmT);
-                                    auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mm, mmThreshold);
+                                    auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
+                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
-                                        const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
-                                        const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
+                                        const constexpr size_t ratioHeadPerTail = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
-                                        if (mask) {
-                                            auto maskTmp = mask;
-                                            for (size_t i = 0; i < factor; ++i) {
-                                                auto actMask = maskTmp & maskMask;
-                                                if (actMask) {
-                                                    mm128<head_select_t>::pack_right2(pRH, mmOID, actMask);
-                                                }
-                                                mmOID = mm128<head_select_t>::add(mmOID, mmInc);
-                                                maskTmp >>= headsPerMM128;
-                                            }
-                                            mm128<tail_t>::pack_right2(pRT, mm, mask);
-                                        } else {
-                                            for (size_t i = 0; i < factor; ++i) {
-                                                mmOID = mm128<head_select_t>::add(mmOID, mmInc);
-                                            }
+                                        auto maskTmp = mask;
+                                        for (size_t i = 0; i < ratioHeadPerTail; ++i) {
+                                            auto actMask = maskTmp & maskMask;
+                                            mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
+                                            mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
+                                            maskTmp >>= headsPerMM128;
                                         }
                                     } else {
-                                        if (mask) {
-                                            mm128<head_select_t>::pack_right2(pRH, mmOID, mask);
-                                            mm128<tail_select_t>::pack_right2(pRT, mm, mask);
-                                        }
-                                        mmOID = mm128<head_select_t>::add(mmOID, mmInc);
+                                        mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
+                                        mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
                                 }
 
@@ -117,6 +106,7 @@ namespace ahead {
                                     }
                                 }
                                 delete iter;
+
                                 return result;
                             }
                         };
@@ -142,6 +132,7 @@ namespace ahead {
                                     }
                                 }
                                 delete iter;
+
                                 return result;
                             }
                         };
@@ -168,8 +159,8 @@ namespace ahead {
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                                 auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->reserve(arg->size());
-                                auto mmThreshold1 = mm128<tail_t>::set1(th1);
-                                auto mmThreshold2 = mm128<tail_t>::set1(th2);
+                                auto mmThreshold1 = mm<__m128i, tail_t>::set1(th1);
+                                auto mmThreshold2 = mm<__m128i, tail_t>::set1(th2);
                                 auto szTail = arg->tail.container->size();
                                 auto pT = arg->tail.container->data();
                                 auto pTEnd = pT + szTail;
@@ -177,39 +168,29 @@ namespace ahead {
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
                                 auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
-                                auto mmOID = mm128<head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
-                                auto mmInc = mm128<head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t));
+                                auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
+                                auto mmInc = mm<__m128i, head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t));
 
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mm = _mm_lddqu_si128(pmmT);
-                                    auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mm, mmThreshold1);
-                                    auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mm, mmThreshold2);
+                                    auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1);
+                                    auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2);
                                     auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(res1, res2);
+                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
-                                        if (mask) {
-                                            auto maskTmp = mask;
-                                            for (size_t i = 0; i < factor; ++i) {
-                                                auto actMask = maskTmp & maskMask;
-                                                if (actMask) {
-                                                    mm128<head_select_t>::pack_right2(pRH, mmOID, actMask);
-                                                }
-                                                mmOID = mm128<head_select_t>::add(mmOID, mmInc);
-                                                maskTmp >>= headsPerMM128;
-                                            }
-                                            mm128<tail_t>::pack_right2(pRT, mm, mask);
-                                        } else {
-                                            mmOID = ahead::bat::ops::simd::mm<__m128i, head_select_t>::add(mmOID,
-                                                    ahead::bat::ops::simd::mm<__m128i, head_select_t>::mullo(mmInc, mm128<head_select_t>::set1(factor)));
+                                        auto maskTmp = mask;
+                                        for (size_t i = 0; i < factor; ++i) {
+                                            auto actMask = maskTmp & maskMask;
+                                            mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
+                                            mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
+                                            maskTmp >>= headsPerMM128;
                                         }
                                     } else {
-                                        if (mask) {
-                                            mm128<head_select_t>::pack_right2(pRH, mmOID, mask);
-                                            mm128<tail_select_t>::pack_right2(pRT, mm, mask);
-                                        }
-                                        mmOID = mm128<head_select_t>::add(mmOID, mmInc);
+                                        mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
+                                        mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
                                 }
 
@@ -258,6 +239,7 @@ namespace ahead {
                                     }
                                 }
                                 delete iter;
+
                                 return result;
                             }
                         };

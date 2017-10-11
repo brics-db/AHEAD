@@ -109,8 +109,8 @@ int main(
         auto batA = bat9->reverse();
         delete bat9;
         MEASURE_OP(batB, hashjoin(bat6, batA)); // only those lineorders where lo_quantity... and lo_discount... and d_year...
-        delete batA;
         delete bat6;
+        delete batA;
         // batB has in the Head the positions from lineorder and in the Tail the positions from date
         auto batC = batB->mirror_head(); // only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
         delete batB;

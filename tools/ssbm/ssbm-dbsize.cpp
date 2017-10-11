@@ -127,7 +127,7 @@ int main(
             MEASURE_OP(batDA7, new str_colbat_t("dateAN", "yearmonth"));
             MEASURE_OP(batDA8, new restiny_colbat_t("dateAN", "daynuminweek"));
             MEASURE_OP(batDA9, new restiny_colbat_t("dateAN", "daynuminmonth"));
-            MEASURE_OP(batDAA, new shortint_colbat_t("dateAN", "daynuminyear"));
+            MEASURE_OP(batDAA, new resshort_colbat_t("dateAN", "daynuminyear"));
             MEASURE_OP(batDAB, new restiny_colbat_t("dateAN", "monthnuminyear"));
             MEASURE_OP(batDAC, new restiny_colbat_t("dateAN", "weeknuminyear"));
             MEASURE_OP(batDAD, new str_colbat_t("dateAN", "sellingseason"));

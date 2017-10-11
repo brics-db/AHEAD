@@ -28,22 +28,26 @@
 #include <ColumnStore.h>
 #include <column_storage/TempStorage.hpp>
 #include <column_operators/functors.hpp>
+#include <AHEAD_Config.hpp>
 
 namespace ahead {
 
-    extern const char* NAME_TINYINT;
-    extern const char* NAME_SHORTINT;
-    extern const char* NAME_INTEGER;
-    extern const char* NAME_LARGEINT;
-    extern const char* NAME_STRING;
-    extern const char* NAME_FIXED;
-    extern const char* NAME_CHAR;
-    extern const char* NAME_RESTINY;
-    extern const char* NAME_RESSHORT;
-    extern const char* NAME_RESINT;
-    extern const char* NAME_RESBIGINT;
+    extern cstr_t NAME_TINYINT;
+    extern cstr_t NAME_SHORTINT;
+    extern cstr_t NAME_INTEGER;
+    extern cstr_t NAME_LARGEINT;
+    extern cstr_t NAME_STRING;
+    extern cstr_t NAME_FIXED;
+    extern cstr_t NAME_CHAR;
+    extern cstr_t NAME_RESTINY;
+    extern cstr_t NAME_RESSHORT;
+    extern cstr_t NAME_RESINT;
+    extern cstr_t NAME_RESBIGINT;
 
     extern const size_t MAXLEN_STRING;
+
+    template<typename T>
+    struct TypeNameSelector;
 
     /**
      * @author Christian Vogel
@@ -61,11 +65,13 @@ namespace ahead {
      * The class implements the Singleton Pattern, this makes clear that only one object exists in runtime.
      */
     class MetaRepositoryManager {
+        friend class TransactionManager;
+        friend class AHEAD;
 
-        static MetaRepositoryManager *instance;
+        static std::shared_ptr<MetaRepositoryManager> instance;
 
-        static const size_t MAXLEN_NAME = 1024; // table and attribute name
-        static const size_t MAXLEN_PATH = 64 * 1024; // table and attribute name
+        static const size_t MAXLEN_NAME; // table and attribute name
+        static const size_t MAXLEN_PATH; // table and attribute name
 
         str_t strBaseDir;
 
@@ -104,7 +110,11 @@ namespace ahead {
         MetaRepositoryManager();
         MetaRepositoryManager(
                 const MetaRepositoryManager &copy);
+
+    public:
         virtual ~MetaRepositoryManager();
+
+    private:
 
         MetaRepositoryManager& operator=(
                 const MetaRepositoryManager &copy);
@@ -152,29 +162,18 @@ namespace ahead {
                 cstr_t name_value);
 
         template<typename Head1, typename Tail1, typename Head2, typename Tail2>
-        TempBAT<Head1, Tail2> * nestedLoopJoin(
+        TempBAT<typename Head1::v2_select_t, typename Tail2::v2_select_t> * nestedLoopJoin(
                 BAT<Head1, Tail1> *bat1,
                 BAT<Head2, Tail2> *bat2);
 
+        void init(
+                const AHEAD_Config & config);
+
     public:
-        friend class TransactionManager;
-        friend class AHEAD;
-
         /**
-         * @author Christian Vogel
-         *
-         * @return pointer for only one object of the MetaRepositoryManager class
-         *
-         * The function returns a pointer of the one and only existing instance of the class. In the case that no instance
-         * exists, it will be created and afterwards returned from the function.
+         * @return std::shared_ptr singleton of the MetaRepositoryManager class
          */
-        static MetaRepositoryManager* getInstance();
-
-        void init(
-                const char* strBaseDir);
-
-        void init(
-                const std::string & strBaseDir);
+        static std::shared_ptr<MetaRepositoryManager> getInstance();
 
         /**
          * @author Christian Vogel
@@ -196,25 +195,32 @@ namespace ahead {
         void createAttribute(
                 cstr_t name,
                 cstr_t datatype,
-                unsigned BATId,
-                unsigned table_id);
+                id_t columnID,
+                id_t tableID);
         void createAttribute(
                 const std::string & name,
                 const std::string & datatype,
-                unsigned BATId,
-                unsigned table_id);
+                id_t columnID,
+                id_t tableID);
 
-        str_t getDataTypeForAttribute(
-                cstr_t name);
-        str_t getDataTypeForAttribute(
-                const std::string & name);
+        cstr_t getDataTypeForAttribute(
+                cstr_t tableName,
+                cstr_t attributeName);
+        cstr_t getDataTypeForAttribute(
+                const std::string & tableName,
+                const std::string & attributeName);
+
+        template<typename Tail>
+        void testDataTypeForAttribute(
+                const std::string & tableName,
+                const std::string & attributeName);
 
         unsigned getBatIdOfAttribute(
-                cstr_t nameOfTable,
-                cstr_t attribute);
+                cstr_t tableName,
+                cstr_t attributeName);
         unsigned getBatIdOfAttribute(
-                const std::string & nameOfTable,
-                const std::string & attribute);
+                const std::string & tableName,
+                const std::string & attributeName);
 
         class TablesIterator :
                 public BATIterator<v2_id_t, v2_str_t> {

@@ -20,6 +20,7 @@
  */
 
 #include <cassert>
+#include <memory>
 
 #include <AHEAD.hpp>
 #include <column_storage/Storage.hpp>
@@ -28,21 +29,22 @@
 #include "meta_repository/MetaRepositoryManager.h"
 
 namespace ahead {
-    AHEAD * AHEAD::instance;
+    std::shared_ptr<AHEAD> AHEAD::instance;
 
     AHEAD::AHEAD(
-            const std::string & path)
-            : mgrMeta(MetaRepositoryManager::getInstance()),
-              mgrTx(TransactionManager::getInstance()),
-              doConvertTableFilesOnLoad(true) {
-        mgrMeta->init(path);
+            int argc,
+            const char * const * argv)
+            : config(argc, argv),
+              mgrMeta(MetaRepositoryManager::getInstance()),
+              mgrTx(TransactionManager::getInstance()) {
+        mgrMeta->init(config);
     }
 
     AHEAD::AHEAD(
             const AHEAD & other)
-            : mgrMeta(other.mgrMeta),
-              mgrTx(other.mgrTx),
-              doConvertTableFilesOnLoad(other.doConvertTableFilesOnLoad) {
+            : config(other.config),
+              mgrMeta(other.mgrMeta),
+              mgrTx(other.mgrTx) {
     }
 
     AHEAD::~AHEAD() {
@@ -61,21 +63,24 @@ namespace ahead {
         return *this;
     }
 
-    AHEAD * AHEAD::getInstance() {
+    std::shared_ptr<AHEAD> AHEAD::getInstance() {
         return instance;
     }
 
-    AHEAD * AHEAD::createInstance(
-            const std::string & path) {
-        AHEAD::instance = new AHEAD(path);
+    std::shared_ptr<AHEAD> AHEAD::createInstance(
+            int argc,
+            const char * const * argv) {
+        AHEAD::instance.reset(new AHEAD(argc, argv));
         return AHEAD::instance;
     }
 
+    const AHEAD_Config & AHEAD::getConfig() {
+        return config;
+    }
+
     void AHEAD::destroyInstance() {
-        auto current = AHEAD::instance;
-        if (current) {
-            AHEAD::instance = nullptr;
-            delete current;
+        if (AHEAD::instance) {
+            AHEAD::instance.reset();
         }
     }
 
@@ -109,14 +114,5 @@ namespace ahead {
         size_t numBUNs = t->load(path.c_str(), tableName, prefix, size, delim, ignoreMoreData);
         mgrTx->endTransaction(t);
         return numBUNs;
-    }
-
-    bool AHEAD::isConvertTableFilesOnLoad() {
-        return this->doConvertTableFilesOnLoad;
-    }
-
-    void AHEAD::setConverttableFilesOnLoad(
-            bool newValue) {
-        this->doConvertTableFilesOnLoad = newValue;
     }
 }

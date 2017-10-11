@@ -19,7 +19,10 @@
 
 namespace ahead {
 
-    MetaRepositoryManager* MetaRepositoryManager::instance = nullptr;
+    std::shared_ptr<MetaRepositoryManager> MetaRepositoryManager::instance(new MetaRepositoryManager());
+
+    const size_t MetaRepositoryManager::MAXLEN_NAME = 1024; // table and attribute name
+    const size_t MetaRepositoryManager::MAXLEN_PATH = 64 * 1024; // table and attribute name
 
     auto PATH_INFORMATION_SCHEMA = "INFORMATION_SCHEMA";
 
@@ -36,6 +39,18 @@ namespace ahead {
     cstr_t NAME_RESBIGINT = "RESBIGINT";
 
     const size_t MAXLEN_STRING = 64;
+
+    cstr_t TypeNameSelector<v2_tinyint_t>::name = NAME_TINYINT;
+    cstr_t TypeNameSelector<v2_shortint_t>::name = NAME_SHORTINT;
+    cstr_t TypeNameSelector<v2_int_t>::name = NAME_INTEGER;
+    cstr_t TypeNameSelector<v2_bigint_t>::name = NAME_LARGEINT;
+    cstr_t TypeNameSelector<v2_str_t>::name = NAME_STRING;
+    cstr_t TypeNameSelector<v2_fixed_t>::name = NAME_FIXED;
+    cstr_t TypeNameSelector<v2_char_t>::name = NAME_CHAR;
+    cstr_t TypeNameSelector<v2_restiny_t>::name = NAME_RESTINY;
+    cstr_t TypeNameSelector<v2_resshort_t>::name = NAME_RESSHORT;
+    cstr_t TypeNameSelector<v2_resint_t>::name = NAME_RESINT;
+    cstr_t TypeNameSelector<v2_resbigint_t>::name = NAME_RESBIGINT;
 
     MetaRepositoryManager::MetaRepositoryManager()
             : strBaseDir(nullptr),
@@ -116,41 +131,30 @@ namespace ahead {
         delete[] META_PATH;
     }
 
-    MetaRepositoryManager*
-    MetaRepositoryManager::getInstance() {
-        if (MetaRepositoryManager::instance == nullptr) {
-            MetaRepositoryManager::instance = new MetaRepositoryManager();
-        }
-
+    std::shared_ptr<MetaRepositoryManager> MetaRepositoryManager::getInstance() {
         return MetaRepositoryManager::instance;
     }
 
     void MetaRepositoryManager::destroyInstance() {
-        auto current = MetaRepositoryManager::instance;
-        if (current) {
-            MetaRepositoryManager::instance = nullptr;
-            delete current;
+        if (MetaRepositoryManager::instance) {
+            MetaRepositoryManager::instance.reset();
         }
     }
 
     void MetaRepositoryManager::init(
-            cstr_t strBaseDir) {
+            const AHEAD_Config & config) {
         if (this->strBaseDir == nullptr) {
-            size_t len = strnlen(strBaseDir, MetaRepositoryManager::MAXLEN_PATH);
+            const std::string & strBaseDir = config.getDBPath();
+            size_t len = std::min(strBaseDir.size(), MetaRepositoryManager::MAXLEN_PATH);
             this->strBaseDir = new char[len + 1];
-            memcpy(this->strBaseDir, strBaseDir, len + 1); // includes NULL character
+            memcpy(this->strBaseDir, strBaseDir.c_str(), len + 1); // includes NULL character
 
             size_t len3 = strnlen(PATH_INFORMATION_SCHEMA, MAXLEN_NAME);
             META_PATH = new char[len + len3 + 2];
-            memcpy(META_PATH, strBaseDir, len); // excludes NULL character
+            memcpy(META_PATH, strBaseDir.c_str(), len); // excludes NULL character
             META_PATH[len + 1] = '/';
             memcpy(META_PATH + len + 1, PATH_INFORMATION_SCHEMA, len3 + 1); // includes NULL character
         }
-    }
-
-    void MetaRepositoryManager::init(
-            const std::string & strBaseDir) {
-        init(strBaseDir.c_str());
     }
 
     void MetaRepositoryManager::createDefaultDataTypes() {
@@ -255,7 +259,7 @@ namespace ahead {
             tables_name->append(std::make_pair(newId, nameCopy));
         } else {
             std::stringstream sserr;
-            sserr << "MetaRepositoryManager::createTable(" << __FILE__ << ":" << __LINE__ << ") Table '" << name << "' already exists!" << std::endl;
+            sserr << "MetaRepositoryManager::createTable(" << __FILE__ << "@" << __LINE__ << ") Table '" << name << "' already exists!" << std::endl;
             throw std::runtime_error(sserr.str().c_str());
         }
 
@@ -281,7 +285,7 @@ namespace ahead {
         size_t nameLen = strnlen(name, MetaRepositoryManager::MAXLEN_NAME);
         if (nameLen == MetaRepositoryManager::MAXLEN_NAME) {
             std::stringstream sserr;
-            sserr << "MetaRepositoryManager::createAttribute(" << __FILE__ << ":" << __LINE__ << ") attribute name is too large! Because it is too large, it is not included here." << std::endl;
+            sserr << "MetaRepositoryManager::createAttribute(" << __FILE__ << "@" << __LINE__ << ") attribute name is too large! Because it is too large, it is not included here." << std::endl;
             throw std::runtime_error(sserr.str().c_str());
         }
         str_t nameCopy = new char_t[nameLen + 1];
@@ -300,14 +304,67 @@ namespace ahead {
         createAttribute(name.c_str(), datatype.c_str(), columnID, tableID);
     }
 
-    str_t MetaRepositoryManager::getDataTypeForAttribute(
-            __attribute__ ((unused)) cstr_t name) {
-        return nullptr;
+    cstr_t MetaRepositoryManager::getDataTypeForAttribute(
+            cstr_t tableName,
+            cstr_t attributeName) {
+        if (dataAlreadyExists(tables_name, tableName)) {
+            id_t oidForTableName = this->selectBatId(tables_name, tableName);
+            id_t tableId = this->selectPKId(tables_id_pk, oidForTableName);
+            auto batAttrFKTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
+            // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
+            // reverse will not work here, because we need the bat id, not the table id
+            auto batAttrOIDForTable = batAttrFKTableId->mirror_head();
+            delete batAttrFKTableId;
+            auto batAttributesNamesFiltered = ahead::bat::ops::scalar::select<std::equal_to>(attributes_name, const_cast<str_t>(attributeName));
+            auto batAttrOIDNamesForTable = ahead::bat::ops::matchjoin(batAttrOIDForTable, batAttributesNamesFiltered);
+            delete batAttrOIDForTable;
+            delete batAttributesNamesFiltered;
+            id_t attrNameOID = this->selectBatId(batAttrOIDNamesForTable, attributeName);
+            if (attrNameOID != ID_INVALID) {
+                auto batAttrOID = batAttrOIDNamesForTable->mirror_head();
+                delete batAttrOIDNamesForTable;
+                auto batAttrTypeFK = ahead::bat::ops::matchjoin(batAttrOID, attributes_type_id_fk);
+                delete batAttrOID;
+                auto typesReverse = this->datatype_id_pk->reverse();
+                auto batTypesID = this->nestedLoopJoin(batAttrTypeFK, typesReverse);
+                delete batAttrTypeFK;
+                delete typesReverse;
+                auto batTypeOID = batTypesID->mirror_tail();
+                delete batTypesID;
+                auto batTypesForFetch = batTypeOID->clear_head();
+                delete batTypeOID;
+                auto batTypeName = ahead::bat::ops::fetchjoin(batTypesForFetch, datatype_name);
+                delete batTypesForFetch;
+                auto iter = batTypeName->begin();
+                if (iter->hasNext()) {
+                    auto typeName = iter->tail();
+                    delete iter;
+                    delete batTypeName;
+                    return const_cast<cstr_t>(typeName);
+                } else {
+                    delete iter;
+                    delete batTypeName;
+                    std::stringstream sserr;
+                    sserr << "MetaRepositoryManager::getDataTypeForAttribute(" << __FILE__ << "@" << __LINE__ << "): " << "Could not find data type for attribute \"" << tableName << "\".\""
+                            << attributeName << "\"!";
+                    throw std::runtime_error(sserr.str());
+                }
+            } else {
+                std::stringstream sserr;
+                sserr << "MetaRepositoryManager::getDataTypeForAttribute(" << __FILE__ << "@" << __LINE__ << "): " << "Unknown attribute \"" << tableName << "\".\"" << attributeName << "\"!";
+                throw std::runtime_error(sserr.str());
+            }
+        } else {
+            std::stringstream sserr;
+            sserr << "MetaRepositoryManager::getDataTypeForAttribute(" << __FILE__ << "@" << __LINE__ << ") Table '" << tableName << "' does not exist!" << std::endl;
+            throw std::runtime_error(sserr.str().c_str());
+        }
     }
 
-    str_t MetaRepositoryManager::getDataTypeForAttribute(
-            const std::string & name) {
-        return getDataTypeForAttribute(name.c_str());
+    cstr_t MetaRepositoryManager::getDataTypeForAttribute(
+            const std::string & tableName,
+            const std::string & columnName) {
+        return getDataTypeForAttribute(tableName.c_str(), columnName.c_str());
     }
 
     id_t MetaRepositoryManager::getBatIdOfAttribute(
@@ -320,7 +377,6 @@ namespace ahead {
 
         if (tableId != ID_INVALID) {
             auto * batForTableId = ahead::bat::ops::scalar::select<std::equal_to>(attributes_table_id_fk, tableId);
-
             // first make mirror bat, because the joining algorithm will join the tail of the first bat with the head of the second bat
             // reverse will not work here, because we need the bat id, not the table id
             auto * mirrorTableIdBat = batForTableId->mirror_head();
@@ -335,8 +391,7 @@ namespace ahead {
             delete reverseBat;
         } else {
             std::stringstream sserr;
-            sserr << CONCAT("MetaRepositoryManager::getBatIdOfAttribute(", __FILE__, "@", TOSTRING(__LINE__), "): ");
-            sserr << "Unknown table \"" << tableName << "\"!";
+            sserr << "MetaRepositoryManager::getBatIdOfAttribute(" << __FILE__ << "@" << __LINE__ << "): " << "Unknown table \"" << tableName << "\"!";
             throw std::runtime_error(sserr.str());
         }
 

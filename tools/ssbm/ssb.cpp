@@ -45,11 +45,13 @@ namespace ssb {
         std::exception_ptr pEx = std::current_exception();
 
         // print out all the frames to stderr
+        std::cerr << "\nError: signal " << sig << ':';
         switch (sig) {
             case SIGSEGV:
-                std::cerr << "Error: signal " << sig << ":\\n";
+                std::cerr << " SIGSEGV";
                 break;
             case SIGTERM:
+                std::cerr << " SIGTERM";
                 try {
                     std::rethrow_exception(pEx);
                 } catch (std::exception & ex) {
@@ -58,8 +60,12 @@ namespace ssb {
                     std::cerr << "Unknown exception type caught!";
                 }
                 break;
+            default:
+                std::cerr << " OTHER";
         }
+        std::cerr << '\n';
         backtrace_symbols_fd(array, size, STDERR_FILENO);
+        std::cerr << std::flush;
         exit(1);
     }
 
@@ -68,10 +74,8 @@ namespace ssb {
     const constexpr char * const SSB_CONF::ID_LENTYPES;
     const constexpr char * const SSB_CONF::ID_LENSIZES;
     const constexpr char * const SSB_CONF::ID_LENPCM;
-    const constexpr char * const SSB_CONF::ID_DBPATH;
     const constexpr char * const SSB_CONF::ID_VERBOSE;
     const constexpr char * const SSB_CONF::ID_PRINTRESULT;
-    const constexpr char * const SSB_CONF::ID_CONVERTTABLEFILES;
 
     SSB_CONF::SSB_CONF()
             : NUM_RUNS(0),
@@ -79,28 +83,24 @@ namespace ssb {
               LEN_TYPES(0),
               LEN_SIZES(0),
               LEN_PCM(0),
-              DB_PATH(),
               VERBOSE(false),
               PRINT_RESULT(0),
-              CONVERT_TABLE_FILES(true),
               parser(
                       {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, 1), std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(ID_LENTYPES,
-                              alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, 16)}, {
-                              std::forward_as_tuple(ID_DBPATH, alias_list_t {"--dbpath", "-d"}, ".")}, {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false),
-                              std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false), std::forward_as_tuple(ID_CONVERTTABLEFILES, alias_list_t {"--convert-table-files",
-                                      "-c"}, true)}) {
+                              alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, 16)},
+                      {}, {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false)}) {
     }
 
     SSB_CONF::SSB_CONF(
             int argc,
-            char** argv)
+            const char * const * argv)
             : SSB_CONF() {
         init(argc, argv);
     }
 
     void SSB_CONF::init(
             int argc,
-            char** argv) {
+            const char * const * argv) {
         signal(SIGSEGV, handler);
         signal(SIGTERM, handler);
         parser.parse(argc, argv, 1);
@@ -109,10 +109,8 @@ namespace ssb {
         LEN_TYPES = parser.get_uint(ID_LENTYPES);
         LEN_SIZES = parser.get_uint(ID_LENSIZES);
         LEN_PCM = parser.get_uint(ID_LENPCM);
-        DB_PATH = parser.get_str(ID_DBPATH);
         VERBOSE = parser.get_bool(ID_VERBOSE);
         PRINT_RESULT = parser.get_bool(ID_PRINTRESULT);
-        CONVERT_TABLE_FILES = parser.get_bool(ID_CONVERTTABLEFILES);
     }
 
     SSB_CONF ssb_config;
@@ -139,7 +137,7 @@ namespace ssb {
 
     void init(
             int argc,
-            char ** argv,
+            const char * const * argv,
             const char * strHeadline,
             architecture_t arch) {
         set_signal_handlers();
@@ -185,8 +183,8 @@ namespace ssb {
         std::cout << strHeadline2 << '\n';
         auto fillChar = std::cout.fill('=');
         std::cout << std::setw(strHeadline2.size()) << "=" << std::setfill(fillChar) << '\n';
-        ahead::AHEAD::createInstance(ssb::ssb_config.DB_PATH);
-        std::cout << "Database path: \"" << ssb::ssb_config.DB_PATH << "\"" << std::endl;
+        auto instance = ahead::AHEAD::createInstance(argc, argv);
+        std::cout << "Database path: \"" << instance->getConfig().getDBPath() << "\"" << std::endl;
         ssb::init_pcm();
     }
 
@@ -214,7 +212,7 @@ namespace ssb {
         std::size_t numBUNs = AHEAD::getInstance()->loadTable(tableName);
         sw.stop();
         if (config.VERBOSE) {
-            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw << " ns." << std::endl;
+            std::cout << "Table: " << tableName << "\n\tNumber of BUNs: " << numBUNs << "\n\tTime: " << sw.duration() << " ns." << std::endl;
         }
     }
 
@@ -227,7 +225,7 @@ namespace ssb {
     void loadTables(
             std::vector<std::string> && tableNames) {
         if (ssb::ssb_config.VERBOSE) {
-            std::cout << "Loading Tables:";
+            std::cout << "[VERBOSE] ssb::loadTables(@" << __LINE__ << " Loading Tables:";
             for (const std::string & tab : tableNames) {
                 std::cout << " '" << tab << "'";
             }
@@ -241,7 +239,7 @@ namespace ssb {
         }
         ssb::after_load();
         sw.stop();
-        std::cout << "Total loading time: " << sw << " ns.\n" << std::endl;
+        std::cout << "Total loading time: " << sw.duration() << " ns.\n" << std::endl;
     }
 
     void loadTables(
@@ -262,6 +260,8 @@ namespace ssb {
         ssb::hasTwoTypes.clear();
         ssb::headTypes.clear();
         ssb::tailTypes.clear();
+        ssb::sysstatesBeforeOp.clear();
+        ssb::sysstatesAfterOp.clear();
     }
 
     void before_load() {
@@ -342,7 +342,7 @@ namespace ssb {
             std::size_t index,
             std::size_t result) {
         ssb::totalTimes[index] = ssb::swTotalTime.stop();
-        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::swTotalTime << " ns.\n";
+        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << result << "\n\t  time: " << ssb::swTotalTime.duration() << " ns.\n";
         ssb::print_headline();
         ssb::print_result();
     }
@@ -351,7 +351,7 @@ namespace ssb {
             std::size_t index,
             std::exception & ex) {
         ssb::totalTimes[index] = ssb::swTotalTime.stop();
-        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << ex.what() << "\n\t  time: " << ssb::swTotalTime << " ns.\n";
+        std::cout << "(" << std::setw(2) << index << ")\n\tresult: " << ex.what() << "\n\t  time: " << ssb::swTotalTime.duration() << " ns.\n";
     }
 
     void before_op() {
@@ -392,6 +392,14 @@ namespace ssb {
         std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type tail";
         if (ssb::pcmStatus == PCM::Success) {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Inst. Retired";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "IPC";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles lost L2";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Cycles lost L3";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "L2 Hit Ratio";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "L3 Hit Ratio";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Read [B]";
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Write [B]";
         }
         std::cout << "\n";
     }
@@ -399,7 +407,7 @@ namespace ssb {
     void print_result() {
         for (std::size_t k = 0; k < ssb::opTimes.size(); ++k) {
             std::cout << "\top" << std::setw(2) << (k + 1);
-            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << hrc_duration(ssb::opTimes[k]);
+            std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TIMES) << ssb::opTimes[k];
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batSizes[k];
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptions[k];
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << ssb::batConsumptionsProj[k];
@@ -408,6 +416,14 @@ namespace ssb {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << (ssb::hasTwoTypes[k] ? ssb::tailTypes[k].pretty_name() : ssb::emptyString);
             if (ssb::pcmStatus == PCM::Success) {
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getInstructionsRetired(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getIPC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCycles(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCyclesLostDueL2CacheMisses(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getCyclesLostDueL3CacheMisses(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getL2CacheHitRatio(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getL3CacheHitRatio(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesReadFromMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
+                std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesWrittenToMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
             }
             std::cout << '\n';
         }

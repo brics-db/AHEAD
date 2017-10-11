@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <sstream>
+#include <cstdlib>
 
 #include <column_storage/BucketManager.h>
 
@@ -143,40 +144,22 @@ namespace ahead {
 
     BucketManager::BucketStream::~BucketStream() {
         auto bucket = head;
-        size_t numBuckets = 0;
-        while (bucket) {
-            ++numBuckets;
-            auto bucket2 = bucket->older;
-            while (bucket2) {
-                ++numBuckets;
-                bucket2 = bucket2->older;
-            }
-            bucket2 = bucket->newer;
-            while (bucket2) {
-                ++numBuckets;
-                bucket2 = bucket2->newer;
-            }
-            bucket = bucket->next;
-        }
         std::unordered_set<Bucket*> bucketAdresses;
         while (bucket) {
             auto bucket2 = bucket->older;
             while (bucket2) {
                 auto bucketTmp = bucket2->older;
                 bucketAdresses.insert(bucket2);
-                delete bucket2;
                 bucket2 = bucketTmp;
             }
             bucket2 = bucket->newer;
             while (bucket2) {
                 auto bucketTmp = bucket2->newer;
                 bucketAdresses.insert(bucket2);
-                delete bucket2;
                 bucket2 = bucketTmp;
             }
             bucket2 = bucket->next;
             bucketAdresses.insert(bucket);
-            delete bucket;
             bucket = bucket2;
         }
         for (auto pBucket : index) {
@@ -184,6 +167,9 @@ namespace ahead {
             if (iter == bucketAdresses.end()) {
                 delete pBucket;
             }
+        }
+        for (auto pBucket : bucketAdresses) {
+            delete pBucket;
         }
         this->index.clear();
         this->head = nullptr;
@@ -392,7 +378,7 @@ namespace ahead {
                 if (*this->currentBucket->version != *this->version) {
                     auto newBucket = new BucketManager::Bucket(this->currentBucket->number, this->version, this->currentBucket->next, this->currentBucket, nullptr, new BucketManager::Chunk);
 
-                    newBucket->chunk->content = malloc(CHUNK_CONTENT_SIZE);
+                    newBucket->chunk->content = aligned_alloc(4096, CHUNK_CONTENT_SIZE);
                     memcpy(newBucket->chunk->content, this->currentBucket->chunk->content, CHUNK_CONTENT_SIZE);
 
                     if (this->currentBucket == this->stream->head) {
@@ -423,7 +409,7 @@ namespace ahead {
     BucketManager::BucketIterator::append() {
         auto newBucket = new BucketManager::Bucket(this->stream->size, this->version, nullptr, nullptr, nullptr, new BucketManager::Chunk);
 
-        newBucket->chunk->content = malloc(CHUNK_CONTENT_SIZE);
+        newBucket->chunk->content = aligned_alloc(4096, CHUNK_CONTENT_SIZE);
         *static_cast<oid_t*>(newBucket->chunk->content) = 0;
 
         this->log.push(this->stream->tail);

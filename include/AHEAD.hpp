@@ -26,23 +26,28 @@
 #include <ColumnStore.h>
 #include <column_storage/Storage.hpp>
 #include <column_operators/Operators.hpp>
+#include <AHEAD_Config.hpp>
 
 namespace ahead {
 
     class AHEAD {
-        static AHEAD * instance;
+        static std::shared_ptr<AHEAD> instance;
 
-        MetaRepositoryManager * mgrMeta;
-        TransactionManager * mgrTx;
+        AHEAD_Config config;
 
-        bool doConvertTableFilesOnLoad;
+        std::shared_ptr<MetaRepositoryManager> mgrMeta;
+        std::shared_ptr<TransactionManager> mgrTx;
 
         AHEAD(
-                const std::string& strBaseDir);
+                int argc,
+                const char * const * argv);
         AHEAD(
                 const AHEAD & other);
+
+    public:
         virtual ~AHEAD();
 
+    private:
         AHEAD & operator=(
                 const AHEAD & other);
 
@@ -51,17 +56,20 @@ namespace ahead {
          * Unconditionally returns the instance pointer. Client code must assure that createInstance()
          * is called at least once before getInstance().
          */
-        static AHEAD * getInstance();
+        static std::shared_ptr<AHEAD> getInstance();
 
         /**
          * Creates a new instance of AHEAD column store.
          * Arguments:
          *  * strBaseDir: path to the database files
          */
-        static AHEAD * createInstance(
-                const std::string & strBaseDir);
+        static std::shared_ptr<AHEAD> createInstance(
+                int argc,
+                const char * const * argv);
 
         static void destroyInstance();
+
+        const AHEAD_Config & getConfig();
 
         size_t loadTable(
                 const std::string & tableName,
@@ -76,11 +84,6 @@ namespace ahead {
                 const size_t size = static_cast<size_t>(-1),
                 const char * const delim = nullptr,
                 const bool ignoreMoreData = true);
-
-        bool isConvertTableFilesOnLoad();
-
-        void setConverttableFilesOnLoad(
-                bool newValue);
     };
 
 }

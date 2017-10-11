@@ -25,6 +25,8 @@
 
 namespace ahead {
 
+    std::array<std::string, 13> column_type_names = {"void", "tinyint", "shortint", "int", "bigint", "string", "fixed", "char", "restinyint", "resshortint", "resint", "resbigint", "resstring"};
+
     const typename v2_tinyint_t::type_t v2_tinyint_t::dhm_emptykey = static_cast<typename v2_tinyint_t::type_t>(-1);
     const typename v2_tinyint_t::type_t v2_tinyint_t::dhm_deletedkey = static_cast<typename v2_tinyint_t::type_t>(-2);
 

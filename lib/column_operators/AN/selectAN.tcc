@@ -22,55 +22,53 @@
 #ifndef SELECT_AN_TCC
 #define SELECT_AN_TCC
 
-#include <type_traits>
-
-#include <column_storage/Storage.hpp>
-#include <column_operators/ANbase.hpp>
-#include "selectAN_SSE.tcc"
 #include "selectAN_scalar.tcc"
+#include "selectAN_SSE.tcc"
 
 namespace ahead {
     namespace bat {
         namespace ops {
 
             namespace scalar {
+
                 template<template<typename > class Op, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                         BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold,
+                        typename Tail::type_t th,
                         resoid_t AOID) {
-                    return Private::SelectionAN1<Op, Head, Tail, false>::filter(arg, threshold, AOID);
+                    return Private::SelectionAN1<Op, Head, Tail, false>::filter(arg, th, AOID);
                 }
 
                 template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                         BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold1,
-                        typename Tail::type_t threshold2,
+                        typename Tail::type_t th1,
+                        typename Tail::type_t th2,
                         resoid_t AOID) {
-                    return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, false>::filter(arg, threshold1, threshold2, AOID);
+                    return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, false>::filter(arg, th1, th2, AOID);
                 }
 
                 template<template<typename > class Op, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                         BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold,
+                        typename Tail::type_t th,
                         typename Tail::v2_select_t::type_t ATR,
                         typename Tail::v2_select_t::type_t ATInvR,
                         resoid_t AOID) {
-                    return Private::SelectionAN1<Op, Head, Tail, true>::filter(arg, threshold, AOID, ATR, ATInvR);
+                    return Private::SelectionAN1<Op, Head, Tail, true>::filter(arg, th, AOID, ATR, ATInvR);
                 }
 
                 template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                 std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                         BAT<Head, Tail> * arg,
-                        typename Tail::type_t threshold1,
-                        typename Tail::type_t threshold2,
+                        typename Tail::type_t th1,
+                        typename Tail::type_t th2,
                         typename Tail::v2_select_t::type_t ATR,
                         typename Tail::v2_select_t::type_t ATInvR,
                         resoid_t AOID) {
-                    return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, true>::filter(arg, threshold1, threshold2, AOID, ATR, ATInvR);
+                    return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, true>::filter(arg, th1, th2, AOID, ATR, ATInvR);
                 }
+
             }
 
             namespace simd {
@@ -79,46 +77,46 @@ namespace ahead {
                     template<template<typename > class Op, typename Head, typename Tail>
                     std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                             BAT<Head, Tail> * arg,
-                            typename Tail::type_t threshold,
+                            typename Tail::type_t th,
                             resoid_t AOID) {
-                        return Private::SelectionAN1<Op, Head, Tail, false>::filter(arg, threshold, AOID);
+                        return Private::SelectionAN1<Op, Head, Tail, false>::filter(arg, th, AOID);
                     }
 
                     template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                     std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                             BAT<Head, Tail> * arg,
-                            typename Tail::type_t threshold1,
-                            typename Tail::type_t threshold2,
+                            typename Tail::type_t th1,
+                            typename Tail::type_t th2,
                             resoid_t AOID) {
-                        return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, false>::filter(arg, threshold1, threshold2, AOID);
+                        return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, false>::filter(arg, th1, th2, AOID);
                     }
 
                     template<template<typename > class Op, typename Head, typename Tail>
                     std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                             BAT<Head, Tail> * arg,
-                            typename Tail::type_t threshold,
+                            typename Tail::type_t th,
                             typename Tail::v2_select_t::type_t ATR,
                             typename Tail::v2_select_t::type_t ATInvR,
                             resoid_t AOID) {
-                        return Private::SelectionAN1<Op, Head, Tail, true>::filter(arg, threshold, AOID, ATR, ATInvR);
+                        return Private::SelectionAN1<Op, Head, Tail, true>::filter(arg, th, AOID, ATR, ATInvR);
                     }
 
                     template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
                     std::pair<BAT<typename TypeMap<Head>::v2_encoded_t::v2_select_t, typename Tail::v2_select_t> *, AN_indicator_vector *> selectAN(
                             BAT<Head, Tail> * arg,
-                            typename Tail::type_t threshold1,
-                            typename Tail::type_t threshold2,
+                            typename Tail::type_t th1,
+                            typename Tail::type_t th2,
                             typename Tail::v2_select_t::type_t ATR,
                             typename Tail::v2_select_t::type_t ATInvR,
                             resoid_t AOID) {
-                        return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, true>::filter(arg, threshold1, threshold2, AOID, ATR, ATInvR);
+                        return Private::SelectionAN2<Op1, Op2, OpCombine, Head, Tail, true>::filter(arg, th1, th2, AOID, ATR, ATInvR);
                     }
 
-                }
-            }
+                } /* sse */
+            } /* simd */
 
-        }
-    }
-}
+        } /* ops */
+    } /* bat */
+} /* ahead */
 
 #endif /* SELECT_AN_TCC */
