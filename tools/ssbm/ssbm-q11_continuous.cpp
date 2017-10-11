@@ -108,6 +108,7 @@ int main(
             CLEAR_JOIN_AN(tupleD);
             MEASURE_OP_TUPLE(tupleE, (matchjoinAN(bat5, batLDenc)));
             delete bat5;
+            CLEAR_JOIN_AN(tupleE);
             CLEAR_FETCHJOIN_AN(tupleE);
             MEASURE_OP_TUPLE(tupleF, (matchjoinAN(batC, std::get<0>(tupleE))));
             delete batC;
