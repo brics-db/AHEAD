@@ -71,12 +71,13 @@ MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode
 #add_static_lib(AHEAD "util/resilience.cpp \
 add_shared_lib(AHEAD "AHEAD.cpp \
 AHEAD_Config.cpp \
+util/AlignedAllocator.cpp \
+util/argumentparser.cpp \
+util/cpuid.cpp \
 util/resilience.cpp \
 util/rss.cpp \
 util/stopwatch.cpp \
 util/v2types.cpp \
-util/argumentparser.cpp \
-util/cpuid.cpp \
 column_storage/ColumnManager.cpp \
 column_storage/BucketManager.cpp \
 column_storage/ColumnManager.cpp \

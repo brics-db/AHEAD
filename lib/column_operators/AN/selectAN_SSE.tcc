@@ -103,7 +103,8 @@ namespace ahead {
 
                                 size_t pos = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    // TODO auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    auto mmTmp = _mm_stream_load_si128(pmmT);
                                     auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold); // comparison on encoded values
                                     mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
                                     pos += tailsPerMM128;
@@ -254,7 +255,8 @@ namespace ahead {
 
                                 size_t pos = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    // auto mmTmp = _mm_lddqu_si128(pmmT);
+                                    auto mmTmp = _mm_stream_load_si128(pmmT);
                                     // comparison on encoded values
                                     auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1);
                                     auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2);

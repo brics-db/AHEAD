@@ -3,16 +3,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/* 
+/*
  * File:   ColumnStore.h
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -26,6 +26,7 @@
 
 #include <util/v2types.hpp>
 #include <util/resilience.hpp>
+#include <util/memory.hpp>
 
 namespace ahead {
 
@@ -119,13 +120,6 @@ namespace ahead {
     typedef TempBAT<v2_void_t, v2_resoid_t> resoid_tmpbat_t;
     typedef TempBAT<v2_void_t, v2_resstr_t> resstr_tmpbat_t;
 
-    template<size_t alignment, typename T>
-    T*
-    align_to(
-            T * const pT) {
-        size_t tmp = reinterpret_cast<size_t>(pT);
-        return reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(pT) + (alignment - (tmp & (alignment - 1))));
-    }
 }
 
 #endif /* COLUMNSTORE_H */

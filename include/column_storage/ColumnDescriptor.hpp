@@ -36,6 +36,7 @@
 
 #include <ColumnStore.h>
 #include <column_storage/ColumnMetaData.hpp>
+#include <util/AlignedAllocator.hpp>
 
 namespace ahead {
 
@@ -43,7 +44,7 @@ namespace ahead {
     struct ColumnDescriptorContainerType {
 
         typedef typename V2Type::type_t type_t;
-        typedef std::vector<type_t> container_t;
+        typedef std::vector<type_t, AlignedAllocator<type_t>> container_t;
     };
 
     template<>
