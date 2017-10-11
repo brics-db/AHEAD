@@ -135,6 +135,22 @@ namespace ssb {
     std::vector<boost::typeindex::type_index> headTypes;
     std::vector<boost::typeindex::type_index> tailTypes;
 
+    int run(
+            int argc,
+            char ** argv,
+            std::function<int(
+                    int,
+                    char **)> runnable) {
+        try {
+            return runnable(argc, argv);
+        } catch (std::exception & e) {
+            std::cerr << "[ERROR] " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "[ERROR] Unanticipated exception caught!" << std::endl;
+        }
+        return 1;
+    }
+
     void init(
             int argc,
             const char * const * argv,

@@ -30,6 +30,7 @@
 #include <fstream>
 #include <limits>
 #include <stdexcept>
+#include <functional>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -146,6 +147,13 @@ namespace ssb {
     extern std::vector<bool> hasTwoTypes;
     extern std::vector<boost::typeindex::type_index> headTypes;
     extern std::vector<boost::typeindex::type_index> tailTypes;
+
+    int run(
+            int argc,
+            char ** argv,
+            std::function<int(
+                    int,
+                    char **)> runnable);
 
     void init(
             int argc,

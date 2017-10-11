@@ -66,7 +66,6 @@ namespace ahead {
                                     tail_select_t ATR = 1, // for reencoding
                                     tail_select_t ATInvR = 1 // for reencoding
                                     ) {
-                                // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                                 static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
 
@@ -78,7 +77,7 @@ namespace ahead {
                                 auto vec = tail_helper_t::createIndicatorVector();
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 if (reencode) {
                                     result->tail.metaData.AN_A = ATR;
                                     result->tail.metaData.AN_Ainv = ATInvR;
@@ -95,7 +94,6 @@ namespace ahead {
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
-                                auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 // we encode the OIDs here already and increase accordingly by multiples of AHead
                                 auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
                                 auto mmInc = mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead); // increase OIDs by number of larger types per vector
@@ -112,7 +110,6 @@ namespace ahead {
                                     if (reencode) {
                                         mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
                                     }
-                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t ratioHeadPerTail = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
@@ -130,8 +127,8 @@ namespace ahead {
                                     }
                                 }
 
-                                const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
-                                result->overwrite_size(numSelectedValues); // "register" the number of values we added
+                                const size_t numSelectedValues = pRH - reinterpret_cast<head_select_t*>(result->head.container->data());
+                                result->overwrite_size_head(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
                                 const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                                 *iter += (numFilteredValues);
@@ -145,7 +142,7 @@ namespace ahead {
                                         if (reencode) {
                                             t *= Areenc;
                                         }
-                                        result->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append_head(iter->head() * AHead);
                                     }
                                 }
                                 delete iter;
@@ -170,7 +167,6 @@ namespace ahead {
                                     __attribute__ ((unused)) resoid_t AOID,
                                     __attribute__ ((unused)) str_t ATR = nullptr,
                                     __attribute__ ((unused)) str_t ATInvR = nullptr) {
-                                // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
                                 // always encode head (will usually be a conversion from void -> oid)
@@ -178,13 +174,13 @@ namespace ahead {
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 auto iter = arg->begin();
                                 Op<int> op;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (op(strcmp(t, threshold), 0)) {
-                                        result->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append_head(iter->head() * AHead);
                                     }
                                 }
                                 delete iter;
@@ -219,7 +215,6 @@ namespace ahead {
                                     tail_select_t ATR = 1, // for reencoding
                                     tail_select_t ATInvR = 1 // for reencoding
                                     ) {
-                                // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                                 static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
@@ -232,7 +227,7 @@ namespace ahead {
                                 auto vec = tail_helper_t::createIndicatorVector();
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 if (reencode) {
                                     result->tail.metaData.AN_A = ATR;
                                     result->tail.metaData.AN_Ainv = ATInvR;
@@ -250,7 +245,6 @@ namespace ahead {
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
-                                auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 // we encode the OIDs here already and increase accordingly by multiples of AHead
                                 auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
                                 auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead);
@@ -270,7 +264,6 @@ namespace ahead {
                                     if (reencode) {
                                         mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
                                     }
-                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
@@ -290,8 +283,8 @@ namespace ahead {
                                     }
                                 }
 
-                                size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
-                                result->overwrite_size(numSelectedValues); // "register" the number of values we added
+                                size_t numSelectedValues = pRH - reinterpret_cast<head_select_t*>(result->head.container->data());
+                                result->overwrite_size_head(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
                                 const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                                 *iter += (numFilteredValues);
@@ -306,7 +299,7 @@ namespace ahead {
                                         if (reencode) {
                                             t *= Areenc;
                                         }
-                                        result->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append_head(iter->head() * AHead);
                                     }
                                 }
                                 delete iter;
@@ -334,7 +327,6 @@ namespace ahead {
                                     __attribute__ ((unused)) tail_select_t ATR = nullptr, // currently only to match the signature
                                     __attribute__ ((unused)) tail_select_t ATInvR = nullptr // cururently only to match the signature
                                     ) {
-                                // TODO for now we assume that selection is only done on base BATs!!! Of course, there could be selections on BATs with encoded heads!
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
@@ -343,14 +335,14 @@ namespace ahead {
                                 const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 auto iter = arg->begin();
                                 Op1<int> op1;
                                 Op2<int> op2;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(threshold1)), 0), op2(strcmp(t, std::forward<tail_select_t>(threshold2)), 0))) {
-                                        result->append(std::make_pair(iter->head() * AHead, t));
+                                        result->append_head(iter->head() * AHead);
                                     }
                                 }
                                 delete iter;

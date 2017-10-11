@@ -80,7 +80,7 @@ namespace ahead {
                             auto vec = tail_helper_t::createIndicatorVector();
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             if (reencode) {
                                 result->tail.metaData.AN_A = ATR;
                                 result->tail.metaData.AN_Ainv = ATInvR;
@@ -97,7 +97,7 @@ namespace ahead {
                                     if (reencode) {
                                         t *= Areenc;
                                     }
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;
@@ -128,13 +128,13 @@ namespace ahead {
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op<int> op;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (op(strcmp(t, threshold), 0)) {
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;
@@ -178,7 +178,7 @@ namespace ahead {
                             auto vec = tail_helper_t::createIndicatorVector();
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             if (reencode) {
                                 result->tail.metaData.AN_A = ATR;
                                 result->tail.metaData.AN_Ainv = ATInvR;
@@ -196,7 +196,7 @@ namespace ahead {
                                     if (reencode) {
                                         t *= Areenc;
                                     }
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;
@@ -230,14 +230,14 @@ namespace ahead {
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op1<int> op1;
                             Op2<int> op2;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(threshold1)), 0), op2(strcmp(t, std::forward<tail_select_t>(threshold2)), 0))) {
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;

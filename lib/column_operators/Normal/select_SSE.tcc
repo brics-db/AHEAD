@@ -59,7 +59,7 @@ namespace ahead {
                                     BAT<v2_void_t, Tail>* arg,
                                     tail_t th) {
                                 auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 auto mmThreshold = mm<__m128i, tail_t>::set1(th);
                                 auto szTail = arg->tail.container->size();
                                 auto pT = arg->tail.container->data();
@@ -67,7 +67,6 @@ namespace ahead {
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
-                                auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
                                 auto mmInc = mm<__m128i, head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)); // increase OIDs by number of larger types per vector
 
@@ -76,7 +75,6 @@ namespace ahead {
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                     auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
-                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t ratioHeadPerTail = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
@@ -93,7 +91,7 @@ namespace ahead {
                                     }
                                 }
 
-                                const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
+                                const size_t numSelectedValues = pRH - reinterpret_cast<head_select_t*>(result->head.container->data());
                                 result->overwrite_size(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
                                 const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
@@ -102,7 +100,7 @@ namespace ahead {
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (op(t, th)) {
-                                        result->append(std::make_pair(iter->head(), t));
+                                        result->append_head(iter->head());
                                     }
                                 }
                                 delete iter;
@@ -122,13 +120,13 @@ namespace ahead {
                                     BAT<v2_void_t, v2_str_t>* arg,
                                     str_t threshold) {
                                 auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 auto iter = arg->begin();
                                 Op<int> op;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (op(strcmp(t, threshold), 0)) {
-                                        result->append(std::make_pair(iter->head(), t));
+                                        result->append_head(iter->head());
                                     }
                                 }
                                 delete iter;
@@ -158,7 +156,7 @@ namespace ahead {
                                     tail_t th2) {
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                                 auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 auto mmThreshold1 = mm<__m128i, tail_t>::set1(th1);
                                 auto mmThreshold2 = mm<__m128i, tail_t>::set1(th2);
                                 auto szTail = arg->tail.container->size();
@@ -167,7 +165,6 @@ namespace ahead {
                                 auto pmmT = reinterpret_cast<__m128i *>(pT);
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
-                                auto pRT = reinterpret_cast<tail_select_t*>(result->tail.container->data());
                                 auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase); // fill the vector with increasing values starting at seqbase
                                 auto mmInc = mm<__m128i, head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t));
 
@@ -176,7 +173,6 @@ namespace ahead {
                                     auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1);
                                     auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2);
                                     auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(res1, res2);
-                                    mm<__m128i, tail_t>::pack_right2(pRT, mmTmp, mask);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
@@ -194,8 +190,8 @@ namespace ahead {
                                     }
                                 }
 
-                                const size_t numSelectedValues = pRT - reinterpret_cast<tail_select_t*>(result->tail.container->data());
-                                result->overwrite_size(numSelectedValues); // "register" the number of values we added
+                                const size_t numSelectedValues = pRH - reinterpret_cast<head_select_t*>(result->head.container->data());
+                                result->overwrite_size_head(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
                                 const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                                 *iter += numFilteredValues;
@@ -204,7 +200,7 @@ namespace ahead {
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (OpCombine<void>()(op1(t, std::forward<tail_t>(th1)), op2(t, std::forward<tail_t>(th2)))) {
-                                        result->append(std::make_pair(iter->head(), t));
+                                        result->append_head(iter->head());
                                     }
                                 }
                                 delete iter;
@@ -228,14 +224,14 @@ namespace ahead {
                                     tail_select_t th2) {
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                                 auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
-                                result->reserve(arg->size());
+                                result->reserve_head(arg->size());
                                 auto iter = arg->begin();
                                 Op1<int> op1;
                                 Op2<int> op2;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
                                     if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(th1)), 0), op2(strcmp(t, std::forward<tail_select_t>(th2)), 0))) {
-                                        result->append(std::make_pair(iter->head(), t));
+                                        result->append_head(iter->head());
                                     }
                                 }
                                 delete iter;

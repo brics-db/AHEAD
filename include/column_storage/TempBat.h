@@ -6,7 +6,7 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 //
@@ -23,9 +23,9 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@
 
 /***
  * @author Benjamin Schlegel
- * 
+ *
  */
 #ifndef TEMPBAT_H
 #define TEMPBAT_H
@@ -82,7 +82,17 @@ namespace ahead {
 
         virtual void reserve(
                 size_t n) {
+            this->reserve_head(n);
+            this->reserve_tail(n);
+        }
+
+        virtual void reserve_head(
+                size_t n) {
             this->head.container->reserve(n);
+        }
+
+        virtual void reserve_tail(
+                size_t n) {
             this->tail.container->reserve(n);
         }
 
@@ -106,12 +116,36 @@ namespace ahead {
             this->tail.container->push_back(p.second);
         }
 
+        virtual void append_head(
+                head_t h) {
+            this->head.container->push_back(h);
+        }
+
+        virtual void append_tail(
+                tail_t t) {
+            this->tail.container->push_back(t);
+        }
+
         virtual void overwrite_size(
+                size_t newSize) {
+            this->overwrite_size_head(newSize);
+            this->overwrite_size_tail(newSize);
+        }
+
+        virtual void overwrite_size_head(
                 size_t newSize) {
 #ifdef __GNUC__
             typedef std::_Vector_base<head_t, std::allocator<head_t>> BaseH;
             BaseH & base = (BaseH &) *this->head.container.get();
             base._M_impl._M_finish = base._M_impl._M_start + newSize;
+#else
+#error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
+#endif
+        }
+
+        virtual void overwrite_size_tail(
+                size_t newSize) {
+#ifdef __GNUC__
             typedef std::_Vector_base<tail_t, std::allocator<tail_t>> BaseT;
             BaseT & base2 = (BaseT &) *this->tail.container.get();
             base2._M_impl._M_finish = base2._M_impl._M_start + newSize;
@@ -304,6 +338,11 @@ namespace ahead {
 
         virtual void reserve(
                 size_t n) {
+            this->reserve_head(n);
+        }
+
+        virtual void reserve_head(
+                size_t n) {
             this->head.container->reserve(n);
         }
 
@@ -328,16 +367,21 @@ namespace ahead {
         }
 
         virtual void append(
-                head_t& h) {
+                head_t h) {
             this->head.container->push_back(h);
         }
 
-        virtual void append(
-                head_t&& h) {
-            this->head.container->push_back(std::forward<head_t>(h));
+        virtual void append_head(
+                head_t h) {
+            this->head.container->push_back(h);
         }
 
         virtual void overwrite_size(
+                size_t newSize) {
+            this->overwrite_size_head(newSize);
+        }
+
+        virtual void overwrite_size_head(
                 size_t newSize) {
 #ifdef __GNUC__
             typedef std::_Vector_base<head_t, std::allocator<head_t>> BaseH;
@@ -423,6 +467,11 @@ namespace ahead {
 
         virtual void reserve(
                 size_t n) {
+            this->reserve_tail(n);
+        }
+
+        virtual void reserve_tail(
+                size_t n) {
             this->tail.container->reserve(n);
         }
 
@@ -445,16 +494,21 @@ namespace ahead {
         }
 
         virtual void append(
-                tail_t& t) {
+                tail_t t) {
             this->tail.container->push_back(t);
         }
 
-        virtual void append(
-                tail_t&& t) {
-            this->tail.container->push_back(std::forward<tail_t>(t));
+        virtual void append_tail(
+                tail_t t) {
+            this->tail.container->push_back(t);
         }
 
         virtual void overwrite_size(
+                size_t newSize) {
+            this->overwrite_size_tail(newSize);
+        }
+
+        virtual void overwrite_size_tail(
                 size_t newSize) {
 #ifdef __GNUC__
             typedef std::_Vector_base<tail_t, std::allocator<tail_t>> BaseT;
