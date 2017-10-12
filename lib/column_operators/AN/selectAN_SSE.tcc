@@ -42,12 +42,11 @@ namespace ahead {
                 namespace sse {
                     namespace Private {
 
-                        template<template<typename > class Op, typename Head, typename Tail, bool reencode>
-                        struct SelectionAN1 {
-                        };
+                        template<template<typename > class Op, typename Head, typename Tail>
+                        struct SelectionAN1;
 
-                        template<template<typename > class Op, typename Tail, bool reencode>
-                        struct SelectionAN1<Op, v2_void_t, Tail, reencode> {
+                        template<template<typename > class Op, typename Tail>
+                        struct SelectionAN1<Op, v2_void_t, Tail> {
 
                             typedef v2_void_t Head;
                             typedef typename Head::type_t head_t;
@@ -63,10 +62,7 @@ namespace ahead {
                             static result_t filter(
                                     BAT<Head, Tail>* arg,
                                     tail_t th,
-                                    resoid_t AOID,
-                                    tail_select_t ATR = 1, // for reencoding
-                                    tail_select_t ATInvR = 1 // for reencoding
-                                    ) {
+                                    resoid_t AOID) {
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                                 static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
 
@@ -81,14 +77,8 @@ namespace ahead {
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve_head(arg->size());
-                                if (reencode) {
-                                    result->tail.metaData.AN_A = ATR;
-                                    result->tail.metaData.AN_Ainv = ATInvR;
-                                }
-                                tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
 
                                 auto mmATInv = mm<__m128i, tail_select_t>::set1(ATailInv);
-                                auto mmATReenc = mm<__m128i, tail_select_t>::set1(Areenc);
                                 auto mmDMax = mm<__m128i, tail_select_t>::set1(TailUnencMaxU);
                                 auto mmThreshold = mm<__m128i, tail_t>::set1(th);
                                 auto szTail = arg->tail.container->size();
@@ -103,16 +93,11 @@ namespace ahead {
                                 auto mmInc = mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead); // increase OIDs by number of larger types per vector
 
                                 const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
 
                                 size_t numCorruptedValues = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    // TODO auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto mmTmp = _mm_stream_load_si128(pmmT);
                                     auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold); // comparison on encoded values
-                                    if (reencode) {
-                                        mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
-                                    }
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t ratioHeadPerTail = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
@@ -131,6 +116,7 @@ namespace ahead {
                                     numCorruptedValues += mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, pIndicatorPos, posEnc, AOID); // we only need to check the tail types since the head is virtual anyways
                                 }
 
+                                overwrite_vector_size(vec, numCorruptedValues);
                                 const size_t numSelectedValues = pRH - reinterpret_cast<head_select_t*>(result->head.container->data());
                                 result->overwrite_size_head(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
@@ -143,9 +129,6 @@ namespace ahead {
                                         vec->push_back(pos * AOID);
                                     }
                                     if (op(t, th)) {
-                                        if (reencode) {
-                                            t *= Areenc;
-                                        }
                                         result->append_head(iter->head() * AHead);
                                     }
                                 }
@@ -156,7 +139,7 @@ namespace ahead {
                         };
 
                         template<template<typename > class Op>
-                        struct SelectionAN1<Op, v2_void_t, v2_str_t, false> {
+                        struct SelectionAN1<Op, v2_void_t, v2_str_t> {
 
                             typedef v2_void_t Head;
                             typedef typename Head::type_t head_t;
@@ -193,12 +176,11 @@ namespace ahead {
                             }
                         };
 
-                        template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail, bool reencode>
-                        struct SelectionAN2 {
-                        };
+                        template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
+                        struct SelectionAN2;
 
-                        template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Tail, bool reencode>
-                        struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, Tail, reencode> {
+                        template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Tail>
+                        struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, Tail> {
 
                             typedef v2_void_t Head;
                             typedef typename Head::type_t head_t;
@@ -213,12 +195,9 @@ namespace ahead {
 
                             static result_t filter(
                                     BAT<Head, Tail> * arg,
-                                    tail_t threshold1,
-                                    tail_t threshold2,
-                                    resoid_t AOID,
-                                    tail_select_t ATR = 1, // for reencoding
-                                    tail_select_t ATInvR = 1 // for reencoding
-                                    ) {
+                                    tail_t th1,
+                                    tail_t th2,
+                                    resoid_t AOID) {
                                 static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                                 static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
                                 static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
@@ -234,17 +213,11 @@ namespace ahead {
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve_head(arg->size());
-                                if (reencode) {
-                                    result->tail.metaData.AN_A = ATR;
-                                    result->tail.metaData.AN_Ainv = ATInvR;
-                                }
-                                tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
 
                                 auto mmATInv = mm<__m128i, tail_select_t>::set1(ATailInv);
-                                auto mmATReenc = mm<__m128i, tail_select_t>::set1(Areenc);
                                 auto mmDMax = mm<__m128i, tail_select_t>::set1(TailUnencMaxU);
-                                auto mmThreshold1 = mm<__m128i, tail_t>::set1(threshold1);
-                                auto mmThreshold2 = mm<__m128i, tail_t>::set1(threshold2);
+                                auto mmThreshold1 = mm<__m128i, tail_t>::set1(th1);
+                                auto mmThreshold2 = mm<__m128i, tail_t>::set1(th2);
                                 auto szTail = arg->tail.container->size();
                                 auto pT = arg->tail.container->data();
                                 auto pTEnd = pT + szTail;
@@ -252,33 +225,26 @@ namespace ahead {
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
                                 // we encode the OIDs here already and increase accordingly by multiples of AHead
-                                auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
+                                resoid_t posEnc = arg->head.metaData.seqbase * AHead;
+                                auto mmOID = mm<__m128i, head_select_t>::set_inc(posEnc, AHead); // fill the vector with increasing values starting at seqbase
                                 auto mmInc = mm<__m128i, head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead);
 
                                 const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
-                                const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
 
+                                size_t numCorruptedValues = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    // auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto mmTmp = _mm_stream_load_si128(pmmT);
                                     // comparison on encoded values
                                     auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1);
                                     auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2);
                                     auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(res1, res2);
-                                    mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
-                                    pos += tailsPerMM128;
-                                    if (reencode) {
-                                        mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
-                                    }
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                         auto maskTmp = mask;
                                         for (size_t i = 0; i < factor; ++i) {
                                             auto actMask = maskTmp & maskMask;
-                                            if (actMask) {
-                                                mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
-                                            }
+                                            mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, actMask);
                                             mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                             maskTmp >>= headsPerMM128;
                                         }
@@ -287,8 +253,10 @@ namespace ahead {
                                         mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
+                                    numCorruptedValues += mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, pIndicatorPos, posEnc, AOID); // we only need to check the tail types since the head is virtual anyways
                                 }
 
+                                overwrite_vector_size(vec, numCorruptedValues);
                                 size_t numSelectedValues = pRH - reinterpret_cast<head_select_t*>(result->head.container->data());
                                 result->overwrite_size_head(numSelectedValues); // "register" the number of values we added
                                 auto iter = arg->begin();
@@ -296,15 +264,12 @@ namespace ahead {
                                 *iter += (numFilteredValues);
                                 Op1<tail_t> op1;
                                 Op2<tail_t> op2;
-                                for (; iter->hasNext(); ++*iter, ++pos) {
+                                for (size_t pos = (reinterpret_cast<decltype(pT)>(pmmT) - pT); iter->hasNext(); ++*iter, ++pos) {
                                     auto t = iter->tail();
                                     if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
                                         vec->push_back(pos * AOID);
                                     }
-                                    if (OpCombine<void>()(op1(t, std::forward<tail_t>(threshold1)), op2(t, std::forward<tail_t>(threshold2)))) {
-                                        if (reencode) {
-                                            t *= Areenc;
-                                        }
+                                    if (OpCombine<void>()(op1(t, std::forward<tail_t>(th1)), op2(t, std::forward<tail_t>(th2)))) {
                                         result->append_head(iter->head() * AHead);
                                     }
                                 }
@@ -315,7 +280,7 @@ namespace ahead {
                         };
 
                         template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine>
-                        struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, v2_str_t, false> {
+                        struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, v2_str_t> {
 
                             typedef v2_void_t Head;
                             typedef typename Head::type_t head_t;

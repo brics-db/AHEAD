@@ -24,13 +24,13 @@
 #include <cstdlib>
 #include <vector>
 
-template<typename T, template<typename > class vec_allocator>
+template<typename T, typename vec_allocator>
 void overwrite_vector_size(
-        std::vector<T, vec_allocator> vec,
+        std::vector<T, vec_allocator> * vec,
         size_t newSize) {
 #ifdef __GNUC__
     typedef std::_Vector_base<T, vec_allocator> vec_base_t;
-    vec_base_t & base = (vec_base_t &) *vec.get();
+    vec_base_t & base = (vec_base_t &) *vec;
     base._M_impl._M_finish = base._M_impl._M_start + newSize;
 #else
 #error "overwrite_size is only supported for GCC compilers, i.e. when macro __GNUC__ is defined"
