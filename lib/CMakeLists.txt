@@ -140,4 +140,4 @@ column_operators/AN/selectAN_str.cpp \
 column_operators/SIMD/SSE.cpp \
 column_operators/SIMD/AVX2.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
-TARGET_COMPILE_OPTIONS(AHEAD PUBLIC "-Wno-ignored-attributes")
+TARGET_COMPILE_OPTIONS(AHEAD PUBLIC "-Wno-ignored-attributes" "-ffast-math")

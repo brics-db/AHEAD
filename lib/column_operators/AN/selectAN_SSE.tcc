@@ -96,9 +96,12 @@ namespace ahead {
 
                                 size_t numCorruptedValues = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mmTmp = _mm_stream_load_si128(pmmT);
+                                    auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold); // comparison on encoded values
-                                    if (larger_type<head_select_t, tail_t>::isFirstLarger) {
+                                    auto p2 = pIndicatorPos;
+                                    mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, pIndicatorPos, posEnc, AOID); // we only need to check the tail types since the head is virtual anyways
+                                    numCorruptedValues += pIndicatorPos - p2;
+                                    if constexpr (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t ratioHeadPerTail = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                         auto maskTmp = mask;
@@ -113,7 +116,6 @@ namespace ahead {
                                         mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
-                                    numCorruptedValues += mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, pIndicatorPos, posEnc, AOID); // we only need to check the tail types since the head is virtual anyways
                                 }
 
                                 overwrite_vector_size(vec, numCorruptedValues);
@@ -150,7 +152,7 @@ namespace ahead {
 
                             static result_t filter(
                                     BAT<Head, v2_str_t> * arg,
-                                    str_t threshold,
+                                    str_t th,
                                     __attribute__ ((unused)) resoid_t AOID,
                                     __attribute__ ((unused)) str_t ATR = nullptr,
                                     __attribute__ ((unused)) str_t ATInvR = nullptr) {
@@ -166,7 +168,7 @@ namespace ahead {
                                 Op<int> op;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
-                                    if (op(strcmp(t, threshold), 0)) {
+                                    if (op(strcmp(t, th), 0)) {
                                         result->append_head(iter->head() * AHead);
                                     }
                                 }
@@ -233,12 +235,16 @@ namespace ahead {
 
                                 size_t numCorruptedValues = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    auto mmTmp = _mm_stream_load_si128(pmmT);
+                                    auto mmTmp = _mm_lddqu_si128(pmmT);
                                     // comparison on encoded values
                                     auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1);
                                     auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2);
                                     auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(res1, res2);
-                                    if (larger_type<head_select_t, tail_t>::isFirstLarger) {
+                                    // error detection
+                                    auto p2 = pIndicatorPos;
+                                    mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, pIndicatorPos, posEnc, AOID); // we only need to check the tail types since the head is virtual anyways
+                                    numCorruptedValues += pIndicatorPos - p2;
+                                    if constexpr (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t factor = sizeof(head_select_t) / sizeof(tail_t);
                                         const constexpr tail_mask_t maskMask = static_cast<tail_mask_t>((1ull << headsPerMM128) - 1);
                                         auto maskTmp = mask;
@@ -253,7 +259,6 @@ namespace ahead {
                                         mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
-                                    numCorruptedValues += mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, pIndicatorPos, posEnc, AOID); // we only need to check the tail types since the head is virtual anyways
                                 }
 
                                 overwrite_vector_size(vec, numCorruptedValues);
@@ -292,8 +297,8 @@ namespace ahead {
 
                             static result_t filter(
                                     BAT<Head, v2_str_t> * arg,
-                                    tail_select_t threshold1,
-                                    tail_select_t threshold2,
+                                    tail_select_t th1,
+                                    tail_select_t th2,
                                     __attribute__ ((unused)) resoid_t AOID,
                                     __attribute__ ((unused)) tail_select_t ATR = nullptr, // currently only to match the signature
                                     __attribute__ ((unused)) tail_select_t ATInvR = nullptr // cururently only to match the signature
@@ -312,7 +317,7 @@ namespace ahead {
                                 Op2<int> op2;
                                 for (; iter->hasNext(); ++*iter) {
                                     auto t = iter->tail();
-                                    if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(threshold1)), 0), op2(strcmp(t, std::forward<tail_select_t>(threshold2)), 0))) {
+                                    if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(th1)), 0), op2(strcmp(t, std::forward<tail_select_t>(th2)), 0))) {
                                         result->append_head(iter->head() * AHead);
                                     }
                                 }

@@ -73,8 +73,7 @@ namespace ahead {
                                 const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
 
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    // TODO auto mmTmp = _mm_lddqu_si128(pmmT);
-                                    auto mmTmp = _mm_stream_load_si128(pmmT);
+                                    auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold);
                                     if (larger_type<head_select_t, tail_t>::isFirstLarger) {
                                         const constexpr size_t ratioHeadPerTail = sizeof(head_select_t) / sizeof(tail_t);
@@ -170,8 +169,7 @@ namespace ahead {
                                 auto mmInc = mm<__m128i, head_select_t>::set1(sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t));
 
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
-                                    // TODO auto mmTmp = _mm_lddqu_si128(pmmT);
-                                    auto mmTmp = _mm_stream_load_si128(pmmT);
+                                    auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto res1 = mm_op<__m128i, tail_t, Op1>::cmp(mmTmp, mmThreshold1);
                                     auto res2 = mm_op<__m128i, tail_t, Op2>::cmp(mmTmp, mmThreshold2);
                                     auto mask = mm_op<__m128i, tail_t, OpCombine>::cmp_mask(res1, res2);

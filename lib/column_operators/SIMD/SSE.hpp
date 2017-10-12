@@ -62,6 +62,8 @@ namespace ahead {
 
                     typedef sse::mm128<T> BASE;
 
+                    using BASE::mask_t;
+
                     using BASE::set;
                     using BASE::set1;
                     using BASE::set_inc;

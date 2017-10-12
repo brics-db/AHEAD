@@ -35,6 +35,23 @@ namespace ahead {
             namespace simd {
                 namespace sse {
 
+                    namespace Private {
+
+                        template<typename mask_t, size_t step>
+                        static inline constexpr void write_out(
+                                resoid_t * & pIndicatorPos,
+                                resoid_t posEnc,
+                                resoid_t AOID,
+                                mask_t mask) {
+                            *pIndicatorPos = posEnc;
+                            pIndicatorPos += mask & 0x1;
+                            if constexpr (step > 1) {
+                                write_out<mask_t, step - 1>(pIndicatorPos, posEnc + AOID, AOID, mask >> 1);
+                            }
+                        }
+
+                    }
+
                     template<typename V, typename T>
                     struct mmAN;
 
@@ -43,7 +60,7 @@ namespace ahead {
 
                         static const constexpr size_t units_per_vector = sizeof(__m128i ) / sizeof(T);
 
-                        typedef typename mm_op<__m128i, T, std::greater>::mask_t mask_t;
+                        typedef typename mm128<T>::mask_t mask_t;
 
                         static inline mask_t detect(
                                 __m128i mmCol,
@@ -89,19 +106,7 @@ namespace ahead {
                             }
                         }
 
-                        template<size_t step>
-                        constexpr void write_out(
-                                resoid_t * & pIndicatorPos,
-                                resoid_t & posEnc,
-                                resoid_t AOID,
-                                mask_t mask) {
-                            *pIndicatorPos = posEnc;
-                            posEnc += AOID;
-                            pIndicatorPos += mask & 0x1;
-                            write_out<step - 1>(pIndicatorPos, posEnc, AOID, mask >> 1);
-                        }
-
-                        static inline size_t detect(
+                        static inline void detect(
                                 __m128i & mmCol,
                                 __m128i & mmInv,
                                 __m128i & mmDMax,
@@ -109,8 +114,10 @@ namespace ahead {
                                 resoid_t & posEnc,
                                 resoid_t AOID) {
                             mask_t mask = mm_op<__m128i, T, std::greater>::cmp_mask(mm<__m128i, T>::mullo(mmCol, mmInv), mmDMax);
-                            write_out<units_per_vector>(pIndicatorPos, posEnc, AOID, mask);
-                            return __builtin_popcountll(mask);
+                            if (!mask) {
+                            } else {
+                                Private::write_out<mask_t, units_per_vector>(pIndicatorPos, posEnc, AOID, mask);
+                            }
                         }
 
                     };
