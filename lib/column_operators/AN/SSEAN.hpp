@@ -41,7 +41,7 @@ namespace ahead {
                     template<typename T>
                     struct mmAN<__m128i, T> {
 
-                        static const constexpr size_t steps = sizeof(__m128i ) / sizeof(T);
+                        static const constexpr size_t units_per_vector = sizeof(__m128i ) / sizeof(T);
 
                         typedef typename mm_op<__m128i, T, std::greater>::mask_t mask_t;
 
@@ -57,7 +57,7 @@ namespace ahead {
                                 return maskGT;
                             } else {
                                 decltype(maskGT) test = 1;
-                                for (size_t k = 0; k < steps; ++k, test <<= 1) {
+                                for (size_t k = 0; k < units_per_vector; ++k, test <<= 1) {
                                     if (maskGT & test) {
                                         vec->push_back((pos + k) * Aoid);
                                     }
@@ -80,13 +80,37 @@ namespace ahead {
                                 return maskGT;
                             } else {
                                 decltype(maskGT) test = 1;
-                                for (size_t k = 0; k < steps; ++k, test <<= 1) {
+                                for (size_t k = 0; k < units_per_vector; ++k, test <<= 1) {
                                     if (maskGT & test) {
                                         vec->push_back((pos + k) * Aoid);
                                     }
                                 }
                                 return maskGT;
                             }
+                        }
+
+                        template<size_t step>
+                        constexpr void write_out(
+                                resoid_t * & pIndicatorPos,
+                                resoid_t & posEnc,
+                                resoid_t AOID,
+                                mask_t mask) {
+                            *pIndicatorPos = posEnc;
+                            posEnc += AOID;
+                            pIndicatorPos += mask & 0x1;
+                            write_out<step - 1>(pIndicatorPos, posEnc, AOID, mask >> 1);
+                        }
+
+                        static inline size_t detect(
+                                __m128i & mmCol,
+                                __m128i & mmInv,
+                                __m128i & mmDMax,
+                                resoid_t * & pIndicatorPos,
+                                resoid_t & posEnc,
+                                resoid_t AOID) {
+                            mask_t mask = mm_op<__m128i, T, std::greater>::cmp_mask(mm<__m128i, T>::mullo(mmCol, mmInv), mmDMax);
+                            write_out<units_per_vector>(pIndicatorPos, posEnc, AOID, mask);
+                            return __builtin_popcountll(mask);
                         }
 
                     };

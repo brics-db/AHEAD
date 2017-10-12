@@ -27,6 +27,7 @@
 #include "../miscellaneous.hpp"
 #include "SSEAN.hpp"
 #include "ANhelper.tcc"
+#include <util/utility.hpp>
 
 #ifdef __GNUC__
 #pragma GCC target "sse4.2"
@@ -75,6 +76,8 @@ namespace ahead {
                                 const tail_select_t ATailInv = static_cast<tail_t>(arg->tail.metaData.AN_Ainv);
                                 const tail_select_t TailUnencMaxU = static_cast<tail_t>(arg->tail.metaData.AN_unencMaxU);
                                 auto vec = tail_helper_t::createIndicatorVector();
+                                auto pIndicatorPos = vec->data();
+                                // TODO we would have to reserve as much space as we assume that there will be corrupt values
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve_head(arg->size());
@@ -95,19 +98,18 @@ namespace ahead {
                                 auto pmmTEnd = reinterpret_cast<__m128i *>(pTEnd);
                                 auto pRH = reinterpret_cast<head_select_t*>(result->head.container->data());
                                 // we encode the OIDs here already and increase accordingly by multiples of AHead
-                                auto mmOID = mm<__m128i, head_select_t>::set_inc(arg->head.metaData.seqbase * AHead, AHead); // fill the vector with increasing values starting at seqbase
+                                resoid_t posEnc = arg->head.metaData.seqbase * AHead;
+                                auto mmOID = mm<__m128i, head_select_t>::set_inc(posEnc, AHead); // fill the vector with increasing values starting at seqbase
                                 auto mmInc = mm128<head_select_t>::set1((sizeof(__m128i) / sizeof (typename larger_type<head_select_t, tail_select_t>::type_t)) * AHead); // increase OIDs by number of larger types per vector
 
                                 const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
                                 const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
 
-                                size_t pos = 0;
+                                size_t numCorruptedValues = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                     // TODO auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto mmTmp = _mm_stream_load_si128(pmmT);
                                     auto mask = mm_op<__m128i, tail_t, Op>::cmp_mask(mmTmp, mmThreshold); // comparison on encoded values
-                                    mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, vec, pos, AOID); // we only need to check the tail types since the head is virtual anyways
-                                    pos += tailsPerMM128;
                                     if (reencode) {
                                         mmTmp = mm<__m128i, tail_t>::mullo(mmTmp, mmATReenc);
                                     }
@@ -126,6 +128,7 @@ namespace ahead {
                                         mm<__m128i, head_select_t>::pack_right2(pRH, mmOID, mask);
                                         mmOID = mm<__m128i, head_select_t>::add(mmOID, mmInc);
                                     }
+                                    numCorruptedValues += mmAN<__m128i, tail_t>::detect(mmTmp, mmATInv, mmDMax, pIndicatorPos, posEnc, AOID); // we only need to check the tail types since the head is virtual anyways
                                 }
 
                                 const size_t numSelectedValues = pRH - reinterpret_cast<head_select_t*>(result->head.container->data());
@@ -134,7 +137,7 @@ namespace ahead {
                                 const size_t numFilteredValues = reinterpret_cast<tail_select_t*>(pmmT) - pT;
                                 *iter += (numFilteredValues);
                                 Op<tail_t> op;
-                                for (; iter->hasNext(); ++*iter, ++pos) {
+                                for (size_t pos = (reinterpret_cast<decltype(pT)>(pmmT) - pT); iter->hasNext(); ++*iter, ++pos) {
                                     auto t = iter->tail();
                                     if (static_cast<tail_select_t>(t * ATailInv) > TailUnencMaxU) {
                                         vec->push_back(pos * AOID);
@@ -226,6 +229,8 @@ namespace ahead {
                                 const tail_select_t ATailInv = static_cast<tail_select_t>(arg->tail.metaData.AN_Ainv);
                                 const tail_select_t TailUnencMaxU = static_cast<tail_select_t>(arg->tail.metaData.AN_unencMaxU);
                                 auto vec = tail_helper_t::createIndicatorVector();
+                                auto pIndicatorPos = vec->data();
+                                // TODO we would have to reserve as much space as we assume that there will be corrupt values
                                 auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                                 result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
                                 result->reserve_head(arg->size());
@@ -253,7 +258,6 @@ namespace ahead {
                                 const constexpr size_t headsPerMM128 = sizeof(__m128i) / sizeof (head_select_t);
                                 const constexpr size_t tailsPerMM128 = sizeof(__m128i) / sizeof (tail_select_t);
 
-                                size_t pos = 0;
                                 for (; pmmT <= (pmmTEnd - 1); ++pmmT) {
                                     // auto mmTmp = _mm_lddqu_si128(pmmT);
                                     auto mmTmp = _mm_stream_load_si128(pmmT);
