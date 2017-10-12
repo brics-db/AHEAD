@@ -76,13 +76,15 @@ int main(
             CLEAR_SELECT_AN(pair2);
             auto bat3 = pair1.first->mirror_head();// prepare joined selection (select from lineorder where lo_quantity... and lo_discount)
             delete pair1.first;
-            MEASURE_OP_TUPLE(tuple4, matchjoinAN(bat3, pair2.first, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<4>(*v2_restiny_t::As), std::get<4>(*v2_restiny_t::Ainvs)));// join selection
-            delete bat3;
+            auto batZ = pair2.first->mirror_head();
             delete pair2.first;
+            MEASURE_OP_TUPLE(tuple4, matchjoinAN(bat3, batZ, std::get<14>(*v2_resoid_t::As), std::get<14>(*v2_resoid_t::Ainvs), std::get<4>(*v2_restiny_t::As), std::get<4>(*v2_restiny_t::Ainvs)));// join selection
+            delete bat3;
+            delete batZ;
             CLEAR_JOIN_AN(tuple4);
             auto bat5 = std::get<0>(tuple4)->mirror_head();// prepare joined selection with lo_orderdate (contains positions in tail)
+            delete std::get<0>(tuple4);
             MEASURE_OP_TUPLE(tuple6, matchjoinAN(bat5, batLOenc, std::get<13>(*v2_resoid_t::As), std::get<13>(*v2_resoid_t::Ainvs), std::get<14>(*v2_resint_t::As), std::get<14>(*v2_resint_t::Ainvs)));// only those lo_orderdates where lo_quantity... and lo_discount
-            delete bat5;
             CLEAR_JOIN_AN(tuple6);
 
             // 2) select from date (join inbetween to reduce the number of lines we touch in total)
@@ -107,22 +109,25 @@ int main(
             delete std::get<0>(tupleB);
             MEASURE_OP_TUPLE(tupleD, (matchjoinAN(batC, batLEenc, std::get<9>(*v2_resoid_t::As), std::get<9>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs))));
             CLEAR_JOIN_AN(tupleD);
-            MEASURE_OP_TUPLE(tupleE,
-                    (matchjoinAN(batC, std::get<0>(tuple4), std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As), std::get<3>(*v2_restiny_t::Ainvs))));
-            delete batC;
-            delete std::get<0>(tuple4);
+            MEASURE_OP_TUPLE(tupleE, (matchjoinAN(bat5, batLDenc, std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As), std::get<3>(*v2_restiny_t::Ainvs))));
+            delete bat5;
             CLEAR_JOIN_AN(tupleE);
+            MEASURE_OP_TUPLE(tupleF,
+                    (matchjoinAN(batC, std::get<0>(tupleE), std::get<7>(*v2_resoid_t::As), std::get<7>(*v2_resoid_t::Ainvs), std::get<2>(*v2_restiny_t::As), std::get<2>(*v2_restiny_t::Ainvs))));
+            delete batC;
+            delete std::get<0>(tupleE);
+            CLEAR_JOIN_AN(tupleF);
 
             // 4) result
-            MEASURE_OP_TUPLE(tupleF, (aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleE))));
+            MEASURE_OP_TUPLE(tupleG, (aggregate_mul_sumAN<v2_resbigint_t>(std::get<0>(tupleD), std::get<0>(tupleF))));
             delete std::get<0>(tupleD);
-            delete std::get<0>(tupleE);
-            delete std::get<1>(tupleF);
-            delete std::get<2>(tupleF);
-            auto iter = std::get<0>(tupleF)->begin();
-            auto result = iter->tail() * std::get<0>(tupleF)->tail.metaData.AN_Ainv;
-            delete iter;
             delete std::get<0>(tupleF);
+            delete std::get<1>(tupleG);
+            delete std::get<2>(tupleG);
+            auto iter = std::get<0>(tupleG)->begin();
+            auto result = iter->tail() * std::get<0>(tupleG)->tail.metaData.AN_Ainv;
+            delete iter;
+            delete std::get<0>(tupleG);
 
             ssb::after_query(i, result);
         }
