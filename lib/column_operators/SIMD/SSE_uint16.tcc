@@ -249,13 +249,6 @@ namespace ahead {
 
                     inline uint8_t v2_mm128_compact_mask_uint16_t(
                             __m128i mask) {
-                        /*
-                         mask = mask & 0x5555;
-                         mask = ((mask >> 1) | mask) & 0x3333;
-                         mask = ((mask >> 2) | mask) & 0x0F0F;
-                         mask = ((mask >> 4) | mask) & 0x00FF;
-                         return static_cast<uint8_t>(mask);
-                         */
                         return static_cast<uint8_t>(_mm_movemask_epi8(_mm_shuffle_epi8(mask, _mm_set_epi64x(0xFFFFFFFFFFFFFFFFull, 0x0E0C0A0806040200ull))));
                     }
 

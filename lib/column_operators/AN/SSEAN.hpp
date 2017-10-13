@@ -35,15 +35,32 @@ namespace ahead {
             namespace simd {
                 namespace sse {
 
+                    namespace Private {
+
+                        template<typename mask_t, size_t step>
+                        static inline constexpr void write_out(
+                                resoid_t * & pIndicatorPos,
+                                resoid_t posEnc,
+                                resoid_t AOID,
+                                mask_t mask) {
+                            *pIndicatorPos = posEnc;
+                            pIndicatorPos += mask & 0x1;
+                            if constexpr (step > 1) {
+                                write_out<mask_t, step - 1>(pIndicatorPos, posEnc + AOID, AOID, mask >> 1);
+                            }
+                        }
+
+                    }
+
                     template<typename V, typename T>
                     struct mmAN;
 
                     template<typename T>
                     struct mmAN<__m128i, T> {
 
-                        static const constexpr size_t steps = sizeof(__m128i ) / sizeof(T);
+                        static const constexpr size_t units_per_vector = sizeof(__m128i ) / sizeof(T);
 
-                        typedef typename mm_op<__m128i, T, std::greater>::mask_t mask_t;
+                        typedef typename mm128<T>::mask_t mask_t;
 
                         static inline mask_t detect(
                                 __m128i mmCol,
@@ -57,7 +74,7 @@ namespace ahead {
                                 return maskGT;
                             } else {
                                 decltype(maskGT) test = 1;
-                                for (size_t k = 0; k < steps; ++k, test <<= 1) {
+                                for (size_t k = 0; k < units_per_vector; ++k, test <<= 1) {
                                     if (maskGT & test) {
                                         vec->push_back((pos + k) * Aoid);
                                     }
@@ -80,12 +97,26 @@ namespace ahead {
                                 return maskGT;
                             } else {
                                 decltype(maskGT) test = 1;
-                                for (size_t k = 0; k < steps; ++k, test <<= 1) {
+                                for (size_t k = 0; k < units_per_vector; ++k, test <<= 1) {
                                     if (maskGT & test) {
                                         vec->push_back((pos + k) * Aoid);
                                     }
                                 }
                                 return maskGT;
+                            }
+                        }
+
+                        static inline void detect(
+                                __m128i & mmCol,
+                                __m128i & mmInv,
+                                __m128i & mmDMax,
+                                resoid_t * & pIndicatorPos,
+                                resoid_t & posEnc,
+                                resoid_t AOID) {
+                            mask_t mask = mm_op<__m128i, T, std::greater>::cmp_mask(mm<__m128i, T>::mullo(mmCol, mmInv), mmDMax);
+                            if (!mask) {
+                            } else {
+                                Private::write_out<mask_t, units_per_vector>(pIndicatorPos, posEnc, AOID, mask);
                             }
                         }
 

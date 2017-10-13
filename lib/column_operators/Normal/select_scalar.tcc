@@ -61,13 +61,13 @@ namespace ahead {
                                 BAT<v2_void_t, Tail>* arg,
                                 tail_t th) {
                             auto result = skeleton<head_select_t, tail_select_t>(arg);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op<typename Tail::v2_compare_t::type_t> op;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (op(t, th)) {
-                                    result->append(std::make_pair(iter->head(), t));
+                                    result->append_head(iter->head());
                                 }
                             }
                             delete iter;
@@ -86,13 +86,13 @@ namespace ahead {
                                 BAT<v2_void_t, v2_str_t>* arg,
                                 str_t threshold) {
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op<int> op;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (op(strcmp(t, threshold), 0)) {
-                                    result->append(std::make_pair(iter->head(), t));
+                                    result->append_head(iter->head());
                                 }
                             }
                             delete iter;
@@ -118,14 +118,14 @@ namespace ahead {
                                 tail_t th2) {
                             static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op1<typename Tail::v2_compare_t::type_t> op1;
                             Op2<typename Tail::v2_compare_t::type_t> op2;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (OpCombine<void>()(op1(t, std::forward<tail_t>(th1)), op2(t, std::forward<tail_t>(th2)))) {
-                                    result->append(std::make_pair(iter->head(), t));
+                                    result->append_head(iter->head());
                                 }
                             }
                             delete iter;
@@ -147,14 +147,14 @@ namespace ahead {
                                 tail_select_t th2) {
                             static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
                             auto result = skeleton<v2_head_select_t, v2_tail_select_t>(arg);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op1<int> op1;
                             Op2<int> op2;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(th1)), 0), op2(strcmp(t, std::forward<tail_select_t>(th2)), 0))) {
-                                    result->append(std::make_pair(iter->head(), t));
+                                    result->append_head(iter->head());
                                 }
                             }
                             delete iter;

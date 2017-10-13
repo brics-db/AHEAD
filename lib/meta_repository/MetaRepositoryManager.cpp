@@ -315,7 +315,11 @@ namespace ahead {
             // reverse will not work here, because we need the bat id, not the table id
             auto batAttrOIDForTable = batAttrFKTableId->mirror_head();
             delete batAttrFKTableId;
-            auto batAttributesNamesFiltered = ahead::bat::ops::scalar::select<std::equal_to>(attributes_name, const_cast<str_t>(attributeName));
+            auto batAttributesNamesFilteredOIDs = ahead::bat::ops::scalar::select<std::equal_to>(attributes_name, const_cast<str_t>(attributeName));
+            auto batAttributesNamesFilteredOIDsM = batAttributesNamesFilteredOIDs->mirror_head();
+            delete batAttributesNamesFilteredOIDs;
+            auto batAttributesNamesFiltered = ahead::bat::ops::matchjoin(batAttributesNamesFilteredOIDsM, attributes_name);
+            delete batAttributesNamesFilteredOIDsM;
             auto batAttrOIDNamesForTable = ahead::bat::ops::matchjoin(batAttrOIDForTable, batAttributesNamesFiltered);
             delete batAttrOIDForTable;
             delete batAttributesNamesFiltered;

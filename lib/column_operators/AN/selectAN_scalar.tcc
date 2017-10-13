@@ -46,12 +46,11 @@ namespace ahead {
             namespace scalar {
                 namespace Private {
 
-                    template<template<typename > class Op, typename Head, typename Tail, bool reencode>
-                    struct SelectionAN1 {
-                    };
+                    template<template<typename > class Op, typename Head, typename Tail>
+                    struct SelectionAN1;
 
-                    template<template<typename > class Op, typename Tail, bool reencode>
-                    struct SelectionAN1<Op, v2_void_t, Tail, reencode> {
+                    template<template<typename > class Op, typename Tail>
+                    struct SelectionAN1<Op, v2_void_t, Tail> {
 
                         typedef v2_void_t Head;
                         typedef typename Head::type_t head_t;
@@ -66,9 +65,7 @@ namespace ahead {
                         static result_t filter(
                                 BAT<Head, Tail>* arg,
                                 typename Tail::type_t threshold,
-                                resoid_t AOID,
-                                tail_select_t ATR = 1,
-                                tail_select_t ATInvR = 1) {
+                                resoid_t AOID) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                             static_assert(tail_helper_t::isEncoded, "Tail must be an AN-encoded type");
 
@@ -80,12 +77,7 @@ namespace ahead {
                             auto vec = tail_helper_t::createIndicatorVector();
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
-                            if (reencode) {
-                                result->tail.metaData.AN_A = ATR;
-                                result->tail.metaData.AN_Ainv = ATInvR;
-                            }
-                            tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op<tail_select_t> op;
                             for (size_t pos = 0; iter->hasNext(); ++*iter, ++pos) {
@@ -94,10 +86,7 @@ namespace ahead {
                                     vec->push_back(pos * AOID);
                                 }
                                 if (op(t, threshold)) {
-                                    if (reencode) {
-                                        t *= Areenc;
-                                    }
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;
@@ -106,7 +95,7 @@ namespace ahead {
                     };
 
                     template<template<typename > class Op>
-                    struct SelectionAN1<Op, v2_void_t, v2_str_t, false> {
+                    struct SelectionAN1<Op, v2_void_t, v2_str_t> {
 
                         typedef v2_void_t Head;
                         typedef typename Head::type_t head_t;
@@ -118,9 +107,7 @@ namespace ahead {
                         static result_t filter(
                                 BAT<Head, v2_str_t> * arg,
                                 str_t threshold,
-                                __attribute__ ((unused)) resoid_t AOID,
-                                __attribute__ ((unused)) str_t ATR = nullptr,
-                                __attribute__ ((unused)) str_t ATInvR = nullptr) {
+                                __attribute__ ((unused)) resoid_t AOID) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
 
                             // always encode head (void -> resoid)
@@ -128,13 +115,13 @@ namespace ahead {
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op<int> op;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (op(strcmp(t, threshold), 0)) {
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;
@@ -142,12 +129,11 @@ namespace ahead {
                         }
                     };
 
-                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail, bool reencode>
-                    struct SelectionAN2 {
-                    };
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Head, typename Tail>
+                    struct SelectionAN2;
 
-                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Tail, bool reencode>
-                    struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, Tail, reencode> {
+                    template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine, typename Tail>
+                    struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, Tail> {
 
                         typedef v2_void_t Head;
                         typedef typename Head::type_t head_t;
@@ -163,9 +149,7 @@ namespace ahead {
                                 BAT<Head, Tail> * arg,
                                 tail_t threshold1,
                                 tail_t threshold2,
-                                resoid_t AOID,
-                                tail_select_t ATR = 1,
-                                tail_select_t ATInvR = 1) {
+                                resoid_t AOID) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                             static_assert(tail_helper_t::isEncoded, "ResTail must be an AN-encoded type");
                             static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
@@ -178,12 +162,7 @@ namespace ahead {
                             auto vec = tail_helper_t::createIndicatorVector();
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_tail_select_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
-                            if (reencode) {
-                                result->tail.metaData.AN_A = ATR;
-                                result->tail.metaData.AN_Ainv = ATInvR;
-                            }
-                            tail_select_t Areenc = reencode ? (ATailInv * ATR) : 1;
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op1<tail_select_t> op1;
                             Op2<tail_select_t> op2;
@@ -193,10 +172,7 @@ namespace ahead {
                                     vec->push_back(pos * AOID);
                                 }
                                 if (OpCombine<void>()(op1(t, std::forward<tail_select_t>(threshold1)), op2(t, std::forward<tail_select_t>(threshold2)))) {
-                                    if (reencode) {
-                                        t *= Areenc;
-                                    }
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;
@@ -205,7 +181,7 @@ namespace ahead {
                     };
 
                     template<template<typename > class Op1, template<typename > class Op2, template<typename > class OpCombine>
-                    struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, v2_str_t, false> {
+                    struct SelectionAN2<Op1, Op2, OpCombine, v2_void_t, v2_str_t> {
 
                         typedef v2_void_t Head;
                         typedef typename Head::type_t head_t;
@@ -219,9 +195,7 @@ namespace ahead {
                                 BAT<Head, v2_str_t> * arg,
                                 tail_select_t threshold1,
                                 tail_select_t threshold2,
-                                __attribute__ ((unused)) resoid_t AOID,
-                                __attribute__ ((unused)) str_t ATR = nullptr,
-                                __attribute__ ((unused)) str_t ATInvR = nullptr) {
+                                __attribute__ ((unused)) resoid_t AOID) {
                             static_assert(std::is_base_of<v2_base_t, Head>::value, "Head must be a base type");
                             static_assert(std::is_base_of<ahead::functor, OpCombine<void>>::value, "OpCombine template parameter must be a functor (see include/column_operators/functors.hpp)");
 
@@ -230,14 +204,14 @@ namespace ahead {
                             const head_select_t AHeadInv = std::get<v2_head_select_t::Ainvs->size() - 1>(*v2_head_select_t::Ainvs);
                             auto result = ahead::bat::ops::skeletonTail<v2_head_select_t, v2_str_t>(arg);
                             result->head.metaData = ColumnMetaData(size_bytes<head_select_t>, AHead, AHeadInv, v2_head_select_t::UNENC_MAX_U, v2_head_select_t::UNENC_MIN);
-                            result->reserve(arg->size());
+                            result->reserve_head(arg->size());
                             auto iter = arg->begin();
                             Op1<int> op1;
                             Op2<int> op2;
                             for (; iter->hasNext(); ++*iter) {
                                 auto t = iter->tail();
                                 if (OpCombine<void>()(op1(strcmp(t, std::forward<tail_select_t>(threshold1)), 0), op2(strcmp(t, std::forward<tail_select_t>(threshold2)), 0))) {
-                                    result->append(std::make_pair(iter->head() * AHead, t));
+                                    result->append_head(iter->head() * AHead);
                                 }
                             }
                             delete iter;
