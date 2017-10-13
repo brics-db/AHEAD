@@ -157,7 +157,7 @@ fi
 # Process Switches #
 ####################
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
-if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
+if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi # do not re-generate cmake files be default every time
 if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
@@ -340,7 +340,7 @@ fi
 if [[ ${DO_COMPILE} -ne 0 ]]; then
     date
     echo "Compiling:"
-    if [[ ${DO_COMPILE_CMAKE} -ne 0 ]]; then
+    if [[ ${DO_COMPILE_CMAKE} -ne 0 ]] || [[ ! -e ${PATH_BUILD}/Makefile ]]; then
         echo " * Testing for compiler"
         cxx=$(which ${CXX_COMPILER})
         if [[ -e ${cxx} ]]; then
@@ -357,7 +357,14 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
         version_string=$(${cxx} --version | head -n 1)
         if [[ "${version_string}" =~ "g++ (GCC)" ]] || [[ "${version_string}" =~ "c++ (GCC)" ]]; then
             version=$(echo "${version_string}" | grep -oP "\d+\.\d+\.\d+")
-            ${cxx} -std=c++17 -o ${PATH_BASE}/test.a ${PATH_BASE}/test.cpp &>/dev/null && echo "[INFO] Compiler is c++17 compatible." || (echo "[ERROR] Compiler is not c++17 compatible!"; exit 1)
+            testfile=$(mktemp --suffix=.cpp)
+            cat >${testfile} << EOM
+#include <optional>
+int main() {
+        return 0;
+}
+EOM
+            ${cxx} -std=c++17 -o ${testfile}.a ${testfile} &>/dev/null && (rm ${testfile}; echo "[INFO] Compiler is c++17 compatible.") || (rm ${estfile}; echo "[ERROR] Compiler is not c++17 compatible!"; exit 1)
         else
             echo "[ERROR] \"${version_string}\": Currently, only g++ is supported by this script. Please fix this by yourself or tell me: Till.Kolditz@gmail.com."
             exit 1
@@ -365,10 +372,12 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
         echo " * Recreating build dir \"${PATH_BUILD}\"."
         bootstrap_file="${PATH_BASE}/bootstrap.sh"
         if [[ -e "${bootstrap_file}" ]]; then
+            echo "   * using bootstrap.sh file"
             pushd "${PATH_BASE}"
             ${EXEC_ENV} ${EXEC_BASH} -c "${bootstrap_file}"
             popd
         else
+            echo "   * bootstrap file not present -- trying to do it manually"
             rm -Rf ${PATH_BUILD}
             mkdir -p ${PATH_BUILD}
             pushd ${PATH_BUILD}
@@ -382,9 +391,10 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
             fi
         fi
     fi
-    echo " * Running make (-j${numcpus})"
+    numcores=$(echo "${numcpus}*1.5/1"|bc)
+    echo " * Running make (-j${numcores})"
     pushd ${PATH_BUILD}
-    ${EXEC_ENV} ${EXEC_BASH} -c "make -j${numcpus}"
+    ${EXEC_ENV} ${EXEC_BASH} -c "make -j${numcores}"
     exitcode=$?
     popd
     if [[ ${exitcode} -ne 0 ]]; then
@@ -399,6 +409,8 @@ fi
 if [[ ${DO_BENCHMARK} -ne 0 ]]; then
     date
     echo "Benchmarking:"
+    echo -n " * checking for 'msr' module: "
+    (lsmod | grep msr &>/dev/null && echo "already loaded") || (sudo modprobe msr &>/dev/null && echo "loaded") || echo " could not load -- pcm counters not available"
 
     if [[ ! -d ${PATH_EVALDATA} ]]; then
         mkdir -p ${PATH_EVALDATA}
@@ -410,12 +422,12 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
             for VAR in "${VARIANTS[@]}"; do
                 type="${BASE2}${VAR}${ARCH}"
                 PATH_BINARY=${PATH_BUILD}/${type}
+                echo -n " * ${type}:"
                 if [[ -e ${PATH_BINARY} ]]; then
                     EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
                     EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
                     EVAL_FILETIME="${PATH_EVALDATA}/${type}.time"
                     rm -f ${EVAL_FILEOUT} ${EVAL_FILEERR} ${EVAL_FILETIME}
-                    echo -n " * ${type}:"
                     for SF in ${BENCHMARK_SCALEFACTORS[*]}; do
                         echo -n " sf${SF}"
                         echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
@@ -423,7 +435,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                     done
                     echo " done."
                 else
-                    echo " * Skipping missing binary \"${type}\"."
+                    echo " Skipping missing binary!"
                 fi
             done
         done
