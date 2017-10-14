@@ -77,18 +77,28 @@ namespace ssb {
     const constexpr char * const SSB_CONF::ID_VERBOSE;
     const constexpr char * const SSB_CONF::ID_PRINTRESULT;
 
+    const constexpr size_t DEF_NUMRUNS;
+    const constexpr size_t DEF_NUMTHREADS;
+    const constexpr size_t DEF_LENTIMES;
+    const constexpr size_t DEF_LENTYPES;
+    const constexpr size_t DEF_LENSIZES;
+    const constexpr size_t DEF_LENPCM;
+
     SSB_CONF::SSB_CONF()
             : NUM_RUNS(0),
+              NUM_THREADS(0),
               LEN_TIMES(0),
               LEN_TYPES(0),
               LEN_SIZES(0),
               LEN_PCM(0),
               VERBOSE(false),
-              PRINT_RESULT(0),
-              parser(
-                      {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, 1), std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, 16), std::forward_as_tuple(ID_LENTYPES,
-                              alias_list_t {"--lentypes"}, 20), std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, 16), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, 16)},
-                      {}, {std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, false), std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, false)}) {
+              PRINT_RESULT(false),
+              parser( {std::forward_as_tuple(ID_NUMRUNS, alias_list_t {"--numruns", "-n"}, DEF_NUMRUNS), std::forward_as_tuple(ID_NUMTHREADS, alias_list_t {"--numthreads", "-t"}, DEF_NUMTHREADS),
+                      std::forward_as_tuple(ID_LENTIMES, alias_list_t {"--lentimes"}, DEF_LENTIMES), std::forward_as_tuple(ID_LENTYPES, alias_list_t {"--lentypes"}, DEF_LENTYPES),
+                      std::forward_as_tuple(ID_LENSIZES, alias_list_t {"--lensizes"}, DEF_LENSIZES), std::forward_as_tuple(ID_LENPCM, alias_list_t {"--lenpcm"}, DEF_LENPCM)}, {}, {
+                      std::forward_as_tuple(ID_VERBOSE, alias_list_t {"--verbose", "-v"}, DEF_VERBOSE), std::forward_as_tuple(ID_PRINTRESULT, alias_list_t {"--print-result", "-p"}, DEF_PRINTRESULT)}) {
+        signal(SIGSEGV, handler);
+        signal(SIGTERM, handler);
     }
 
     SSB_CONF::SSB_CONF(
@@ -101,10 +111,9 @@ namespace ssb {
     void SSB_CONF::init(
             int argc,
             const char * const * argv) {
-        signal(SIGSEGV, handler);
-        signal(SIGTERM, handler);
         parser.parse(argc, argv, 1);
         NUM_RUNS = parser.get_uint(ID_NUMRUNS);
+        NUM_THREADS = parser.get_uint(ID_NUMTHREADS);
         LEN_TIMES = parser.get_uint(ID_LENTIMES);
         LEN_TYPES = parser.get_uint(ID_LENTYPES);
         LEN_SIZES = parser.get_uint(ID_LENSIZES);
