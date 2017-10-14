@@ -77,12 +77,14 @@ namespace ssb {
     const constexpr char * const SSB_CONF::ID_VERBOSE;
     const constexpr char * const SSB_CONF::ID_PRINTRESULT;
 
-    const constexpr size_t DEF_NUMRUNS;
-    const constexpr size_t DEF_NUMTHREADS;
-    const constexpr size_t DEF_LENTIMES;
-    const constexpr size_t DEF_LENTYPES;
-    const constexpr size_t DEF_LENSIZES;
-    const constexpr size_t DEF_LENPCM;
+    const constexpr size_t SSB_CONF::DEF_NUMRUNS;
+    const constexpr size_t SSB_CONF::DEF_NUMTHREADS;
+    const constexpr size_t SSB_CONF::DEF_LENTIMES;
+    const constexpr size_t SSB_CONF::DEF_LENTYPES;
+    const constexpr size_t SSB_CONF::DEF_LENSIZES;
+    const constexpr size_t SSB_CONF::DEF_LENPCM;
+    const constexpr bool SSB_CONF::DEF_VERBOSE;
+    const constexpr bool SSB_CONF::DEF_PRINTRESULT;
 
     SSB_CONF::SSB_CONF()
             : NUM_RUNS(0),

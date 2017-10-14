@@ -129,7 +129,6 @@ BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
 IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
-#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
 ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
@@ -157,7 +156,7 @@ fi
 # Process Switches #
 ####################
 if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
-if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=1; fi
+if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi
 if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
 if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
 if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
@@ -175,7 +174,8 @@ if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
 BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
-if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
+if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1)); fi
+BENCHMARK_DBDIR_SUFFIX="-restiny32"
 
 ### Eval
 EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)
@@ -419,7 +419,7 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                     for SF in ${BENCHMARK_SCALEFACTORS[*]}; do
                         echo -n " sf${SF}"
                         echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
-                        sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}/\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+                        sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
                     done
                     echo " done."
                 else
