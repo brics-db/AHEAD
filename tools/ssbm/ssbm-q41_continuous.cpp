@@ -171,7 +171,7 @@ int main(
         CLEAR_ARITHMETIC_AN(tupleAP);
         MEASURE_OP_TUPLE(tuple22, fetchjoinAN(bat21, batLC)); // VOID | lo_custkey
         CLEAR_FETCHJOIN_AN(tuple22);
-        MEASURE_OP_TUPLE(tuple23, hashjoinAN(std::get<0>(tuple22), std::get<0>(tuple17))); // OID | OID customer
+        MEASURE_OP_TUPLE(tuple23, hashjoinAN(std::get<0>(tuple22), std::get<0>(tuple17), std::get<v2_resoid_t::As->size() - 1>(*v2_resoid_t::As), std::get<v2_resoid_t::Ainvs->size() - 1>(*v2_resoid_t::Ainvs))); // OID | OID customer
         delete std::get<0>(tuple17);
         delete std::get<0>(tuple22);
         CLEAR_JOIN_AN(tuple23);
