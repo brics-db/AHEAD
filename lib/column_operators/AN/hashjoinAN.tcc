@@ -73,17 +73,16 @@ namespace ahead {
                     typedef ANhelper<Tail1> tail1_helper_t;
                     typedef ANhelper<Head2> head2_helper_t;
                     typedef ANhelper<Tail2> tail2_helper_t;
-                    static const constexpr bool reencode = reencodeHead | reencodeTail;
 
                     static std::tuple<TempBAT<v2_h1_select_t, v2_t2_select_t>*, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *, AN_indicator_vector *> run(
                             BAT<Head1, Tail1>* arg1,
                             BAT<Head2, Tail2>* arg2,
                             hash_side_t hashside, // by that, by default the order of the left BAT is preserved (what we expect in the queries)
                             resoid_t AOID,
-                            h1enc_t AH1R = 1, // for reencode
-                            h1enc_t AH1InvR = 1, // for reencode
-                            t2enc_t AT2R = 1, // for reencode
-                            t2enc_t AT2InvR = 1 // for reencode
+                            h1enc_t __attribute__((unused)) AH1R = 1, // for reencode
+                            h1enc_t __attribute__((unused)) AH1InvR = 1, // for reencode
+                            t2enc_t __attribute__((unused)) AT2R = 1, // for reencode
+                            t2enc_t __attribute__((unused)) AT2InvR = 1 // for reencode
                             ) {
                         const h1enc_t AH1Inv = head1_helper_t::getIfEncoded(arg1->head.metaData.AN_Ainv);
                         const h1enc_t AH1UnencMaxU = arg1->head.metaData.AN_unencMaxU;
@@ -94,14 +93,28 @@ namespace ahead {
                         const t2enc_t AT2Inv = tail2_helper_t::getIfEncoded(arg2->tail.metaData.AN_Ainv);
                         const t2enc_t AT2UnencMaxU = arg2->tail.metaData.AN_unencMaxU;
                         // do we need any conversion between left Tail and right Head? If so, also regard which of the types is larger
-                        const h1enc_t reencFactorH1 = head1_helper_t::mulIfEncoded(AH1R, AH1Inv);
-                        const t2enc_t reencFactorT2 = tail2_helper_t::mulIfEncoded(AT2R, AT2Inv);
+                        const h1enc_t __attribute__((unused)) reencFactorH1 = head1_helper_t::mulIfEncoded(AH1R, AH1Inv);
+                        const t2enc_t __attribute__((unused)) reencFactorT2 = tail2_helper_t::mulIfEncoded(AT2R, AT2Inv);
                         TempBAT<v2_h1_select_t, v2_t2_select_t> * bat = nullptr;
-                        if (reencode) {
+                        if constexpr (reencodeHead & reencodeTail) {
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
                             typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
                             bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(
                                     bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
+                                    bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
+                        } else if constexpr (reencodeHead) {
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
+                            auto & tmd = arg2->tail.metaData;
+                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(
+                                    bat_coldesc_head_t(ColumnMetaData(arg1->head.metaData.width, AH1R, AH1InvR, arg1->head.metaData.AN_unencMaxU, arg1->head.metaData.AN_unencMinS)),
+                                    bat_coldesc_tail_t(ColumnMetaData(tmd.width, tmd.AN_A, tmd.AN_Ainv, tmd.AN_unencMaxU, tmd.AN_unencMinS)));
+                        } else if constexpr (reencodeTail) {
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_head_t bat_coldesc_head_t;
+                            typedef typename TempBAT<v2_h1_select_t, v2_t2_select_t>::coldesc_tail_t bat_coldesc_tail_t;
+                            auto & hmd = arg1->head.metaData;
+                            bat = new TempBAT<v2_h1_select_t, v2_t2_select_t>(
+                                    bat_coldesc_head_t(ColumnMetaData(hmd.width, hmd.AN_A, hmd.AN_Ainv, hmd.AN_unencMaxU, hmd.AN_unencMinS)),
                                     bat_coldesc_tail_t(ColumnMetaData(arg2->tail.metaData.width, AT2R, AT2InvR, arg2->tail.metaData.AN_unencMaxU, arg2->tail.metaData.AN_unencMinS)));
                         } else {
                             bat = skeletonJoin<v2_h1_select_t, v2_t2_select_t>(arg1, arg2);
@@ -144,8 +157,12 @@ namespace ahead {
                                         auto mapIter = hashMap.find(static_cast<t1unenc_t>(h2));
                                         if (mapIter != mapEnd) {
                                             for (auto matched : mapIter->second) {
-                                                if (reencode) {
+                                                if constexpr (reencodeHead & reencodeTail) {
                                                     bat->append(std::make_pair(matched * reencFactorH1, t2 * reencFactorT2));
+                                                } else if constexpr (reencodeHead) {
+                                                    bat->append(std::make_pair(matched * reencFactorH1, t2));
+                                                } else if constexpr (reencodeTail) {
+                                                    bat->append(std::make_pair(matched, t2 * reencFactorT2));
                                                 } else {
                                                     bat->append(std::make_pair(matched, t2));
                                                 }
@@ -183,8 +200,12 @@ namespace ahead {
                                         auto mapIter = hashMap.find(static_cast<h2unenc_t>(t1));
                                         if (mapIter != mapEnd) {
                                             for (auto matched : mapIter->second) {
-                                                if (reencode) {
+                                                if constexpr (reencodeHead & reencodeTail) {
                                                     bat->append(std::make_pair(h1 * reencFactorH1, matched * reencFactorT2));
+                                                } else if constexpr (reencodeHead) {
+                                                    bat->append(std::make_pair(h1 * reencFactorH1, matched));
+                                                } else if constexpr (reencodeTail) {
+                                                    bat->append(std::make_pair(h1, matched * reencFactorT2));
                                                 } else {
                                                     bat->append(std::make_pair(h1, matched));
                                                 }
