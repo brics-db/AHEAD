@@ -25,24 +25,20 @@
 
 namespace ahead {
 
-    // sizeof(restiny_t) = 16-bit:
-    const constexpr std::array<A_t, 8> ANParameters::Atiny;
-    const constexpr std::array<restiny_t, 8> ANParameters::AtinyInv;
-    const constexpr std::array<A_t, 4> ANParameters::AtinyBFW;
-    const constexpr std::array<restiny_t, 4> ANParameters::AtinyBFWInv;
-    // sizeof(restiny_t) = 32-bit:
-    // const constexpr std::array<A_t, 16> ANParameters::Atiny;
-    // const constexpr std::array<restiny_t, 16> ANParameters::AtinyInv;
-    // const constexpr std::array<A_t, 7> ANParameters::AtinyBFW;
-    // const constexpr std::array<restiny_t, 7> ANParameters::AtinyBFWInv;
-    const constexpr std::array<A_t, 16> ANParameters::Ashort;
-    const constexpr std::array<resshort_t, 16> ANParameters::AshortInv;
-    const constexpr std::array<A_t, 6> ANParameters::AshortBFW;
-    const constexpr std::array<resshort_t, 6> ANParameters::AshortBFWInv;
-    const constexpr std::array<A_t, 16> ANParameters::Aint;
-    const constexpr std::array<resint_t, 16> ANParameters::AintInv;
-    const constexpr std::array<A_t, 5> ANParameters::AintBFW;
-    const constexpr std::array<resint_t, 5> ANParameters::AintBFWInv;
+    const constexpr typename ANParameters<v2_restiny_t, restiny_t>::array_A_t ANParameters<v2_restiny_t, restiny_t>::As;
+    const constexpr typename ANParameters<v2_restiny_t, restiny_t>::array_A_inv_t ANParameters<v2_restiny_t, restiny_t>::AInvs;
+    const constexpr typename ANParameters<v2_restiny_t, restiny_t>::array_A_minbfw_t ANParameters<v2_restiny_t, restiny_t>::AsBFW;
+    const constexpr typename ANParameters<v2_restiny_t, restiny_t>::array_A_minbfw_inv_t ANParameters<v2_restiny_t, restiny_t>::AInvsBFW;
+
+    const constexpr typename ANParameters<v2_resshort_t, resshort_t>::array_A_t ANParameters<v2_resshort_t, resshort_t>::As;
+    const constexpr typename ANParameters<v2_resshort_t, resshort_t>::array_A_inv_t ANParameters<v2_resshort_t, resshort_t>::AInvs;
+    const constexpr typename ANParameters<v2_resshort_t, resshort_t>::array_A_minbfw_t ANParameters<v2_resshort_t, resshort_t>::AsBFW;
+    const constexpr typename ANParameters<v2_resshort_t, resshort_t>::array_A_minbfw_inv_t ANParameters<v2_resshort_t, resshort_t>::AInvsBFW;
+
+    const constexpr typename ANParameters<v2_resint_t, resint_t>::array_A_t ANParameters<v2_resint_t, resint_t>::As;
+    const constexpr typename ANParameters<v2_resint_t, resint_t>::array_A_inv_t ANParameters<v2_resint_t, resint_t>::AInvs;
+    const constexpr typename ANParameters<v2_resint_t, resint_t>::array_A_minbfw_t ANParameters<v2_resint_t, resint_t>::AsBFW;
+    const constexpr typename ANParameters<v2_resint_t, resint_t>::array_A_minbfw_inv_t ANParameters<v2_resint_t, resint_t>::AInvsBFW;
 
     const restiny_t v2_restiny_t::dhm_emptykey = std::numeric_limits<restiny_t>::max();
     const restiny_t v2_restiny_t::dhm_deletedkey = std::numeric_limits<restiny_t>::max() - 1;
