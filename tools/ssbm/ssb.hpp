@@ -98,6 +98,7 @@ namespace ssb {
         typedef typename ArgumentParser::alias_list_t alias_list_t;
 
         size_t NUM_RUNS;
+        size_t NUM_THREADS;
         size_t LEN_TIMES;
         size_t LEN_TYPES;
         size_t LEN_SIZES;
@@ -109,12 +110,22 @@ namespace ssb {
         ArgumentParser parser;
 
         static const constexpr char * const ID_NUMRUNS = "numruns";
+        static const constexpr char * const ID_NUMTHREADS = "numthreads";
         static const constexpr char * const ID_LENTIMES = "lentimes";
         static const constexpr char * const ID_LENTYPES = "lentypes";
         static const constexpr char * const ID_LENSIZES = "lensizes";
         static const constexpr char * const ID_LENPCM = "lenpcm";
         static const constexpr char * const ID_VERBOSE = "verbose";
         static const constexpr char * const ID_PRINTRESULT = "printresult";
+
+        static const constexpr size_t DEF_NUMRUNS = 1;
+        static const constexpr size_t DEF_NUMTHREADS = 1;
+        static const constexpr size_t DEF_LENTIMES = 16;
+        static const constexpr size_t DEF_LENTYPES = 20;
+        static const constexpr size_t DEF_LENSIZES = 16;
+        static const constexpr size_t DEF_LENPCM = 16;
+        static const constexpr bool DEF_VERBOSE = false;
+        static const constexpr bool DEF_PRINTRESULT = false;
 
     public:
 
