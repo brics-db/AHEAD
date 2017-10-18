@@ -128,9 +128,10 @@ BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
-IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
-#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
-VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
+#IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
+IMPLEMENTED=(11)
+#VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
+VARIANTS=("_normal" "_continuous")
 ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null
@@ -156,26 +157,28 @@ fi
 ####################
 # Process Switches #
 ####################
-if [[ -z "$DO_COMPILE" ]]; then DO_COMPILE=1; fi # yes we want to set it either when it's unset or empty
-if [[ -z "$DO_COMPILE_CMAKE" ]]; then DO_COMPILE_CMAKE=0; fi # do not re-generate cmake files be default every time
-if [[ -z "$DO_BENCHMARK" ]]; then DO_BENCHMARK=1; fi
-if [[ -z "$DO_EVAL" ]]; then DO_EVAL=1; fi
-if [[ -z "$DO_EVAL_PREPARE" ]]; then DO_EVAL_PREPARE=1; fi
-if [[ -z "$DO_VERIFY" ]]; then DO_VERIFY=1; fi
+[[ -z "$DO_COMPILE" ]] && DO_COMPILE=1 # yes we want to set it either when it's unset or empty
+[[ -z "$DO_COMPILE_CMAKE" ]] && DO_COMPILE_CMAKE=0 # do not re-generate cmake files be default every time
+[[ -z "$DO_BENCHMARK" ]] && DO_BENCHMARK=1
+[[ -z "$DO_EVAL" ]] && DO_EVAL=1
+[[ -z "$DO_EVAL_PREPARE" ]] && DO_EVAL_PREPARE=1
+[[ -z "$DO_VERIFY" ]] && DO_VERIFY=1
 
 ##############################
 # Process specific constants #
 ##############################
 ### Compilation
-if [[ -z "$CMAKE_BUILD_TYPE" ]]; then CMAKE_BUILD_TYPE=Release; fi
+[[ -z "$CMAKE_BUILD_TYPE" ]] && CMAKE_BUILD_TYPE=Release
 
 ### Benchmarking
-if [[ -z "$BENCHMARK_NUMRUNS" ]]; then BENCHMARK_NUMRUNS=10; fi # like above
-#if [[ -z "$BENCHMARK_NUMBEST" ]]; then BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS)); fi
+[[ -z "$BENCHMARK_NUMRUNS" ]] && BENCHMARK_NUMRUNS=10 # like above
+#[[ -z "$BENCHMARK_NUMBEST" ]] && BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS))
 BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
-if [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]]; then BENCHMARK_SCALEFACTORS=($(seq -s " " 1 10)); fi
+( [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1))
+[[ -z "$BENCHMARK_DBDIR_SUFFIX" ]] && BENCHMARK_DBDIR_SUFFIX= #"-restiny32"
+[[ -z "$BENCHMARK_MINBFW" ]] && BENCHMARK_MINBFW=1
 
 ### Eval
 EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)
@@ -408,7 +411,7 @@ fi
 # Benchmarking
 if [[ ${DO_BENCHMARK} -ne 0 ]]; then
     date
-    echo "Benchmarking:"
+    ( [[ "${BENCHMARK_MINBFW}" > 0 ]] && echo "Benchmarking (using AN-minBFW=${BENCHMARK_MINBFW}):" ) || echo "Benchmarking:"
     echo -n " * checking for 'msr' module: "
     (lsmod | grep msr &>/dev/null && echo "already loaded") || (sudo modprobe msr &>/dev/null && echo "loaded") || echo " could not load -- pcm counters not available"
 
@@ -431,7 +434,11 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
                     for SF in ${BENCHMARK_SCALEFACTORS[*]}; do
                         echo -n " sf${SF}"
                         echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
-                        sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}/\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+                        if [[ "${BENCHMARK_MINBFW}" > 0 ]]; then
+                            sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+                        else
+                            sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+                        fi
                     done
                     echo " done."
                 else
