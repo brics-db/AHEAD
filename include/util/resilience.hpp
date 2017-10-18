@@ -56,12 +56,12 @@ namespace ahead {
         static const constexpr std::array<resint_t, 16> AintInv = {1, 0xAAAAAAAAAAAAAAAB, 0x6DB6DB6DB6DB6DB7, 0xEEEEEEEEEEEEEEEF, 0xCF3CF3CF3CF3CF3D, 0x6FB586FB586FB587, 0x1CAC083126E978D5,
                 0xFEDCBA987654321, 0x64194FF6CBA64195, 0xC87FDACE4F9E5D91, 0x49AEFF9F19DD6DE5, 0xBF4CC39BC11857E5, 0xFDD779BC079A34A3, 0xC94EE2C7649F4599, 0xBC4B7C5655ECDA1B, 0xAA86FFFEFB1FAA87};
 
-        static const constexpr std::array<A_t, 4> AtinyBFW = {Atiny[0], Atiny[2], Atiny[4], Atiny[7]};
-        static const constexpr std::array<restiny_t, 4> AtinyBFWInv = {AtinyInv[0], AtinyInv[2], AtinyInv[4], AtinyInv[7]};
-        static const constexpr std::array<A_t, 6> AshortBFW = {Ashort[0], Ashort[2], Ashort[5], Ashort[8], Ashort[12], Ashort[15]};
-        static const constexpr std::array<resshort_t, 6> AshortBFWInv = {AshortInv[0], AshortInv[2], AshortInv[5], AshortInv[8], AshortInv[12], AshortInv[15]};
-        static const constexpr std::array<A_t, 5> AintBFW = {Aint[0], Aint[2], Aint[6], Aint[9], Aint[13]};
-        static const constexpr std::array<resint_t, 5> AintBFWInv = {AintInv[0], AintInv[2], AintInv[6], AintInv[9], AintInv[13]};
+        static const constexpr std::array<A_t, 4> AtinyBFW = {Atiny[0], Atiny[1], Atiny[4], Atiny[7]};
+        static const constexpr std::array<restiny_t, 4> AtinyBFWInv = {AtinyInv[0], AtinyInv[1], AtinyInv[4], AtinyInv[7]};
+        static const constexpr std::array<A_t, 6> AshortBFW = {Ashort[0], Ashort[1], Ashort[5], Ashort[8], Ashort[12], Ashort[15]};
+        static const constexpr std::array<resshort_t, 6> AshortBFWInv = {AshortInv[0], AshortInv[1], AshortInv[5], AshortInv[8], AshortInv[12], AshortInv[15]};
+        static const constexpr std::array<A_t, 5> AintBFW = {Aint[0], Aint[1], Aint[6], Aint[9], Aint[13]};
+        static const constexpr std::array<resint_t, 5> AintBFWInv = {AintInv[0], AintInv[1], AintInv[6], AintInv[9], AintInv[13]};
     };
 
     struct v2_anencoded_t {
