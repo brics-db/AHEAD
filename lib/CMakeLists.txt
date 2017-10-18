@@ -38,7 +38,6 @@ MACRO( add_static_lib arg_name arg_source_files arg_dep_libs )
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
-    cotire(${LIBNAME})
 ENDMACRO( add_static_lib )
 
 MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
@@ -51,7 +50,6 @@ MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
     TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
-    cotire(${LIBNAME})
 ENDMACRO( add_shared_lib )
 
 MACRO(append_target_property arg_target arg_property arg_setting)
@@ -68,7 +66,7 @@ ENDMACRO(append_target_property)
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
-#add_static_lib(AHEAD "util/resilience.cpp \
+#add_static_lib(AHEAD "AHEAD.cpp \
 add_shared_lib(AHEAD "AHEAD.cpp \
 AHEAD_Config.cpp \
 util/AlignedAllocator.cpp \
@@ -141,3 +139,4 @@ column_operators/SIMD/SSE.cpp \
 column_operators/SIMD/AVX2.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
 TARGET_COMPILE_OPTIONS(AHEAD PUBLIC "-Wno-ignored-attributes" "-ffast-math")
+cotire(AHEAD)
