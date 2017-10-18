@@ -102,7 +102,7 @@ int main(
             CLEAR_SELECT_AN(pair9);
             auto batY = pair9.first->mirror_head();
             delete pair9.first;
-            MEASURE_OP_TUPLE(tupleA, matchjoinAN(bat8, batY, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<14>(*v2_restiny_t::As), std::get<14>(*v2_restiny_t::Ainvs)));
+            MEASURE_OP_TUPLE(tupleA, matchjoinAN(bat8, batY, std::get<11>(*v2_resoid_t::As), std::get<11>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As), std::get<3>(*v2_restiny_t::Ainvs)));
             delete bat8;
             delete batY;
             CLEAR_JOIN_AN(tupleA);
@@ -124,11 +124,11 @@ int main(
             auto batF = std::get<0>(tupleE)->mirror_head();// only those lineorder-positions where lo_quantity... and lo_discount... and d_year...
             MEASURE_OP_TUPLE(tupleG, matchjoinAN(batF, batLEenc, std::get<8>(*v2_resoid_t::As), std::get<8>(*v2_resoid_t::Ainvs), std::get<12>(*v2_resint_t::As), std::get<12>(*v2_resint_t::Ainvs)));
             CLEAR_JOIN_AN(tupleG);
-            MEASURE_OP_TUPLE(tupleH, matchjoinAN(bat5, batLDenc, std::get<7>(*v2_resoid_t::As), std::get<7>(*v2_resoid_t::Ainvs), std::get<3>(*v2_restiny_t::As), std::get<3>(*v2_restiny_t::Ainvs)));
+            MEASURE_OP_TUPLE(tupleH, matchjoinAN(bat5, batLDenc, std::get<7>(*v2_resoid_t::As), std::get<7>(*v2_resoid_t::Ainvs), std::get<2>(*v2_restiny_t::As), std::get<2>(*v2_restiny_t::Ainvs)));
             CLEAR_JOIN_AN(tupleH);
             delete bat5;
             MEASURE_OP_TUPLE(tupleI,
-                    matchjoinAN(batF, std::get<0>(tupleH), std::get<6>(*v2_resoid_t::As), std::get<6>(*v2_resoid_t::Ainvs), std::get<2>(*v2_restiny_t::As), std::get<2>(*v2_restiny_t::Ainvs)));
+                    matchjoinAN(batF, std::get<0>(tupleH), std::get<6>(*v2_resoid_t::As), std::get<6>(*v2_resoid_t::Ainvs), std::get<1>(*v2_restiny_t::As), std::get<1>(*v2_restiny_t::Ainvs)));
             CLEAR_JOIN_AN(tupleI);
             delete batF;
             delete std::get<0>(tupleH);

@@ -25,10 +25,16 @@
 
 namespace ahead {
 
-    const constexpr std::array<A_t, 16> ANParameters::Atiny;
-    const constexpr std::array<restiny_t, 16> ANParameters::AtinyInv;
-    const constexpr std::array<A_t, 7> ANParameters::AtinyBFW;
-    const constexpr std::array<restiny_t, 7> ANParameters::AtinyBFWInv;
+    // sizeof(restiny_t) = 16-bit:
+    const constexpr std::array<A_t, 8> ANParameters::Atiny;
+    const constexpr std::array<restiny_t, 8> ANParameters::AtinyInv;
+    const constexpr std::array<A_t, 4> ANParameters::AtinyBFW;
+    const constexpr std::array<restiny_t, 4> ANParameters::AtinyBFWInv;
+    // sizeof(restiny_t) = 32-bit:
+    // const constexpr std::array<A_t, 16> ANParameters::Atiny;
+    // const constexpr std::array<restiny_t, 16> ANParameters::AtinyInv;
+    // const constexpr std::array<A_t, 7> ANParameters::AtinyBFW;
+    // const constexpr std::array<restiny_t, 7> ANParameters::AtinyBFWInv;
     const constexpr std::array<A_t, 16> ANParameters::Ashort;
     const constexpr std::array<resshort_t, 16> ANParameters::AshortInv;
     const constexpr std::array<A_t, 6> ANParameters::AshortBFW;
