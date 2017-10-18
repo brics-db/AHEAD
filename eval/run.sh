@@ -130,7 +130,8 @@ BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
 #IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
 IMPLEMENTED=(11)
-VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
+#VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
+VARIANTS=("_normal" "_continuous")
 ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
 cat /proc/cpuinfo | grep sse4_2 &>/dev/null
@@ -176,8 +177,8 @@ BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
 ( [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1))
-[[ -z "$BENCHMARK_DBDIR_SUFFIX" ]] && BENCHMARK_DBDIR_SUFFIX="-restiny32"
-[[ -z "$BENCHMARK_MINBFW" ]] && BENCHMARK_MINBFW=4
+[[ -z "$BENCHMARK_DBDIR_SUFFIX" ]] && BENCHMARK_DBDIR_SUFFIX= #"-restiny32"
+[[ -z "$BENCHMARK_MINBFW" ]] && BENCHMARK_MINBFW=1
 
 ### Eval
 EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)
