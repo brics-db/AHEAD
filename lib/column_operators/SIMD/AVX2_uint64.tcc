@@ -21,11 +21,36 @@
 
 #pragma once
 
+#ifndef LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_
+#error "This file must only be included by AVX2.hpp !"
+#endif
+
 namespace ahead {
     namespace bat {
         namespace ops {
             namespace simd {
                 namespace avx2 {
+
+                    namespace Private {
+                        template<size_t current = 0>
+                        inline void pack_right2_uint64(
+                                uint64_t * & result,
+                                __m256i & a,
+                                uint8_t mask) {
+                            *result = reinterpret_cast<uint64_t*>(&a)[current];
+                            result += (mask >> current) & 0x1;
+                            pack_right2_uint64<current + 1>(result, a, mask);
+                        }
+
+                        template<>
+                        inline void pack_right2_uint64<3>(
+                                uint64_t * & result,
+                                __m256i & a,
+                                uint8_t mask) {
+                            *result = reinterpret_cast<uint64_t*>(&a)[3];
+                            result += (mask >> 3) & 0x1;
+                        }
+                    }
 
                     template<>
                     struct mm256<uint64_t> {
@@ -112,6 +137,19 @@ namespace ahead {
                             if (mask) {
                                 Private::pack_right2_uint64(result, a, mask);
                             }
+                        }
+
+                        static inline void pack_right3(
+                                uint64_t * & result,
+                                __m256i a,
+                                mask_t mask) {
+                            typedef mm<__m128i, uint64_t>::mask_t sse_mask_t;
+                            auto maskLow = static_cast<sse_mask_t>(mask);
+                            _mm_storeu_si128(reinterpret_cast<__m128i *>(result), mm<__m128i, uint32_t>::pack_right(_mm256_extracti128_si256(a, 0), maskLow));
+                            result += __builtin_popcount(maskLow);
+                            auto maskHigh = static_cast<sse_mask_t>(mask >> 2);
+                            _mm_storeu_si128(reinterpret_cast<__m128i *>(result), mm<__m128i, uint32_t>::pack_right(_mm256_extracti128_si256(a, 1), maskHigh));
+                            result += __builtin_popcount(maskHigh);
                         }
 
                     private:

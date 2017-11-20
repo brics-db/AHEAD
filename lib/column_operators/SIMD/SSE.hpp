@@ -23,29 +23,15 @@
 
 #define LIB_COLUMN_OPERATORS_SIMD_SSE_HPP_
 
-#include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <immintrin.h>
 
 #include <column_operators/functors.hpp>
 
 #include "SIMD.hpp"
 
-namespace ahead {
-    namespace bat {
-        namespace ops {
-            namespace simd {
-                namespace sse {
-
-                    template<typename ...Types>
-                    struct mm128;
-
-                }
-            }
-        }
-    }
-}
-
+#include "SSE_base.tcc"
 #include "SSE_uint08.tcc"
 #include "SSE_uint16.tcc"
 #include "SSE_uint32.tcc"

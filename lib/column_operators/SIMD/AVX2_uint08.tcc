@@ -31,6 +31,27 @@ namespace ahead {
             namespace simd {
                 namespace avx2 {
 
+                    namespace Private {
+                        template<size_t current = 0>
+                        inline void pack_right2_uint8(
+                                uint8_t * & result,
+                                __m256i & a,
+                                uint32_t mask) {
+                            *result = reinterpret_cast<uint8_t*>(&a)[current];
+                            result += (mask >> current) & 0x1;
+                            pack_right2_uint8<current + 1>(result, a, mask);
+                        }
+
+                        template<>
+                        inline void pack_right2_uint8<31>(
+                                uint8_t * & result,
+                                __m256i & a,
+                                uint32_t mask) {
+                            *result = reinterpret_cast<uint8_t*>(&a)[31];
+                            result += (mask >> 31) & 0x1;
+                        }
+                    }
+
                     template<>
                     struct mm256<uint8_t> {
 
@@ -101,6 +122,12 @@ namespace ahead {
                                 __m256i a,
                                 __m256i b) {
                             return _mm256_max_epu8(a, b);
+                        }
+
+                        static inline __m256i add(
+                                __m256i a,
+                                __m256i b) {
+                            return _mm256_add_epi8(a, b);
                         }
 
                         static inline __m256i mullo(
@@ -189,6 +216,19 @@ namespace ahead {
                             if (mask) {
                                 Private::pack_right2_uint8(result, a, mask);
                             }
+                        }
+
+                        static inline void pack_right3(
+                                uint8_t * & result,
+                                __m256i a,
+                                mask_t mask) {
+                            typedef mm<__m128i, uint8_t>::mask_t sse_mask_t;
+                            auto maskLow = static_cast<sse_mask_t>(mask);
+                            _mm_storeu_si128(reinterpret_cast<__m128i *>(result), mm<__m128i, uint8_t>::pack_right(_mm256_extracti128_si256(a, 0), maskLow));
+                            result += __builtin_popcount(maskLow);
+                            auto maskHigh = static_cast<sse_mask_t>(mask >> 16);
+                            _mm_storeu_si128(reinterpret_cast<__m128i *>(result), mm<__m128i, uint8_t>::pack_right(_mm256_extracti128_si256(a, 1), maskHigh));
+                            result += __builtin_popcount(maskHigh);
                         }
 
                     private:

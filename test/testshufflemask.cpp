@@ -61,10 +61,10 @@ struct abstract_abstract_context_t {
 
 template<typename T>
 struct abstract_context_t {
-    typedef typename ahead::bat::ops::sse::v2_mm128<T>::mask_t mask_t;
+    typedef typename ahead::bat::ops::simd::sse::mm128<T>::mask_t mask_t;
 
-    constexpr static const size_t NUM_RND = 16;
-    constexpr static const size_t MASK_ARR = 0x0F;
+    static const constexpr size_t NUM_RND = 16;
+    static const constexpr size_t MASK_ARR = 0x0F;
 
     abstract_abstract_context_t * paac;
     std::uniform_int_distribution<mask_t> rndDistr;
@@ -76,7 +76,7 @@ struct abstract_context_t {
             abstract_abstract_context_t & aac)
             : paac(&aac),
               rndDistr(),
-              mm(ahead::bat::ops::sse::v2_mm128<T>::set_inc(0)),
+              mm(ahead::bat::ops::simd::sse::mm128<T>::set_inc(0)),
               numMM128(aac.numValues / (sizeof(__m128i ) / sizeof(T))) {
         for (size_t i = 0; i < NUM_RND; ++i) {
             randoms[i] = rndDistr(paac->rndEngine) % (sizeof(__m128i) / sizeof(T));
@@ -180,7 +180,7 @@ using TestFn = void (*)(concrete_context_t<T, M> &);
 
 template<typename T, typename M, TestFn<T, M> F, size_t N>
 struct Test {
-    typedef typename ahead::bat::ops::sse::v2_mm128<T>::mask_t mask_t;
+    typedef typename ahead::bat::ops::simd::sse::mm128<T>::mask_t mask_t;
 
     static void run(
             abstract_context_t<T> & ac) {
@@ -222,7 +222,7 @@ template<typename T>
 void testRndDistrSSE(
         concrete_context_t<T, initcolumns_out_t> & ctx) {
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
-        ctx.pmmOut[i] = ahead::bat::ops::sse::v2_mm128<T>::set1(ctx.pac->rndDistr(ctx.pac->paac->rndEngine));
+        ctx.pmmOut[i] = ahead::bat::ops::simd::sse::mm128<T>::set1(ctx.pac->rndDistr(ctx.pac->paac->rndEngine));
     }
 }
 
@@ -233,7 +233,7 @@ void testPack1SingleRandom1(
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_out_t>::mask_t tmpMask = ctx.pac->rndDistr(ctx.pac->paac->rndEngine) % (sizeof(__m128i) / sizeof(T));
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        __m128i mmResult = ahead::bat::ops::sse::v2_mm128<T>::pack_right(ctx.pac->mm, tmpMask);
+        __m128i mmResult = ahead::bat::ops::simd::sse::mm128<T>::pack_right(ctx.pac->mm, tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
@@ -246,7 +246,7 @@ void testPack1SingleRandom2(
     auto pmmOut = ctx.pmmOut;
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         size_t nMaskOnes = __builtin_popcountll(mask);
-        __m128i mmResult = ahead::bat::ops::sse::v2_mm128<T>::pack_right(ctx.pac->mm, mask);
+        __m128i mmResult = ahead::bat::ops::simd::sse::mm128<T>::pack_right(ctx.pac->mm, mask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
         mask *= mask;
@@ -260,7 +260,7 @@ void testPack1SingleArray(
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_out_t>::mask_t tmpMask = ctx.pac->randoms[i & abstract_context_t<T>::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        __m128i mmResult = ahead::bat::ops::sse::v2_mm128<T>::pack_right(ctx.pac->mm, tmpMask);
+        __m128i mmResult = ahead::bat::ops::simd::sse::mm128<T>::pack_right(ctx.pac->mm, tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
@@ -274,7 +274,7 @@ void testPack1ColumnRandom1(
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_inout_t>::mask_t tmpMask = ctx.pac->rndDistr(ctx.pac->paac->rndEngine) % (sizeof(__m128i) / sizeof(T));
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        __m128i mmResult = ahead::bat::ops::sse::v2_mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
+        __m128i mmResult = ahead::bat::ops::simd::sse::mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
@@ -289,7 +289,7 @@ void testPack1ColumnRandom2(
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         typename concrete_context_t<T, initcolumns_inout_t>::mask_t tmpMask = mask % (sizeof(__m128i) / sizeof(T));
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        __m128i mmResult = ahead::bat::ops::sse::v2_mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
+        __m128i mmResult = ahead::bat::ops::simd::sse::mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
         mask *= mask;
@@ -305,7 +305,7 @@ void testPack1ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_context_t<T>::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        __m128i mmResult = ahead::bat::ops::sse::v2_mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
+        __m128i mmResult = ahead::bat::ops::simd::sse::mm128<T>::pack_right(_mm_lddqu_si128(pmmIn++), tmpMask);
         _mm_storeu_si128(pmmOut, mmResult);
         pmmOut = reinterpret_cast<__m128i *>(reinterpret_cast<T*>(pmmOut) + nMaskOnes);
     }
@@ -320,7 +320,7 @@ void testPack2ColumnArray(
     for (size_t i = 0; i < ctx.pac->numMM128; ++i) {
         mask_t tmpMask = ctx.pac->randoms[i & abstract_context_t<T>::MASK_ARR];
         size_t nMaskOnes = __builtin_popcountll(tmpMask);
-        ahead::bat::ops::sse::v2_mm128<T>::pack_right2(pOut, _mm_lddqu_si128(pmmIn++), tmpMask);
+        ahead::bat::ops::simd::sse::mm128<T>::pack_right2(pOut, _mm_lddqu_si128(pmmIn++), tmpMask);
     }
 }
 
@@ -331,7 +331,7 @@ void test(
     std::cout << "#data bits\t" << (sizeof(T) * 8) << "\n#128-bit vectors\t" << (ac.numMM128 * aac.numRepititions) << "\t(" << ac.numMM128 << " repeated " << aac.numRepititions << " times)"
             << std::endl;
 
-    constexpr static const size_t nprocs = NPROCS;
+    static const constexpr size_t nprocs = NPROCS;
     /*
      std::cout << "\t\t" << std::setw(30) << "rndDistrScalar(rndEngine)";
      Test<T, initcolumns_out_t, testRndDistrScalar, nprocs>::run(ac);

@@ -30,5 +30,8 @@ CMakeFiles
 /test/testshufflemask
 /test/testshufflemasktable
 /test/testshufflemask_distributions
+/test/testshufflemask_distributions_native
+/test/testshufflemask_distributions_avx2
+/test/testshufflemask_distributions_knl
 /Debug
 /Release

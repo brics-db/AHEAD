@@ -2,11 +2,14 @@
 #include <iostream>
 #include <random>
 #include <array>
+#include <type_traits>
 #include <exception>
 #include <omp.h>
 #include <ColumnStore.h>
-#include "../lib/column_operators/SIMD/SIMD.hpp"
+#include "../lib/column_operators/SIMD/SSE.hpp"
+#include "../lib/column_operators/SIMD/AVX2.hpp"
 #include <util/stopwatch.hpp>
+#include <immintrin.h>
 
 struct initcolumns_t {
 };
@@ -358,6 +361,19 @@ void testPack2ColumnArray(
     }
 }
 
+template<typename V, typename T>
+void testPack3ColumnArray(
+        concrete_context_t<V, T, initcolumns_inout_t> & ctx) {
+    typedef typename concrete_context_t<V, T, initcolumns_inout_t>::mask_t mask_t;
+    auto pmmIn = ctx.pmmIn;
+    auto pOut = reinterpret_cast<T*>(ctx.pmmOut);
+    for (size_t i = 0; i < ctx.pac->numMM; ++i) {
+        mask_t tmpMask = ctx.pac->randoms[i & abstract_abstract_context_t::MASK_ARR];
+        size_t nMaskOnes = __builtin_popcountll(tmpMask);
+        ahead::bat::ops::simd::mm<V, T>::pack_right3(pOut, ahead::bat::ops::simd::mm<V, T>::loadu(pmmIn++), tmpMask);
+    }
+}
+
 template<typename V>
 struct vector_length_string;
 
@@ -392,6 +408,9 @@ void test(
         ac.setSelectivity(selectivity);
         Test<V, T, initcolumns_inout_t, testPack1ColumnArray>::run(ac);
         Test<V, T, initcolumns_inout_t, testPack2ColumnArray>::run(ac);
+        if constexpr (std::is_same_v<V, __m256i> || std::is_same_v<V, __m512i>) {
+            Test<V, T, initcolumns_inout_t, testPack3ColumnArray>::run(ac);
+        }
         std::cout << '\n';
     }
     std::cout << "\n\n" << std::endl;
