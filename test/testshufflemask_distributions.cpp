@@ -130,7 +130,7 @@ struct ac_helper<__m256i, uint64_t> {
 template<>
 struct ac_helper<__m512i, uint8_t> {
     static const size_t SHIFT = 6;
-    static const size_t MASK = 0x2F;
+    static const size_t MASK = 0x3F;
     static const size_t FULL = 0xFFFFFFFFFFFFFFFFull;
 };
 
