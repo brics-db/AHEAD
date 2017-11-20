@@ -8,7 +8,9 @@
 #include <ColumnStore.h>
 #include "../lib/column_operators/SIMD/SSE.hpp"
 #include "../lib/column_operators/SIMD/AVX2.hpp"
+#ifdef __AVX512F__
 #include "../lib/column_operators/SIMD/AVX512.hpp"
+#endif
 #include <util/stopwatch.hpp>
 #include <immintrin.h>
 
