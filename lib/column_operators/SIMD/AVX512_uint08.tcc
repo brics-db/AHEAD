@@ -32,6 +32,7 @@ namespace ahead {
                 namespace avx512 {
 
                     namespace Private {
+
                         template<size_t current = 0>
                         inline void pack_right2_uint8(
                                 uint8_t * & result,
