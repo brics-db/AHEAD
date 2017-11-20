@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* 
+/*
  * File:   createshufflemaskarrays.cpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
@@ -185,58 +185,60 @@ int main() {
 namespace ahead {\n\
     namespace bat {\n\
         namespace ops {\n\
-            namespace sse {\n\n";
+            namespace simd {\n\
+                namespace sse {\n\n";
     std::string mask08L = TOSTRING(MASK_64_08L);
     std::string mask08H = TOSTRING(MASK_64_08H);
     std::string mask16 = TOSTRING(MASK_128_16);
     std::string mask32 = TOSTRING(MASK_128_32);
     std::string mask64 = TOSTRING(MASK_128_64);
     std::cout << "\
-                const uint8_t SHUFFLE_EPI08_TABLE_L[256 * 8] = {";
+                    const uint8_t SHUFFLE_EPI08_TABLE_L[256 * 8] = {";
     for (size_t i = 0; i < mask08L.size(); i += 48) {
         std::cout << "\n\
-                    " << mask08L.substr(i, 48);
+                        " << mask08L.substr(i, 48);
     }
     std::cout << "\n\
-                };\n\n";
+                    };\n\n";
     std::cout << "\
-                const uint8_t SHUFFLE_EPI08_TABLE_H[256 * 8] = {";
+                    const uint8_t SHUFFLE_EPI08_TABLE_H[256 * 8] = {";
     for (size_t i = 0; i < mask08H.size(); i += 48) {
         std::cout << "\n\
-                    " << mask08H.substr(i, 48);
+                        " << mask08H.substr(i, 48);
     }
     std::cout << "\n\
-                };\n\n";
+                    };\n\n";
     std::cout << "\
-                const uint16_t SHUFFLE_EPI16_TABLE[256 * 8] = {";
+                    const uint16_t SHUFFLE_EPI16_TABLE[256 * 8] = {";
     for (size_t i = 0; i < mask16.size(); i += 72) {
         std::cout << "\n\
                     " << mask16.substr(i, 72);
     }
     std::cout << "\n\
-                };\n\n";
+                    };\n\n";
     std::cout << "\
-                const uint32_t SHUFFLE_EPI32_TABLE[16 * 4] = {";
+                    const uint32_t SHUFFLE_EPI32_TABLE[16 * 4] = {";
     for (size_t i = 0; i < mask32.size(); i += 56) {
         std::cout << "\n\
-                    " << mask32.substr(i, 56);
+                        " << mask32.substr(i, 56);
     }
     std::cout << "\n\
-                };\n\n";
+                    };\n\n";
     std::cout << "\
-                const uint64_t SHUFFLE_EPI64_TABLE[4 * 2] = {";
+                    const uint64_t SHUFFLE_EPI64_TABLE[4 * 2] = {";
     for (size_t i = 0; i < mask64.size(); i += 46) {
         std::cout << "\n\
-                    " << mask64.substr(i, 46);
+                        " << mask64.substr(i, 46);
     }
     std::cout << "\n\
-                };\n\n\
-                const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_L = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_L);\n\
-                const uint64_t * const v2_mm128<uint8_t>::SHUFFLE_TABLE_H = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_H);\n\
-                const __m128i * const v2_mm128<uint16_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE);\n\
-                const __m128i * const v2_mm128<uint32_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI32_TABLE);\n\
-                const __m128i * const v2_mm128<uint64_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI64_TABLE);\n\
+                    };\n\n\
+                    const uint64_t * const mm128<uint8_t>::SHUFFLE_TABLE_L = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_L);\n\
+                    const uint64_t * const mm128<uint8_t>::SHUFFLE_TABLE_H = reinterpret_cast<const uint64_t*>(SHUFFLE_EPI08_TABLE_H);\n\
+                    const __m128i * const mm128<uint16_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI16_TABLE);\n\
+                    const __m128i * const mm128<uint32_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI32_TABLE);\n\
+                    const __m128i * const mm128<uint64_t>::SHUFFLE_TABLE = reinterpret_cast<const __m128i*>(SHUFFLE_EPI64_TABLE);\n\
 \n\
+                }\n\
             }\n\
         }\n\
     }\n\

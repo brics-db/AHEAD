@@ -23,119 +23,15 @@
 
 #define LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_
 
-#ifdef __AVX2__
-
-#include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <immintrin.h>
 
-#include "SIMD.hpp"
+#include <column_operators/functors.hpp>
 
-namespace ahead {
-    namespace bat {
-        namespace ops {
-            namespace simd {
-                namespace avx2 {
+#include "SSE.hpp"
 
-                    template<typename T>
-                    struct mm256;
-
-                    namespace Private {
-                        template<size_t current = 0>
-                        inline void pack_right2_uint8(
-                                uint8_t * & result,
-                                __m256i & a,
-                                uint32_t mask) {
-                            *result = reinterpret_cast<uint8_t*>(&a)[current];
-                            result += (mask >> current) & 0x1;
-                            pack_right2_uint8<current + 1>(result, a, mask);
-                        }
-
-                        template<>
-                        inline void pack_right2_uint8<31>(
-                                uint8_t * & result,
-                                __m256i & a,
-                                uint32_t mask) {
-                            *result = reinterpret_cast<uint8_t*>(&a)[31];
-                            result += (mask >> 31) & 0x1;
-                        }
-
-                        template<size_t current = 0>
-                        inline void pack_right2_uint16(
-                                uint16_t * & result,
-                                __m256i & a,
-                                uint16_t mask) {
-                            *result = reinterpret_cast<uint16_t*>(&a)[current];
-                            result += (mask >> current) & 0x1;
-                            pack_right2_uint16<current + 1>(result, a, mask);
-                        }
-
-                        template<>
-                        inline void pack_right2_uint16<15>(
-                                uint16_t * & result,
-                                __m256i & a,
-                                uint16_t mask) {
-                            *result = reinterpret_cast<uint16_t*>(&a)[15];
-                            result += (mask >> 15) & 0x1;
-                        }
-
-                        template<size_t current = 0>
-                        inline void pack_right2_uint32(
-                                uint32_t * & result,
-                                __m256i & a,
-                                uint8_t mask) {
-                            *result = reinterpret_cast<uint32_t*>(&a)[current];
-                            result += (mask >> current) & 0x1;
-                            pack_right2_uint32<current + 1>(result, a, mask);
-                        }
-
-                        template<>
-                        inline void pack_right2_uint32<7>(
-                                uint32_t * & result,
-                                __m256i & a,
-                                uint8_t mask) {
-                            *result = reinterpret_cast<uint32_t*>(&a)[7];
-                            result += (mask >> 7) & 0x1;
-                        }
-
-                        template<size_t current = 0>
-                        inline void pack_right2_uint64(
-                                uint64_t * & result,
-                                __m256i & a,
-                                uint8_t mask) {
-                            *result = reinterpret_cast<uint64_t*>(&a)[current];
-                            result += (mask >> current) & 0x1;
-                            pack_right2_uint64<current + 1>(result, a, mask);
-                        }
-
-                        template<>
-                        inline void pack_right2_uint64<3>(
-                                uint64_t * & result,
-                                __m256i & a,
-                                uint8_t mask) {
-                            *result = reinterpret_cast<uint64_t*>(&a)[3];
-                            result += (mask >> 3) & 0x1;
-                        }
-
-                        inline __m256i _mm256_shuffle256_epi8(
-                                const __m256i & value,
-                                const __m256i & shuffle) {
-                            const __m256i K0 = _mm256_setr_epi8(0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0,
-                                    0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0);
-
-                            const __m256i K1 = _mm256_setr_epi8(0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70,
-                                    0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70);
-
-                            return _mm256_or_si256(_mm256_shuffle_epi8(value, _mm256_add_epi8(shuffle, K0)), _mm256_shuffle_epi8(_mm256_permute4x64_epi64(value, 0x4E), _mm256_add_epi8(shuffle, K1)));
-                        }
-                    }
-
-                }
-            }
-        }
-    }
-}
-
+#include "AVX2_base.tcc"
 #include "AVX2_uint08.tcc"
 #include "AVX2_uint16.tcc"
 #include "AVX2_uint32.tcc"
@@ -151,6 +47,8 @@ namespace ahead {
                         public avx2::mm256<T> {
 
                     typedef avx2::mm256<T> BASE;
+
+                    using BASE::mask_t;
 
                     using BASE::set;
                     using BASE::set1;
@@ -179,5 +77,3 @@ namespace ahead {
         }
     }
 }
-
-#endif

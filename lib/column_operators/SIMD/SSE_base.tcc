@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Till Kolditz
+// Copyright 2017 Till Kolditz
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,29 +13,33 @@
 // limitations under the License.
 
 /*
- * File:   SIMD.hpp
- * Author: Till Kolditz <till.kolditz@gmail.com>
+ * SSE_base.tcc
  *
- * Created on 09-08-2017 00:18
+ *  Created on: 20.11.2017
+ *      Author: Till Kolditz - Till.Kolditz@gmail.com
  */
 
 #pragma once
 
-#if not defined(LIB_COLUMN_OPERATORS_SIMD_SSE_HPP_) and not defined(LIB_COLUMN_OPERATORS_SIMD_AVX2_HPP_)
-#error "This file must not be included by client code!"
+#ifndef LIB_COLUMN_OPERATORS_SIMD_SSE_HPP_
+#error "This file must only be included by SSE.hpp !"
 #endif
+
+#include <cstdlib>
+#include <cstdint>
+#include <climits>
+#include <immintrin.h>
 
 namespace ahead {
     namespace bat {
         namespace ops {
             namespace simd {
+                namespace sse {
 
-                template<typename V, typename T>
-                struct mm;
+                    template<typename ...Types>
+                    struct mm128;
 
-                template<typename V, typename T, template<typename > class Op>
-                struct mm_op;
-
+                }
             }
         }
     }
