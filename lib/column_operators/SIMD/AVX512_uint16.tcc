@@ -172,7 +172,11 @@ namespace ahead {
                         static inline __m512i add(
                                 __m512i a,
                                 __m512i b) {
+#ifdef __AVX512BW__
                             return _mm512_add_epi16(a, b);
+#else
+                            throw std::runtime_error("__m512i add uint16_t not supported yet");
+#endif
                         }
 
                         static inline __m512i mullo(

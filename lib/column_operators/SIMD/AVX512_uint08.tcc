@@ -239,6 +239,16 @@ namespace ahead {
                             return _mm512_max_epu8(a, b);
                         }
 
+                        static inline __m512i add(
+                                __m512i a,
+                                __m512i b) {
+#ifdef __AVX512BW__
+                            return _mm512_add_epi8(a, b);
+#else
+                            throw std::runtime_error("__m512i add uint8_t not supported yet");
+#endif
+                        }
+
                         static inline __m512i geq(
                                 __m512i a,
                                 __m512i b) {

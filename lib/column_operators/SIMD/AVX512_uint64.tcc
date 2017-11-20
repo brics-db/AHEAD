@@ -130,7 +130,7 @@ namespace ahead {
                                 __m512i a) {
                             auto mm = _mm512_add_epi64(a, _mm512_shuffle_i64x2(a, a, 0xA1));
                             auto mm2 = _mm_add_epi64(_mm512_extracti64x2_epi64(mm, 0x2), _mm512_extracti64x2_epi64(mm, 0x0));
-                            return static_cast<uint64_t>(_mm_extract_epi64(a, 1)) + static_cast<uint64_t>(_mm_extract_epi64(a, 0));
+                            return static_cast<uint64_t>(_mm_extract_epi64(mm2, 1)) + static_cast<uint64_t>(_mm_extract_epi64(mm2, 0));
                         }
 
                         static inline __m512i pack_right(

@@ -68,7 +68,7 @@ namespace ahead {
 
                     static inline __m512i loadu(
                             __m512i * src) {
-                        return _mm512_lddqu_si512(src);
+                        return _mm512_loadu_si512(src);
                     }
 
                     static inline void storeu(
