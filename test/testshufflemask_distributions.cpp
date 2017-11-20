@@ -324,12 +324,16 @@ struct Test {
     static void run(
             abstract_context_t<V, T> & ac) {
         concrete_context_t<V, T, M> cc(ac);
-        ac.paac->sw.start();
-        for (size_t r = 0; r < ac.paac->numRepititions; ++r) {
-            F(cc);
+        try {
+            ac.paac->sw.start();
+            for (size_t r = 0; r < ac.paac->numRepititions; ++r) {
+                F(cc);
+            }
+            ac.paac->sw.stop();
+            std::cout << ',' << ac.paac->sw.duration();
+        } catch (std::runtime_error & e) {
+            std::cout << ',';
         }
-        ac.paac->sw.stop();
-        std::cout << ',' << ac.paac->sw.duration();
     }
 };
 

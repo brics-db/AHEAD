@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /*
- * File:   SSE.hpp
+ * File:   AVX2.hpp
  * Author: Till Kolditz <till.kolditz@gmail.com>
  *
  * Created on 23. Februar 2017, 22:43
