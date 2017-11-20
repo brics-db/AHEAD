@@ -144,7 +144,7 @@ namespace ahead {
                                 __m256i a,
                                 mask_t mask) {
                             typedef mm<__m128i, uint64_t>::mask_t sse_mask_t;
-                            auto maskLow = static_cast<sse_mask_t>(mask);
+                            auto maskLow = static_cast<sse_mask_t>(mask & 0x3);
                             _mm_storeu_si128(reinterpret_cast<__m128i *>(result), mm<__m128i, uint32_t>::pack_right(_mm256_extracti128_si256(a, 0), maskLow));
                             result += __builtin_popcount(maskLow);
                             auto maskHigh = static_cast<sse_mask_t>(mask >> 2);
