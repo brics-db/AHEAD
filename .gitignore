@@ -35,3 +35,4 @@ CMakeFiles
 /test/testshufflemask_distributions_knl
 /Debug
 /Release
+.gdb_history

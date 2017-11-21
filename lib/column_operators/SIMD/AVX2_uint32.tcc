@@ -140,9 +140,7 @@ namespace ahead {
                                 uint32_t * & result,
                                 __m256i a,
                                 mask_t mask) {
-                            if (mask) {
-                                Private::pack_right2_uint32(result, a, mask);
-                            }
+                            Private::pack_right2_uint32(result, a, mask);
                         }
 
                         static inline void pack_right3(
