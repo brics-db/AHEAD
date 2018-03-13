@@ -1,6 +1,22 @@
 #!/bin/bash
 
-for sf in $(seq 5 10); do
+function untar_headers {
+	tar -xaf headers.tgz
+}
+
+if [[ ! -e database/headers ]]; then
+	untar_headers
+else
+	for tab in customer date lineorder part supplier; do
+		if [[ ! -e "${tab}_header.csv"]] || [[ ! -e "${tab}AN_header.csv" ]]; then
+			untar_headers;break
+		fi
+	done
+fi
+
+pushd database
+
+for sf in $(seq 1 3); do
 	echo "Generating data for scale factor ${sf}"
 	sync
 	echo "  * synced all files (sync)"
@@ -10,15 +26,19 @@ for sf in $(seq 5 10); do
 		./dbgen -s ${sf} -T ${tab} -v 1>/dev/null 2>/dev/null
 		ret=$?
 		if [[ ! $ret -eq 0 ]]; then
-			echo "Error!"
+			echo "Error"
+			popd
 			exit $ret
 		else
-			echo "Success!"
+			echo "Success"
 		fi
 	done
+	sync
+	echo "  * synced all files (sync)"
 	mkdir -p sf-${sf}
 	ret=$?
 	if [[ $ret -ne 0 ]]; then
+		popd
 		echo "  * Error creating folder 'sf-${sf}'"
 		exit $ret
 	fi
@@ -27,6 +47,7 @@ for sf in $(seq 5 10); do
 	mv *.tbl sf-${sf}/
 	ret=$?
 	if [[ $ret -ne 0 ]]; then
+		popd
 		echo "  * Error moving files to subfolder 'sf-${sf}'"
 		exit $ret
 	else
@@ -37,6 +58,7 @@ for sf in $(seq 5 10); do
 
 	for tab in customer date lineorder part supplier; do
 		if [[ ! -e "${tab}.tbl" ]]; then
+			popd;popd
 			echo "  * Error: data file '${tab}.tbl' does not exist"
 			exit 1
 		fi
@@ -44,6 +66,7 @@ for sf in $(seq 5 10); do
 			ln -s ../sf-1/${tab}_header.csv ${tab}_header.csv
 			ret=$?
 			if [[ $ret -ne 0 ]]; then
+				popd;popd
 				echo "  * Error creating softlink ${tab}_header.csv -> ../sf-1/${tab}_header.csv"
 				exit $ret
 			fi
