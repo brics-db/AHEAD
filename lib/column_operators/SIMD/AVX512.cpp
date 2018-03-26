@@ -19,14 +19,20 @@
  * Created on 09. August 2017, 14:23
  */
 
+#ifdef __AVX512F__
+
 #include "SIMD.hpp"
 
 namespace ahead {
     namespace bat {
         namespace ops {
-            namespace avx512 {
+            namespace simd {
+                namespace avx512 {
 
+                }
             }
         }
     }
 }
+
+#endif
