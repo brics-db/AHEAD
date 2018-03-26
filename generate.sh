@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DATABASE_GENERATED_FILE=generated
+
 function untar_headers {
 	tar -xaf headers.tgz
 }
@@ -19,16 +21,23 @@ fi
 
 pushd database
 
-for sf in $(seq 1 1); do
+for sf in $(seq 1 10); do
 	echo "Generating data for scale factor ${sf}"
 	sync
 	echo "  * synced all files (sync)"
 
+	if [[ -f "sf-${sf}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
+		echo "  * I assume all files for scale factor ${sf} are already generated"
+		continue
+	fi
+
 	all_existing=1
 	for tab in c d l p s; do
-		filename="./sf-${sf}/${table_names[$tab]}.tbl"
+		filename="${table_names[$tab]}.tbl"
 		echo -n "  * ${tab}: ${filename} "
-		if [[ ! -f "$filename" ]]; then
+		if [[ -f "$filename" || -f "sf-${sf}/$filename" ]]; then
+			echo "exists"
+		else
 			all_existing=0
 			./dbgen -s ${sf} -T ${tab} -v 1>/dev/null 2>/dev/null
 			ret=$?
@@ -36,11 +45,9 @@ for sf in $(seq 1 1); do
 				echo "Error"
 				popd
 				exit $ret
-			else
-				echo "created"
 			fi
-		else
-			echo "exists"
+			sync
+			echo "created"
 		fi
 	done
 
@@ -61,9 +68,8 @@ for sf in $(seq 1 1); do
 			popd
 			echo "  * Error moving files to subfolder 'sf-${sf}'"
 			exit $ret
-		else
-			echo "  * generated and moved tables for sf ${sf}"
 		fi
+		echo "  * generated and moved tables for sf ${sf}"
 	else
 		echo "  * all tables already exists for sf ${sf}"
 	fi
@@ -120,6 +126,9 @@ for sf in $(seq 1 1); do
 		exit $ret
 	fi
 
+	touch "${SCRIPT_DATABASE_GENERATED_FILE}"
+	sync
+
 	rm -f *.tbl
 	ret=$?
 	if [[ $ret -ne 0 ]]; then
@@ -140,4 +149,6 @@ for sf in $(seq 1 1); do
 	echo "  * synced all files (sync)"
 
 done
+
+popd
 
