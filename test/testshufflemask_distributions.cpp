@@ -412,9 +412,15 @@ void test(
     std::cout << "# " << std::setw(20) << "data bits: " << (sizeof(T) * 8);
     std::cout << "\n#" << std::setw(6) << vector_length_string<V>::value << "-bit vectors: " << (ac.numMM * aac.numRepititions) << " (" << ac.numMM << " repeated " << aac.numRepititions
             << " times)\n";
-    std::cout << "selectivity,lookup table,iteration" << std::endl;
+    std::cout << "Selectivity,Total Values,Lookup Table,Sequential";
+    if constexpr (std::is_same_v<V, __m256i> || std::is_same_v<V, __m512i>) {
+        std::cout << ",SSE Lookup";
+    }
+    size_t numTotalValues = aac.numValues * aac.numRepititions;
+    std::cout << std::endl;
     for (size_t selectivity = 0; selectivity <= 100; selectivity++) {
         ac.setSelectivity(selectivity);
+        std::cout << ',' << numTotalValues;
         Test<V, T, initcolumns_inout_t, testPack1ColumnArray>::run(ac);
         Test<V, T, initcolumns_inout_t, testPack2ColumnArray>::run(ac);
         if constexpr (std::is_same_v<V, __m256i> || std::is_same_v<V, __m512i>) {
@@ -422,7 +428,6 @@ void test(
         }
         std::cout << '\n';
     }
-    std::cout << "\n\n" << std::endl;
 }
 
 int main(
@@ -456,21 +461,30 @@ int main(
     abstract_abstract_context_t aac(numValues, numRepititions);
 
     test<__m128i, uint8_t>(aac);
+    std::cout << "\n\n";
     test<__m128i, uint16_t>(aac);
+    std::cout << "\n\n";
     test<__m128i, uint32_t>(aac);
+    std::cout << "\n\n";
     test<__m128i, uint64_t>(aac);
 
 #ifdef __AVX2__
     test<__m256i, uint8_t>(aac);
+    std::cout << "\n\n";
     test<__m256i, uint16_t>(aac);
+    std::cout << "\n\n";
     test<__m256i, uint32_t>(aac);
+    std::cout << "\n\n";
     test<__m256i, uint64_t>(aac);
 #endif
 
 #ifdef AHEAD_AVX512
     test<__m512i, uint8_t>(aac);
+    std::cout << "\n\n";
     test<__m512i, uint16_t>(aac);
+    std::cout << "\n\n";
     test<__m512i, uint32_t>(aac);
+    std::cout << "\n\n";
     test<__m512i, uint64_t>(aac);
 #endif
 }

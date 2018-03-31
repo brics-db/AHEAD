@@ -13,8 +13,9 @@ cmake_install.cmake
 CMakeCache.txt
 CMakeFiles
 /build
-/database
 /nbproject/private
+/database/headers
+/database/sf-*
 /eval/data
 /eval/out
 /eval/outNewHashjoin1/
