@@ -56,9 +56,19 @@ if [[ $# -ne 0 ]] ; then
             DO_EVAL_PREPARE=1
             DO_VERIFY=1
             if [[ $# > 1 ]]; then
-                DATE="${ARGS[1]}"
+                DATE="${ARGS[1]}" #only needed when calling the original script.
             fi
             ;;
+        PLOT)
+            PHASE="PLOT"
+            DO_COMPILE=0
+            DO_BENCHMARK=0
+            DO_EVAL=1
+            DO_EVAL_PREPARE=0
+            DO_VERIFY=0
+            if [[ $# > 1 ]]; then
+                DATE="${ARGS[1]}" #only needed when calling the original script.
+            fi
         *)
             echo "[ERROR] UNKNOWN Phase"
             exit 1
@@ -79,8 +89,8 @@ PATH_EVAL="${PATH_BASE}/eval"
 PATH_EVAL_CURRENT="${PATH_EVAL}/${DATE}"
 PATH_EVALDATA="${PATH_EVAL_CURRENT}/data"
 PATH_EVALOUT="${PATH_EVAL_CURRENT}/report"
-EXEC_ENV=$(which env)
-EXEC_BASH=$(which bash)
+EXEC_ENV="$(which env)"
+EXEC_BASH="$(which bash)"
 
 
 ################################################################################################
@@ -110,7 +120,9 @@ if [[ -t 1 ]] && [[ -t 2 ]]; then
         else
             mv "${outfile}" "${errfile}" "${PATH_EVAL_CURRENT}"
         fi
-        cp $0 "${PATH_EVAL_CURRENT}/"
+        #cp $0 "${PATH_EVAL_CURRENT}/"
+        # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
+        sed -E -e '34,+16s/^(.+)$/#\1/' -e '85s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '86,1s/([^=]+)=(.+)/#\1=\2/' -e '88s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '89s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '78s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '115s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
     fi
     exit $ret
 else
@@ -256,10 +268,10 @@ set style line 7 lc rgb "#e51e10"
 $(for var in "${@:4}"; do echo $var; done)
 plot '${3}' using 2:xtic(1) title col fillstyle pattern 0 border ls 1 lw 1 dt 1, \\
          '' using 3:xtic(1) title col fillstyle pattern 2 border ls 2 lw 1 dt 1, \\
-         '' using 5:xtic(1) title col fillstyle pattern 3 border ls 4 lw 1 dt 1, \\
-         '' using 6:xtic(1) title col fillstyle pattern 7 border ls 5 lw 1 dt 1, \\
-         '' using 7:xtic(1) title col fillstyle pattern 1 border ls 6 lw 1 dt 1, \\
-         '' using 8:xtic(1) title col fillstyle pattern 4 border ls 7 lw 1 dt 1
+         '' using 4:xtic(1) title col fillstyle pattern 3 border ls 4 lw 1 dt 1, \\
+         '' using 5:xtic(1) title col fillstyle pattern 7 border ls 5 lw 1 dt 1, \\
+         '' using 6:xtic(1) title col fillstyle pattern 1 border ls 6 lw 1 dt 1, \\
+         '' using 7:xtic(1) title col fillstyle pattern 4 border ls 7 lw 1 dt 1
 EOM
 }
 
@@ -297,10 +309,10 @@ set style line 7 lc rgb "#e51e10"
 $(for var in "${@:5}"; do echo $var; done)
 plot '${4}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 t "Unencoded", \\
          '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 t "DMR", \\
-         '' using 5:xtic(1) fillstyle pattern 3 border ls 4 lw 1 dt 1 t "Early", \\
-         '' using 6:xtic(1) fillstyle pattern 7 border ls 5 lw 1 dt 1 t "Late", \\
-         '' using 7:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 t "Continuous", \\
-         '' using 8:xtic(1) fillstyle pattern 4 border ls 7 lw 1 dt 1 t "Reencoding"
+         '' using 4:xtic(1) fillstyle pattern 3 border ls 4 lw 1 dt 1 t "Early", \\
+         '' using 5:xtic(1) fillstyle pattern 7 border ls 5 lw 1 dt 1 t "Late", \\
+         '' using 6:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 t "Continuous", \\
+         '' using 7:xtic(1) fillstyle pattern 4 border ls 7 lw 1 dt 1 t "Reencoding"
 
 set term pdf enhanced monochrome fontscale 0.44 size 0.2in,1.25in
 set output '${3}'
