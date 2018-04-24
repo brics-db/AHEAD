@@ -503,7 +503,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
         EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
         if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
-            echo " * ${ARCH:1}"
             rm -f ${EVAL_NORMALIZEDALLDATAFILE_PATH}
             echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
             for var in "${VARIANTS[@]}"; do
@@ -529,7 +528,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 ((njobs/=136))                     # you should adapt this one if the following subtask is changed
                 [[ $njobs -ge $(nproc) ]] && wait -n
                 (
-                    echo "   * Preparing data for ${BASE3}"
+                    echo " * Preparing data for ${BASE3}"
                     
                     rm -f ${EVAL_TEMPFILE_PATH}
                     rm -f ${EVAL_DATAFILE_PATH}
@@ -760,29 +759,56 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         tr <${EVAL_NORMALIZEDDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDDATAFILE_PATH}.tmp
                         mv ${EVAL_NORMALIZEDDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDDATAFILE_PATH}
                     fi
-
-                    # Append current Query name to normalized overall temp file
-                    echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                    echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                    #prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
-                    sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
-                    varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
-                    arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
-                    for sf in ${sfIdxs}; do
-                        column=$(echo "${sf}+1" | bc)
-                        arg+="\$${column}+"
-                    done
-                    arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
-                    awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDTEMPFILE_PATH} >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                    echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                    sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                    # remove <zero>-bytes
-                    tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
-                    mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
                 ) &
             fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
         done
     done
+    # Now, wait for everything to finish and SYNC all files!
+    wait -n
+    sync
+    if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
+        # Aggregate the previously prepared data. This part should not be parallelized.
+        for ARCH in "${ARCHITECTURE[@]}"; do
+            # Prepare File for a single complete normalized overhead graph across all scale factors
+            EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
+            EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLDATAFILE}"
+            EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
+            EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPLOTFILE}"
+            EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
+            EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
+            for NUM in "${IMPLEMENTED[@]}"; do
+                BASE2="${BASE}${NUM}"
+                BASE3="${BASE2}${ARCH}"
+                EVAL_TEMPFILE="${BASE3}.tmp"
+                EVAL_TEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_TEMPFILE}"
+                EVAL_DATAFILE="${BASE3}.data"
+                EVAL_DATAFILE_PATH="${PATH_EVALOUT}/${EVAL_DATAFILE}"
+                EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
+                EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_NORMALIZEDTEMPFILE}"
+                EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
+                EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDDATAFILE}"
+
+                # Append current Query name to normalized overall temp file
+                echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                #prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
+                sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
+                varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
+                arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
+                for sf in ${sfIdxs}; do
+                    column=$(echo "${sf}+1" | bc)
+                    arg+="\$${column}+"
+                done
+                arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
+                awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDTEMPFILE_PATH} >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                # remove <zero>-bytes
+                tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
+                mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+            done
+        done
+    fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
     # Now, wait for everything to finish and SYNC all files!
     wait -n
     sync
@@ -824,7 +850,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 popd
             ) &
         done
-
+        wait -n
+        sync
         echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
         ALLPDFINFILES=
         for NUM in "${IMPLEMENTED[@]}"; do
