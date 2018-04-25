@@ -69,6 +69,7 @@ if [[ $# -ne 0 ]] ; then
             if [[ $# > 1 ]]; then
                 DATE="${ARGS[1]}" #only needed when calling the original script.
             fi
+            ;;
         *)
             echo "[ERROR] UNKNOWN Phase"
             exit 1
@@ -368,21 +369,14 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
                 exit 1
             fi
         fi
-        version_string=$(${cxx} --version | head -n 1)
-        if [[ "${version_string}" =~ "g++ (GCC)" ]] || [[ "${version_string}" =~ "c++ (GCC)" ]]; then
-            version=$(echo "${version_string}" | grep -oP "\d+\.\d+\.\d+")
-            testfile=$(mktemp --suffix=.cpp)
-            cat >${testfile} << EOM
+        testfile=$(mktemp --suffix=.cpp)
+        cat >${testfile} << EOM
 #include <optional>
 int main() {
         return 0;
 }
 EOM
-            ${cxx} -std=c++17 -o ${testfile}.a ${testfile} &>/dev/null && (rm ${testfile}; echo "[INFO] Compiler is c++17 compatible.") || (rm ${estfile}; echo "[ERROR] Compiler is not c++17 compatible!"; exit 1)
-        else
-            echo "[ERROR] \"${version_string}\": Currently, only g++ is supported by this script. Please fix this by yourself or tell me: Till.Kolditz@gmail.com."
-            exit 1
-        fi
+        ${cxx} -std=c++17 -o ${testfile}.a ${testfile} &>/dev/null && (rm ${testfile}; echo "[INFO] Compiler is c++17 compatible.") || (rm ${estfile}; echo "[ERROR] Compiler is not c++17 compatible! Please fix this by yourself or tell me: Till.Kolditz@gmail.com."; exit 1)
         echo " * Recreating build dir \"${PATH_BUILD}\"."
         bootstrap_file="${PATH_BASE}/bootstrap.sh"
         if [[ -e "${bootstrap_file}" ]]; then
