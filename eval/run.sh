@@ -112,9 +112,9 @@ if [[ -t 1 ]] && [[ -t 2 ]]; then
         else
             mv "${outfile}" "${errfile}" "${PATH_EVAL_CURRENT}"
         fi
-        #cp $0 "${PATH_EVAL_CURRENT}/"
+        cp $0 "${PATH_EVAL_CURRENT}/"
         # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
-        sed -E -e '34,+16s/^(.+)$/#\1/' -e '85s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '86,1s/([^=]+)=(.+)/#\1=\2/' -e '88s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '89s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '78s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '115s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
+        sed -E -e '34,+16s/^(.+)$/#\1/' -e '86,3s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '90s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '79s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '115,2s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
     fi ### [[ -e ${PATH_EVAL_CURRENT} ]]
     rm -Rf $outfile $errfile
     echo "[INFO] one of stdout or stderr is not redirected, calling script with redirecting" | tee $outfile
@@ -488,6 +488,10 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         mkdir -p ${PATH_EVALOUT}
     fi
 
+    if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
+        echo " * Preparing"
+    fi
+
     for ARCH in "${ARCHITECTURE[@]}"; do
         # Prepare File for a single complete normalized overhead graph across all scale factors
         EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
@@ -496,6 +500,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPLOTFILE}"
         EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
         EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
+
         if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
             rm -f ${EVAL_NORMALIZEDALLDATAFILE_PATH}
             echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
@@ -518,17 +523,17 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDDATAFILE}"
 
             if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
-                njobs=$(jobs | wc -l)
-                ((njobs/=136))                     # you should adapt this one if the following subtask is changed
-                [[ $njobs -ge $(nproc) ]] && wait -n
+                #njobs=$(jobs | wc -l)
+                #((njobs/=136)) # you should adapt this one if the following subtask is changed
+                #[[ $njobs -ge $(nproc) ]] && wait -n
                 (
-                    echo " * Preparing data for ${BASE3}"
-                    
+                    echo "   * ${BASE3}"
+
                     rm -f ${EVAL_TEMPFILE_PATH}
                     rm -f ${EVAL_DATAFILE_PATH}
                     echo -n "SF " >${EVAL_TEMPFILE_PATH}
                     echo "${BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE_PATH}
-                    
+
                     for VAR in "${VARIANTS[@]}"; do
                         type="${BASE2}${VAR}${ARCH}"
                         EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
@@ -569,7 +574,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                             fi
                         done
                         echo "" >>${EVAL_TEMPFILE_PATH}
-                    
+
                         ### process individual Operators' times
                         EVAL_FILEOPS_TMP="${PATH_EVALDATA}/${type}.ops.tmp"
                         EVAL_FILEOPS_OUT="${PATH_EVALDATA}/${type}.ops.out"
@@ -579,139 +584,158 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         EVAL_FILEOPS_RETINSTAVG="${PATH_EVALDATA}/${type}.ops.retinstavg"
                         grep op "${EVAL_FILEOUT}" | grep -v opy | sed -E 's/[ ]+//g' | sed -E 's/^\t//g' | sed -E 's/op([0-9]+\t)/\1/g' >"${EVAL_FILEOPS_TMP}"
                         NUM_OPS_ARRAY=$(awk '
-                        BEGIN{i=0;copynum=0;copycount=0;querynum=0;FS="\t";}
+                        BEGIN{i=0;mode=0;numCreateOps=0;numCopyOps=0;numQueryOps=0;FS="\t";}
                         {
-                            if($1<i) {
-                                if(copynum==0) {
-                                    copynum=i
-                                    ++copycount
-                                } else if (i==copynum) {
-                                    ++copycount
-                                }
-                                i=$1
-                            } else {
-                                ++i
-                            }
-                            if($1>querynum) {
-                                querynum=i
-                            }
+							if($1<i) {
+								if(mode==0) {
+									numCreateOps=i
+									mode=1
+								} else if (mode==1) {
+									numCopyOps=i
+									mode=2
+								} else if (mode==2) {
+									numQueryOps=i
+									exit
+								}
+								i=$1
+							} else {
+								++i
+							}
                         }
-                        END{print copynum,copycount,querynum}' "${EVAL_FILEOPS_TMP}")
+                        END{print numCreateOps,numCopyOps,numQueryOps}' "${EVAL_FILEOPS_TMP}")
                         IFS=' ' read -r -a array <<< "${NUM_OPS_ARRAY}"
-                        NUM_OPS_COPY=${array[0]}
-                        NUM_OPS_COPY_COUNT=${array[1]}
+                        NUM_OPS_CREATE=${array[0]}
+                        NUM_OPS_COPY=${array[1]}
                         NUM_OPS_QUERY=${array[2]}
-                        awk -v numopscopy=${NUM_OPS_COPY} -v numcopycount=${NUM_OPS_COPY_COUNT} '
-                            BEGIN{i=0;FS="\t";}
-                            FNR>(numcopycount*numopscopy) {
-                                print
+                        awk -v numopscreate=${NUM_OPS_CREATE} -v numopscopy=${NUM_OPS_COPY} -v numopsquery=${NUM_OPS_QUERY} -v numruns=${BENCHMARK_NUMRUNS} '
+                            BEGIN{i=0;incopy=1;inquery=0;FS="\t";}
+                            {
+                                ++i
+								if ((incopy < 2) && (i == numopscreate)) {
+                                  ++incopy
+                                  i=0
+                                } else if ((incopy < 3) && (i == numopscopy)) {
+                                  ++incopy
+                                  i=0
+                                } else if (incopy == 3) {
+                                  print
+                                  if (i == numopsquery) {
+                                    ++inquery
+                                    i=0
+                                  }
+                                  if (inquery == numruns) {
+                                    incopy = 1
+                                    inquery = 0
+                                  }
+                                }
                             }
                             END{printf "\n"}' "${EVAL_FILEOPS_TMP}" >"${EVAL_FILEOPS_OUT}"
-                        countOps=0
-                        countRuns=0
-                        sfidx=0
-                        sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
-                        echo -n "sf" >${EVAL_FILEOPS_TIMES}
-                        for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
-                            echo -ne "\t$i" >>${EVAL_FILEOPS_TIMES}
-                        done
-                        echo -e "\tavg" >>${EVAL_FILEOPS_TIMES}
-                        echo -n $sf >>${EVAL_FILEOPS_TIMES}
-                        if [[ ${#array[@]} -gt 7 ]]; then
-                            echo -n "sf" >${EVAL_FILEOPS_RETINST}
-                            for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
-                                echo -ne "\t$i" >>${EVAL_FILEOPS_RETINST}
-                            done
-                            echo -e "\tavg" >>${EVAL_FILEOPS_RETINST}
-                            echo -n $sf >>${EVAL_FILEOPS_RETINST}
-                        fi
-                        while read line; do
-                            ((countOps++))
-                            IFS='    ' read -r -a array <<< "${line}"
-                            curTime=$(echo "${array[1]}" | sed 's/\.//g')
-                            arrayTimes+=(${curTime})
-                            echo -ne "\t${curTime}" >>${EVAL_FILEOPS_TIMES}
-                            if [[ ${#array[@]} -gt 7 ]]; then
-                                arrayRetInst+=(${array[8]})
-                                echo -ne "\t${array[8]}" >>${EVAL_FILEOPS_RETINST}
-                            fi
-                            if [[ ${countOps} -eq ${NUM_OPS_QUERY} ]]; then
-                                countOps=0
-                                ((countRuns++))
-                                if [[ ${countRuns} -lt ${BENCHMARK_NUMRUNS} ]]; then
-                                    echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
-                                    if [[ ${#array[@]} -gt 7 ]]; then
-                                        echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
-                                    fi
-                                else
-                                    countRuns=0
-                                    ((sfidx++))
-                                    if [[ $sfidx -lt ${#BENCHMARK_SCALEFACTORS[@]} ]]; then
-                                        sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
-                                        unset arrayTimes
-                                        arrayTimes=()
-                                        echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
-                                        if [[ ${#array[@]} -gt 7 ]]; then
-                                            unset arrayRetInst
-                                            arrayRetInst=()
-                                            echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
-                                        fi
-                                    fi
-                                fi
-                            fi
-                        done <"${EVAL_FILEOPS_OUT}"
-                        awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
-                            BEGIN {
-                                for (i=0; i<numOps; ++i) {
-                                    a[i]=0
-                                }
-                                run=0
-                                printf "sf"
-                                for (i=1; i<=numOps; ++i) {
-                                    printf "\t%d", i
-                                }
-                                printf "\n"
-                            }
-                            FNR>1{
-                                for (i=0; i<numOps; ++i) {
-                                    a[i]+=$(i+2)
-                                }
-                                ++run
-                                if (run==numRuns) {
-                                    printf "%d", $0
-                                    for (i=0; i<numOps; ++i) {
-                                        printf "\t%d", a[i]/numOps
-                                    }
-                                    printf "\n"
-                                }
-                            }' "${EVAL_FILEOPS_TIMES}" >"${EVAL_FILEOPS_TIMESAVG}"
-                            if [[ ${#array[@]} -gt 7 ]]; then
-                            awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
-                                BEGIN {
-                                    for (i=0; i<numOps; ++i) {
-                                        a[i]=0
-                                    }
-                                    run=0
-                                    printf "sf"
-                                    for (i=1; i<=numOps; ++i) {
-                                        printf "\t%d", i
-                                    }
-                                    printf "\n"
-                                }
-                                FNR>1{
-                                    for (i=0; i<numOps; ++i) {
-                                        a[i]+=$(i+2)
-                                    }
-                                    ++run
-                                    if (run==numRuns) {
-                                        printf "%d", $0
-                                        for (i=0; i<numOps; ++i) {
-                                            printf "\t%d", a[i]/numOps
-                                        }
-                                        printf "\n"
-                                    }
-                                }' "${EVAL_FILEOPS_RETINST}" >"${EVAL_FILEOPS_RETINSTAVG}"
-                            fi
+						# TODO: The following does not work, so let's save some time
+                        #countOps=0
+                        #countRuns=0
+                        #sfidx=0
+                        #sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
+                        #echo -n "sf" >${EVAL_FILEOPS_TIMES}
+                        #for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
+                        #    echo -ne "\t$i" >>${EVAL_FILEOPS_TIMES}
+                        #done
+                        #echo -e "\tavg" >>${EVAL_FILEOPS_TIMES}
+                        #echo -n $sf >>${EVAL_FILEOPS_TIMES}
+                        #if [[ ${#array[@]} -gt 7 ]]; then
+                        #    echo -n "sf" >${EVAL_FILEOPS_RETINST}
+                        #    for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
+                        #        echo -ne "\t$i" >>${EVAL_FILEOPS_RETINST}
+                        #    done
+                        #    echo -e "\tavg" >>${EVAL_FILEOPS_RETINST}
+                        #    echo -n $sf >>${EVAL_FILEOPS_RETINST}
+                        #fi
+                        #while read line; do
+                        #    ((countOps++))
+                        #    IFS='    ' read -r -a array <<< "${line}"
+                        #    curTime=$(echo "${array[1]}" | sed 's/\.//g')
+                        #    arrayTimes+=(${curTime})
+                        #    echo -ne "\t${curTime}" >>${EVAL_FILEOPS_TIMES}
+                        #    if [[ ${#array[@]} -gt 7 ]]; then
+                        #        arrayRetInst+=(${array[8]})
+                        #        echo -ne "\t${array[8]}" >>${EVAL_FILEOPS_RETINST}
+                        #    fi
+                        #    if [[ ${countOps} -eq ${NUM_OPS_QUERY} ]]; then
+                        #        countOps=0
+                        #        ((countRuns++))
+                        #        if [[ ${countRuns} -lt ${BENCHMARK_NUMRUNS} ]]; then
+                        #            echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
+                        #            if [[ ${#array[@]} -gt 7 ]]; then
+                        #                echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
+                        #            fi
+                        #        else
+                        #            countRuns=0
+                        #            ((sfidx++))
+                        #            if [[ $sfidx -lt ${#BENCHMARK_SCALEFACTORS[@]} ]]; then
+                        #                sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
+                        #                unset arrayTimes
+                        #                arrayTimes=()
+                        #                echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
+                        #                if [[ ${#array[@]} -gt 7 ]]; then
+                        #                    unset arrayRetInst
+                        #                    arrayRetInst=()
+                        #                    echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
+                        #                fi
+                        #            fi
+                        #        fi
+                        #    fi
+                        #done <"${EVAL_FILEOPS_OUT}"
+                        #awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
+                        #    BEGIN {
+                        #        for (i=0; i<numOps; ++i) {
+                        #            a[i]=0
+                        #        }
+                        #        run=0
+                        #        printf "sf"
+                        #        for (i=1; i<=numOps; ++i) {
+                        #            printf "\t%d", i
+                        #        }
+                        #        printf "\n"
+                        #    }
+                        #    FNR>1{
+                        #        for (i=0; i<numOps; ++i) {
+                        #            a[i]+=$(i+2)
+                        #        }
+                        #        ++run
+                        #        if (run==numRuns) {
+                        #            printf "%d", $0
+                        #            for (i=0; i<numOps; ++i) {
+                        #                printf "\t%d", a[i]/numOps
+                        #            }
+                        #            printf "\n"
+                        #        }
+                        #    }' "${EVAL_FILEOPS_TIMES}" >"${EVAL_FILEOPS_TIMESAVG}"
+                        #if [[ ${#array[@]} -gt 7 ]]; then
+                        #awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
+                        #    BEGIN {
+                        #        for (i=0; i<numOps; ++i) {
+                        #            a[i]=0
+                        #        }
+                        #        run=0
+                        #        printf "sf"
+                        #        for (i=1; i<=numOps; ++i) {
+                        #            printf "\t%d", i
+                        #        }
+                        #        printf "\n"
+                        #    }
+                        #    FNR>1{
+                        #        for (i=0; i<numOps; ++i) {
+                        #            a[i]+=$(i+2)
+                        #        }
+                        #        ++run
+                        #        if (run==numRuns) {
+                        #            printf "%d", $0
+                        #            for (i=0; i<numOps; ++i) {
+                        #                printf "\t%d", a[i]/numOps
+                        #            }
+                        #            printf "\n"
+                        #        }
+                        #    }' "${EVAL_FILEOPS_RETINST}" >"${EVAL_FILEOPS_RETINSTAVG}"
+                        #fi
                     done
 
                     # transpose original data
@@ -761,16 +785,63 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
     wait -n
     sync
     if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
-        # Aggregate the previously prepared data. This part should not be parallelized.
+        # Aggregate the previously prepared data.
         for ARCH in "${ARCHITECTURE[@]}"; do
-            # Prepare File for a single complete normalized overhead graph across all scale factors
-            EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
-            EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLDATAFILE}"
-            EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
-            EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPLOTFILE}"
-            EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
-            EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
-            for NUM in "${IMPLEMENTED[@]}"; do
+            (
+                # Prepare File for a single complete normalized overhead graph across all scale factors
+                EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
+                EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLDATAFILE}"
+                EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
+                EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPLOTFILE}"
+                EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
+                EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
+                for NUM in "${IMPLEMENTED[@]}"; do
+                    BASE2="${BASE}${NUM}"
+                    BASE3="${BASE2}${ARCH}"
+                    EVAL_TEMPFILE="${BASE3}.tmp"
+                    EVAL_TEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_TEMPFILE}"
+                    EVAL_DATAFILE="${BASE3}.data"
+                    EVAL_DATAFILE_PATH="${PATH_EVALOUT}/${EVAL_DATAFILE}"
+                    EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
+                    EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_NORMALIZEDTEMPFILE}"
+                    EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
+
+                    # Append current Query name to normalized overall temp file
+                    echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                    echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                    #prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
+                    sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
+                    varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
+                    arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
+                    for sf in ${sfIdxs}; do
+                        column=$(echo "${sf}+1" | bc)
+                        arg+="\$${column}+"
+                    done
+                    arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
+                    awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDTEMPFILE_PATH} >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                    echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                    sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                    # remove <zero>-bytes
+                    tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
+                    mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+                done
+            ) &
+        done
+    fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
+    # Now, wait for everything to finish and SYNC all files!
+    wait -n
+    sync
+    echo "   * Plotting"
+    for ARCH in "${ARCHITECTURE[@]}"; do
+        # Prepare File for a single complete normalized overhead graph across all scale factors
+        EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
+        EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLDATAFILE}"
+        EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
+        EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPLOTFILE}"
+        EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
+        EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
+        for NUM in "${IMPLEMENTED[@]}"; do
+            (
                 BASE2="${BASE}${NUM}"
                 BASE3="${BASE2}${ARCH}"
                 EVAL_TEMPFILE="${BASE3}.tmp"
@@ -781,55 +852,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_NORMALIZEDTEMPFILE}"
                 EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
                 EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDDATAFILE}"
-
-                # Append current Query name to normalized overall temp file
-                echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                #prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
-                sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
-                varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
-                arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
-                for sf in ${sfIdxs}; do
-                    column=$(echo "${sf}+1" | bc)
-                    arg+="\$${column}+"
-                done
-                arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
-                awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDTEMPFILE_PATH} >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE_PATH}
-                # remove <zero>-bytes
-                tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
-                mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
-            done
-        done
-    fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
-    # Now, wait for everything to finish and SYNC all files!
-    wait -n
-    sync
-    for ARCH in "${ARCHITECTURE[@]}"; do
-        # Prepare File for a single complete normalized overhead graph across all scale factors
-        EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
-        EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLDATAFILE}"
-        EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
-        EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPLOTFILE}"
-        EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
-        EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
-        for NUM in "${IMPLEMENTED[@]}"; do
-            BASE2="${BASE}${NUM}"
-            BASE3="${BASE2}${ARCH}"
-            EVAL_TEMPFILE="${BASE3}.tmp"
-            EVAL_TEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_TEMPFILE}"
-            EVAL_DATAFILE="${BASE3}.data"
-            EVAL_DATAFILE_PATH="${PATH_EVALOUT}/${EVAL_DATAFILE}"
-            EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
-            EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_NORMALIZEDTEMPFILE}"
-            EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
-            EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDDATAFILE}"
-
-            njobs=$(jobs | wc -l)
-            ((njobs/=9))
-            [[ $njobs -ge $(nproc) ]] && wait -n
-            (
                 echo "   * Plotting ${BASE3}"
                 pushd ${PATH_EVALOUT}
                 #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
