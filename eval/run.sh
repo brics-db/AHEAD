@@ -253,7 +253,7 @@ gnuplotcode () {
     # Write GNUplot code to file
     cat >$1 << EOM
 #!/usr/bin/env gnuplot
-set term pdf enhanced color fontscale 0.44 size 6.5in,1.25in
+set term pdf enhanced color fontscale 0.44 size 5.7in,1.25in
 set output '${2}'
 set style data histogram
 set style histogram cluster gap 1
@@ -280,7 +280,7 @@ gnuplotlegend () {
     # Write GNUplot code to file
     cat >$1 << EOM
 #!/usr/bin/env gnuplot
-set term pdf enhanced color fontscale 0.44 size 6.5in,0.15in
+set term pdf enhanced color fontscale 0.44 size 5.7in,0.3in
 set output '${2}'
 set datafile separator '\t'
 set style data histogram
@@ -777,15 +777,15 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         tr <${EVAL_NORMALIZEDDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDDATAFILE_PATH}.tmp
                         mv ${EVAL_NORMALIZEDDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDDATAFILE_PATH}
                     fi
+					sync -d ${EVAL_TEMPFILE_PATH} ${EVAL_DATAFILE_PATH} ${EVAL_FILERESULTS} ${EVAL_FILESUMMARY} ${EVAL_FILEBESTRUNS} ${EVAL_NORMALIZEDDATAFILE_PATH}
                 ) &
             fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
         done
     done
-    # Now, wait for everything to finish and SYNC all files!
+    # Now, wait for everything to finish
     wait -n
-    sync
     if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
-        # Aggregate the previously prepared data.
+        echo "   * Preparing normalized data files for full-SSB plots"
         for ARCH in "${ARCHITECTURE[@]}"; do
             (
                 # Prepare File for a single complete normalized overhead graph across all scale factors
@@ -825,12 +825,12 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                     tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
                     mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
                 done
+				sync -d ${EVAL_NORMALIZEDALLDATAFILE_PATH}
             ) &
         done
     fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
-    # Now, wait for everything to finish and SYNC all files!
+    # Now, wait for everything to finish
     wait -n
-    sync
     echo "   * Plotting"
     for ARCH in "${ARCHITECTURE[@]}"; do
         # Prepare File for a single complete normalized overhead graph across all scale factors
@@ -841,40 +841,37 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
         EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDALLPDFFILE}"
         for NUM in "${IMPLEMENTED[@]}"; do
-            (
-                BASE2="${BASE}${NUM}"
-                BASE3="${BASE2}${ARCH}"
-                EVAL_TEMPFILE="${BASE3}.tmp"
-                EVAL_TEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_TEMPFILE}"
-                EVAL_DATAFILE="${BASE3}.data"
-                EVAL_DATAFILE_PATH="${PATH_EVALOUT}/${EVAL_DATAFILE}"
-                EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
-                EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_NORMALIZEDTEMPFILE}"
-                EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
-                EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDDATAFILE}"
-                echo "   * Plotting ${BASE3}"
-                pushd ${PATH_EVALOUT}
-                #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
-                gnuplotcode ${BASE3}.m ${BASE3}.pdf ${EVAL_DATAFILE} \
-                    "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
-                gnuplotcode ${BASE3}-norm.m ${BASE3}-norm.pdf ${EVAL_NORMALIZEDDATAFILE} \
-                    "set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
-                gnuplotlegend ${BASE3}-legend.m ${BASE3}-legend.pdf ${BASE3}-xlabel.pdf ${BASE3}.data
-                gnuplot ${BASE3}.m
-                gnuplot ${BASE3}-norm.m
-                gnuplot ${BASE3}-legend.m
-                popd
-            ) &
+            BASE2="${BASE}${NUM}"
+            BASE3="${BASE2}${ARCH}"
+            EVAL_TEMPFILE="${BASE3}.tmp"
+            EVAL_TEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_TEMPFILE}"
+            EVAL_DATAFILE="${BASE3}.data"
+            EVAL_DATAFILE_PATH="${PATH_EVALOUT}/${EVAL_DATAFILE}"
+            EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
+            EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALDATA}/${EVAL_NORMALIZEDTEMPFILE}"
+            EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
+            EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALOUT}/${EVAL_NORMALIZEDDATAFILE}"
+            echo "   * Plotting ${BASE3}"
+            pushd ${PATH_EVALOUT}
+            #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
+            gnuplotcode ${BASE3}.m ${BASE3}.pdf ${EVAL_DATAFILE} \
+                "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
+            gnuplotcode ${BASE3}-norm.m ${BASE3}-norm.pdf ${EVAL_NORMALIZEDDATAFILE} \
+                "set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
+            gnuplotlegend ${BASE3}-legend.m ${BASE3}-legend.pdf ${BASE3}-ylabel.pdf ${BASE3}.data
+            gnuplot ${BASE3}.m
+            gnuplot ${BASE3}-norm.m
+            gnuplot ${BASE3}-legend.m
+            popd
         done
-        wait -n
         sync
+        ALLPDFOUTFILE=${PATH_EVALOUT}/ssbm-all${ARCH}.pdf
         echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
         ALLPDFINFILES=
         for NUM in "${IMPLEMENTED[@]}"; do
             BASE3=${BASE}${NUM}${ARCH}
             ALLPDFINFILES+=" ${PATH_EVALOUT}/${BASE3}.pdf ${PATH_EVALOUT}/${BASE3}-norm.pdf"
         done
-        ALLPDFOUTFILE=${PATH_EVALOUT}/ssbm-all${ARCH}.pdf
         gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
         # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
 
@@ -882,6 +879,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             "set yrange [0.9:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
         gnuplot ${EVAL_NORMALIZEDALLPLOTFILE_PATH}
     done
+	sync
 else
     echo "Skipping evaluation."
 fi
@@ -891,6 +889,7 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
     date
     echo "Verifying:"
     NUMARCHS="${#ARCHITECTURE[@]}"
+	isAnyBad=0
     for idxArch in $(seq 0 $(echo "${NUMARCHS}-1" | bc)); do
         ARCH=${ARCHITECTURE[$idxArch]}
         ARCHNAME=${ARCHITECTURE_NAME[$idxArch]}
@@ -915,6 +914,7 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
                     echo -n "OK";
                 else
                     echo -n "BAD";
+					isAnyBad=1
                     if [[ "${RES2}" -eq 0 ]]; then echo -n "(result)"; else echo -n "(err)"; fi
                 fi
             done
@@ -922,22 +922,25 @@ if [[ ${DO_VERIFY} -ne 0 ]]; then
         done
     done
 
-    for s in "${ARCHITECTURE[@]}"; do 
-        for q in "${IMPLEMENTED[@]}"; do
-            for v in "${VARIANTS[@]}"; do
-                for t in out err; do
-                    grepfile="./grep.${t}"
-                    diff "${PATH_EVALDATA}/${BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
-                    if [[ -s "${grepfile}" ]]; then
-                        echo "Q${q}${v}${s} (${t}):"
-                        cat "${grepfile}"
-                        echo "-------------------------------"
-                    fi
-                    rm -f ${grepfile}
+	if ((isAnyBad == 1)); then
+        echo "Generating diffs:"
+        for s in "${ARCHITECTURE[@]}"; do 
+            for q in "${IMPLEMENTED[@]}"; do
+                for v in "${VARIANTS[@]}"; do
+                    for t in out err; do
+                        grepfile="./grep.${t}"
+                        diff "${PATH_EVALDATA}/${BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
+                        if [[ -s "${grepfile}" ]]; then
+                            echo "Q${q}${v}${s} (${t}):"
+                            cat "${grepfile}"
+                            echo "-------------------------------"
+                        fi
+                        rm -f ${grepfile}
+                    done
                 done
             done
         done
-    done
+	fi
 else
     echo "Skipping verification."
 fi
