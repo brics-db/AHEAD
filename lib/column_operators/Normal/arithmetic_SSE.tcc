@@ -30,6 +30,7 @@
 #include "../SIMD/SSE.hpp"
 
 #ifdef __GNUC__
+#pragma GCC push_options
 #pragma GCC target "sse4.2"
 #else
 #warning "Forcing SSE 4.2 code is not yet implemented for this compiler"
@@ -100,5 +101,11 @@ namespace ahead {
         }
     }
 }
+
+#ifdef __GNUC__
+#pragma GCC pop_options
+#else
+#warning "Unforcing scalar code is not yet implemented for this compiler"
+#endif
 
 #endif /* LIB_COLUMN_OPERATORS_NORMAL_ARITHMETIC_SSE_TCC_ */

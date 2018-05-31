@@ -31,6 +31,7 @@
 #include "ANhelper.tcc"
 
 #ifdef __GNUC__
+#pragma GCC push_options
 #pragma GCC target "no-sse"
 #else
 #warning "Forcing scalar code is not yet implemented for this compiler"
@@ -88,19 +89,19 @@ namespace ahead {
                             auto iter2 = bat2->begin();
                             for (oid_t pos = 0; iter1->hasNext(); ++*iter1, ++*iter2, ++pos) {
                                 h1_t h1 = H1helper::mulIfEncoded(iter1->head(), AH1inv);
-                                if (H1helper::isEncoded && (h1 * AH1inv > H1unencMaxU)) {
+                                if (H1helper::isEncoded && (h1 > H1unencMaxU)) {
                                     vecH1->push_back(pos * AOID);
                                 }
                                 t1_t t1 = T1helper::mulIfEncoded(iter1->tail(), AT1inv);
-                                if (T1helper::isEncoded && (t1 * AT1inv > T1unencMaxU)) {
+                                if (T1helper::isEncoded && (t1 > T1unencMaxU)) {
                                     vecT1->push_back(pos * AOID);
                                 }
                                 h2_t h2 = H2helper::mulIfEncoded(iter2->head(), AH2inv);
-                                if (H2helper::isEncoded && (h2 * AH2inv > H2unencMaxU)) {
+                                if (H2helper::isEncoded && (h2 > H2unencMaxU)) {
                                     vecH2->push_back(pos * AOID);
                                 }
                                 t2_t t2 = T2helper::mulIfEncoded(iter2->tail(), AT2inv);
-                                if (T2helper::isEncoded && (t2 * AT2inv > T2unencMaxU)) {
+                                if (T2helper::isEncoded && (t2 > T2unencMaxU)) {
                                     vecT2->push_back(pos * AOID);
                                 }
                                 result->append(Op<void>()(static_cast<result_t>(static_cast<result_t>(t1) * AResult), static_cast<result_t>(static_cast<result_t>(t2) * AResult)));
@@ -129,7 +130,7 @@ namespace ahead {
 }
 
 #ifdef __GNUC__
-#pragma GCC target "sse4.2"
+#pragma GCC pop_options
 #else
 #warning "Unforcing scalar code is not yet implemented for this compiler"
 #endif
