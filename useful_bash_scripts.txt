@@ -1,2 +1,0 @@
-# get all lines with "op" from the file, filter out a column and transpose it
-#grep 'op' ssbm-q11_normal_scalar.out | awk -F $'\t' '{print $4}' | sed -E 's/\s+//' | sed -E ':a;N;$!ba;s/\n/ /g'

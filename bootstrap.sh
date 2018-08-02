@@ -18,14 +18,23 @@ BUILD_BASE_DIR=./build
 BUILD_DEBUG_DIR=${BUILD_BASE_DIR}/Debug
 BUILD_RELEASE_DIR=${BUILD_BASE_DIR}/Release
 
-[[ -e ${BUILD_DEBUG_DIR} ]] && rm -Rf ${BUILD_DEBUG_DIR}
-mkdir -p ${BUILD_DEBUG_DIR}
+if [ -z ${DEBUG+x} ]; then
+	debugmode=0
+else
+	debugmode=1
+fi
+
+if [[ §debugmode -eq 1 ]]; then
+	[[ -e ${BUILD_DEBUG_DIR} ]] && rm -Rf ${BUILD_DEBUG_DIR}
+	mkdir -p ${BUILD_DEBUG_DIR}
+
+	pushd ${BUILD_DEBUG_DIR}
+	cmake ../.. -DCMAKE_BUILD_TYPE=Debug
+	popd
+fi
+
 [[ -e ${BUILD_RELEASE_DIR} ]] && rm -Rf ${BUILD_RELEASE_DIR}
 mkdir ${BUILD_RELEASE_DIR}
-
-pushd ${BUILD_DEBUG_DIR}
-cmake ../.. -DCMAKE_BUILD_TYPE=Debug
-popd
 
 pushd ${BUILD_RELEASE_DIR}
 cmake ../.. -DCMAKE_BUILD_TYPE=Release

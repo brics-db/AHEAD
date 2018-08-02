@@ -1,3 +1,6 @@
 [submodule "pcm"]
 	path = pcm
 	url = https://github.com/tuddbresilience/pcm.git
+[submodule "ssb-dbgen"]
+	path = ssb-dbgen
+	url = https://github.com/electrum/ssb-dbgen
