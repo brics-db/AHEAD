@@ -1,5 +1,29 @@
 #!/bin/bash
 
+SSB_DBGEN_SUBMODULE=ssb-dbgen
+SSB_DBGEN_GITREPO=https://github.com/electrum/ssb-dbgen
+
+# For the reproducibility, use the submodule ssb-dbgen to generate the ssb generator and push it to the database directory
+if [ ! -d "${SSB_DBGEN_SUBMODULE}" ]; then
+	git submodule add "${SSB_DBGEN_GITREPO}"
+else
+	if [ -z "$(ls -A ${SSB_DBGEN_SUBMODULE})" ]; then
+		git submodule init "${SSB_DBGEN_SUBMODULE}"
+	fi
+fi
+
+git submodule update "${SSB_DBGEN_SUBMODULE}"
+pushd "${SSB_DBGEN_SUBMODULE}"
+sed -iE -e '5s/^(CC[ ]*=[ ]*)$/\1gcc/' -e '11s/^(DATABASE[ ]*=[ ]*)$/\1DB2/' -e '12s/^(MACHINE[ ]*=[ ]*)$/\1LINUX/' -e '13s/^(WORKLOAD[ ]*=[ ]*)$/\1SSBM/' makefile.suite
+make 1>make.out 2>make.err
+ret=$?
+if [ $ret -ne 0 ]; then
+	echo "Error maing ssb-dbgen!:"
+	cat make.err
+	exit
+fi
+
+# Now, the original script
 SCRIPT_DATABASE_GENERATED_FILE=generated
 
 function untar_headers {
