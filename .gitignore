@@ -17,6 +17,7 @@ CMakeFiles
 /database/dbgen
 /database/headers
 /database/sf-*
+/database/*.tbl
 /eval/data
 /eval/out
 /eval/outNewHashjoin1/
