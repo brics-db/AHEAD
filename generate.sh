@@ -15,7 +15,7 @@ fi
 
 git submodule update "${SSB_DBGEN_SUBMODULE}"
 pushd "${SSB_DBGEN_SUBMODULE}"
-[ -d "${SSB_DBGEN_BUILDIR}" ] && mkmdir -p "${SSB_DBGEN_BUILDIR}" || exit 1
+[ ! -d "${SSB_DBGEN_BUILDIR}" ] && mkdir -p "${SSB_DBGEN_BUILDIR}"
 pushd "${SSB_DBGEN_BUILDIR}"
 cmake ..
 make
@@ -27,8 +27,10 @@ if [ $ret -ne 0 ]; then
 	exit
 fi
 
+cp dbgen ../../database
+echo "*** copied dbgen executable ***"
+
 popd;popd
-exit
 
 # Now, the original script
 SCRIPT_DATABASE_GENERATED_FILE=generated
