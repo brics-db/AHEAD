@@ -1,0 +1,123 @@
+% !TeX encoding = UTF-8
+% !TeX root = sigmod2018.tex
+% !TeX spellcheck = en_US
+\section{Hardened Data Storage}
+\label{sec:DataHardening}
+
+In this paper, we mainly focus on \textbf{detecting bit flips} in state-of-the-art in-memory columns by tightly integrating AN coding for data hardening. Generally, the physical data storage model of column stores significantly deviates from classical row stores~\cite{DBLP:conf/sigmod/DiaconuFILMSVZ13,DBLP:journals/debu/IdreosGNMMK12,DBLP:journals/debu/LahiriNF13,DBLP:conf/vldb/StonebrakerABCCFLLMOORTZ05,DBLP:conf/icde/ZukowskiWB12}. Here, relational data is maintained using the decomposition storage model (DSM)~\cite{DBLP:conf/sigmod/CopelandK85}, where each column of a table is separately stored as a fixed-width dense array~\cite{DBLP:journals/ftdb/AbadiBHIM13}. To be able to reconstruct the tuples of a table, each column record is stored in the same (array) position across all columns of a table~\cite{DBLP:journals/ftdb/AbadiBHIM13}. Column stores typically support a fixed set of basic data types, including integers, decimal (fixed\=, or floating\=point) numbers, and strings. For fixed-width data types (e.g., integer, decimal and floating\=point), column stores utilize basic arrays of the respective type for the values of a column~\cite{DBLP:journals/ftdb/AbadiBHIM13,DBLP:journals/debu/IdreosGNMMK12}. For variable-width data types (e.g., strings), some kind of dictionary encoding is applied to transform them into fixed-width columns~\cite{DBLP:conf/sigmod/AbadiMF06,DBLP:journals/ftdb/AbadiBHIM13,DBLP:conf/sigmod/BinnigHF09}. The simplest form constructs a dictionary for an entire column sorted on frequency, and represents values as integer positions in this dictionary~\cite{DBLP:journals/ftdb/AbadiBHIM13}.
+
+
+\subsection{AHEAD Columnar Storage Concept}
+\label{sec:StorageConcept}
+
+Based on this, we can ascertain that column stores consist of two main data structures: (i) \emph{data arrays} with fixed-width data types (e.g. integer and decimal numbers) and (ii) \emph{dictionaries} for variable-width data types. Thus, each base table column is stored either by means of a single data array or by a combination of a dictionary and a data array containing fixed-width integer references to the dictionary. The decision is made based on the data type of the column. Thus, our hardened storage has to protect both structures.
+
+%Our \emph{AHEAD} approach uses byte\=aligned integer sizes for this purpose at the moment. Further details regarding the interplay of compression and AN coding are an entire subject on its own and intentionally not part of this paper.}
+%Since AN code words are integers, compression techniques operating on integer data, like Null Suppression~\cite{} or Run Length Encoding~\cite{}, work well together with AN coding. 
+
+\textbf{Hardening Data Arrays:}
+For data arrays with integer or decimal values, we only have to harden values and this is done using AN coding. Regarding \textit{integer data}, this requires only multiplication with a constant factor of \(A\). These integer values are usually compressed in column stores to reduce storage and to speedup query performance~\cite{DBLP:conf/sigmod/AbadiMF06,DBLP:journals/ftdb/AbadiBHIM13,Feng:2015:BPE:2723372.2747642,Li:2013:BFS:2463676.2465322,DBLP:conf/icde/ZukowskiWB12,DBLP:conf/icde/ZukowskiHNB06}. We address that aspect using byte\=aligned integer sizes; columns are compressed in a fixed byte-oriented way. For \textit{decimal numbers}, the case is a bit more complex: for the sake of correctness and accuracy, database systems typically use fixed-point numbers and arithmetic instead of native floating point numbers (float / double)\footnote{We would like to point to the article by Thomas Neumann providing a discussion and background information on this issue~\cite{blogfloatingpoint}. In essence, rounding and precision loss problems of native floating-point numbers and operations are usually unacceptable for database systems. This is why these systems employ fixed-point arithmetic and there exist several libraries providing a variety of mathematical operators~\cite{gmp,mpir,mapm}.}. One possibility of representing fixed-point numbers is to split a number into powers of $100$, so-called \emph{limbs}, e.g. \(1,024 = 10 * 100^1 + 24 * 100^0\). In this case, each limb fits into a single byte and the position of the decimal point is stored separately, for instance in column meta data. In general, the limbs can, of course, be larger. Using this representation, there are two options for hardening a fixed\=point number: \begin{inparaenum} \item harden each limb, or \item harden the number as a whole. \end{inparaenum} The former approach requires adapting the algorithms to work on larger limbs, as each limb becomes a code word on its own. Using the latter approach allows to leave the algorithms unchanged, but unfortunately, deriving the detection capabilities for large arbitrary data widths is very expensive\footnote{See Appendix~\ref{appendix:SDCProbability} for details.}. Consequently, only the former approach is feasible.
+
+\textbf{Hardening Dictionaries:}
+Dictionaries are usually realized using index structures to efficiently encode and decode~\cite{DBLP:conf/sigmod/BinnigHF09}. In contrast to data arrays, not only data values must be hardened, but also necessary pointers within the index structures. To tackle that issue, we proposed various techniques to harden B-Trees~\cite{DBLP:conf/damon/KolditzKSHL14}. As we have shown, hardening pointer-intensive structures pose their own challenges and we refer to this solution for hardening dictionaries. Moreover, for dictionaries of integer data, AN hardening can be applied on the dictionary entries. The corresponding column contains fixed-width, AN hardened integer references to the dictionary.
+
+\textbf{UDI-Operations:}
+Our hardening approach is orthogonal to UDI-operations (Update, Delete and Insert) and does not affect them. New and modified data is usually appended at the end of a column, and hardening such data is trivial -- hardened data simply has to be inserted.
+
+
+\subsection{AHEAD Adaptability}
+\label{sec:Adapting}
+
+AN coding has only one parameter \(A\) having an impact on the error detection rate as well as the necessary storage overhead. Generally, there are arbitrarily many \(A\)s to choose from and we now clarify which one to actually use. As it turns out, each \(A\) has different error detection properties with regard to the data width. This is why \(\mathbb{C}_{\mathbb{D}_\Theta}^A\) depends on both \(A\) and \(\mathbb{D}_\Theta\). It follows that for \emph{any} distinct data width, which the database supports, the error detection capabilities for a large set of \(A\)s must be computed. To compute the detection properties of an \(A\), we have to determine the Hamming distance \(d_H\) of all pairs of code words, i.e., the difference in the number of bits of any two code words. In other words, this corresponds to a bit population count of all error patterns, which leads from any valid code word to any other valid one. In the coding domain this is known as a code's \emph{distance distribution}. Next, a histogram over that distribution must be built and from that we derive the \emph{minimum Hamming distance} \(d_{H,\text{min}}\). This is the smallest Hamming distance \(\neq0\) in the distance distribution and any code is guaranteed to detect \emph{at least} all error patterns with up to \(d_{H,\text{min}}-1\) flipped bits.
+
+\begin{table}[t!]
+	\caption{Super \(A\)s for detecting a guaranteed minimum bit flip weight (min bfw), excerpt from \(|D|\in\{1,\dots,32\}\). Numbers are: \(A\)/\(|A|\)/\(|\mathbb{C}_{\mathbb{D}_\Theta}^A|\). \({}^*\)=derived by approximation, \textbf{bold}=prime, tbc=to be computed.}
+	\label{tab:optimalAs}
+	\vspace{-2mm}
+	\centering
+	\small
+	\begin{tabular}{@{}c@{}rrrr@{}}
+		\toprule
+		\multirow{2}{*}[0.3mm]{\begin{minipage}{0.5cm}min bfw\end{minipage}} & \multicolumn{4}{c}{$|\mathbb{D}_\Theta|$} \\
+		& \multicolumn{1}{c}{\(8\)}  & \multicolumn{1}{c}{\(16\)} & \multicolumn{1}{c}{\(24\)} & \multicolumn{1}{c}{\(32\)} \\
+		%& \(A\) & \(|A|\) & \(|\mathbb{C}|\) & \(A\) & \(|A|\) & \(|\mathbb{C}|\) & \(A\) & \(|A|\) & \(|\mathbb{C}|\) & \(A\) & \(|A|\) & \(|\mathbb{C}|\) \\
+		\midrule
+		1 & \textbf{3}/2/10       & \textbf{3}/2/18   & \textbf{3}/2/26  & \textbf{3}/2/34    \\
+		2 & \textbf{29}/5/13      & \textbf{61}/6/22  & \textbf{61}/6/30 & 125/7/39           \\
+		3 & \textbf{233}/8/16     & \textbf{463}/9/27 & 981/10/34        & \textbf{881}/10/42 \\
+		4 & 1,939/11/19           & 7,785/13/29       & 15,993/14/38     & \(16,041^*\)/14/46 \\
+		5 & \textbf{13,963}/14/22 & 63,877/16/32      & tbc              & tbc                \\
+		6 & 55,831/16/24          & tbc               & tbc              & tbc                \\
+		\bottomrule
+	\end{tabular}
+	\vspace{-0.4cm}
+\end{table}
+
+
+As described in Appendix~\ref{appendix:SDCProbability}, obtaining the distance distribution requires a brute force approach. For each combination of bit widths \(|\mathbb{D}_\Theta|\)\footnote{We use the following notation of \(||\) for bit widths in this paper.} and \(|A|\), there exists at least one ``super \(A\)'' having optimal error detection capabilities among all other \(A\)s for that combination. For that, our optimality criterion is that that a ``super \(A\)'' has \begin{inparaenum}[(1)] \item highest \(d_{H,\text{min}}\), \item lowest bit width \(|A|\), and  \item lowest first non\=zero histogram value in its category, i.e., depending on the minimum bit flip weight (\texttt{min bfw}) and \(|\mathbb{D}_\Theta|\)\end{inparaenum}. Table~\ref{tab:optimalAs} lists an extract of ``super \(A\)s'' for different numbers of minimum bit flip weights and different data widths \(|\mathbb{D}_\Theta|\in\{8,16,24,32\}\). This table also confirms our example from Section~\ref{sec:ErrorCoding} where we used \(A\)=29 for $8$-bit data and a minimum bit flip weight of two. As depicted, we require five additional bits for the hardening. If we want to increase the minimum bit flip weight to $3$, we only have to use \(A=233\) resulting in a code word width of $16$.  In this case, the data overhead increases from $62.5\%$ (13 bit code word width) to $100\%$ (16 bit code word width for 8 bit data). Table~\ref{tab:optimalAsComplete} in the appendix lists all super \(A\)s which we obtained until now, for all \(1\leq|\mathbb{D}|\leq32\) and \(1\leq|A|\leq16\). The determination of the ``super \(A\)s'' is extremely compute-intensive, because only a brute force approach is possible. Some values are currently only approximated\footnote{The remaining correct values are still determined and will be made public on our GitHub project page \url{https://brics-db.github.io/} (see Appendix \ref{sec:GitHub})}, which is only an intermediate solution. Computations for \(1\leq|\mathbb{D}|\leq32\) and \(1\leq|A|\leq16\) took 2700 GPU hours in total on an nVidia Tesla K80 GPU cluster, including the approximations. Time complexity is in \(\mathcal{O}(2^{2\cdot|\mathbb{D}|})\) and doubles with every additional code bit. Our approximation is configurable through parameter \(M\) and reduces runtimes by \(\nicefrac{2^{|\mathbb{D}|}}{M}\) and we used \(M=1001\). For instance, runtimes are reduced by more than 5 orders of magnitude for \(|\mathbb{D}|=27\). The maximal relative error is below 1\% for code lengths which we could verify exhaustively.
+
+To summarize, we have calculated the ``super \(A\)s'' not only for byte-aligned data widths, but also for any data widths between $1$ and $32$. The ``super \(A\)s'' adhere to our optimality criterion and are the smallest ones for detecting all bit flips up to a minimum bit flip weight. As we can see in Table~\ref{tab:optimalAs}: (1) equal or different \(A\)s are optimal for the same minimum bit flip weight and varying \(|\mathbb{D}_\Theta|\); (2) for increasing \(|\mathbb{D}_\Theta|\), we typically need larger \(|A|\)s to achieve the same detection capability; and (3) not all super \(A\)s are prime numbers. Now, we are able to use this information for a balanced data hardening with regard to a specific hardware error model (bit flip weights and rates) and data width. Additionally, data can be re-hardened at run\=time with different \(A\)s. Thus, the requirements \textbf{R2} and \textbf{R3} are adequately addressed from the storage perspective.
+
+
+
+
+%we have computed the error detection capabilities of all \(A\)s for \emph{any} data width and this computation has to be done \emph{only once}. Then, we can use this information for a balanced data hardening with regard to a specific hardware error model (bit flip weights and rates) and data width. Furthermore, data can be re-hardened at run\=time with different \(A\)s. Thus, the requirements \textbf{R2} and \textbf{R3} are adequately addressed from the storage perspective.
+
+
+
+
+
+\subsection{AHEAD Performance Improvements}
+\label{sec:ANCodingImprovements}
+
+Our third requirement \textbf{R3} is that the approach introduces as little overhead as necessary. Up to now, we have shown that the memory overhead can be adjusted according to the data width and the required error detection capabilities. Unfortunately, error detection and softening/decoding are based on division and modulo computations, which are expensive even on modern server-grade processors (cf. Section~\ref{sec:MicroBenchmarks}). We now show how to circumvent both operations. %To the best of our knowledge, the following has not yet been proposed for AN encoding. 
+
+\textbf{Faster Softening:}
+Processors' arithmetic logic units (ALUs) implicitly do computations in a residue class ring (RCR) modulo the power of two to the native register width (e.g. 8, 16, 32, 64 bits). In such an RCR, the division by any odd \(A\) can be replaced by multiplication with the \emph{multiplicative inverse} \(A^{-1}\). This cannot be done automatically by the compiler since the \(A\) will only be known at run-time and the code width may differ from the native register widths. Now, decoding becomes:
+\begin{equation}
+c / A \equiv c \cdot A^{-1} \equiv (d \cdot A) \cdot A^{-1} \equiv d \quad \text{mod }2^{|\mathbb{C}_{\mathbb{D}_\Theta}^A|}.
+\label{eq:newdecode}
+\end{equation}
+The inverse can be computed with the Extended Euclidean algorithm for the RCR modulo \(2^{|\mathbb{C}_{\mathbb{D}_\Theta}^A|}\). When working with code word widths different from the processor's native register widths, the result must be masked, i.e. AND-ed with a bit mask having the appropriate \(|\mathbb{C}_{\mathbb{D}_\Theta}^A|\) least significant bits set to one. This is because there may be ones in the remaining most significant bits from the multiplication. Using the inverse has several advantages:
+\begin{compactenum}
+	\item Only odd numbers are coprime to any \(2^n~(n\in\mathbb{N})\) and thus have a multiplicative inverse. Consequently, it is required to use \emph{only odd} \(A\)s.
+	\item Using the inverse relieves \Cref{eq:ANMulOK} from the division.
+	\item The inverse enables more efficient reencoding from one code word \(c_1 = d \cdot A_1\) into another \(c_2 = d \cdot A_2\), by multiplying with the factor \(A^* = A_1^{-1} \cdot A_2\):
+\end{compactenum}
+\begin{gather}
+c_1 \cdot A^* = (d \cdot A_1) \cdot (A_1^{-1} \cdot A_2) = d \cdot A_2 = c_2
+\label{eq:newreencode}
+\end{gather}
+The product (\(A_1^{-1} \cdot A_2\)) is a constant factor and needs to be calculated only once, especially when reencoding multiple values.
+
+\textbf{Faster Error Detection:}
+Using the multiplicative inverse allows to get rid of the modulo operator for error detection, too. For that, as in~\cite{DBLP:conf/hase/HoffmannUDSLS14}, we must know the largest and smallest encodable data word:
+\begin{align*}
+d_\text{max} = \text{max}(\mathbb{D}_\Theta), \\
+d_\text{min} = \text{min}(\mathbb{D}_\Theta),
+\end{align*}
+where the latter is required for signed integers, only. Since computations on code words must be done on register widths \(\geq|\mathbb{C}_{\mathbb{D}_\Theta}^A|\), it follows that:
+\begin{equation}
+|c \cdot A^{-1}| = |d^{*}| = |c| > |d| \quad \text{, }d^{*}=d.
+\label{eq:decodewidth}
+\end{equation}
+I.e., when decoding, the resulting data word \(d^{*}\) is computed in the larger RCR (modulo \(2^{|\mathbb{C}_{\mathbb{D}_\Theta}^A|}\)) than the original data \(d\) requires (modulo \(2^{|\mathbb{D}_\Theta|}\)). This becomes very useful, because we discovered that in this case it holds that:
+\begin{align}
+d^* > d_\text{max} \rightarrow d^* = (d \oplus b) \label{eq:newvalidate:max} \\
+d^* < d_\text{min} \rightarrow d^* = (d \oplus b) \label{eq:newvalidate:min}
+\end{align}
+where \(b\) is an arbitrary, \emph{detectable} bit flip of any weight and \(d^*\) was decoded from a corrupted code word. This goes further than in~\cite{DBLP:conf/hase/HoffmannUDSLS14}, because we found that it holds for \emph{any} detectable error. For signed integers, the binary representation contains ones in the \(|A|\) most significant bits (MSBs) where there should be zeros after the multiplication with the inverse. Likewise, the same holds for negative integers, but now there are \emph{zeros} in the \(|A|\) MSBs, where there should only be ones. For unsigned integers, the first test suffices, while for signed integers both tests must be conducted. Consider the following example for signed integers (sint) with \(|\mathbb{D}_\text{sint}|=|A|=8\Rightarrow|\mathbb{C}_{\mathbb{D}_\text{sint}}^A|=16\), \(d=5\), \(A=233\), and \(A^{-1}=55,129\) (unsigned) \(=-10,407\) (signed):
+
+\vspace{-4mm}
+{
+	\smaller
+	\begin{align}
+	\begin{array}{rrlll}
+	1) & 5 \cdot A = 1,165 &= \overbrace{\dots0000}^{\text{overflow}} & \overbrace{0000~0100}^{|A|} & \overbrace{1000~1101_2}^{|\mathbb{D}_\text{sint}|} \nonumber \\
+	2) & 1,165 \cdot A^{-1} &= \dots0100 & 0000~0000 & 0000~0101_2 \nonumber \\
+	3) & +1\text{: }1,166 \cdot A^{-1} &= \dots0100 & 1101~0111 & 0101~1110_2 \\
+	4) & -1\text{: }1,164 \cdot A^{-1} &= \dots0011 & 0010~1000 & 1010~1100_2
+	\end{array}
+	\end{align}
+}
+The first line shows the encoding, with the result in binary representation. The second line is the decoding of the valid code word, with no zeros in the \(|A|\) MSBs. Lines 3 and 4 show decoding of altered code words, where \(1,165+1\) and \(1,165-1\) represent a double and single bit flip in the LSB(s), respectively. The overflow column shows that computing with non\=register widths requires masking for decoding. For the signed case, line 3 triggers the test from \Cref{eq:newvalidate:min} and line 4 the one from \Cref{eq:newvalidate:max}. Although we cannot prove this in general\footnote{A proof is very difficult due to the convolution of the multiplication.}, we could confirm this for all odd \(A\)s with \(2\leq|A|\leq16\), signed integers with \(1\leq|\mathbb{D}_\text{sint}|\leq24\), and \(|\mathbb{C}_{\mathbb{D}_\text{sint}}^A|=|A|+|\mathbb{D}_\text{sint}|\). We validated \Cref{eq:newvalidate:max,eq:newvalidate:min} using an exhaustive test over all possible code words\footnote{On a 64-core AMD Opteron 6274 server it took almost 50K CPU hours in total.}. From \Cref{eq:newvalidate:max,eq:newvalidate:min} it follows that testing an AN\=encoded data word for errors is achieved by \emph{first decoding} it and \emph{then comparing} it with the largest (and smallest) encodable data word for unsigned (signed) integers. For error testing and decoding, Hoffmann et al.~\cite{DBLP:conf/hase/HoffmannUDSLS14} use a comparable approach for their voter, but they require two comparisons and the modulo and division operators. In contrast, our approach requires one multiplication and one or two comparisons.

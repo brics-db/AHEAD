@@ -1,0 +1,63 @@
+%\section{Discussion}
+%\label{sec:Discussion}
+
+%Before we conclude the paper, we discuss related and future work in this section. Here, we limit our discussion to database-specific related work. A broader discussion is given in Appendix~\ref{sec:RelatedWork_Hardware}.
+
+%\subsection{Related Work}
+\section{Related Work}
+\label{sec:RelatedWork}
+
+A few years ago, Boehm et al.~\cite{DBLP:journals/pvldb/BohmLF11} already pointed out the lack of data management techniques dealing with an increasing number of bit flips in main memory as an increasingly relevant source. In~\cite{DBLP:conf/srds/PittelliG86,DBLP:journals/tocs/PittelliG89}, the combination of TMR and database systems was investigated. The most recent database-specific work of Kolditz et al. \cite{DBLP:conf/damon/KolditzKSHL14} hardens index structures like B-Trees using various techniques for online error detection. They have shown that slightly increasing data redundancy at the right places by incorporating context knowledge increases error detection significantly. \emph{AHEAD} can be extended by their work (cf. \Cref{sec:StorageConcept,sec:Implementation}). Furthermore, checksums are usually utilized to check for data integrity. For instance, HDFS computes a checksum of each data block and stores it in separate, hidden files~\cite{DBLP:conf/mss/ShvachkoKRC10}. Whenever a client fetches a data block, it verifies the retrieved data using the associated checksum~\cite{DBLP:conf/mss/ShvachkoKRC10}, but this is only done for disk blocks leaving in-memory data vulnerable. %We are not aware of any work which includes continuous soft error detection in query processing.
+
+Moreover, AN coding has also been used for software-based fault tolerance~\cite{DBLP:conf/hase/HoffmannUDSLS14,DBLP:phd/de/Schiffel2011,ulbrich2012eliminating}. For instance, the work of Schiffel~\cite{DBLP:phd/de/Schiffel2011} allows to encode existing software binaries or to add encoding at compile time, where not all variables' states need to be known in advance. However, in her work she only describes encoding integers of size \(|\mathbb{D}|\in\{1, 8, 16, 32\}\) bits and pointers, where the encoded values are always 64 bits large. Furthermore, protecting processors by AN coding was also suggested in~\cite{forin1989vital}.
+
+%\subsection{Future Work}
+%\section{Future Work}
+%
+%We are fully aware that our \emph{AHEAD} approach is just a starting point and does not cover everything. From our point of view, the following next steps are necessary:
+%
+%\textbf{Optimization and Extension:} In Section~\ref{sec:SSBEval} we show that our current storage overhead is suboptimal. Bit-level data compression as in~\cite{Willhalm:2009:SUF:1687627.1687671,willhalm2013vectorizing} could be one solution. While data hardening and lightweight compression~\cite{DBLP:conf/sigmod/AbadiMF06,DBLP:conf/edbt/DammeHHL17,vectorizedMonetDB} are orthogonal to each other, their interplay is very important to keep the overall memory footprint of data as low as possible. With hardening, compression gains even more significance, since it can reduce the newly introduced storage overhead. However, combining both may be challenging and has to be investigated in detail. Furthermore, \emph{AHEAD} cannot detect errors in logic operations, whereas these are frequently used in database systems, e.g., in novel column storage layouts like BitWeaving~\cite{Li:2013:BFS:2463676.2465322} and ByteSlice~\cite{Feng:2015:BPE:2723372.2747642}. This domain must be considered separately, whereby \emph{AHEAD} can serve as the basis. Further extensions to \emph{AHEAD} could be (1) the use of code word accumulators to do detection every \(n\)th code word, trading accuracy against performance, or (2) hardening of database meta data and block or string data. Moreover, our \emph{AHEAD} approach should be investigated in multi-threaded environments for scalability reasons. 
+%
+%
+%\textbf{Error Correction:} So far, we were concerned with the continuous detection of bit flips during query processing. Next, continuous error correction should be considered so that detected bit flips are corrected during query processing. With \emph{AHEAD}, we are able detect bit flips on value granularity and can find out where the error occurred. Based on that, specific correction techniques can be developed and integrated in the query processing. For example, if we detect a faulty code word in the inputs of an operator, we can retransmit it, possibly several times, to correct errors induced during transmission. If we get a valid code word, processing can continue with this correct code word. If we get an invalid code word, we can assume that bits are flipped in main memory and then we require an appropriate techniques for error correction. For that, correcting errors in the memory requires data redundancy in any case. Here, classical RAID-techniques or techniques from the network coding domain may be interesting. 
+%
+%\textbf{Cross-Layer Approach:} AHEAD is primarily a software approach. Another interesting research direction would examine the interplay of hardware and software protection mechanisms. In particular, what should be done in hardware and what should be done in software. Form our point of view, \emph{AHEAD} could serve as foundation for such a novel research direction~\cite{DBLP:books/daglib/0037372}.
+%
+%
+
+
+%\begin{compactitem}
+%	\item conduct research on error correction based on AHEAD
+%	\begin{compactitem}
+%		\item[\(\rightarrow\)] compensation queries
+%		\item[\(\rightarrow\)] network coding approaches like linear combinations
+%	\end{compactitem}
+%	\item investigate interplay between
+%	\begin{compactitem}
+%		\item techniques on the different software and hardware layers for bit flip resilient systems
+%		\begin{compactitem}
+%			\item[\(\rightarrow\)] use compiler techniques like SWIFT to harden database meta data
+%			\item[\(\rightarrow\)] compute the SDC probabilities when using AN coding on ECC main memory
+%		\end{compactitem}
+%		\item various compression techniques or storage layouts and AN coding
+%		\begin{compactitem}
+%			\item[\(\rightarrow\)] compression e.g. 4-wise null suppression or run length encoding
+%			\item[\(\rightarrow\)] storage layouts e.g. ByteSlice and BitWeaving
+%		\end{compactitem}
+%	\end{compactitem}
+%	\item examine other software coding approaches or completely different techniques as alternatives to AN coding
+%	\begin{compactitem}
+%		\item[\(\rightarrow\)] checksums for strings or block data
+%	\end{compactitem}
+%	\item integrate (hardened) dictionaries into AHEAD
+%	\item compute more super \(A\)s
+%	\item integrate AHEAD approach into an existing DBMS
+%	\item implement vectorization on other SIMD architectures
+%	\begin{compactitem}
+%		\item[\(\rightarrow\)] AVX2, AVX512, ARM neon
+%	\end{compactitem}
+%	\item in-depth evaluation against other software coding approaches, i.e. use general-purpose frameworks to protect the baseline and compare against Continuous Detection
+%	\begin{compactitem}
+%		\item[\(\rightarrow\)] e.g. SWIFT, ELZAR, HAFT
+%	\end{compactitem}
+%\end{compactitem}

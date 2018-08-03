@@ -1,0 +1,4 @@
+\section{SSB Scalar Runtime Performance}
+\label{sec:SSBEval:scalar}
+
+Figure~\ref{fig:eval:runtime:scalar} shows the relative scalar runtimes for all 13 SSB queries as averages over all 10 scale factors and 10 runs each. The \textbf{Unprotected} variant is the baseline. \textbf{DMR} shows the expected \(100\%\) runtime overhead, whereas \textbf{Early} has very high overheads between 64\% and 185\%, where the main overhead results from the slow \(\Delta\) operator which decodes all encoded columns. The overhead of \textbf{Late Detection} is always below 10\%. \textbf{Continuous} and \textbf{Reencoding} runtimes show overheads between 10\% and 27\%.

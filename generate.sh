@@ -23,6 +23,8 @@ if [ $ret -ne 0 ]; then
 	exit
 fi
 
+exit
+
 # Now, the original script
 SCRIPT_DATABASE_GENERATED_FILE=generated
 
