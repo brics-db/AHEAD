@@ -1,7 +1,8 @@
 #!/bin/bash
 
 SSB_DBGEN_SUBMODULE=ssb-dbgen
-SSB_DBGEN_GITREPO=https://github.com/electrum/ssb-dbgen
+SSB_DBGEN_GITREPO=https://github.com/valco1994/ssb-dbgen
+SSB_DBGEN_BUILDIR=build
 
 # For the reproducibility, use the submodule ssb-dbgen to generate the ssb generator and push it to the database directory
 if [ ! -d "${SSB_DBGEN_SUBMODULE}" ]; then
@@ -14,15 +15,19 @@ fi
 
 git submodule update "${SSB_DBGEN_SUBMODULE}"
 pushd "${SSB_DBGEN_SUBMODULE}"
-sed -iE -e '5s/^(CC[ ]*=[ ]*)$/\1gcc/' -e '11s/^(DATABASE[ ]*=[ ]*)$/\1DB2/' -e '12s/^(MACHINE[ ]*=[ ]*)$/\1LINUX/' -e '13s/^(WORKLOAD[ ]*=[ ]*)$/\1SSBM/' makefile.suite
-make 1>make.out 2>make.err
+[ -d "${SSB_DBGEN_BUILDIR}" ] && mkmdir -p "${SSB_DBGEN_BUILDIR}" || exit 1
+pushd "${SSB_DBGEN_BUILDIR}"
+cmake ..
+make
 ret=$?
 if [ $ret -ne 0 ]; then
 	echo "Error maing ssb-dbgen!:"
 	cat make.err
+	popd;popd
 	exit
 fi
 
+popd;popd
 exit
 
 # Now, the original script

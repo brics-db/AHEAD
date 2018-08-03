@@ -3,4 +3,4 @@
 	url = https://github.com/tuddbresilience/pcm.git
 [submodule "ssb-dbgen"]
 	path = ssb-dbgen
-	url = https://github.com/electrum/ssb-dbgen
+	url = https://github.com/valco1994/ssb-dbgen
