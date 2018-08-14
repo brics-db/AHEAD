@@ -40,6 +40,15 @@ if [[ $# -ne 0 ]] ; then
             DO_EVAL_PREPARE=1
             DO_VERIFY=1
             ;;
+        COMPILE)
+            PHASE="COMPILE"
+            DO_COMPILE=1
+            DO_COMPILE_CMAKE=1
+            DO_BENCHMARK=0
+            DO_EVAL=0
+            DO_EVAL_PREPARE=0
+            DO_VERIFY=0
+            ;;
         ACTUAL)
             PHASE="ACTUAL"
             DO_COMPILE=0
@@ -82,17 +91,10 @@ fi ### [[ $# -ne 0 ]]
 #######################
 # Bootstrap Variables #
 #######################
-if [[ -z "$DATE" ]]; then DATE="$(date '+%Y-%m-%d_%H-%M')"; fi
-PATH_BASE="$(pwd)/.."
-PATH_BUILD="${PATH_BASE}/build/Release"
-PATH_DB="${PATH_BASE}/database"
-PATH_EVAL="${PATH_BASE}/eval"
-PATH_EVAL_CURRENT="${PATH_EVAL}/${DATE}"
-PATH_EVALDATA="${PATH_EVAL_CURRENT}/data"
-PATH_EVALOUT="${PATH_EVAL_CURRENT}/report"
-EXEC_ENV="$(which env)"
-EXEC_BASH="$(which bash)"
-
+echo "DATE: ${DATE}"
+source run.conf
+echo "DATE: ${DATE}"
+exit
 
 ################################################################################################
 # if the outputs are not redirected to files, then call ourselves again with additional piping #
@@ -114,7 +116,7 @@ if [[ -t 1 ]] && [[ -t 2 ]]; then
         fi
         cp $0 "${PATH_EVAL_CURRENT}/"
         # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
-        sed -E -e '34,+16s/^(.+)$/#\1/' -e '86,3s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '90s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '79s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '115,2s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
+        sed -E -e '34,+25s/^(.+)$/#\1/' -e '86,3s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '90s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '79s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '115,2s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
     fi ### [[ -e ${PATH_EVAL_CURRENT} ]]
     rm -Rf $outfile $errfile
     echo "[INFO] one of stdout or stderr is not redirected, calling script with redirecting" | tee $outfile
@@ -135,14 +137,13 @@ echo "[INFO] Running Phase \"${PHASE}\""
 ###################
 # Basic Variables #
 ###################
-if [[ -z "$CXX_COMPILER" ]]; then CXX_COMPILER="c++"; fi
-if [[ -z "$GXX_COMPILER" ]]; then GXX_COMPILER="g++"; fi
+[ -z "$CXX_COMPILER" ] && CXX_COMPILER="c++"
+[ -z "$GXX_COMPILER" ] && GXX_COMPILER="g++"
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
 VARREPLACE="s/_//g"
 IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
-#VARIANTS=("_normal" "_dmr_seq" "_dmr_mt" "_early" "_late" "_continuous" "_continuous_reenc")
 VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
 ARCHITECTURE=("_scalar")
 ARCHITECTURE_NAME=("Scalar")
@@ -152,45 +153,32 @@ if [[ ${HAS_SSE42} -eq 0 ]]; then
     ARCHITECTURE+=("_SSE");
     ARCHITECTURE_NAME+=("SSE4.2")
 fi
-#cat /proc/cpuinfo | grep avx2 &>/dev/null
-#HAS_AVX2=$?
-#if [[ ${HAS_AVX2} -eq 0 ]]; then
-#    ARCHITECTURE+=("_AVX2");
-#    ARCHITECTURE_NAME+=("AVX2");
-#fi
-## For the following, keep in mind that AVX-512 has several sub-sets and not all of them may be available
-#cat /proc/cpuinfo | grep avx512 &>/dev/null
-#HAS_AVX512=$?
-#if [[ ${HAS_AVX512} -eq 0 ]]; then
-#    ARCHITECTURE+=("_AVX512");
-#    ARCHITECTURE_NAME+=("AVX512");
-#fi
 
 ####################
 # Process Switches #
 ####################
-[[ -z "$DO_COMPILE" ]] && DO_COMPILE=1 # yes we want to set it either when it's unset or empty
-[[ -z "$DO_COMPILE_CMAKE" ]] && DO_COMPILE_CMAKE=0 # do not re-generate cmake files be default every time
-[[ -z "$DO_BENCHMARK" ]] && DO_BENCHMARK=1
-[[ -z "$DO_EVAL" ]] && DO_EVAL=1
-[[ -z "$DO_EVAL_PREPARE" ]] && DO_EVAL_PREPARE=1
-[[ -z "$DO_VERIFY" ]] && DO_VERIFY=1
+[ -z ${DO_COMPILE+x} ] && DO_COMPILE=1 # yes we want to set it either when it's unset or empty
+[ -z ${DO_COMPILE_CMAKE+x} ] && DO_COMPILE_CMAKE=0 # do not re-generate cmake files be default every time
+[ -z ${DO_BENCHMARK+x} ] && DO_BENCHMARK=1
+[ -z ${DO_EVAL+x} ] && DO_EVAL=1
+[ -z ${DO_EVAL_PREPARE+x} ] && DO_EVAL_PREPARE=1
+[ -z ${DO_VERIFY+x} ] && DO_VERIFY=1
 
 ##############################
 # Process specific constants #
 ##############################
 ### Compilation
-[[ -z "$CMAKE_BUILD_TYPE" ]] && CMAKE_BUILD_TYPE=Release
+[ -z ${CMAKE_BUILD_TYPE+x} ] && CMAKE_BUILD_TYPE=Release
 
 ### Benchmarking
-[[ -z "$BENCHMARK_NUMRUNS" ]] && BENCHMARK_NUMRUNS=10 # like above
-#[[ -z "$BENCHMARK_NUMBEST" ]] && BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS))
+[ -z ${BENCHMARK_NUMRUNS+x} ] && BENCHMARK_NUMRUNS=10 # like above
+#[ -z ${BENCHMARK_NUMBEST+x} ] && BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS))
 BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
-( [[ $ret -ne 0 ]] || [[ -z "$BENCHMARK_SCALEFACTORS" ]] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1))
-[[ -z "$BENCHMARK_DBDIR_SUFFIX" ]] && BENCHMARK_DBDIR_SUFFIX= #"-restiny32"
-[[ -z "$BENCHMARK_MINBFW" ]] && BENCHMARK_MINBFW= #1
+( [ $ret -ne 0 ] || [ -z ${BENCHMARK_SCALEFACTORS+x} ] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1))
+[ -z ${BENCHMARK_DBDIR_SUFFIX+x} ] && BENCHMARK_DBDIR_SUFFIX= #"-restiny32"
+[ -z ${BENCHMARK_MINBFW+x} ] && BENCHMARK_MINBFW= #1
 
 ### Eval
 EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)

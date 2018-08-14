@@ -125,13 +125,17 @@ namespace ssb {
     }
 
     SSB_CONF ssb_config;
+#ifdef AHEAD_PCM
     PCM * m = nullptr;
     PCM::ErrorCode pcmStatus = PCM::UnknownError;
+#endif
     std::mutex mutex_stats;
     std::size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
+#ifdef AHEAD_PCM
     std::vector<CoreCounterState> cstate1, cstate2, cstate3;
     std::vector<SocketCounterState> sktstate1, sktstate2, sktstate3;
     SystemCounterState sysstate1, sysstate2, sysstate3;
+#endif
     std::string emptyString;
     std::vector<StopWatch::rep> totalTimes;
     ahead::StopWatch swOperatorTime, swTotalTime;
@@ -141,7 +145,9 @@ namespace ssb {
     std::vector<std::size_t> batConsumptions;
     std::vector<std::size_t> batConsumptionsProj;
     std::vector<std::size_t> batRSS;
+#ifdef AHEAD_PCM
     std::vector<SystemCounterState> sysstatesBeforeOp, sysstatesAfterOp;
+#endif
     std::vector<bool> hasTwoTypes;
     std::vector<boost::typeindex::type_index> headTypes;
     std::vector<boost::typeindex::type_index> tailTypes;
@@ -167,7 +173,9 @@ namespace ssb {
             const char * const * argv,
             const char * strHeadline,
             architecture_t arch) {
+#ifdef AHEAD_PCM
         set_signal_handlers();
+#endif
 
         rssBeforeLoad = 0;
         rssAfterLoad = 0;
@@ -180,8 +188,10 @@ namespace ssb {
         ssb::batConsumptions.reserve(numOpsDefault);
         ssb::batConsumptionsProj.reserve(numOpsDefault);
         ssb::batRSS.reserve(numOpsDefault);
+#ifdef AHEAD_PCM
         ssb::sysstatesBeforeOp.reserve(numOpsDefault);
         ssb::sysstatesAfterOp.reserve(numOpsDefault);
+#endif
         ssb::hasTwoTypes.reserve(numOpsDefault);
         ssb::headTypes.reserve(numOpsDefault);
         ssb::tailTypes.reserve(numOpsDefault);
@@ -212,9 +222,12 @@ namespace ssb {
         std::cout << std::setw(strHeadline2.size()) << "=" << std::setfill(fillChar) << '\n';
         auto instance = ahead::AHEAD::createInstance(argc, argv);
         std::cout << "Database path: \"" << instance->getConfig().getDBPath() << "\"" << std::endl;
+#ifdef AHEAD_PCM
         ssb::init_pcm();
+#endif
     }
 
+#ifdef AHEAD_PCM
     void init_pcm() {
         ssb::m = PCM::getInstance();
         ssb::pcmStatus = ssb::m->program();
@@ -230,6 +243,7 @@ namespace ssb {
             ssb::m->getAllCounterStates(ssb::sysstate1, ssb::sktstate1, ssb::cstate1);
         }
     }
+#endif
 
     void loadTable(
             const char* tableName,
@@ -287,8 +301,10 @@ namespace ssb {
         ssb::hasTwoTypes.clear();
         ssb::headTypes.clear();
         ssb::tailTypes.clear();
+#ifdef AHEAD_PCM
         ssb::sysstatesBeforeOp.clear();
         ssb::sysstatesAfterOp.clear();
+#endif
     }
 
     void before_load() {
@@ -316,9 +332,11 @@ namespace ssb {
             ssb::print_result();
             std::cout << std::endl;
         }
+#ifdef AHEAD_PCM
         if (ssb::pcmStatus == PCM::Success) {
             ssb::m->getAllCounterStates(ssb::sysstate2, ssb::sktstate2, ssb::cstate2);
         }
+#endif
         ssb::rssAfterCopy = getPeakRSS(size_enum_t::B);
     }
 
@@ -337,6 +355,7 @@ namespace ssb {
         }
         std::cout << "Memory:\n" << ssb::rssBeforeLoad << '\n' << ssb::rssAfterLoad << '\n' << ssb::rssAfterCopy << '\n' << ssb::rssAfterQueries << std::endl;
 
+#ifdef AHEAD_PCM
 #define PCM_PRINT(attr, proc, state1, state2, state3)                          \
         std::cout << std::setw(ssb::ssb_config.LEN_PCM) << attr << '\t';                    \
         std::cout << std::setw(ssb::ssb_config.LEN_PCM) << proc(state1, state2) << '\t';    \
@@ -356,8 +375,8 @@ namespace ssb {
             PCM_PRINT("L2-Miss Cycle Loss", getCyclesLostDueL2CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
             PCM_PRINT("L3-Miss Cycle Loss", getCyclesLostDueL3CacheMisses, ssb::sysstate1, ssb::sysstate2, ssb::sysstate3);
         }
-
 #undef PCM_PRINT
+#endif
     }
 
     void before_query() {
@@ -382,17 +401,21 @@ namespace ssb {
     }
 
     void before_op() {
+#ifdef AHEAD_PCM
         if (ssb::pcmStatus == PCM::Success) {
             ssb::sysstatesBeforeOp.push_back(ssb::m->getSystemCounterState());
         }
+#endif
         ssb::swOperatorTime.start();
     }
 
     void after_op() {
         ssb::opTimes.push_back(ssb::swOperatorTime.stop());
+#ifdef AHEAD_PCM
         if (ssb::pcmStatus == PCM::Success) {
             ssb::sysstatesAfterOp.push_back(ssb::m->getSystemCounterState());
         }
+#endif
         ssb::batRSS.push_back(getPeakRSS(size_enum_t::B));
     }
 
@@ -417,6 +440,7 @@ namespace ssb {
         std::cout << "\t " << std::setw(ssb::ssb_config.LEN_SIZES) << " RSS Δ [B]";
         std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type head";
         std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << "type tail";
+#ifdef AHEAD_PCM
         if (ssb::pcmStatus == PCM::Success) {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "Inst. Retired";
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "IPC";
@@ -428,6 +452,7 @@ namespace ssb {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Read [B]";
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << "MemCtl Write [B]";
         }
+#endif
         std::cout << "\n";
     }
 
@@ -441,6 +466,7 @@ namespace ssb {
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << (k == 0 ? (ssb::batRSS[k] - ssb::rssAfterCopy) : (ssb::batRSS[k] - ssb::batRSS[k - 1]));
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << ssb::headTypes[k].pretty_name();
             std::cout << "\t" << std::setw(ssb::ssb_config.LEN_TYPES) << (ssb::hasTwoTypes[k] ? ssb::tailTypes[k].pretty_name() : ssb::emptyString);
+#ifdef AHEAD_PCM
             if (ssb::pcmStatus == PCM::Success) {
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getInstructionsRetired(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getIPC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
@@ -452,6 +478,7 @@ namespace ssb {
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesReadFromMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
                 std::cout << "\t" << std::setw(ssb::ssb_config.LEN_SIZES) << getBytesWrittenToMC(sysstatesBeforeOp[k], sysstatesAfterOp[k]);
             }
+#endif
             std::cout << '\n';
         }
         std::cout << std::flush;

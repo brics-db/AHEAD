@@ -4,6 +4,23 @@ SSB_DBGEN_SUBMODULE=ssb-dbgen
 SSB_DBGEN_GITREPO=https://github.com/valco1994/ssb-dbgen
 SSB_DBGEN_BUILDIR=build
 
+# the following sourced file defines the following variables used across several scripts, so that you need to change them only in one place
+# A) AHEAD_SCRIPT_BOOTSTRAP
+# B)
+# C)
+# D)
+# 1) AHEAD_SCALEFACTOR_MIN
+# 2) AHEAD_SCALEFACTOR_MAX
+# 3) AHEAD_DB_PATH
+source ./common.conf
+
+mkdir -p ${AHEAD_DB_PATH}
+
+./${AHEAD_SCRIPT_BOOTSTRAP}
+pushd ${AHEAD_BUILD_RELEASE_DIR}
+make -j $(nproc) ssbm-dbsize_scalar
+popd
+
 # For the reproducibility, use the submodule ssb-dbgen to generate the ssb generator and push it to the database directory
 if [ ! -d "${SSB_DBGEN_SUBMODULE}" ]; then
 	git submodule add "${SSB_DBGEN_GITREPO}"
@@ -27,22 +44,23 @@ if [ $ret -ne 0 ]; then
 	exit
 fi
 
-cp dbgen ../../database
+cp dbgen ../../${AHEAD_DB_PATH}
 echo "*** copied dbgen executable ***"
 
 popd;popd
 
-# Now, the original script
+# Now, the actual script
 SCRIPT_DATABASE_GENERATED_FILE=generated
 
 function untar_headers {
 	tar -xaf headers.tgz
+	sync
 }
 
 declare -A table_names
 table_names=([c]='customer' [d]='date' [l]='lineorder' [p]='part' [s]='supplier')
 
-if [[ ! -d database/headers ]]; then
+if [[ ! -d ${AHEAD_DB_PATH}/headers ]]; then
 	untar_headers
 else
 	for tab in customer date lineorder part supplier; do
@@ -52,14 +70,14 @@ else
 	done
 fi
 
-pushd database
+pushd ${AHEAD_DB_PATH}
 
-for sf in $(seq 1 10); do
+for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
 	echo "Generating data for scale factor ${sf}"
 	sync
 	echo "  * synced all files (sync)"
 
-	if [[ -f "sf-${sf}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
+	if [[ -f "${AHEAD_SCALEFACTOR_PREFIX}${sf}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
 		echo "  * I assume all files for scale factor ${sf} are already generated"
 		continue
 	fi
@@ -68,7 +86,7 @@ for sf in $(seq 1 10); do
 	for tab in c d l p s; do
 		filename="${table_names[$tab]}.tbl"
 		echo -n "  * ${tab}: ${filename} "
-		if [[ -f "$filename" || -f "sf-${sf}/$filename" ]]; then
+		if [[ -f "$filename" || -f "${AHEAD_SCALEFACTOR_PREFIX}${sf}/$filename" ]]; then
 			echo "exists"
 		else
 			all_existing=0
@@ -87,27 +105,27 @@ for sf in $(seq 1 10); do
 	if [[ ${all_existing} == 0 ]]; then
 		sync
 		echo "  * synced all files (sync)"
-		mkdir -p sf-${sf}
+		mkdir -p "${AHEAD_SCALEFACTOR_PREFIX}${sf}"
 		ret=$?
 		if [[ $ret -ne 0 ]]; then
 			popd
-			echo "  * Error creating folder 'sf-${sf}'"
+			echo "  * Error creating folder '${AHEAD_SCALEFACTOR_PREFIX}${sf}'"
 			exit $ret
 		fi
 #		ls -lAh *.tbl
-		mv *.tbl sf-${sf}/
+		mv *.tbl "${AHEAD_SCALEFACTOR_PREFIX}${sf}/"
 		ret=$?
 		if [[ $ret -ne 0 ]]; then
 			popd
-			echo "  * Error moving files to subfolder 'sf-${sf}'"
+			echo "  * Error moving files to subfolder '${AHEAD_SCALEFACTOR_PREFIX}${sf}'"
 			exit $ret
 		fi
-		echo "  * generated and moved tables for sf ${sf}"
+		echo "  * generated and moved tables for SF ${sf}"
 	else
-		echo "  * all tables already exists for sf ${sf}"
+		echo "  * all tables already exist for SF ${sf}"
 	fi
 
-	pushd sf-${sf}
+	pushd "${AHEAD_SCALEFACTOR_PREFIX}${sf}"
 
 	for tab in customer date lineorder part supplier; do
 		if [[ ! -f "${tab}.tbl" ]]; then

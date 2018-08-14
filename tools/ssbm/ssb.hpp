@@ -32,6 +32,7 @@
 #include <stdexcept>
 #include <functional>
 
+#ifdef AHEAD_PCM
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -41,6 +42,7 @@
 #include <utils.h>
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 #endif
 
 #include <util/argumentparser.hpp>
@@ -140,12 +142,16 @@ namespace ssb {
     };
 
     extern SSB_CONF ssb_config;
+#ifdef AHEAD_PCM
     extern ::PCM * m;
     extern ::PCM::ErrorCode pcmStatus;
+#endif
     extern size_t rssBeforeLoad, rssAfterLoad, rssAfterCopy, rssAfterQueries;
+#ifdef AHEAD_PCM
     extern std::vector<CoreCounterState> cstate1, cstate2, cstate3;
     extern std::vector<SocketCounterState> sktstate1, sktstate2, sktstate3;
     extern SystemCounterState sysstate1, sysstate2, sysstate3;
+#endif
     extern std::string emptyString;
     extern std::vector<StopWatch::rep> totalTimes;
     extern size_t I;
@@ -171,7 +177,9 @@ namespace ssb {
             const char * const * argv,
             const char * strHeadline,
             architecture_t arch = DEFAULT_ARCHITECTURE);
+#ifdef AHEAD_PCM
     void init_pcm();
+#endif
     void loadTable(
             const char* tableName,
             const SSB_CONF & CONFIG = ssb::ssb_config);
