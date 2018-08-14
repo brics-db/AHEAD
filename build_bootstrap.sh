@@ -16,7 +16,7 @@
 
 source ./common.conf
 
-if [ -z ${DEBUG+x} ]; then
+if [[ -z ${DEBUG+x} ]]; then
 	debugmode=0
 else
 	debugmode=1

@@ -14,7 +14,7 @@ SSB_DBGEN_BUILDIR=build
 # 3) AHEAD_DB_PATH
 source ./common.conf
 
-mkdir -p ${AHEAD_DB_PATH}
+mkdir -p "${AHEAD_DB_PATH}"
 
 ./${AHEAD_SCRIPT_BOOTSTRAP}
 pushd ${AHEAD_BUILD_RELEASE_DIR}
