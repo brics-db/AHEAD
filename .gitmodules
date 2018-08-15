@@ -1,6 +1,6 @@
 [submodule "pcm"]
 	path = pcm
-	url = https://github.com/tuddbresilience/pcm.git
+	url = https://github.com/brics-db/pcm.git
 [submodule "ssb-dbgen"]
 	path = ssb-dbgen
 	url = https://github.com/valco1994/ssb-dbgen

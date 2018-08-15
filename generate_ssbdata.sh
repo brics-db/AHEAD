@@ -22,22 +22,18 @@ make -j $(nproc) ssbm-dbsize_scalar
 popd
 
 # For the reproducibility, use the submodule ssb-dbgen to generate the ssb generator and push it to the database directory
-if [ ! -d "${SSB_DBGEN_SUBMODULE}" ]; then
-	git submodule add "${SSB_DBGEN_GITREPO}"
-else
-	if [ -z "$(ls -A ${SSB_DBGEN_SUBMODULE})" ]; then
-		git submodule init "${SSB_DBGEN_SUBMODULE}"
-	fi
+if [[ -z "$(ls -A ${SSB_DBGEN_SUBMODULE})" ]]; then
+	git submodule init "${SSB_DBGEN_SUBMODULE}"
 fi
 
 git submodule update "${SSB_DBGEN_SUBMODULE}"
 pushd "${SSB_DBGEN_SUBMODULE}"
-[ ! -d "${SSB_DBGEN_BUILDIR}" ] && mkdir -p "${SSB_DBGEN_BUILDIR}"
+[[ ! -d "${SSB_DBGEN_BUILDIR}" ]] && mkdir -p "${SSB_DBGEN_BUILDIR}"
 pushd "${SSB_DBGEN_BUILDIR}"
 cmake ..
 make
 ret=$?
-if [ $ret -ne 0 ]; then
+if [[ $ret -ne 0 ]]; then
 	echo "Error maing ssb-dbgen!:"
 	cat make.err
 	popd;popd
