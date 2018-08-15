@@ -95,26 +95,25 @@ echo "DATE: ${DATE}"
 source run.conf
 echo "DATE: ${DATE}"
 
+mkdir -p "${PATH_EVAL_CURRENT}"
+
 ################################################################################################
 # if the outputs are not redirected to files, then call ourselves again with additional piping #
 ################################################################################################
 if [[ -t 1 ]] && [[ -t 2 ]]; then
-    outfile="$0.out"
-    errfile="$0.err"
+    basename=$(basename -s '.sh')
+    outfile="${PATH_EVAL_CURRENT}/${basename}.out"
+    errfile="${PATH_EVAL_CURRENT}/${basename}.err"
     if [[ -e ${PATH_EVAL_CURRENT} ]]; then
-        if [[ -f "${PATH_EVAL_CURRENT}/${outfile}" ]]; then
+        if [[ -f "${outfile}" ]]; then
             idx=0
-            while [[ -f "${PATH_EVAL_CURRENT}/${outfile}.${idx}" ]]; do
+            while [[ -f "${outfile}.${idx}" ]]; do
                 ((idx++))
             done
             # keep both file versions in sync
-            mv "${outfile}" "${PATH_EVAL_CURRENT}/${outfile}.${idx}"
-            mv "${errfile}" "${PATH_EVAL_CURRENT}/${errfile}.${idx}"
-        else
-            mv "${outfile}" "${errfile}" "${PATH_EVAL_CURRENT}"
+            mv "${outfile}" "${outfile}.${idx}"
+            mv "${errfile}" "${errfile}.${idx}"
         fi
-        # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
-        sed -E -e '34,+26s/^(.+)$/#\1/' -e '88s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '94s,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '96s/^.+$/DATE="'"${DATE}"'"\n\1' -e '117s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
     fi ### [[ -e ${PATH_EVAL_CURRENT} ]]
     rm -f $outfile $errfile
     echo "[INFO] one of stdout or stderr is not redirected, calling script with redirecting" | tee $outfile
@@ -129,6 +128,9 @@ if [[ -t 1 ]] && [[ -t 2 ]]; then
 else
     echo "[INFO] stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
 fi ### [[ -t 1 ]] && [[ -t 2 ]]
+
+# copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
+sed -E -e '34,+26s/^(.+)$/#\1/' -e '88s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '94s,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '96s/^.+$/DATE="'"${DATE}"'"\n\1' -e '133s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
 
 echo "[INFO] Running Phase \"${PHASE}\""
 
