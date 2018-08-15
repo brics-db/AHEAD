@@ -4,3 +4,6 @@
 [submodule "ssb-dbgen"]
 	path = ssb-dbgen
 	url = https://github.com/valco1994/ssb-dbgen
+[submodule "coding_benchmark"]
+	path = coding_benchmark
+	url = https://github.com/brics-db/coding_benchmark
