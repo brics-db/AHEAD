@@ -1,0 +1,3275 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.9 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{DBLP:conf/sigmod/AbadiMF06}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=d720c00523f9be0ce159d95e62330b83}{%
+           family={Abadi},
+           familyi={A\bibinitperiod},
+           given={Daniel\bibnamedelima J.},
+           giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=8b530348ffa5a0cfb0b9827772f501e9}{%
+           family={Madden},
+           familyi={M\bibinitperiod},
+           given={Samuel},
+           giveni={S\bibinitperiod}}}%
+        {{hash=b53e0de7f98b9ad01e43cabd66810e51}{%
+           family={Ferreira},
+           familyi={F\bibinitperiod},
+           given={Miguel},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{d659422161f07676570af9789ea43eba}
+      \strng{fullhash}{d659422161f07676570af9789ea43eba}
+      \strng{bibnamehash}{d659422161f07676570af9789ea43eba}
+      \strng{authorbibnamehash}{d659422161f07676570af9789ea43eba}
+      \strng{authornamehash}{d659422161f07676570af9789ea43eba}
+      \strng{authorfullhash}{d659422161f07676570af9789ea43eba}
+      \field{sortinit}{A}
+      \field{sortinithash}{d77c7cdd82ff690d4c3ef13216f92f0b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{Integrating compression and execution in column-oriented database systems}
+      \field{year}{2006}
+      \field{pages}{671\bibrangedash 682}
+      \range{pages}{12}
+    \endentry
+    \entry{BeckmanReport2016}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{1}{}{%
+        {{hash=7f2a4d6d7d7a93ccacddb011cfd8fe52}{%
+           family={Abadi},
+           familyi={A\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{fullhash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{bibnamehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{authorbibnamehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{authornamehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{authorfullhash}{7379e233d003cfdd8180a2720d81b4ba}
+      \field{sortinit}{A}
+      \field{sortinithash}{d77c7cdd82ff690d4c3ef13216f92f0b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Commun. {ACM}}
+      \field{number}{2}
+      \field{title}{The Beckman report on database research}
+      \field{volume}{59}
+      \field{year}{2016}
+      \field{pages}{92\bibrangedash 99}
+      \range{pages}{8}
+    \endentry
+    \entry{DBLP:journals/ftdb/AbadiBHIM13}{article}{}
+      \name{author}{5}{}{%
+        {{hash=7f2a4d6d7d7a93ccacddb011cfd8fe52}{%
+           family={Abadi},
+           familyi={A\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+        {{hash=9d7f371579170187dae3df4ff4a7e165}{%
+           family={Boncz},
+           familyi={B\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=aa7a2165bb118da575a8234a0b8be713}{%
+           family={Harizopoulos},
+           familyi={H\bibinitperiod},
+           given={Stavros},
+           giveni={S\bibinitperiod}}}%
+        {{hash=a0528fbf86972d447525db3b37c0677e}{%
+           family={Idreos},
+           familyi={I\bibinitperiod},
+           given={Stratos},
+           giveni={S\bibinitperiod}}}%
+        {{hash=8b530348ffa5a0cfb0b9827772f501e9}{%
+           family={Madden},
+           familyi={M\bibinitperiod},
+           given={Samuel},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{fullhash}{4af3a6240ada92e4cf327fa459d50f31}
+      \strng{bibnamehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{authorbibnamehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{authornamehash}{7379e233d003cfdd8180a2720d81b4ba}
+      \strng{authorfullhash}{4af3a6240ada92e4cf327fa459d50f31}
+      \field{sortinit}{A}
+      \field{sortinithash}{d77c7cdd82ff690d4c3ef13216f92f0b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Foundations and Trends in Databases}
+      \field{number}{3}
+      \field{title}{The Design and Implementation of Modern Column-Oriented Database Systems}
+      \field{volume}{5}
+      \field{year}{2013}
+      \field{pages}{197\bibrangedash 280}
+      \range{pages}{84}
+    \endentry
+    \entry{DBLP:journals/tc/Avizienis71}{article}{}
+      \name{author}{1}{}{%
+        {{hash=38fa98062590d37d4d14772d3d2466d4}{%
+           family={Avizienis},
+           familyi={A\bibinitperiod},
+           given={Algirdas},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{fullhash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{bibnamehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{authorbibnamehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{authornamehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{authorfullhash}{38fa98062590d37d4d14772d3d2466d4}
+      \field{sortinit}{A}
+      \field{sortinithash}{d77c7cdd82ff690d4c3ef13216f92f0b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{IEEE} Trans. Computers}
+      \field{number}{11}
+      \field{title}{Arithmetic Error Codes: Cost and Effectiveness Studies for Application in Digital System Design}
+      \field{volume}{20}
+      \field{year}{1971}
+      \field{pages}{1322\bibrangedash 1331}
+      \range{pages}{10}
+    \endentry
+    \entry{DBLP:journals/tse/Avizienis85}{article}{}
+      \name{author}{1}{}{%
+        {{hash=38fa98062590d37d4d14772d3d2466d4}{%
+           family={Avizienis},
+           familyi={A\bibinitperiod},
+           given={Algirdas},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{fullhash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{bibnamehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{authorbibnamehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{authornamehash}{38fa98062590d37d4d14772d3d2466d4}
+      \strng{authorfullhash}{38fa98062590d37d4d14772d3d2466d4}
+      \field{sortinit}{A}
+      \field{sortinithash}{d77c7cdd82ff690d4c3ef13216f92f0b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{IEEE} Trans. Software Eng.}
+      \field{number}{12}
+      \field{title}{The N-Version Approach to Fault-Tolerant Software}
+      \field{volume}{11}
+      \field{year}{1985}
+      \field{pages}{1491\bibrangedash 1501}
+      \range{pages}{11}
+    \endentry
+    \entry{DBLP:conf/sigmod/BinnigHF09}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=49248cdf8355c6d096189e2667358696}{%
+           family={Binnig},
+           familyi={B\bibinitperiod},
+           given={Carsten},
+           giveni={C\bibinitperiod}}}%
+        {{hash=17133f6cbbff0eff77d5ec5f6c3830b7}{%
+           family={Hildenbrand},
+           familyi={H\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod}}}%
+        {{hash=85111c316dd24cf2aa526d927dcc1e55}{%
+           family={F{ä}rber},
+           familyi={F\bibinitperiod},
+           given={Franz},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{9131ec2d240595f8ae88519601663cd3}
+      \strng{fullhash}{9131ec2d240595f8ae88519601663cd3}
+      \strng{bibnamehash}{9131ec2d240595f8ae88519601663cd3}
+      \strng{authorbibnamehash}{9131ec2d240595f8ae88519601663cd3}
+      \strng{authornamehash}{9131ec2d240595f8ae88519601663cd3}
+      \strng{authorfullhash}{9131ec2d240595f8ae88519601663cd3}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{Dictionary-based order-preserving string compression for main memory column stores}
+      \field{year}{2009}
+      \field{pages}{283\bibrangedash 296}
+      \range{pages}{14}
+    \endentry
+    \entry{DBLP:journals/pvldb/BohmLF11}{article}{}
+      \name{author}{3}{}{%
+        {{hash=9b75cdbbea769407f37d0d1aa0df1355}{%
+           family={B{ö}hm},
+           familyi={B\bibinitperiod},
+           given={Matthias},
+           giveni={M\bibinitperiod}}}%
+        {{hash=69b1ffd40d606bf86bedca673816fde6}{%
+           family={Lehner},
+           familyi={L\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+        {{hash=77595905360fbea5f67b2adf3f6dc019}{%
+           family={Fetzer},
+           familyi={F\bibinitperiod},
+           given={Christof},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{87f757c74208d936ab4c225d09f3a7e1}
+      \strng{fullhash}{87f757c74208d936ab4c225d09f3a7e1}
+      \strng{bibnamehash}{87f757c74208d936ab4c225d09f3a7e1}
+      \strng{authorbibnamehash}{87f757c74208d936ab4c225d09f3a7e1}
+      \strng{authornamehash}{87f757c74208d936ab4c225d09f3a7e1}
+      \strng{authorfullhash}{87f757c74208d936ab4c225d09f3a7e1}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{PVLDB}}
+      \field{number}{12}
+      \field{title}{Resiliency-Aware Data Management}
+      \field{volume}{4}
+      \field{year}{2011}
+      \field{pages}{1462\bibrangedash 1465}
+      \range{pages}{4}
+    \endentry
+    \entry{DBLP:journals/vldb/BonczK99}{article}{}
+      \name{author}{2}{}{%
+        {{hash=9d7f371579170187dae3df4ff4a7e165}{%
+           family={Boncz},
+           familyi={B\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=17d2a7d66a66b1110cb93247d0f774e4}{%
+           family={Kersten},
+           familyi={K\bibinitperiod},
+           given={Martin\bibnamedelima L.},
+           giveni={M\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{130508146c7353736c02969e36dca680}
+      \strng{fullhash}{130508146c7353736c02969e36dca680}
+      \strng{bibnamehash}{130508146c7353736c02969e36dca680}
+      \strng{authorbibnamehash}{130508146c7353736c02969e36dca680}
+      \strng{authornamehash}{130508146c7353736c02969e36dca680}
+      \strng{authorfullhash}{130508146c7353736c02969e36dca680}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{VLDB} J.}
+      \field{number}{2}
+      \field{title}{{MIL} Primitives for Querying a Fragmented World}
+      \field{volume}{8}
+      \field{year}{1999}
+      \field{pages}{101\bibrangedash 119}
+      \range{pages}{19}
+    \endentry
+    \entry{DBLP:journals/cacm/BonczKM08}{article}{}
+      \name{author}{3}{}{%
+        {{hash=9d7f371579170187dae3df4ff4a7e165}{%
+           family={Boncz},
+           familyi={B\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=17d2a7d66a66b1110cb93247d0f774e4}{%
+           family={Kersten},
+           familyi={K\bibinitperiod},
+           given={Martin\bibnamedelima L.},
+           giveni={M\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=cbc39ae218f9ba314b61900a54a5ed1a}{%
+           family={Manegold},
+           familyi={M\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{cf0fb49407228c23131921095f7bcd5c}
+      \strng{fullhash}{cf0fb49407228c23131921095f7bcd5c}
+      \strng{bibnamehash}{cf0fb49407228c23131921095f7bcd5c}
+      \strng{authorbibnamehash}{cf0fb49407228c23131921095f7bcd5c}
+      \strng{authornamehash}{cf0fb49407228c23131921095f7bcd5c}
+      \strng{authorfullhash}{cf0fb49407228c23131921095f7bcd5c}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Commun. {ACM}}
+      \field{number}{12}
+      \field{title}{Breaking the memory wall in MonetDB}
+      \field{volume}{51}
+      \field{year}{2008}
+      \field{pages}{77\bibrangedash 85}
+      \range{pages}{9}
+    \endentry
+    \entry{boncz2002monet}{thesis}{}
+      \name{author}{1}{}{%
+        {{hash=55d710999dfce972b9d79fb7021aade0}{%
+           family={Boncz},
+           familyi={B\bibinitperiod},
+           given={Peter\bibnamedelima Alexander},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {University of Amsterdam}%
+      }
+      \strng{namehash}{55d710999dfce972b9d79fb7021aade0}
+      \strng{fullhash}{55d710999dfce972b9d79fb7021aade0}
+      \strng{bibnamehash}{55d710999dfce972b9d79fb7021aade0}
+      \strng{authorbibnamehash}{55d710999dfce972b9d79fb7021aade0}
+      \strng{authornamehash}{55d710999dfce972b9d79fb7021aade0}
+      \strng{authorfullhash}{55d710999dfce972b9d79fb7021aade0}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Monet; a next-Generation DBMS Kernel For Query-Intensive Applications}
+      \field{type}{phdthesis}
+      \field{year}{2002}
+    \endentry
+    \entry{DBLP:journals/micro/Borkar05}{article}{}
+      \name{author}{1}{}{%
+        {{hash=b7e18d36681b280646ea75f7811c53da}{%
+           family={Borkar},
+           familyi={B\bibinitperiod},
+           given={Shekhar\bibnamedelima Y.},
+           giveni={S\bibinitperiod\bibinitdelim Y\bibinitperiod}}}%
+      }
+      \strng{namehash}{b7e18d36681b280646ea75f7811c53da}
+      \strng{fullhash}{b7e18d36681b280646ea75f7811c53da}
+      \strng{bibnamehash}{b7e18d36681b280646ea75f7811c53da}
+      \strng{authorbibnamehash}{b7e18d36681b280646ea75f7811c53da}
+      \strng{authornamehash}{b7e18d36681b280646ea75f7811c53da}
+      \strng{authorfullhash}{b7e18d36681b280646ea75f7811c53da}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{IEEE} Micro}
+      \field{number}{6}
+      \field{title}{Designing Reliable Systems from Unreliable Components: The Challenges of Transistor Variability and Degradation}
+      \field{volume}{25}
+      \field{year}{2005}
+      \field{pages}{10\bibrangedash 16}
+      \range{pages}{7}
+    \endentry
+    \entry{DBLP:journals/cacm/BorkarC11}{article}{}
+      \name{author}{2}{}{%
+        {{hash=3bfc94a29f58b307c2e2c21007c8b010}{%
+           family={Borkar},
+           familyi={B\bibinitperiod},
+           given={Shekhar},
+           giveni={S\bibinitperiod}}}%
+        {{hash=9a33b9a51c29f724a0f818112e05744b}{%
+           family={Chien},
+           familyi={C\bibinitperiod},
+           given={Andrew\bibnamedelima A.},
+           giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{ae9ba76a1d43d344e976725b5073a941}
+      \strng{fullhash}{ae9ba76a1d43d344e976725b5073a941}
+      \strng{bibnamehash}{ae9ba76a1d43d344e976725b5073a941}
+      \strng{authorbibnamehash}{ae9ba76a1d43d344e976725b5073a941}
+      \strng{authornamehash}{ae9ba76a1d43d344e976725b5073a941}
+      \strng{authorfullhash}{ae9ba76a1d43d344e976725b5073a941}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Commun. {ACM}}
+      \field{number}{5}
+      \field{title}{The future of microprocessors}
+      \field{volume}{54}
+      \field{year}{2011}
+      \field{pages}{67\bibrangedash 77}
+      \range{pages}{11}
+    \endentry
+    \entry{DBLP:conf/sigmod/BressFT16}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=d12cc6a16205163ecb7bd8c4b0eacfd9}{%
+           family={Bre{ß}},
+           familyi={B\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod}}}%
+        {{hash=167631c0fedfd2c34d2e3488078919ae}{%
+           family={Funke},
+           familyi={F\bibinitperiod},
+           given={Henning},
+           giveni={H\bibinitperiod}}}%
+        {{hash=a5d4add92f15b2d358b8bd8bad4c6d15}{%
+           family={Teubner},
+           familyi={T\bibinitperiod},
+           given={Jens},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{aae09bc586a04de8122b195838ef2309}
+      \strng{fullhash}{aae09bc586a04de8122b195838ef2309}
+      \strng{bibnamehash}{aae09bc586a04de8122b195838ef2309}
+      \strng{authorbibnamehash}{aae09bc586a04de8122b195838ef2309}
+      \strng{authornamehash}{aae09bc586a04de8122b195838ef2309}
+      \strng{authorfullhash}{aae09bc586a04de8122b195838ef2309}
+      \field{sortinit}{B}
+      \field{sortinithash}{276475738cc058478c1677046f857703}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{Robust Query Processing in Co-Processor-accelerated Databases}
+      \field{year}{2016}
+      \field{pages}{1891\bibrangedash 1906}
+      \range{pages}{16}
+    \endentry
+    \entry{DBLP:conf/sigmod/CopelandK85}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=0de2beeae6a5b2e39321548ea0f01ba4}{%
+           family={Copeland},
+           familyi={C\bibinitperiod},
+           given={George\bibnamedelima P.},
+           giveni={G\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=d671144db88a215c6b85bbd4c9db6b42}{%
+           family={Khoshafian},
+           familyi={K\bibinitperiod},
+           given={Setrag},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{5ec019b2a60590798dbec901c0c36639}
+      \strng{fullhash}{5ec019b2a60590798dbec901c0c36639}
+      \strng{bibnamehash}{5ec019b2a60590798dbec901c0c36639}
+      \strng{authorbibnamehash}{5ec019b2a60590798dbec901c0c36639}
+      \strng{authornamehash}{5ec019b2a60590798dbec901c0c36639}
+      \strng{authorfullhash}{5ec019b2a60590798dbec901c0c36639}
+      \field{sortinit}{C}
+      \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{A Decomposition Storage Model}
+      \field{year}{1985}
+      \field{pages}{268\bibrangedash 279}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:conf/edbt/DammeHHL17}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=300193b3e01a8341e69cf0799377ed65}{%
+           family={Damme},
+           familyi={D\bibinitperiod},
+           given={Patrick},
+           giveni={P\bibinitperiod}}}%
+        {{hash=d081c9a763d7e03bf756f8763f76737e}{%
+           family={Habich},
+           familyi={H\bibinitperiod},
+           given={Dirk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=03847d6c7cc1cfd76e2119b3c678d58a}{%
+           family={Hildebrandt},
+           familyi={H\bibinitperiod},
+           given={Juliana},
+           giveni={J\bibinitperiod}}}%
+        {{hash=69b1ffd40d606bf86bedca673816fde6}{%
+           family={Lehner},
+           familyi={L\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{8437721d48700dbcfb1ee017df710a55}
+      \strng{fullhash}{3bdf4852933a319ab9d8b540a9f6a0bc}
+      \strng{bibnamehash}{8437721d48700dbcfb1ee017df710a55}
+      \strng{authorbibnamehash}{8437721d48700dbcfb1ee017df710a55}
+      \strng{authornamehash}{8437721d48700dbcfb1ee017df710a55}
+      \strng{authorfullhash}{3bdf4852933a319ab9d8b540a9f6a0bc}
+      \field{sortinit}{D}
+      \field{sortinithash}{2ef1bd9a78cc71eb74d7231c635177b8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{EDBT}
+      \field{title}{Lightweight Data Compression Algorithms: An Experimental Survey (Experiments and Analyses)}
+      \field{year}{2017}
+      \field{pages}{72\bibrangedash 83}
+      \range{pages}{12}
+    \endentry
+    \entry{dell1997white}{article}{}
+      \name{author}{1}{}{%
+        {{hash=3e036215d11a0f4056dc7da64dd9bbf8}{%
+           family={Dell},
+           familyi={D\bibinitperiod},
+           given={Timothy\bibnamedelima J},
+           giveni={T\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{3e036215d11a0f4056dc7da64dd9bbf8}
+      \strng{fullhash}{3e036215d11a0f4056dc7da64dd9bbf8}
+      \strng{bibnamehash}{3e036215d11a0f4056dc7da64dd9bbf8}
+      \strng{authorbibnamehash}{3e036215d11a0f4056dc7da64dd9bbf8}
+      \strng{authornamehash}{3e036215d11a0f4056dc7da64dd9bbf8}
+      \strng{authorfullhash}{3e036215d11a0f4056dc7da64dd9bbf8}
+      \field{sortinit}{D}
+      \field{sortinithash}{2ef1bd9a78cc71eb74d7231c635177b8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IBM Microelectronics Division}
+      \field{title}{A white paper on the benefits of chipkill-correct ECC for PC server main memory}
+      \field{volume}{11}
+      \field{year}{1997}
+    \endentry
+    \entry{DBLP:conf/sigmod/DiaconuFILMSVZ13}{inproceedings}{}
+      \name{author}{8}{}{%
+        {{hash=ba8fecd3fef8575f8ff438fff1dd9ca0}{%
+           family={Diaconu},
+           familyi={D\bibinitperiod},
+           given={Cristian},
+           giveni={C\bibinitperiod}}}%
+        {{hash=06428519f6c4e07f918cc1e4dfa4dd85}{%
+           family={Freedman},
+           familyi={F\bibinitperiod},
+           given={Craig},
+           giveni={C\bibinitperiod}}}%
+        {{hash=d5cd7aab3aeedb0010cb883cee91a560}{%
+           family={Ismert},
+           familyi={I\bibinitperiod},
+           given={Erik},
+           giveni={E\bibinitperiod}}}%
+        {{hash=9e9ee7577ec36d643b36924c2c07de51}{%
+           family={Larson},
+           familyi={L\bibinitperiod},
+           given={Per{-}{Å}ke},
+           giveni={P\bibinitperiod}}}%
+        {{hash=373c3edc5678c1dd0df51f6fed928205}{%
+           family={Mittal},
+           familyi={M\bibinitperiod},
+           given={Pravin},
+           giveni={P\bibinitperiod}}}%
+        {{hash=05e2773e4721a6b855432ecf8115342e}{%
+           family={Stonecipher},
+           familyi={S\bibinitperiod},
+           given={Ryan},
+           giveni={R\bibinitperiod}}}%
+        {{hash=a3c8c6ed1e79ac6e4957eb34085b2757}{%
+           family={Verma},
+           familyi={V\bibinitperiod},
+           given={Nitin},
+           giveni={N\bibinitperiod}}}%
+        {{hash=c355208764f568d9ec51e78fa1922c84}{%
+           family={Zwilling},
+           familyi={Z\bibinitperiod},
+           given={Mike},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{bd4968e64a470a5be78d8ff54eb8ece6}
+      \strng{fullhash}{2469eeb1c7486fe9eca6f0801147360d}
+      \strng{bibnamehash}{bd4968e64a470a5be78d8ff54eb8ece6}
+      \strng{authorbibnamehash}{bd4968e64a470a5be78d8ff54eb8ece6}
+      \strng{authornamehash}{bd4968e64a470a5be78d8ff54eb8ece6}
+      \strng{authorfullhash}{2469eeb1c7486fe9eca6f0801147360d}
+      \field{sortinit}{D}
+      \field{sortinithash}{2ef1bd9a78cc71eb74d7231c635177b8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{Hekaton: {SQL} server's memory-optimized {OLTP} engine}
+      \field{year}{2013}
+      \field{pages}{1243\bibrangedash 1254}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:conf/sigmod/DoKPPPD13}{inproceedings}{}
+      \name{author}{6}{}{%
+        {{hash=feffb80ccf1417e709619b8910ad64a8}{%
+           family={Do},
+           familyi={D\bibinitperiod},
+           given={Jaeyoung},
+           giveni={J\bibinitperiod}}}%
+        {{hash=96992594b4beef75a5ab898ee1e3ecbd}{%
+           family={Kee},
+           familyi={K\bibinitperiod},
+           given={Yang{-}Suk},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=a431797c74faa8ef3b9e970330ee49ef}{%
+           family={Patel},
+           familyi={P\bibinitperiod},
+           given={Jignesh\bibnamedelima M.},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=60b7fb305fb3f533622725d59e0761fc}{%
+           family={Park},
+           familyi={P\bibinitperiod},
+           given={Chanik},
+           giveni={C\bibinitperiod}}}%
+        {{hash=71f98191f23062364914ac3be11fe3a3}{%
+           family={Park},
+           familyi={P\bibinitperiod},
+           given={Kwanghyun},
+           giveni={K\bibinitperiod}}}%
+        {{hash=f7f98a5f36a2430cef48f2ba3163f163}{%
+           family={DeWitt},
+           familyi={D\bibinitperiod},
+           given={David\bibnamedelima J.},
+           giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{10828f9d07bfd50693e9d2fe8aa30d0c}
+      \strng{fullhash}{67f1884ffe3f067e43c8e7fab14a09bc}
+      \strng{bibnamehash}{10828f9d07bfd50693e9d2fe8aa30d0c}
+      \strng{authorbibnamehash}{10828f9d07bfd50693e9d2fe8aa30d0c}
+      \strng{authornamehash}{10828f9d07bfd50693e9d2fe8aa30d0c}
+      \strng{authorfullhash}{67f1884ffe3f067e43c8e7fab14a09bc}
+      \field{sortinit}{D}
+      \field{sortinithash}{2ef1bd9a78cc71eb74d7231c635177b8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{Query processing on smart SSDs: opportunities and challenges}
+      \field{year}{2013}
+      \field{pages}{1221\bibrangedash 1230}
+      \range{pages}{10}
+    \endentry
+    \entry{ernst2004razor}{article}{}
+      \name{author}{8}{}{%
+        {{hash=52f51c8ea536170beec2d4b9c666046f}{%
+           family={Ernst},
+           familyi={E\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=85126ac1fc7c28aeac907fc3c5cb86bf}{%
+           family={Das},
+           familyi={D\bibinitperiod},
+           given={Shidhartha},
+           giveni={S\bibinitperiod}}}%
+        {{hash=8835182ab43eb11879c98a8e0b5371c2}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Seokwoo},
+           giveni={S\bibinitperiod}}}%
+        {{hash=e9913454f77499850ecf4d5345674578}{%
+           family={Blaauw},
+           familyi={B\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod}}}%
+        {{hash=2d30a9d31e6a33e601816a25570403ab}{%
+           family={Austin},
+           familyi={A\bibinitperiod},
+           given={Todd},
+           giveni={T\bibinitperiod}}}%
+        {{hash=7915fee88f50d54e66463a458d635a02}{%
+           family={Mudge},
+           familyi={M\bibinitperiod},
+           given={Trevor},
+           giveni={T\bibinitperiod}}}%
+        {{hash=e0424e66847e6cfe09c4625b60feb77f}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Nam\bibnamedelima Sung},
+           giveni={N\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=6eb6262c6a9eba80fcaab5417950fc8d}{%
+           family={Flautner},
+           familyi={F\bibinitperiod},
+           given={Kriszti{á}n},
+           giveni={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{1af03f9051ea5e757715ff1a58c668d0}
+      \strng{fullhash}{57159932677e74a718da303f59581e39}
+      \strng{bibnamehash}{1af03f9051ea5e757715ff1a58c668d0}
+      \strng{authorbibnamehash}{1af03f9051ea5e757715ff1a58c668d0}
+      \strng{authornamehash}{1af03f9051ea5e757715ff1a58c668d0}
+      \strng{authorfullhash}{57159932677e74a718da303f59581e39}
+      \field{sortinit}{E}
+      \field{sortinithash}{f615fb9c6fba11c6f962fb3fd599810e}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Micro}
+      \field{number}{6}
+      \field{title}{Razor: circuit-level correction of timing errors for low-power operation}
+      \field{volume}{24}
+      \field{year}{2004}
+      \field{pages}{10\bibrangedash 20}
+      \range{pages}{11}
+    \endentry
+    \entry{DBLP:journals/micro/EsmaeilzadehBASB12}{article}{}
+      \name{author}{5}{}{%
+        {{hash=add999a8fb3dbbaa8c7d8ff09a5249c6}{%
+           family={Esmaeilzadeh},
+           familyi={E\bibinitperiod},
+           given={Hadi},
+           giveni={H\bibinitperiod}}}%
+        {{hash=ef0ef828dbdd39de019dc19782d319b2}{%
+           family={Blem},
+           familyi={B\bibinitperiod},
+           given={Emily\bibnamedelima R.},
+           giveni={E\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=d37524ec1b2004c8d8e7f740e22e9a95}{%
+           family={Amant},
+           familyi={A\bibinitperiod},
+           given={Ren{é}e\bibnamedelima St.},
+           giveni={R\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=70ec2d78b77b3d58344b20b1446be108}{%
+           family={Sankaralingam},
+           familyi={S\bibinitperiod},
+           given={Karthikeyan},
+           giveni={K\bibinitperiod}}}%
+        {{hash=aa76ebd83aa8c795c67769c23f359cdb}{%
+           family={Burger},
+           familyi={B\bibinitperiod},
+           given={Doug},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{8d750009a61d1f452ae74e0c8ce8d3db}
+      \strng{fullhash}{51e2f815944a4914c8c642053ee94e9a}
+      \strng{bibnamehash}{8d750009a61d1f452ae74e0c8ce8d3db}
+      \strng{authorbibnamehash}{8d750009a61d1f452ae74e0c8ce8d3db}
+      \strng{authornamehash}{8d750009a61d1f452ae74e0c8ce8d3db}
+      \strng{authorfullhash}{51e2f815944a4914c8c642053ee94e9a}
+      \field{sortinit}{E}
+      \field{sortinithash}{f615fb9c6fba11c6f962fb3fd599810e}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{IEEE} Micro}
+      \field{number}{3}
+      \field{title}{Dark Silicon and the End of Multicore Scaling}
+      \field{volume}{32}
+      \field{year}{2012}
+      \field{pages}{122\bibrangedash 134}
+      \range{pages}{13}
+    \endentry
+    \entry{Feng:2015:BPE:2723372.2747642}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=c867761fa29611c4e5413f97f10fd318}{%
+           family={Feng},
+           familyi={F\bibinitperiod},
+           given={Ziqiang},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=6bc108e68a1c2ac028acde6176a8d8ab}{%
+           family={Lo},
+           familyi={L\bibinitperiod},
+           given={Eric},
+           giveni={E\bibinitperiod}}}%
+        {{hash=7e387bbbe5cbee884c94eac8c3dbd0ab}{%
+           family={Kao},
+           familyi={K\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod}}}%
+        {{hash=5899f7c03566e86fc267e57408223556}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Wenjian},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{6c04581b97187e06f49f9c2f1169fd3b}
+      \strng{fullhash}{4eaffd557d1aeea1ab0579bc072ef9b5}
+      \strng{bibnamehash}{6c04581b97187e06f49f9c2f1169fd3b}
+      \strng{authorbibnamehash}{6c04581b97187e06f49f9c2f1169fd3b}
+      \strng{authornamehash}{6c04581b97187e06f49f9c2f1169fd3b}
+      \strng{authorfullhash}{4eaffd557d1aeea1ab0579bc072ef9b5}
+      \field{sortinit}{F}
+      \field{sortinithash}{669c706c6f1fbf3b5a83d26f1d9e9e72}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{ByteSlice: Pushing the Envelop of Main Memory Data Processing with a New Storage Layout}
+      \field{year}{2015}
+      \field{pages}{31\bibrangedash 46}
+      \range{pages}{16}
+    \endentry
+    \entry{forin1989vital}{article}{}
+      \name{author}{1}{}{%
+        {{hash=73ec373042e5477fc4087ee3731cdccc}{%
+           family={Forin},
+           familyi={F\bibinitperiod},
+           given={P},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{73ec373042e5477fc4087ee3731cdccc}
+      \strng{fullhash}{73ec373042e5477fc4087ee3731cdccc}
+      \strng{bibnamehash}{73ec373042e5477fc4087ee3731cdccc}
+      \strng{authorbibnamehash}{73ec373042e5477fc4087ee3731cdccc}
+      \strng{authornamehash}{73ec373042e5477fc4087ee3731cdccc}
+      \strng{authorfullhash}{73ec373042e5477fc4087ee3731cdccc}
+      \field{sortinit}{F}
+      \field{sortinithash}{669c706c6f1fbf3b5a83d26f1d9e9e72}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IFAC-GCCT}
+      \field{title}{Vital Coded Microprocessor: Principles and Application for Various Transit Systems}
+      \field{year}{1989}
+    \endentry
+    \entry{gmp}{online}{}
+      \name{author}{1}{}{%
+        {{hash=6629d5dc70c6577a9d33bbad6512a330}{%
+           family={{Free Software Foundation}},
+           familyi={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{6629d5dc70c6577a9d33bbad6512a330}
+      \strng{fullhash}{6629d5dc70c6577a9d33bbad6512a330}
+      \strng{bibnamehash}{6629d5dc70c6577a9d33bbad6512a330}
+      \strng{authorbibnamehash}{6629d5dc70c6577a9d33bbad6512a330}
+      \strng{authornamehash}{6629d5dc70c6577a9d33bbad6512a330}
+      \strng{authorfullhash}{6629d5dc70c6577a9d33bbad6512a330}
+      \field{sortinit}{F}
+      \field{sortinithash}{669c706c6f1fbf3b5a83d26f1d9e9e72}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{11}
+      \field{note}{\url{https://gmplib.org/}}
+      \field{title}{The GNU Multiple Precision Arithmetic Library}
+      \field{year}{2016}
+      \field{dateera}{ce}
+    \endentry
+    \entry{mpir}{online}{}
+      \name{author}{4}{}{%
+        {{hash=7b3ff12bee060fc0b20ce18a900f10f2}{%
+           family={Gladman},
+           familyi={G\bibinitperiod},
+           given={Brian},
+           giveni={B\bibinitperiod}}}%
+        {{hash=980ccea2fb21edaaaefedfa29f991688}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+        {{hash=afae1ddcebc306aecf83897f4520103d}{%
+           family={Moxham},
+           familyi={M\bibinitperiod},
+           given={Jason},
+           giveni={J\bibinitperiod}}}%
+        {{hash=40e84f5f607c606fb0d60bcca3974373}{%
+           family={{et al.}},
+           familyi={e\bibinitperiod}}}%
+      }
+      \strng{namehash}{ebe14b2d4dc8f1d9054df2d1313c4bb1}
+      \strng{fullhash}{de86da097a53e41476162bfc5ce2048c}
+      \strng{bibnamehash}{ebe14b2d4dc8f1d9054df2d1313c4bb1}
+      \strng{authorbibnamehash}{ebe14b2d4dc8f1d9054df2d1313c4bb1}
+      \strng{authornamehash}{ebe14b2d4dc8f1d9054df2d1313c4bb1}
+      \strng{authorfullhash}{de86da097a53e41476162bfc5ce2048c}
+      \field{sortinit}{G}
+      \field{sortinithash}{5e8d2bf9d38de41b1528bd307546008f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{11}
+      \field{note}{\url{http://mpir.org/}}
+      \field{title}{{{MPIR}: {M}ultiple {P}recision {I}ntegers and {R}ationals}}
+      \field{year}{2016}
+      \field{dateera}{ce}
+    \endentry
+    \entry{goloubeva2006software}{book}{}
+      \name{author}{4}{}{%
+        {{hash=a92476d920e788d078a1ab6108592a6d}{%
+           family={Goloubeva},
+           familyi={G\bibinitperiod},
+           given={Olga},
+           giveni={O\bibinitperiod}}}%
+        {{hash=633b59dddffe154cab50548f098798f6}{%
+           family={Rebaudengo},
+           familyi={R\bibinitperiod},
+           given={Maurizio},
+           giveni={M\bibinitperiod}}}%
+        {{hash=4bd5742f313ee397acf870182869e086}{%
+           family={Reorda},
+           familyi={R\bibinitperiod},
+           given={Matteo\bibnamedelima Sonza},
+           giveni={M\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=167ba0b9863a0ceaa5bcae6d0181baba}{%
+           family={Violante},
+           familyi={V\bibinitperiod},
+           given={Massimo},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer Science \& Business Media}%
+      }
+      \strng{namehash}{5133fe6a361e98376d58410f5ac4988e}
+      \strng{fullhash}{2fa81e58a16ccd3024d85917a4b81dad}
+      \strng{bibnamehash}{5133fe6a361e98376d58410f5ac4988e}
+      \strng{authorbibnamehash}{5133fe6a361e98376d58410f5ac4988e}
+      \strng{authornamehash}{5133fe6a361e98376d58410f5ac4988e}
+      \strng{authorfullhash}{2fa81e58a16ccd3024d85917a4b81dad}
+      \field{sortinit}{G}
+      \field{sortinithash}{5e8d2bf9d38de41b1528bd307546008f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Software-implemented hardware fault tolerance}
+      \field{year}{2006}
+    \endentry
+    \entry{hamming1950error}{article}{}
+      \name{author}{1}{}{%
+        {{hash=9f860da1859d53bcb9732e958dc99626}{%
+           family={Hamming},
+           familyi={H\bibinitperiod},
+           given={Richard\bibnamedelima W},
+           giveni={R\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+      }
+      \strng{namehash}{9f860da1859d53bcb9732e958dc99626}
+      \strng{fullhash}{9f860da1859d53bcb9732e958dc99626}
+      \strng{bibnamehash}{9f860da1859d53bcb9732e958dc99626}
+      \strng{authorbibnamehash}{9f860da1859d53bcb9732e958dc99626}
+      \strng{authornamehash}{9f860da1859d53bcb9732e958dc99626}
+      \strng{authorfullhash}{9f860da1859d53bcb9732e958dc99626}
+      \field{sortinit}{H}
+      \field{sortinithash}{5f15a7bc777ad49ff15aa4d2831b1681}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Bell System technical journal}
+      \field{number}{2}
+      \field{title}{Error detecting and error correcting codes}
+      \field{volume}{29}
+      \field{year}{1950}
+    \endentry
+    \entry{DBLP:journals/dt/Henkel17b}{article}{}
+      \name{author}{1}{}{%
+        {{hash=39346546b0d6dadd8163d5c89a560316}{%
+           family={Henkel},
+           familyi={H\bibinitperiod},
+           given={J{ö}rg},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{39346546b0d6dadd8163d5c89a560316}
+      \strng{fullhash}{39346546b0d6dadd8163d5c89a560316}
+      \strng{bibnamehash}{39346546b0d6dadd8163d5c89a560316}
+      \strng{authorbibnamehash}{39346546b0d6dadd8163d5c89a560316}
+      \strng{authornamehash}{39346546b0d6dadd8163d5c89a560316}
+      \strng{authorfullhash}{39346546b0d6dadd8163d5c89a560316}
+      \field{sortinit}{H}
+      \field{sortinithash}{5f15a7bc777ad49ff15aa4d2831b1681}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{IEEE} Design {\&} Test}
+      \field{number}{3}
+      \field{title}{Emerging Memory Technologies}
+      \field{volume}{34}
+      \field{year}{2017}
+      \field{pages}{4\bibrangedash 5}
+      \range{pages}{2}
+    \endentry
+    \entry{DBLP:conf/dac/HenkelBDGNSTW13}{inproceedings}{}
+      \name{author}{8}{}{%
+        {{hash=39346546b0d6dadd8163d5c89a560316}{%
+           family={Henkel},
+           familyi={H\bibinitperiod},
+           given={J{ö}rg},
+           giveni={J\bibinitperiod}}}%
+        {{hash=3633c5360e3f190ca79f3aef2f1ca2f5}{%
+           family={Bauer},
+           familyi={B\bibinitperiod},
+           given={Lars},
+           giveni={L\bibinitperiod}}}%
+        {{hash=77f83fa80a22ffdaa4f925736fcca2f9}{%
+           family={Dutt},
+           familyi={D\bibinitperiod},
+           given={Nikil},
+           giveni={N\bibinitperiod}}}%
+        {{hash=b9a654ae660527a6bc19855a653b731b}{%
+           family={Gupta},
+           familyi={G\bibinitperiod},
+           given={Puneet},
+           giveni={P\bibinitperiod}}}%
+        {{hash=bae3ce9212cb1c510c19a066fda2c3f8}{%
+           family={Nassif},
+           familyi={N\bibinitperiod},
+           given={Sani\bibnamedelima R.},
+           giveni={S\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=b81680cf7771fc7bb8b482a21d013649}{%
+           family={Shafique},
+           familyi={S\bibinitperiod},
+           given={Muhammad},
+           giveni={M\bibinitperiod}}}%
+        {{hash=465f689118f623a85e440167f2cd47d5}{%
+           family={Tahoori},
+           familyi={T\bibinitperiod},
+           given={Mehdi\bibnamedelima Baradaran},
+           giveni={M\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=741ab3f183e3ab0819411f5006429a37}{%
+           family={Wehn},
+           familyi={W\bibinitperiod},
+           given={Norbert},
+           giveni={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{157ae5ea79fc3c23fa6255236e5cea4c}
+      \strng{fullhash}{cf767cf796c12a36d8dc7dce8de9dbe0}
+      \strng{bibnamehash}{157ae5ea79fc3c23fa6255236e5cea4c}
+      \strng{authorbibnamehash}{157ae5ea79fc3c23fa6255236e5cea4c}
+      \strng{authornamehash}{157ae5ea79fc3c23fa6255236e5cea4c}
+      \strng{authorfullhash}{cf767cf796c12a36d8dc7dce8de9dbe0}
+      \field{sortinit}{H}
+      \field{sortinithash}{5f15a7bc777ad49ff15aa4d2831b1681}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{DAC}
+      \field{title}{Reliable on-chip systems in the nano-era: lessons learnt and future trends}
+      \field{year}{2013}
+      \field{pages}{99:1\bibrangedash 99:10}
+      \range{pages}{-1}
+    \endentry
+    \entry{DBLP:conf/hase/HoffmannUDSLS14}{inproceedings}{}
+      \name{author}{6}{}{%
+        {{hash=23fdb15e0d2718d6bfc5cf3c6f7ee26d}{%
+           family={Hoffmann},
+           familyi={H\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=d3857e58836121bbd29f60dd4784de2a}{%
+           family={Ulbrich},
+           familyi={U\bibinitperiod},
+           given={Peter},
+           giveni={P\bibinitperiod}}}%
+        {{hash=e513c953ada6c1d47e41aba133841c64}{%
+           family={Dietrich},
+           familyi={D\bibinitperiod},
+           given={Christian},
+           giveni={C\bibinitperiod}}}%
+        {{hash=4964b588f7227afaa212cd356992bd7f}{%
+           family={Schirmeier},
+           familyi={S\bibinitperiod},
+           given={Horst},
+           giveni={H\bibinitperiod}}}%
+        {{hash=7c34a049ba810e2cdda786a5ce14d06c}{%
+           family={Lohmann},
+           familyi={L\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+        {{hash=5a75b11e7545c0fd73b399937abc3c93}{%
+           family={Schr{ö}der{-}Preikschat},
+           familyi={S\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{d28c357076d5c81dbed6166c4bdbf16a}
+      \strng{fullhash}{b1b6bc2273bd42f0d32d76469fe161e7}
+      \strng{bibnamehash}{d28c357076d5c81dbed6166c4bdbf16a}
+      \strng{authorbibnamehash}{d28c357076d5c81dbed6166c4bdbf16a}
+      \strng{authornamehash}{d28c357076d5c81dbed6166c4bdbf16a}
+      \strng{authorfullhash}{b1b6bc2273bd42f0d32d76469fe161e7}
+      \field{sortinit}{H}
+      \field{sortinithash}{5f15a7bc777ad49ff15aa4d2831b1681}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{HASE}
+      \field{title}{A Practitioner's Guide to Software-Based Soft-Error Mitigation Using AN-Codes}
+      \field{year}{2014}
+      \field{pages}{33\bibrangedash 40}
+      \range{pages}{8}
+    \endentry
+    \entry{DBLP:conf/asplos/HwangSS12}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=6a624e869330825a325024d59edbc84e}{%
+           family={Hwang},
+           familyi={H\bibinitperiod},
+           given={Andy\bibnamedelima A.},
+           giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=db4e9f2c10a6eea0fd37ae0bc4c60627}{%
+           family={Stefanovici},
+           familyi={S\bibinitperiod},
+           given={Ioan\bibnamedelima A.},
+           giveni={I\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=8dc014113cac993a300c87bf347d9f85}{%
+           family={Schroeder},
+           familyi={S\bibinitperiod},
+           given={Bianca},
+           giveni={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{146779e1db8821bf0a0b7185466f6d3f}
+      \strng{fullhash}{146779e1db8821bf0a0b7185466f6d3f}
+      \strng{bibnamehash}{146779e1db8821bf0a0b7185466f6d3f}
+      \strng{authorbibnamehash}{146779e1db8821bf0a0b7185466f6d3f}
+      \strng{authornamehash}{146779e1db8821bf0a0b7185466f6d3f}
+      \strng{authorfullhash}{146779e1db8821bf0a0b7185466f6d3f}
+      \field{sortinit}{H}
+      \field{sortinithash}{5f15a7bc777ad49ff15aa4d2831b1681}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ASPLOS}
+      \field{title}{Cosmic rays don't strike twice: understanding the nature of {DRAM} errors and the implications for system design}
+      \field{year}{2012}
+      \field{pages}{111\bibrangedash 122}
+      \range{pages}{12}
+    \endentry
+    \entry{ibe2010impact}{article}{}
+      \name{author}{5}{}{%
+        {{hash=fc176a7f9de6a72094c43a042f4959f3}{%
+           family={Ibe},
+           familyi={I\bibinitperiod},
+           given={Eishi},
+           giveni={E\bibinitperiod}}}%
+        {{hash=6d749ee35d79c9b1e06fbd6a46fa9c7b}{%
+           family={Taniguchi},
+           familyi={T\bibinitperiod},
+           given={Hitoshi},
+           giveni={H\bibinitperiod}}}%
+        {{hash=1486f7324ab970419e6e2f98de7225f2}{%
+           family={Yahagi},
+           familyi={Y\bibinitperiod},
+           given={Yasuo},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=428b88cfe533cdf29acd9e211ff0de96}{%
+           family={Shimbo},
+           familyi={S\bibinitperiod},
+           given={Ken-ichi},
+           giveni={K\bibinithyphendelim i\bibinitperiod}}}%
+        {{hash=218292994756ac29a05823d2d8a8c0cb}{%
+           family={Toba},
+           familyi={T\bibinitperiod},
+           given={Tadanobu},
+           giveni={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{8fd1c03483400e3f4a874f83e04fb5ae}
+      \strng{fullhash}{26d6c5251f6ffedd08017ec1d16cc1b5}
+      \strng{bibnamehash}{8fd1c03483400e3f4a874f83e04fb5ae}
+      \strng{authorbibnamehash}{8fd1c03483400e3f4a874f83e04fb5ae}
+      \strng{authornamehash}{8fd1c03483400e3f4a874f83e04fb5ae}
+      \strng{authorfullhash}{26d6c5251f6ffedd08017ec1d16cc1b5}
+      \field{sortinit}{I}
+      \field{sortinithash}{320bc8fe8101b9376f9f21cd507de0e8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Electron Devices}
+      \field{number}{7}
+      \field{title}{Impact of scaling on neutron-induced soft error in SRAMs from a 250 nm to a 22 nm design rule}
+      \field{volume}{57}
+      \field{year}{2010}
+      \field{pages}{1527\bibrangedash 1538}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:journals/debu/IdreosGNMMK12}{article}{}
+      \name{author}{6}{}{%
+        {{hash=a0528fbf86972d447525db3b37c0677e}{%
+           family={Idreos},
+           familyi={I\bibinitperiod},
+           given={Stratos},
+           giveni={S\bibinitperiod}}}%
+        {{hash=63d00c3ab7cd6f0e3d062455d07a0487}{%
+           family={Groffen},
+           familyi={G\bibinitperiod},
+           given={Fabian},
+           giveni={F\bibinitperiod}}}%
+        {{hash=077a3db533dc66056a66d471fadfdcb5}{%
+           family={Nes},
+           familyi={N\bibinitperiod},
+           given={Niels},
+           giveni={N\bibinitperiod}}}%
+        {{hash=cbc39ae218f9ba314b61900a54a5ed1a}{%
+           family={Manegold},
+           familyi={M\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod}}}%
+        {{hash=7efad4473c4817003e009c7652caa791}{%
+           family={Mullender},
+           familyi={M\bibinitperiod},
+           given={K.\bibnamedelimi Sjoerd},
+           giveni={K\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=17d2a7d66a66b1110cb93247d0f774e4}{%
+           family={Kersten},
+           familyi={K\bibinitperiod},
+           given={Martin\bibnamedelima L.},
+           giveni={M\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{755eff81c277d35321de03be3bd3546d}
+      \strng{fullhash}{6c92b8f94c991bfc678624e4b64bc29b}
+      \strng{bibnamehash}{755eff81c277d35321de03be3bd3546d}
+      \strng{authorbibnamehash}{755eff81c277d35321de03be3bd3546d}
+      \strng{authornamehash}{755eff81c277d35321de03be3bd3546d}
+      \strng{authorfullhash}{6c92b8f94c991bfc678624e4b64bc29b}
+      \field{sortinit}{I}
+      \field{sortinithash}{320bc8fe8101b9376f9f21cd507de0e8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{IEEE} Data Eng. Bull.}
+      \field{number}{1}
+      \field{title}{MonetDB: Two Decades of Research in Column-oriented Database Architectures}
+      \field{volume}{35}
+      \field{year}{2012}
+      \field{pages}{40\bibrangedash 45}
+      \range{pages}{6}
+    \endentry
+    \entry{itoh1980single}{inproceedings}{}
+      \name{author}{6}{}{%
+        {{hash=9142ae4cba6000665acd3a81981a8f87}{%
+           family={Itoh},
+           familyi={I\bibinitperiod},
+           given={K},
+           giveni={K\bibinitperiod}}}%
+        {{hash=bac491a1f38077dfb66e1d5df6f6c102}{%
+           family={Hori},
+           familyi={H\bibinitperiod},
+           given={R},
+           giveni={R\bibinitperiod}}}%
+        {{hash=9fa2a0b57a47d174d71d12beb1c4715c}{%
+           family={Masuda},
+           familyi={M\bibinitperiod},
+           given={H},
+           giveni={H\bibinitperiod}}}%
+        {{hash=690f564e35ce3568df18984c4b4ae004}{%
+           family={Kamigaki},
+           familyi={K\bibinitperiod},
+           given={Y},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=b5da913a45a9749ed12bf2e874a8a623}{%
+           family={Kawamoto},
+           familyi={K\bibinitperiod},
+           given={H},
+           giveni={H\bibinitperiod}}}%
+        {{hash=7a15abbd4fcdda9a86fabdf73761b9dc}{%
+           family={Katto},
+           familyi={K\bibinitperiod},
+           given={H},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{8ea9242aa3d51837dd83edbf13d9e33b}
+      \strng{fullhash}{77000434f3c62e624f95a498263ac0f5}
+      \strng{bibnamehash}{8ea9242aa3d51837dd83edbf13d9e33b}
+      \strng{authorbibnamehash}{8ea9242aa3d51837dd83edbf13d9e33b}
+      \strng{authornamehash}{8ea9242aa3d51837dd83edbf13d9e33b}
+      \strng{authorfullhash}{77000434f3c62e624f95a498263ac0f5}
+      \field{sortinit}{I}
+      \field{sortinithash}{320bc8fe8101b9376f9f21cd507de0e8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ISSCC}
+      \field{title}{A single 5V 64K dynamic RAM}
+      \field{volume}{23}
+      \field{year}{1980}
+      \field{pages}{228\bibrangedash 229}
+      \range{pages}{2}
+    \endentry
+    \entry{DBLP:conf/dsn/JiangZY14}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=59e9454c163cf741fd7ec647cbf94d1c}{%
+           family={Jiang},
+           familyi={J\bibinitperiod},
+           given={Lei},
+           giveni={L\bibinitperiod}}}%
+        {{hash=cedb50b0535b7d9e7bc2bc4aea29c3c5}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Youtao},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=8a030e61cb9e9b04c27f699afc0d19f7}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Jun},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{f9dd0ff2e0e9661fc74099c4c156b26a}
+      \strng{fullhash}{f9dd0ff2e0e9661fc74099c4c156b26a}
+      \strng{bibnamehash}{f9dd0ff2e0e9661fc74099c4c156b26a}
+      \strng{authorbibnamehash}{f9dd0ff2e0e9661fc74099c4c156b26a}
+      \strng{authornamehash}{f9dd0ff2e0e9661fc74099c4c156b26a}
+      \strng{authorfullhash}{f9dd0ff2e0e9661fc74099c4c156b26a}
+      \field{sortinit}{J}
+      \field{sortinithash}{fce5f8d0bd05e8d93f3dbe21c78897ca}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{DSN}
+      \field{title}{Mitigating Write Disturbance in Super-Dense Phase Change Memories}
+      \field{year}{2014}
+      \field{pages}{216\bibrangedash 227}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:journals/pvldb/KarnagelHL17}{article}{}
+      \name{author}{3}{}{%
+        {{hash=ff81fe4b2dec95a038b1f48082e6137e}{%
+           family={Karnagel},
+           familyi={K\bibinitperiod},
+           given={Tomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=d081c9a763d7e03bf756f8763f76737e}{%
+           family={Habich},
+           familyi={H\bibinitperiod},
+           given={Dirk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=69b1ffd40d606bf86bedca673816fde6}{%
+           family={Lehner},
+           familyi={L\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{5ffd41c20452cd2645a65d2aeb28d1ed}
+      \strng{fullhash}{5ffd41c20452cd2645a65d2aeb28d1ed}
+      \strng{bibnamehash}{5ffd41c20452cd2645a65d2aeb28d1ed}
+      \strng{authorbibnamehash}{5ffd41c20452cd2645a65d2aeb28d1ed}
+      \strng{authornamehash}{5ffd41c20452cd2645a65d2aeb28d1ed}
+      \strng{authorfullhash}{5ffd41c20452cd2645a65d2aeb28d1ed}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{PVLDB}}
+      \field{number}{7}
+      \field{title}{Adaptive Work Placement for Query Processing on Heterogeneous Computing Resources}
+      \field{volume}{10}
+      \field{year}{2017}
+      \field{pages}{733\bibrangedash 744}
+      \range{pages}{12}
+    \endentry
+    \entry{KAUR19941141}{article}{}
+      \name{author}{2}{}{%
+        {{hash=33fc0140a1f11688590379fa3ec2e004}{%
+           family={Kaur},
+           familyi={K\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod}}}%
+        {{hash=d67594cc177838a664bc54afa44f8b65}{%
+           family={Wedding},
+           familyi={W\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{7bc6aa619ebad0ef2312188363bbe4ff}
+      \strng{fullhash}{7bc6aa619ebad0ef2312188363bbe4ff}
+      \strng{bibnamehash}{7bc6aa619ebad0ef2312188363bbe4ff}
+      \strng{authorbibnamehash}{7bc6aa619ebad0ef2312188363bbe4ff}
+      \strng{authornamehash}{7bc6aa619ebad0ef2312188363bbe4ff}
+      \strng{authorfullhash}{7bc6aa619ebad0ef2312188363bbe4ff}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Microelectronics Reliability}
+      \field{number}{7}
+      \field{title}{Reliability of Hamming code transmission versus error probability on message bits}
+      \field{volume}{34}
+      \field{year}{1994}
+    \endentry
+    \entry{DBLP:conf/dsn/KhanLM16}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=d0312876dd5b0f377a67def569ba084a}{%
+           family={Khan},
+           familyi={K\bibinitperiod},
+           given={Samira\bibnamedelima Manabi},
+           giveni={S\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=4a18172d750fd3cd293dc5ad6d47e26d}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Donghyuk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=5c37647ea7ea3d969c75fa814163e18f}{%
+           family={Mutlu},
+           familyi={M\bibinitperiod},
+           given={Onur},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{6b082efd017329ae150ef75c607ee506}
+      \strng{fullhash}{6b082efd017329ae150ef75c607ee506}
+      \strng{bibnamehash}{6b082efd017329ae150ef75c607ee506}
+      \strng{authorbibnamehash}{6b082efd017329ae150ef75c607ee506}
+      \strng{authornamehash}{6b082efd017329ae150ef75c607ee506}
+      \strng{authorfullhash}{6b082efd017329ae150ef75c607ee506}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{DSN}
+      \field{title}{{PARBOR:} An Efficient System-Level Technique to Detect Data-Dependent Failures in {DRAM}}
+      \field{year}{2016}
+      \field{pages}{239\bibrangedash 250}
+      \range{pages}{12}
+    \endentry
+    \entry{Khan:2014:EEM:2637364.2592000}{article}{}
+      \name{author}{6}{}{%
+        {{hash=efb7f766ed10d83da3aa02b4deba9dbf}{%
+           family={Khan},
+           familyi={K\bibinitperiod},
+           given={Samira},
+           giveni={S\bibinitperiod}}}%
+        {{hash=4a18172d750fd3cd293dc5ad6d47e26d}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Donghyuk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=966fca207a45279253ffe318466a22ec}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Yoongu},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=22b306e5fbd7502879e5862de62e566e}{%
+           family={Alameldeen},
+           familyi={A\bibinitperiod},
+           given={Alaa\bibnamedelima R.},
+           giveni={A\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=e0af57e51122fbbea1a603c21d57d117}{%
+           family={Wilkerson},
+           familyi={W\bibinitperiod},
+           given={Chris},
+           giveni={C\bibinitperiod}}}%
+        {{hash=5c37647ea7ea3d969c75fa814163e18f}{%
+           family={Mutlu},
+           familyi={M\bibinitperiod},
+           given={Onur},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{24f33c491682eb0484a3bcfdf780a511}
+      \strng{fullhash}{69d4b31053e57dce48db55973d2b5bf2}
+      \strng{bibnamehash}{24f33c491682eb0484a3bcfdf780a511}
+      \strng{authorbibnamehash}{24f33c491682eb0484a3bcfdf780a511}
+      \strng{authornamehash}{24f33c491682eb0484a3bcfdf780a511}
+      \strng{authorfullhash}{69d4b31053e57dce48db55973d2b5bf2}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{SIGMETRICS Perform. Eval. Rev.}
+      \field{month}{6}
+      \field{number}{1}
+      \field{title}{The Efficacy of Error Mitigation Techniques for DRAM Retention Failures: A Comparative Experimental Study}
+      \field{volume}{42}
+      \field{year}{2014}
+      \field{pages}{519\bibrangedash 532}
+      \range{pages}{14}
+    \endentry
+    \entry{Kim:2007:MET:1331699.1331719}{inproceedings}{}
+      \name{author}{5}{}{%
+        {{hash=3da4d03e126cf6edd0f0c16356ce1ca9}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jangwoo},
+           giveni={J\bibinitperiod}}}%
+        {{hash=6133f68d7591a28b73f050c1e763a18e}{%
+           family={Hardavellas},
+           familyi={H\bibinitperiod},
+           given={Nikos},
+           giveni={N\bibinitperiod}}}%
+        {{hash=77cde460c9e135e43ae415a7832a24c3}{%
+           family={Mai},
+           familyi={M\bibinitperiod},
+           given={Ken},
+           giveni={K\bibinitperiod}}}%
+        {{hash=0e4316970a4fe5033d4bb790a67dcaa8}{%
+           family={Falsafi},
+           familyi={F\bibinitperiod},
+           given={Babak},
+           giveni={B\bibinitperiod}}}%
+        {{hash=5b70c273868c8a6dc9cec60ee0562708}{%
+           family={Hoe},
+           familyi={H\bibinitperiod},
+           given={James},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{b8e27f174fcba66931c7db92cf31271b}
+      \strng{fullhash}{2dc962c478db4323c82620c0f248b2cc}
+      \strng{bibnamehash}{b8e27f174fcba66931c7db92cf31271b}
+      \strng{authorbibnamehash}{b8e27f174fcba66931c7db92cf31271b}
+      \strng{authornamehash}{b8e27f174fcba66931c7db92cf31271b}
+      \strng{authorfullhash}{2dc962c478db4323c82620c0f248b2cc}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Symposium on Microarchitecture}
+      \field{title}{Multi-bit Error Tolerant Caches Using Two-Dimensional Error Coding}
+      \field{year}{2007}
+      \field{pages}{197\bibrangedash 209}
+      \range{pages}{13}
+    \endentry
+    \entry{DBLP:conf/isca/KimDKFLLWLM14}{inproceedings}{}
+      \name{author}{9}{}{%
+        {{hash=966fca207a45279253ffe318466a22ec}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Yoongu},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=67a626b7b72f85b44fec0df04ae46fbc}{%
+           family={Daly},
+           familyi={D\bibinitperiod},
+           given={Ross},
+           giveni={R\bibinitperiod}}}%
+        {{hash=a0cc45f995f7986a43080fa9f2963907}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jeremie},
+           giveni={J\bibinitperiod}}}%
+        {{hash=9d3f717381cc3f1c9e8f6a9056bd5d42}{%
+           family={Fallin},
+           familyi={F\bibinitperiod},
+           given={Chris},
+           giveni={C\bibinitperiod}}}%
+        {{hash=b58f9ef02be9374f1691169fa58c06e2}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Ji{-}Hye},
+           giveni={J\bibinitperiod}}}%
+        {{hash=4a18172d750fd3cd293dc5ad6d47e26d}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Donghyuk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=e0af57e51122fbbea1a603c21d57d117}{%
+           family={Wilkerson},
+           familyi={W\bibinitperiod},
+           given={Chris},
+           giveni={C\bibinitperiod}}}%
+        {{hash=074cde51a171cd2c7c326eae20cdbff2}{%
+           family={Lai},
+           familyi={L\bibinitperiod},
+           given={Konrad},
+           giveni={K\bibinitperiod}}}%
+        {{hash=5c37647ea7ea3d969c75fa814163e18f}{%
+           family={Mutlu},
+           familyi={M\bibinitperiod},
+           given={Onur},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{fb74d1d536112a572e59a323a83c6017}
+      \strng{fullhash}{d93912055743769c7a830561dba316b7}
+      \strng{bibnamehash}{fb74d1d536112a572e59a323a83c6017}
+      \strng{authorbibnamehash}{fb74d1d536112a572e59a323a83c6017}
+      \strng{authornamehash}{fb74d1d536112a572e59a323a83c6017}
+      \strng{authorfullhash}{d93912055743769c7a830561dba316b7}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ISCA}
+      \field{title}{Flipping bits in memory without accessing them: An experimental study of {DRAM} disturbance errors}
+      \field{year}{2014}
+      \field{pages}{361\bibrangedash 372}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:conf/cidr/KissingerSHL13}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=0c3994b97518c4d8c0c66fb7090aa7dd}{%
+           family={Kissinger},
+           familyi={K\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=592fb36355ad22406ad78ffeffbb6d34}{%
+           family={Schlegel},
+           familyi={S\bibinitperiod},
+           given={Benjamin},
+           giveni={B\bibinitperiod}}}%
+        {{hash=d081c9a763d7e03bf756f8763f76737e}{%
+           family={Habich},
+           familyi={H\bibinitperiod},
+           given={Dirk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=69b1ffd40d606bf86bedca673816fde6}{%
+           family={Lehner},
+           familyi={L\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{8a4e79cdac195f84f8d3d37e5b7bf7dc}
+      \strng{fullhash}{8fc616c2fa2651005cc4047a15947c1f}
+      \strng{bibnamehash}{8a4e79cdac195f84f8d3d37e5b7bf7dc}
+      \strng{authorbibnamehash}{8a4e79cdac195f84f8d3d37e5b7bf7dc}
+      \strng{authornamehash}{8a4e79cdac195f84f8d3d37e5b7bf7dc}
+      \strng{authorfullhash}{8fc616c2fa2651005cc4047a15947c1f}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{{CIDR}}
+      \field{title}{{QPPT:} Query Processing on Prefix Trees}
+      \field{year}{2013}
+    \endentry
+    \entry{kohara1990mechanism}{article}{}
+      \name{author}{4}{}{%
+        {{hash=9f38f8ece579c78f4c0d984ea65505fc}{%
+           family={Kohara},
+           familyi={K\bibinitperiod},
+           given={Masanobu},
+           giveni={M\bibinitperiod}}}%
+        {{hash=f52ccdfb2c7fc0afc1c7d65de72ddf07}{%
+           family={Mashiko},
+           familyi={M\bibinitperiod},
+           given={YOUJI},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=d62eed9471ca57d14542c57331f0741d}{%
+           family={Nakasaki},
+           familyi={N\bibinitperiod},
+           given={KOICHI},
+           giveni={K\bibinitperiod}}}%
+        {{hash=140d5fa047c8cf079eb7c519da61d7b4}{%
+           family={Nunoshita},
+           familyi={N\bibinitperiod},
+           given={MASAHIRO},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{fbfbf96d3807ef76babbb5c15855440d}
+      \strng{fullhash}{48fc6519a4bf75e5bad608977765ef88}
+      \strng{bibnamehash}{fbfbf96d3807ef76babbb5c15855440d}
+      \strng{authorbibnamehash}{fbfbf96d3807ef76babbb5c15855440d}
+      \strng{authornamehash}{fbfbf96d3807ef76babbb5c15855440d}
+      \strng{authorfullhash}{48fc6519a4bf75e5bad608977765ef88}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Components, Hybrids, and Manufacturing Technology}
+      \field{number}{4}
+      \field{title}{Mechanism of electromigration in ceramic packages induced by chip-coating polyimide}
+      \field{volume}{13}
+      \field{year}{1990}
+      \field{pages}{873\bibrangedash 878}
+      \range{pages}{6}
+    \endentry
+    \entry{DBLP:conf/damon/KolditzKSHL14}{inproceedings}{}
+      \name{author}{5}{}{%
+        {{hash=1c0e0b09b75c9c2987f759b87f5dedb5}{%
+           family={Kolditz},
+           familyi={K\bibinitperiod},
+           given={Till},
+           giveni={T\bibinitperiod}}}%
+        {{hash=0c3994b97518c4d8c0c66fb7090aa7dd}{%
+           family={Kissinger},
+           familyi={K\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=592fb36355ad22406ad78ffeffbb6d34}{%
+           family={Schlegel},
+           familyi={S\bibinitperiod},
+           given={Benjamin},
+           giveni={B\bibinitperiod}}}%
+        {{hash=d081c9a763d7e03bf756f8763f76737e}{%
+           family={Habich},
+           familyi={H\bibinitperiod},
+           given={Dirk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=69b1ffd40d606bf86bedca673816fde6}{%
+           family={Lehner},
+           familyi={L\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{d29eecd548db462fd2441f990f0b25ae}
+      \strng{fullhash}{402d237452f0a5da64c29f4b74d54f7b}
+      \strng{bibnamehash}{d29eecd548db462fd2441f990f0b25ae}
+      \strng{authorbibnamehash}{d29eecd548db462fd2441f990f0b25ae}
+      \strng{authornamehash}{d29eecd548db462fd2441f990f0b25ae}
+      \strng{authorfullhash}{402d237452f0a5da64c29f4b74d54f7b}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{DaMoN}
+      \field{title}{Online bit flip detection for in-memory B-trees on unreliable hardware}
+      \field{year}{2014}
+      \field{pages}{5:1\bibrangedash 5:9}
+      \range{pages}{-1}
+    \endentry
+    \entry{DBLP:conf/ispass/KultursayKSM13}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=1746a03275408dac7bfde113b3eacfec}{%
+           family={Kultursay},
+           familyi={K\bibinitperiod},
+           given={Emre},
+           giveni={E\bibinitperiod}}}%
+        {{hash=f18cf0f82083d2d04d5998f51e140ebd}{%
+           family={Kandemir},
+           familyi={K\bibinitperiod},
+           given={Mahmut\bibnamedelima T.},
+           giveni={M\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=3ea69b36106e2d57b178fcb4acb43f39}{%
+           family={Sivasubramaniam},
+           familyi={S\bibinitperiod},
+           given={Anand},
+           giveni={A\bibinitperiod}}}%
+        {{hash=5c37647ea7ea3d969c75fa814163e18f}{%
+           family={Mutlu},
+           familyi={M\bibinitperiod},
+           given={Onur},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{7015a48e6072baf124fac192acf34ecc}
+      \strng{fullhash}{6a4f54b05d131ebc64c92c9c32a994af}
+      \strng{bibnamehash}{7015a48e6072baf124fac192acf34ecc}
+      \strng{authorbibnamehash}{7015a48e6072baf124fac192acf34ecc}
+      \strng{authornamehash}{7015a48e6072baf124fac192acf34ecc}
+      \strng{authorfullhash}{6a4f54b05d131ebc64c92c9c32a994af}
+      \field{sortinit}{K}
+      \field{sortinithash}{9fd838a31ba64d981e8f44562bd33f89}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ISPASS}
+      \field{title}{Evaluating {STT-RAM} as an energy-efficient main memory alternative}
+      \field{year}{2013}
+      \field{pages}{256\bibrangedash 267}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:journals/debu/LahiriNF13}{article}{}
+      \name{author}{3}{}{%
+        {{hash=7aa881cbe38f161d526d1632a1ea13c2}{%
+           family={Lahiri},
+           familyi={L\bibinitperiod},
+           given={Tirthankar},
+           giveni={T\bibinitperiod}}}%
+        {{hash=9b06ad0012edcefc3f587e721d60858b}{%
+           family={Neimat},
+           familyi={N\bibinitperiod},
+           given={Marie{-}Anne},
+           giveni={M\bibinitperiod}}}%
+        {{hash=e59dcc9351b263ef29b460bb2b7c59c9}{%
+           family={Folkman},
+           familyi={F\bibinitperiod},
+           given={Steve},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{1f57ca48249a3d5f708275cb804af7e1}
+      \strng{fullhash}{1f57ca48249a3d5f708275cb804af7e1}
+      \strng{bibnamehash}{1f57ca48249a3d5f708275cb804af7e1}
+      \strng{authorbibnamehash}{1f57ca48249a3d5f708275cb804af7e1}
+      \strng{authornamehash}{1f57ca48249a3d5f708275cb804af7e1}
+      \strng{authorfullhash}{1f57ca48249a3d5f708275cb804af7e1}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{IEEE} Data Eng. Bull.}
+      \field{number}{2}
+      \field{title}{Oracle TimesTen: An In-Memory Database for Enterprise Applications}
+      \field{volume}{36}
+      \field{year}{2013}
+      \field{pages}{6\bibrangedash 13}
+      \range{pages}{8}
+    \endentry
+    \entry{DBLP:conf/isca/LeeIMB09}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=6589af6a3fbf4bcfc2b9b8895bf57773}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Benjamin\bibnamedelima C.},
+           giveni={B\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=7547bef8ff84453e33abaf06969bda14}{%
+           family={Ipek},
+           familyi={I\bibinitperiod},
+           given={Engin},
+           giveni={E\bibinitperiod}}}%
+        {{hash=5c37647ea7ea3d969c75fa814163e18f}{%
+           family={Mutlu},
+           familyi={M\bibinitperiod},
+           given={Onur},
+           giveni={O\bibinitperiod}}}%
+        {{hash=aa76ebd83aa8c795c67769c23f359cdb}{%
+           family={Burger},
+           familyi={B\bibinitperiod},
+           given={Doug},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{03e0bcdffd0c91e2497e6483c8142a6d}
+      \strng{fullhash}{bd0095a28793d61bd10434db2db1fda4}
+      \strng{bibnamehash}{03e0bcdffd0c91e2497e6483c8142a6d}
+      \strng{authorbibnamehash}{03e0bcdffd0c91e2497e6483c8142a6d}
+      \strng{authornamehash}{03e0bcdffd0c91e2497e6483c8142a6d}
+      \strng{authorfullhash}{bd0095a28793d61bd10434db2db1fda4}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ISCA}
+      \field{title}{Architecting phase change memory as a scalable dram alternative}
+      \field{year}{2009}
+      \field{pages}{2\bibrangedash 13}
+      \range{pages}{12}
+    \endentry
+    \entry{montecarlo}{book}{}
+      \name{author}{1}{}{%
+        {{hash=51d99977b658b658ca4c7bf8a956f362}{%
+           family={Lemieux},
+           familyi={L\bibinitperiod},
+           given={Christiane},
+           giveni={C\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{51d99977b658b658ca4c7bf8a956f362}
+      \strng{fullhash}{51d99977b658b658ca4c7bf8a956f362}
+      \strng{bibnamehash}{51d99977b658b658ca4c7bf8a956f362}
+      \strng{authorbibnamehash}{51d99977b658b658ca4c7bf8a956f362}
+      \strng{authornamehash}{51d99977b658b658ca4c7bf8a956f362}
+      \strng{authorfullhash}{51d99977b658b658ca4c7bf8a956f362}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-1441926760}
+      \field{title}{{Monte Carlo and Quasi-Monte Carlo Sampling}}
+      \field{year}{2009}
+    \endentry
+    \entry{DBLP:conf/sigmod/LiDSN16}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=89b23cce0bb40099f7b69f6577f665fe}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Feng},
+           giveni={F\bibinitperiod}}}%
+        {{hash=408e8ad217a5e3bbca21a8dd8309c367}{%
+           family={Das},
+           familyi={D\bibinitperiod},
+           given={Sudipto},
+           giveni={S\bibinitperiod}}}%
+        {{hash=ebe3e3e1861c123711f1542619121761}{%
+           family={Syamala},
+           familyi={S\bibinitperiod},
+           given={Manoj},
+           giveni={M\bibinitperiod}}}%
+        {{hash=89145fcab91297d5b2daa31b163974a2}{%
+           family={Narasayya},
+           familyi={N\bibinitperiod},
+           given={Vivek\bibnamedelima R.},
+           giveni={V\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+      }
+      \strng{namehash}{4cbee84b4c55fc35ff6d95d452903add}
+      \strng{fullhash}{887129c9eb511db318e0a7bf800cff82}
+      \strng{bibnamehash}{4cbee84b4c55fc35ff6d95d452903add}
+      \strng{authorbibnamehash}{4cbee84b4c55fc35ff6d95d452903add}
+      \strng{authornamehash}{4cbee84b4c55fc35ff6d95d452903add}
+      \strng{authorfullhash}{887129c9eb511db318e0a7bf800cff82}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{Accelerating Relational Databases by Leveraging Remote Memory and {RDMA}}
+      \field{year}{2016}
+      \field{pages}{355\bibrangedash 370}
+      \range{pages}{16}
+    \endentry
+    \entry{Li:2013:BFS:2463676.2465322}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=2241e938ebb9ef8d67a57ed0dc831cb5}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Yinan},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=a431797c74faa8ef3b9e970330ee49ef}{%
+           family={Patel},
+           familyi={P\bibinitperiod},
+           given={Jignesh\bibnamedelima M.},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{1741f0c4e9da3d5aa5ad8e70910a8481}
+      \strng{fullhash}{1741f0c4e9da3d5aa5ad8e70910a8481}
+      \strng{bibnamehash}{1741f0c4e9da3d5aa5ad8e70910a8481}
+      \strng{authorbibnamehash}{1741f0c4e9da3d5aa5ad8e70910a8481}
+      \strng{authornamehash}{1741f0c4e9da3d5aa5ad8e70910a8481}
+      \strng{authorfullhash}{1741f0c4e9da3d5aa5ad8e70910a8481}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{BitWeaving: Fast Scans for Main Memory Data Processing}
+      \field{year}{2013}
+      \field{pages}{289\bibrangedash 300}
+      \range{pages}{12}
+    \endentry
+    \entry{Liu:2013:ESD:2508148.2485928}{article}{}
+      \name{author}{5}{}{%
+        {{hash=2b161a924ae5f1721b944304737557e8}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Jamie},
+           giveni={J\bibinitperiod}}}%
+        {{hash=0a110d285d17a67f19152b5e4c0f5c08}{%
+           family={Jaiyen},
+           familyi={J\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod}}}%
+        {{hash=966fca207a45279253ffe318466a22ec}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Yoongu},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=e0af57e51122fbbea1a603c21d57d117}{%
+           family={Wilkerson},
+           familyi={W\bibinitperiod},
+           given={Chris},
+           giveni={C\bibinitperiod}}}%
+        {{hash=5c37647ea7ea3d969c75fa814163e18f}{%
+           family={Mutlu},
+           familyi={M\bibinitperiod},
+           given={Onur},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{8c9473a88b1f7b0a45427d6467b7fad4}
+      \strng{fullhash}{adbca987dd2c96820bee91a07bb5db54}
+      \strng{bibnamehash}{8c9473a88b1f7b0a45427d6467b7fad4}
+      \strng{authorbibnamehash}{8c9473a88b1f7b0a45427d6467b7fad4}
+      \strng{authornamehash}{8c9473a88b1f7b0a45427d6467b7fad4}
+      \strng{authorfullhash}{adbca987dd2c96820bee91a07bb5db54}
+      \field{sortinit}{L}
+      \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{SIGARCH Comput. Archit. News}
+      \field{month}{6}
+      \field{number}{3}
+      \field{title}{An Experimental Study of Data Retention Behavior in Modern DRAM Devices: Implications for Retention Time Profiling Mechanisms}
+      \field{volume}{41}
+      \field{year}{2013}
+      \field{pages}{60\bibrangedash 71}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:journals/computers/Mittal17}{article}{}
+      \name{author}{1}{}{%
+        {{hash=a161b3e1eec452aea465cf8cbcf5673d}{%
+           family={Mittal},
+           familyi={M\bibinitperiod},
+           given={Sparsh},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{a161b3e1eec452aea465cf8cbcf5673d}
+      \strng{fullhash}{a161b3e1eec452aea465cf8cbcf5673d}
+      \strng{bibnamehash}{a161b3e1eec452aea465cf8cbcf5673d}
+      \strng{authorbibnamehash}{a161b3e1eec452aea465cf8cbcf5673d}
+      \strng{authornamehash}{a161b3e1eec452aea465cf8cbcf5673d}
+      \strng{authorfullhash}{a161b3e1eec452aea465cf8cbcf5673d}
+      \field{sortinit}{M}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers}
+      \field{number}{1}
+      \field{title}{A Survey of Soft-Error Mitigation Techniques for Non-Volatile Memories}
+      \field{volume}{6}
+      \field{year}{2017}
+      \field{pages}{8}
+      \range{pages}{1}
+    \endentry
+    \entry{moon2005error}{article}{}
+      \name{author}{1}{}{%
+        {{hash=ad21c2cf5acf6b0bee82cca0effcb355}{%
+           family={Moon},
+           familyi={M\bibinitperiod},
+           given={Todd\bibnamedelima K},
+           giveni={T\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+      }
+      \strng{namehash}{ad21c2cf5acf6b0bee82cca0effcb355}
+      \strng{fullhash}{ad21c2cf5acf6b0bee82cca0effcb355}
+      \strng{bibnamehash}{ad21c2cf5acf6b0bee82cca0effcb355}
+      \strng{authorbibnamehash}{ad21c2cf5acf6b0bee82cca0effcb355}
+      \strng{authornamehash}{ad21c2cf5acf6b0bee82cca0effcb355}
+      \strng{authorfullhash}{ad21c2cf5acf6b0bee82cca0effcb355}
+      \field{sortinit}{M}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Mathematical Methods and Algorithms. Jhon Wiley and Son}
+      \field{title}{Error correction coding}
+      \field{year}{2005}
+    \endentry
+    \entry{mula2016avx2popcount}{article}{}
+      \name{author}{3}{}{%
+        {{hash=f976317cbae9640b59b7d07e7642fb94}{%
+           family={Mula},
+           familyi={M\bibinitperiod},
+           given={Wojciech},
+           giveni={W\bibinitperiod}}}%
+        {{hash=32472590e45ae64cf426beee37ac78b7}{%
+           family={Kurz},
+           familyi={K\bibinitperiod},
+           given={Nathan},
+           giveni={N\bibinitperiod}}}%
+        {{hash=1f6f9e460dc1dd070b39d99017deb2c5}{%
+           family={Lemire},
+           familyi={L\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{c2e0f2f5d1f0c3ce04df6dbe21f76611}
+      \strng{fullhash}{c2e0f2f5d1f0c3ce04df6dbe21f76611}
+      \strng{bibnamehash}{c2e0f2f5d1f0c3ce04df6dbe21f76611}
+      \strng{authorbibnamehash}{c2e0f2f5d1f0c3ce04df6dbe21f76611}
+      \strng{authornamehash}{c2e0f2f5d1f0c3ce04df6dbe21f76611}
+      \strng{authorfullhash}{c2e0f2f5d1f0c3ce04df6dbe21f76611}
+      \field{sortinit}{M}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{CoRR}
+      \field{title}{Faster Population Counts using {AVX2} Instructions}
+      \field{year}{2016}
+    \endentry
+    \entry{DBLP:conf/date/Mutlu17}{inproceedings}{}
+      \name{author}{1}{}{%
+        {{hash=5c37647ea7ea3d969c75fa814163e18f}{%
+           family={Mutlu},
+           familyi={M\bibinitperiod},
+           given={Onur},
+           giveni={O\bibinitperiod}}}%
+      }
+      \strng{namehash}{5c37647ea7ea3d969c75fa814163e18f}
+      \strng{fullhash}{5c37647ea7ea3d969c75fa814163e18f}
+      \strng{bibnamehash}{5c37647ea7ea3d969c75fa814163e18f}
+      \strng{authorbibnamehash}{5c37647ea7ea3d969c75fa814163e18f}
+      \strng{authornamehash}{5c37647ea7ea3d969c75fa814163e18f}
+      \strng{authorfullhash}{5c37647ea7ea3d969c75fa814163e18f}
+      \field{sortinit}{M}
+      \field{sortinithash}{cfd219b90152c06204fab207bc6c7cab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{DATE}
+      \field{title}{The RowHammer problem and other issues we may face as memory becomes denser}
+      \field{year}{2017}
+      \field{pages}{1116\bibrangedash 1121}
+      \range{pages}{6}
+    \endentry
+    \entry{blogfloatingpoint}{online}{}
+      \name{author}{1}{}{%
+        {{hash=856106a72d787bcea4281fca718cd7d7}{%
+           family={Neumann},
+           familyi={N\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{856106a72d787bcea4281fca718cd7d7}
+      \strng{fullhash}{856106a72d787bcea4281fca718cd7d7}
+      \strng{bibnamehash}{856106a72d787bcea4281fca718cd7d7}
+      \strng{authorbibnamehash}{856106a72d787bcea4281fca718cd7d7}
+      \strng{authornamehash}{856106a72d787bcea4281fca718cd7d7}
+      \strng{authorfullhash}{856106a72d787bcea4281fca718cd7d7}
+      \field{sortinit}{N}
+      \field{sortinithash}{f7242c3ed3dc50029fca1be76c497c7c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{11}
+      \field{note}{\url{http://databasearchitects.blogspot.de/2015/12/the-price-of-correctness.html}}
+      \field{title}{The price of correctness}
+      \field{year}{2016}
+      \field{dateera}{ce}
+    \endentry
+    \entry{oneil2009ssbm}{inbook}{}
+      \name{author}{4}{}{%
+        {{hash=98befce01145d7344d11f9c62411b327}{%
+           family={O'Neil},
+           familyi={O\bibinitperiod},
+           given={Patrick},
+           giveni={P\bibinitperiod}}}%
+        {{hash=3ac82f3cec35774ba19e71f90421c83b}{%
+           family={O'Neil},
+           familyi={O\bibinitperiod},
+           given={Elizabeth},
+           giveni={E\bibinitperiod}}}%
+        {{hash=205bef65e0a5c59f4ee86815a5c95a13}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Xuedong},
+           giveni={X\bibinitperiod}}}%
+        {{hash=a1a8ac22ff597880a18f3750d333dcf5}{%
+           family={Revilak},
+           familyi={R\bibinitperiod},
+           given={Stephen},
+           giveni={S\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Berlin, Heidelberg}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{6c723000426555765f1c27da3abd836d}
+      \strng{fullhash}{78eace7a298bec06e70042b938009e83}
+      \strng{bibnamehash}{6c723000426555765f1c27da3abd836d}
+      \strng{authorbibnamehash}{6c723000426555765f1c27da3abd836d}
+      \strng{authornamehash}{6c723000426555765f1c27da3abd836d}
+      \strng{authorfullhash}{78eace7a298bec06e70042b938009e83}
+      \field{sortinit}{O}
+      \field{sortinithash}{dad3efd0836470093a7b4a7bb756eb8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{TPCTC 2009: Performance Evaluation and Benchmarking}
+      \field{title}{The Star Schema Benchmark and Augmented Fact Table Indexing}
+      \field{year}{2009}
+      \field{pages}{237\bibrangedash 252}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1007/978-3-642-10424-4_17
+      \endverb
+    \endentry
+    \entry{oh2002error}{article}{}
+      \name{author}{3}{}{%
+        {{hash=1107c21e96f7416e5e8559eb85853e25}{%
+           family={Oh},
+           familyi={O\bibinitperiod},
+           given={Nahmsuk},
+           giveni={N\bibinitperiod}}}%
+        {{hash=7558f65fe535f1953e5f201f991d778d}{%
+           family={Shirvani},
+           familyi={S\bibinitperiod},
+           given={Philip\bibnamedelima P},
+           giveni={P\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=37e41fca01eb3bec37d1c8aaba428686}{%
+           family={McCluskey},
+           familyi={M\bibinitperiod},
+           given={Edward\bibnamedelima J},
+           giveni={E\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{a16804c4311b89465e6bb5689552b5a9}
+      \strng{fullhash}{a16804c4311b89465e6bb5689552b5a9}
+      \strng{bibnamehash}{a16804c4311b89465e6bb5689552b5a9}
+      \strng{authorbibnamehash}{a16804c4311b89465e6bb5689552b5a9}
+      \strng{authornamehash}{a16804c4311b89465e6bb5689552b5a9}
+      \strng{authorfullhash}{a16804c4311b89465e6bb5689552b5a9}
+      \field{sortinit}{O}
+      \field{sortinithash}{dad3efd0836470093a7b4a7bb756eb8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Reliability}
+      \field{number}{1}
+      \field{title}{Error detection by duplicated instructions in super-scalar processors}
+      \field{volume}{51}
+      \field{year}{2002}
+      \field{pages}{63\bibrangedash 75}
+      \range{pages}{13}
+    \endentry
+    \entry{DBLP:conf/sigmod/OukidLNWL16}{inproceedings}{}
+      \name{author}{5}{}{%
+        {{hash=303aca6ebdfc126b6cdc1589400f26f5}{%
+           family={Oukid},
+           familyi={O\bibinitperiod},
+           given={Ismail},
+           giveni={I\bibinitperiod}}}%
+        {{hash=0ea28312b923715e453b507a1eb5efa7}{%
+           family={Lasperas},
+           familyi={L\bibinitperiod},
+           given={Johan},
+           giveni={J\bibinitperiod}}}%
+        {{hash=8cc3157d4fd38849c7fa8f6c4d8c3b44}{%
+           family={Nica},
+           familyi={N\bibinitperiod},
+           given={Anisoara},
+           giveni={A\bibinitperiod}}}%
+        {{hash=6f0db50b789a90fa1faf39a81ef403c1}{%
+           family={Willhalm},
+           familyi={W\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=69b1ffd40d606bf86bedca673816fde6}{%
+           family={Lehner},
+           familyi={L\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{3d1f6cb37d0db563ff573d3a0ffa7982}
+      \strng{fullhash}{691c35d6e10be2591686627db47d2377}
+      \strng{bibnamehash}{3d1f6cb37d0db563ff573d3a0ffa7982}
+      \strng{authorbibnamehash}{3d1f6cb37d0db563ff573d3a0ffa7982}
+      \strng{authornamehash}{3d1f6cb37d0db563ff573d3a0ffa7982}
+      \strng{authorfullhash}{691c35d6e10be2591686627db47d2377}
+      \field{sortinit}{O}
+      \field{sortinithash}{dad3efd0836470093a7b4a7bb756eb8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SIGMOD}
+      \field{title}{FPTree: {A} Hybrid {SCM-DRAM} Persistent and Concurrent B-Tree for Storage Class Memory}
+      \field{year}{2016}
+      \field{pages}{371\bibrangedash 386}
+      \range{pages}{16}
+    \endentry
+    \entry{peterson1961cyclic}{article}{}
+      \name{author}{2}{}{%
+        {{hash=d6c7cf63d498a64b0b0295fbeb24f1d9}{%
+           family={Peterson},
+           familyi={P\bibinitperiod},
+           given={William\bibnamedelima Wesley},
+           giveni={W\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=fe3ff97a3bf15f3fb4fe412a0ff3fa20}{%
+           family={Brown},
+           familyi={B\bibinitperiod},
+           given={Daniel\bibnamedelima T},
+           giveni={D\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{ce00660c9156327889851cf0976b5f4a}
+      \strng{fullhash}{ce00660c9156327889851cf0976b5f4a}
+      \strng{bibnamehash}{ce00660c9156327889851cf0976b5f4a}
+      \strng{authorbibnamehash}{ce00660c9156327889851cf0976b5f4a}
+      \strng{authornamehash}{ce00660c9156327889851cf0976b5f4a}
+      \strng{authorfullhash}{ce00660c9156327889851cf0976b5f4a}
+      \field{sortinit}{P}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IRE}
+      \field{number}{1}
+      \field{title}{Cyclic codes for error detection}
+      \field{volume}{49}
+      \field{year}{1961}
+      \field{pages}{228\bibrangedash 235}
+      \range{pages}{8}
+    \endentry
+    \entry{DBLP:conf/srds/PittelliG86}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=0f1370ab979d0aa795459e5077335b50}{%
+           family={Pittelli},
+           familyi={P\bibinitperiod},
+           given={Frank\bibnamedelima M.},
+           giveni={F\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=d6cecedf2064e27aeb61057dcf50dbe6}{%
+           family={Garcia{-}Molina},
+           familyi={G\bibinitperiod},
+           given={Hector},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{fullhash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{bibnamehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{authorbibnamehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{authornamehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{authorfullhash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \field{sortinit}{P}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{SRDS}
+      \field{title}{Database Processing with Triple Modular Redundancy}
+      \field{year}{1986}
+      \field{pages}{95\bibrangedash 103}
+      \range{pages}{9}
+    \endentry
+    \entry{DBLP:journals/tocs/PittelliG89}{article}{}
+      \name{author}{2}{}{%
+        {{hash=0f1370ab979d0aa795459e5077335b50}{%
+           family={Pittelli},
+           familyi={P\bibinitperiod},
+           given={Frank\bibnamedelima M.},
+           giveni={F\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=d6cecedf2064e27aeb61057dcf50dbe6}{%
+           family={Garcia{-}Molina},
+           familyi={G\bibinitperiod},
+           given={Hector},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{fullhash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{bibnamehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{authorbibnamehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{authornamehash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \strng{authorfullhash}{a7c1406ea29e2e0f917deb3cf566f0fa}
+      \field{sortinit}{P}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{ACM} Trans. Comput. Syst.}
+      \field{number}{1}
+      \field{title}{Reliable Scheduling in a {TMR} Database System}
+      \field{volume}{7}
+      \field{year}{1989}
+      \field{pages}{25\bibrangedash 60}
+      \range{pages}{36}
+    \endentry
+    \entry{DBLP:conf/micro/Pollack99}{inproceedings}{}
+      \name{author}{1}{}{%
+        {{hash=14292511afbd259477a46333fd41be8e}{%
+           family={Pollack},
+           familyi={P\bibinitperiod},
+           given={Fred\bibnamedelima J.},
+           giveni={F\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{14292511afbd259477a46333fd41be8e}
+      \strng{fullhash}{14292511afbd259477a46333fd41be8e}
+      \strng{bibnamehash}{14292511afbd259477a46333fd41be8e}
+      \strng{authorbibnamehash}{14292511afbd259477a46333fd41be8e}
+      \strng{authornamehash}{14292511afbd259477a46333fd41be8e}
+      \strng{authorfullhash}{14292511afbd259477a46333fd41be8e}
+      \field{sortinit}{P}
+      \field{sortinithash}{8d51b3d5b78d75b54308d706b9bbe285}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Symposium on Microarchitecture}
+      \field{title}{New Microarchitecture Challenges in the Coming Generations of {CMOS} Process Technologies}
+      \field{year}{1999}
+      \field{pages}{2}
+      \range{pages}{1}
+    \endentry
+    \entry{DBLP:books/daglib/0037372}{book}{}
+      \name{author}{3}{}{%
+        {{hash=b82dbc7aaef6402ba737fc1170b82cd9}{%
+           family={Rehman},
+           familyi={R\bibinitperiod},
+           given={Semeen},
+           giveni={S\bibinitperiod}}}%
+        {{hash=b81680cf7771fc7bb8b482a21d013649}{%
+           family={Shafique},
+           familyi={S\bibinitperiod},
+           given={Muhammad},
+           giveni={M\bibinitperiod}}}%
+        {{hash=39346546b0d6dadd8163d5c89a560316}{%
+           family={Henkel},
+           familyi={H\bibinitperiod},
+           given={J{ö}rg},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{2306b28985b974d0e10f175510446296}
+      \strng{fullhash}{2306b28985b974d0e10f175510446296}
+      \strng{bibnamehash}{2306b28985b974d0e10f175510446296}
+      \strng{authorbibnamehash}{2306b28985b974d0e10f175510446296}
+      \strng{authornamehash}{2306b28985b974d0e10f175510446296}
+      \strng{authorfullhash}{2306b28985b974d0e10f175510446296}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Reliable Software for Unreliable Hardware - {A} Cross Layer Perspective}
+      \field{year}{2016}
+    \endentry
+    \entry{DBLP:conf/isca/ReinhardtM00}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=20da638536d76cf78fc8147f1d8ba036}{%
+           family={Reinhardt},
+           familyi={R\bibinitperiod},
+           given={Steven\bibnamedelima K.},
+           giveni={S\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+        {{hash=8732af98a36b65e6fa54591be31aadfb}{%
+           family={Mukherjee},
+           familyi={M\bibinitperiod},
+           given={Shubhendu\bibnamedelima S.},
+           giveni={S\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \strng{namehash}{8672a4bf716bec9f910f2d0bb8a2b551}
+      \strng{fullhash}{8672a4bf716bec9f910f2d0bb8a2b551}
+      \strng{bibnamehash}{8672a4bf716bec9f910f2d0bb8a2b551}
+      \strng{authorbibnamehash}{8672a4bf716bec9f910f2d0bb8a2b551}
+      \strng{authornamehash}{8672a4bf716bec9f910f2d0bb8a2b551}
+      \strng{authorfullhash}{8672a4bf716bec9f910f2d0bb8a2b551}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ISCA}
+      \field{title}{Transient fault detection via simultaneous multithreading}
+      \field{year}{2000}
+      \field{pages}{25\bibrangedash 36}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:conf/cgo/ReisCVRA05}{inproceedings}{}
+      \name{author}{5}{}{%
+        {{hash=aaca393da944794f5af8faebebdf39b2}{%
+           family={Reis},
+           familyi={R\bibinitperiod},
+           given={George\bibnamedelima A.},
+           giveni={G\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=3d88622a58367acf967bd61180f15c20}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Jonathan},
+           giveni={J\bibinitperiod}}}%
+        {{hash=6310ce207f9071a911c813406d0f357f}{%
+           family={Vachharajani},
+           familyi={V\bibinitperiod},
+           given={Neil},
+           giveni={N\bibinitperiod}}}%
+        {{hash=4ef8630c9f6b7e9c540c9100a4c2d047}{%
+           family={Rangan},
+           familyi={R\bibinitperiod},
+           given={Ram},
+           giveni={R\bibinitperiod}}}%
+        {{hash=364a38fde18aa149ab054d2af4563f7e}{%
+           family={August},
+           familyi={A\bibinitperiod},
+           given={David\bibnamedelima I.},
+           giveni={D\bibinitperiod\bibinitdelim I\bibinitperiod}}}%
+      }
+      \strng{namehash}{f3ccd0722c6fbe4506923daeb02b9e77}
+      \strng{fullhash}{cfb0b690033dd6786bb0fafd08eafe97}
+      \strng{bibnamehash}{f3ccd0722c6fbe4506923daeb02b9e77}
+      \strng{authorbibnamehash}{f3ccd0722c6fbe4506923daeb02b9e77}
+      \strng{authornamehash}{f3ccd0722c6fbe4506923daeb02b9e77}
+      \strng{authorfullhash}{cfb0b690033dd6786bb0fafd08eafe97}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{CGO}
+      \field{title}{{SWIFT:} Software Implemented Fault Tolerance}
+      \field{year}{2005}
+      \field{pages}{243\bibrangedash 254}
+      \range{pages}{12}
+    \endentry
+    \entry{mapm}{online}{}
+      \name{author}{1}{}{%
+        {{hash=b653e4104c76dbca95bdfb6311c3bbb6}{%
+           family={Ring},
+           familyi={R\bibinitperiod},
+           given={Michael\bibnamedelima C.},
+           giveni={M\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+      }
+      \strng{namehash}{b653e4104c76dbca95bdfb6311c3bbb6}
+      \strng{fullhash}{b653e4104c76dbca95bdfb6311c3bbb6}
+      \strng{bibnamehash}{b653e4104c76dbca95bdfb6311c3bbb6}
+      \strng{authorbibnamehash}{b653e4104c76dbca95bdfb6311c3bbb6}
+      \strng{authornamehash}{b653e4104c76dbca95bdfb6311c3bbb6}
+      \strng{authorfullhash}{b653e4104c76dbca95bdfb6311c3bbb6}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{11}
+      \field{note}{\url{http://www.tc.umn.edu/~ringx004/mapm-main.html}}
+      \field{title}{{MAPM}, {A} {P}ortable {A}rbitrary {P}recision {M}ath {L}ibrary in {C}}
+      \field{year}{2016}
+      \field{dateera}{ce}
+    \endentry
+    \entry{md5}{online}{}
+      \name{author}{1}{}{%
+        {{hash=4945188e66d14fee84e3fb8c26243003}{%
+           family={Rivest},
+           familyi={R\bibinitperiod},
+           given={Ronald\bibnamedelima Linn},
+           giveni={R\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{4945188e66d14fee84e3fb8c26243003}
+      \strng{fullhash}{4945188e66d14fee84e3fb8c26243003}
+      \strng{bibnamehash}{4945188e66d14fee84e3fb8c26243003}
+      \strng{authorbibnamehash}{4945188e66d14fee84e3fb8c26243003}
+      \strng{authornamehash}{4945188e66d14fee84e3fb8c26243003}
+      \strng{authorfullhash}{4945188e66d14fee84e3fb8c26243003}
+      \field{sortinit}{R}
+      \field{sortinithash}{da6b42bd3ab22fee61abed031ee405f7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{11}
+      \field{title}{The MD5 Message-Digest Algorithm}
+      \field{year}{2016}
+      \field{dateera}{ce}
+      \verb{urlraw}
+      \verb https://tools.ietf.org/html/rfc1321
+      \endverb
+      \verb{url}
+      \verb https://tools.ietf.org/html/rfc1321
+      \endverb
+    \endentry
+    \entry{DBLP:journals/corr/Sanchez16a}{article}{}
+      \name{author}{1}{}{%
+        {{hash=b5b75b8f949514ea516949ec5fa38166}{%
+           family={Sanchez},
+           familyi={S\bibinitperiod},
+           given={Jimi},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{b5b75b8f949514ea516949ec5fa38166}
+      \strng{fullhash}{b5b75b8f949514ea516949ec5fa38166}
+      \strng{bibnamehash}{b5b75b8f949514ea516949ec5fa38166}
+      \strng{authorbibnamehash}{b5b75b8f949514ea516949ec5fa38166}
+      \strng{authornamehash}{b5b75b8f949514ea516949ec5fa38166}
+      \strng{authorfullhash}{b5b75b8f949514ea516949ec5fa38166}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{CoRR}
+      \field{title}{A Review of Star Schema Benchmark}
+      \field{volume}{abs/1606.00295}
+      \field{year}{2016}
+    \endentry
+    \entry{DBLP:phd/de/Schiffel2011}{thesis}{}
+      \name{author}{1}{}{%
+        {{hash=e219246f0a89a96e0464411bb560a46b}{%
+           family={Schiffel},
+           familyi={S\bibinitperiod},
+           given={Ute},
+           giveni={U\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Dresden University of Technology}%
+      }
+      \strng{namehash}{e219246f0a89a96e0464411bb560a46b}
+      \strng{fullhash}{e219246f0a89a96e0464411bb560a46b}
+      \strng{bibnamehash}{e219246f0a89a96e0464411bb560a46b}
+      \strng{authorbibnamehash}{e219246f0a89a96e0464411bb560a46b}
+      \strng{authornamehash}{e219246f0a89a96e0464411bb560a46b}
+      \strng{authorfullhash}{e219246f0a89a96e0464411bb560a46b}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Hardware error detection using AN-Codes}
+      \field{type}{phdthesis}
+      \field{year}{2011}
+    \endentry
+    \entry{DBLP:journals/it/ShafiqueABCCDEH15}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{1}{}{%
+        {{hash=b81680cf7771fc7bb8b482a21d013649}{%
+           family={Shafique},
+           familyi={S\bibinitperiod},
+           given={Muhammad},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{fc1cf5b600cfc706d7621affab2fd28a}
+      \strng{fullhash}{fc1cf5b600cfc706d7621affab2fd28a}
+      \strng{bibnamehash}{fc1cf5b600cfc706d7621affab2fd28a}
+      \strng{authorbibnamehash}{fc1cf5b600cfc706d7621affab2fd28a}
+      \strng{authornamehash}{fc1cf5b600cfc706d7621affab2fd28a}
+      \strng{authorfullhash}{fc1cf5b600cfc706d7621affab2fd28a}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{it - Information Technology}
+      \field{number}{3}
+      \field{title}{Multi-layer software reliability for unreliable hardware}
+      \field{volume}{57}
+      \field{year}{2015}
+      \field{pages}{170\bibrangedash 180}
+      \range{pages}{11}
+    \endentry
+    \entry{DBLP:journals/sigmod/ShmueliVEG09}{article}{}
+      \name{author}{4}{}{%
+        {{hash=85b1412798ce5a7ef782f040faf8203a}{%
+           family={Shmueli},
+           familyi={S\bibinitperiod},
+           given={Erez},
+           giveni={E\bibinitperiod}}}%
+        {{hash=2a6b1fc9b76255333200898d04e5e527}{%
+           family={Vaisenberg},
+           familyi={V\bibinitperiod},
+           given={Ronen},
+           giveni={R\bibinitperiod}}}%
+        {{hash=48129f0a13603c1456c886b59a8498d3}{%
+           family={Elovici},
+           familyi={E\bibinitperiod},
+           given={Yuval},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=0ff237805584222e072a9d72c3be759c}{%
+           family={Glezer},
+           familyi={G\bibinitperiod},
+           given={Chanan},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{aa02d4b4691ad022ecb407bb314e5709}
+      \strng{fullhash}{8023611a2d0b04d86414caa21ba3b0d0}
+      \strng{bibnamehash}{aa02d4b4691ad022ecb407bb314e5709}
+      \strng{authorbibnamehash}{aa02d4b4691ad022ecb407bb314e5709}
+      \strng{authornamehash}{aa02d4b4691ad022ecb407bb314e5709}
+      \strng{authorfullhash}{8023611a2d0b04d86414caa21ba3b0d0}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{{SIGMOD} Record}
+      \field{number}{3}
+      \field{title}{Database encryption: an overview of contemporary challenges and design considerations}
+      \field{volume}{38}
+      \field{year}{2009}
+      \field{pages}{29\bibrangedash 34}
+      \range{pages}{6}
+    \endentry
+    \entry{DBLP:conf/mss/ShvachkoKRC10}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=fdfa778d449d44ac2e36bc65afcc7430}{%
+           family={Shvachko},
+           familyi={S\bibinitperiod},
+           given={Konstantin},
+           giveni={K\bibinitperiod}}}%
+        {{hash=6f592630b8cba29ad2da3d5bb6eb6f28}{%
+           family={Kuang},
+           familyi={K\bibinitperiod},
+           given={Hairong},
+           giveni={H\bibinitperiod}}}%
+        {{hash=b160fd4f4ae65c367db2ad25f335b7fc}{%
+           family={Radia},
+           familyi={R\bibinitperiod},
+           given={Sanjay},
+           giveni={S\bibinitperiod}}}%
+        {{hash=1266266c2997ae7f333001e7502fe677}{%
+           family={Chansler},
+           familyi={C\bibinitperiod},
+           given={Robert},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{27cf13348ac231f6c6d005cc2dcd8703}
+      \strng{fullhash}{cc2d43aed4cd8559a7a6958d5d57b41a}
+      \strng{bibnamehash}{27cf13348ac231f6c6d005cc2dcd8703}
+      \strng{authorbibnamehash}{27cf13348ac231f6c6d005cc2dcd8703}
+      \strng{authornamehash}{27cf13348ac231f6c6d005cc2dcd8703}
+      \strng{authorfullhash}{cc2d43aed4cd8559a7a6958d5d57b41a}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{MSST}
+      \field{title}{The Hadoop Distributed File System}
+      \field{year}{2010}
+      \field{pages}{1\bibrangedash 10}
+      \range{pages}{10}
+    \endentry
+    \entry{Sivathanu2005}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=dfd51c91852fc4523a28fcdacc9faaf8}{%
+           family={Sivathanu},
+           familyi={S\bibinitperiod},
+           given={Gopalan},
+           giveni={G\bibinitperiod}}}%
+        {{hash=6ff1d37f1cdd281ee06c36c8b5ef1130}{%
+           family={Wright},
+           familyi={W\bibinitperiod},
+           given={Charles\bibnamedelima P.},
+           giveni={C\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=6c79b4d2fa53538347e4a5f171a1cd36}{%
+           family={Zadok},
+           familyi={Z\bibinitperiod},
+           given={Erez},
+           giveni={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{41d6fe3b0de401070c7ccb88a507f10e}
+      \strng{fullhash}{41d6fe3b0de401070c7ccb88a507f10e}
+      \strng{bibnamehash}{41d6fe3b0de401070c7ccb88a507f10e}
+      \strng{authorbibnamehash}{41d6fe3b0de401070c7ccb88a507f10e}
+      \strng{authornamehash}{41d6fe3b0de401070c7ccb88a507f10e}
+      \strng{authorfullhash}{41d6fe3b0de401070c7ccb88a507f10e}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{StorageSS}
+      \field{title}{Ensuring Data Integrity in Storage: Techniques and Applications}
+      \field{year}{2005}
+    \endentry
+    \entry{DBLP:conf/mtdt/SpicaM04}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=90a71f4f5b07cea031ab234485c3bfdc}{%
+           family={Spica},
+           familyi={S\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=b7a389b329f17365fd3757f0bda005d6}{%
+           family={Mak},
+           familyi={M\bibinitperiod},
+           given={T.\bibnamedelimi M.},
+           giveni={T\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{1ce4933534743294cf76fa8ecb4ffdfc}
+      \strng{fullhash}{1ce4933534743294cf76fa8ecb4ffdfc}
+      \strng{bibnamehash}{1ce4933534743294cf76fa8ecb4ffdfc}
+      \strng{authorbibnamehash}{1ce4933534743294cf76fa8ecb4ffdfc}
+      \strng{authornamehash}{1ce4933534743294cf76fa8ecb4ffdfc}
+      \strng{authorfullhash}{1ce4933534743294cf76fa8ecb4ffdfc}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{MTDT}
+      \field{title}{Do We Need Anything More Than Single Bit Error Correction (ECC)?}
+      \field{year}{2004}
+      \field{pages}{111\bibrangedash 116}
+      \range{pages}{6}
+    \endentry
+    \entry{DBLP:conf/vldb/StonebrakerABCCFLLMOORTZ05}{inproceedings}{}
+      \name{author}{14}{}{%
+        {{hash=9a603143e19a2dddd58e683838417ea3}{%
+           family={Stonebraker},
+           familyi={S\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=d720c00523f9be0ce159d95e62330b83}{%
+           family={Abadi},
+           familyi={A\bibinitperiod},
+           given={Daniel\bibnamedelima J.},
+           giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=339f189028cf5c094515c6deb33371da}{%
+           family={Batkin},
+           familyi={B\bibinitperiod},
+           given={Adam},
+           giveni={A\bibinitperiod}}}%
+        {{hash=205bef65e0a5c59f4ee86815a5c95a13}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Xuedong},
+           giveni={X\bibinitperiod}}}%
+        {{hash=5af078892bdea1a4ee89aa291e8aa82c}{%
+           family={Cherniack},
+           familyi={C\bibinitperiod},
+           given={Mitch},
+           giveni={M\bibinitperiod}}}%
+        {{hash=b53e0de7f98b9ad01e43cabd66810e51}{%
+           family={Ferreira},
+           familyi={F\bibinitperiod},
+           given={Miguel},
+           giveni={M\bibinitperiod}}}%
+        {{hash=a445296101acb7d529a0afc2b9875bf5}{%
+           family={Lau},
+           familyi={L\bibinitperiod},
+           given={Edmond},
+           giveni={E\bibinitperiod}}}%
+        {{hash=a517cb40a52f65bc2cede8151715977a}{%
+           family={Lin},
+           familyi={L\bibinitperiod},
+           given={Amerson},
+           giveni={A\bibinitperiod}}}%
+        {{hash=8b530348ffa5a0cfb0b9827772f501e9}{%
+           family={Madden},
+           familyi={M\bibinitperiod},
+           given={Samuel},
+           giveni={S\bibinitperiod}}}%
+        {{hash=3904c587973a5e8851d4916ddcd75ce3}{%
+           family={O'Neil},
+           familyi={O\bibinitperiod},
+           given={Elizabeth\bibnamedelima J.},
+           giveni={E\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=5cbe21ac19f204c5cf9eb038cf1b8055}{%
+           family={O'Neil},
+           familyi={O\bibinitperiod},
+           given={Patrick\bibnamedelima E.},
+           giveni={P\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=ba631b8c04f3faded34518b101c002d0}{%
+           family={Rasin},
+           familyi={R\bibinitperiod},
+           given={Alex},
+           giveni={A\bibinitperiod}}}%
+        {{hash=8b42a5ed42bac63672f9f8ca0a665e79}{%
+           family={Tran},
+           familyi={T\bibinitperiod},
+           given={Nga},
+           giveni={N\bibinitperiod}}}%
+        {{hash=15598e85dea92f3ae867910da5bdb1b6}{%
+           family={Zdonik},
+           familyi={Z\bibinitperiod},
+           given={Stanley\bibnamedelima B.},
+           giveni={S\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+      }
+      \strng{namehash}{b450100a596baed6e70153cc325cf953}
+      \strng{fullhash}{1545eaed4743760dc15fb63b5d84b2bd}
+      \strng{bibnamehash}{b450100a596baed6e70153cc325cf953}
+      \strng{authorbibnamehash}{b450100a596baed6e70153cc325cf953}
+      \strng{authornamehash}{b450100a596baed6e70153cc325cf953}
+      \strng{authorfullhash}{1545eaed4743760dc15fb63b5d84b2bd}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{VLDB}
+      \field{title}{C-Store: {A} Column-oriented {DBMS}}
+      \field{year}{2005}
+      \field{pages}{553\bibrangedash 564}
+      \range{pages}{12}
+    \endentry
+    \entry{su1980hardware}{article}{}
+      \name{author}{2}{}{%
+        {{hash=11d24f69526b6665d0b4ec9d59207a1b}{%
+           family={Su},
+           familyi={S\bibinitperiod},
+           given={Stephen\bibnamedelimb Y.\bibnamedelimi H.},
+           giveni={S\bibinitperiod\bibinitdelim Y\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=454195c3b999c34df43716fb9234b379}{%
+           family={DuCasse},
+           familyi={D\bibinitperiod},
+           given={Edgar},
+           giveni={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{f96842a286e354ecd27014e3d47b34d8}
+      \strng{fullhash}{f96842a286e354ecd27014e3d47b34d8}
+      \strng{bibnamehash}{f96842a286e354ecd27014e3d47b34d8}
+      \strng{authorbibnamehash}{f96842a286e354ecd27014e3d47b34d8}
+      \strng{authornamehash}{f96842a286e354ecd27014e3d47b34d8}
+      \strng{authorfullhash}{f96842a286e354ecd27014e3d47b34d8}
+      \field{sortinit}{S}
+      \field{sortinithash}{322b1d5276f2f6c1bccdcd15920dbee6}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Computers}
+      \field{number}{C-29}
+      \field{title}{A hardware redundancy reconfiguration scheme for tolerating multiple module failures}
+      \field{volume}{3}
+      \field{year}{1980}
+      \field{pages}{254\bibrangedash 258}
+      \range{pages}{5}
+    \endentry
+    \entry{DBLP:conf/isca/TullsenEL95}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=5ce412afdecfbd51104955d536ffb15a}{%
+           family={Tullsen},
+           familyi={T\bibinitperiod},
+           given={Dean\bibnamedelima M.},
+           giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=36d8e492a5914ee5cbfe779ed8535525}{%
+           family={Eggers},
+           familyi={E\bibinitperiod},
+           given={Susan\bibnamedelima J.},
+           giveni={S\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=10fff10f27bc7d4acb3ff221001ce5c7}{%
+           family={Levy},
+           familyi={L\bibinitperiod},
+           given={Henry\bibnamedelima M.},
+           giveni={H\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{944150bcbde4164c19430e859ad85ff3}
+      \strng{fullhash}{944150bcbde4164c19430e859ad85ff3}
+      \strng{bibnamehash}{944150bcbde4164c19430e859ad85ff3}
+      \strng{authorbibnamehash}{944150bcbde4164c19430e859ad85ff3}
+      \strng{authornamehash}{944150bcbde4164c19430e859ad85ff3}
+      \strng{authorfullhash}{944150bcbde4164c19430e859ad85ff3}
+      \field{sortinit}{T}
+      \field{sortinithash}{6f7aff9db9dcfeb7f95fd5bbd2f78df9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ISCA}
+      \field{title}{Simultaneous Multithreading: Maximizing On-Chip Parallelism}
+      \field{year}{1995}
+      \field{pages}{392\bibrangedash 403}
+      \range{pages}{12}
+    \endentry
+    \entry{coredExperiments}{online}{}
+      \name{author}{3}{}{%
+        {{hash=d3857e58836121bbd29f60dd4784de2a}{%
+           family={Ulbrich},
+           familyi={U\bibinitperiod},
+           given={Peter},
+           giveni={P\bibinitperiod}}}%
+        {{hash=23fdb15e0d2718d6bfc5cf3c6f7ee26d}{%
+           family={Hoffmann},
+           familyi={H\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=e513c953ada6c1d47e41aba133841c64}{%
+           family={Dietrich},
+           familyi={D\bibinitperiod},
+           given={Christian},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{d23056489017765088b33c9507a2acbc}
+      \strng{fullhash}{d23056489017765088b33c9507a2acbc}
+      \strng{bibnamehash}{d23056489017765088b33c9507a2acbc}
+      \strng{authorbibnamehash}{d23056489017765088b33c9507a2acbc}
+      \strng{authornamehash}{d23056489017765088b33c9507a2acbc}
+      \strng{authorfullhash}{d23056489017765088b33c9507a2acbc}
+      \field{sortinit}{U}
+      \field{sortinithash}{36a2444f5238e0dcf4bb59704df6624d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{7}
+      \field{note}{\url{https://www4.cs.fau.de/Research/CoRed/experiments/}}
+      \field{title}{CoRed: Experimental Results}
+      \field{year}{2017}
+      \field{dateera}{ce}
+    \endentry
+    \entry{ulbrich2012eliminating}{inproceedings}{}
+      \name{author}{6}{}{%
+        {{hash=d3857e58836121bbd29f60dd4784de2a}{%
+           family={Ulbrich},
+           familyi={U\bibinitperiod},
+           given={Peter},
+           giveni={P\bibinitperiod}}}%
+        {{hash=23fdb15e0d2718d6bfc5cf3c6f7ee26d}{%
+           family={Hoffmann},
+           familyi={H\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=1afc2883d0924671f9800c30a41d22d9}{%
+           family={Kapitza},
+           familyi={K\bibinitperiod},
+           given={R{ü}diger},
+           giveni={R\bibinitperiod}}}%
+        {{hash=7c34a049ba810e2cdda786a5ce14d06c}{%
+           family={Lohmann},
+           familyi={L\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+        {{hash=c45017251ec210f19db6d634744bcccd}{%
+           family={Schroder-Preikschat},
+           familyi={S\bibinithyphendelim P\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+        {{hash=f19c1422ba03b6e3689c6946e6711db7}{%
+           family={Schmid},
+           familyi={S\bibinitperiod},
+           given={Reiner},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{37ca487423fb2b270d992a1ec9094a72}
+      \strng{fullhash}{1ffcff0ae5cc41afb03287bba7a9d287}
+      \strng{bibnamehash}{37ca487423fb2b270d992a1ec9094a72}
+      \strng{authorbibnamehash}{37ca487423fb2b270d992a1ec9094a72}
+      \strng{authornamehash}{37ca487423fb2b270d992a1ec9094a72}
+      \strng{authorfullhash}{1ffcff0ae5cc41afb03287bba7a9d287}
+      \field{sortinit}{U}
+      \field{sortinithash}{36a2444f5238e0dcf4bb59704df6624d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{EDCC}
+      \field{title}{Eliminating single points of failure in software-based redundancy}
+      \field{year}{2012}
+      \field{pages}{49\bibrangedash 60}
+      \range{pages}{12}
+    \endentry
+    \entry{warren2013hacker}{book}{}
+      \name{author}{1}{}{%
+        {{hash=4b5a1a5fcf1f7922f935cc1be65ea36c}{%
+           family={Warren},
+           familyi={W\bibinitperiod},
+           given={Henry\bibnamedelima S},
+           giveni={H\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Pearson Education}%
+      }
+      \strng{namehash}{4b5a1a5fcf1f7922f935cc1be65ea36c}
+      \strng{fullhash}{4b5a1a5fcf1f7922f935cc1be65ea36c}
+      \strng{bibnamehash}{4b5a1a5fcf1f7922f935cc1be65ea36c}
+      \strng{authorbibnamehash}{4b5a1a5fcf1f7922f935cc1be65ea36c}
+      \strng{authornamehash}{4b5a1a5fcf1f7922f935cc1be65ea36c}
+      \strng{authorfullhash}{4b5a1a5fcf1f7922f935cc1be65ea36c}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Hacker's delight}
+      \field{year}{2013}
+    \endentry
+    \entry{kolditz2018}{incollection}{}
+      \name{author}{5}{}{%
+        {{hash=03b12a5181593ad8151d8d56d6dff587}{%
+           family={Werner},
+           familyi={W\bibinitperiod},
+           given={Matthias},
+           giveni={M\bibinitperiod}}}%
+        {{hash=1c0e0b09b75c9c2987f759b87f5dedb5}{%
+           family={Kolditz},
+           familyi={K\bibinitperiod},
+           given={Till},
+           giveni={T\bibinitperiod}}}%
+        {{hash=ff81fe4b2dec95a038b1f48082e6137e}{%
+           family={Karnagel},
+           familyi={K\bibinitperiod},
+           given={Tomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=d081c9a763d7e03bf756f8763f76737e}{%
+           family={Habich},
+           familyi={H\bibinitperiod},
+           given={Dirk},
+           giveni={D\bibinitperiod}}}%
+        {{hash=69b1ffd40d606bf86bedca673816fde6}{%
+           family={Lehner},
+           familyi={L\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=241079dfd9e47f680f561b8ed5baf615}{%
+           family={Steinbach},
+           familyi={S\bibinitperiod},
+           given={Bernd},
+           giveni={B\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Cambridge Scholars Publishing}%
+      }
+      \strng{namehash}{4c4f4e0623a79744576d9981cc1044b0}
+      \strng{fullhash}{2bacd8fd398292dbd1ddabd5435512b1}
+      \strng{bibnamehash}{4c4f4e0623a79744576d9981cc1044b0}
+      \strng{authorbibnamehash}{4c4f4e0623a79744576d9981cc1044b0}
+      \strng{authornamehash}{4c4f4e0623a79744576d9981cc1044b0}
+      \strng{authorfullhash}{2bacd8fd398292dbd1ddabd5435512b1}
+      \strng{editorbibnamehash}{241079dfd9e47f680f561b8ed5baf615}
+      \strng{editornamehash}{241079dfd9e47f680f561b8ed5baf615}
+      \strng{editorfullhash}{241079dfd9e47f680f561b8ed5baf615}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Further Improvements in the Boolean Domain}
+      \field{chapter}{2.3}
+      \field{title}{Multi-GPU Approximation for Silent Data Corruption of AN Codes}
+      \field{year}{2018}
+      \field{pages}{136\bibrangedash 155}
+      \range{pages}{20}
+    \endentry
+    \entry{Willhalm:2009:SUF:1687627.1687671}{article}{}
+      \name{author}{6}{}{%
+        {{hash=6f0db50b789a90fa1faf39a81ef403c1}{%
+           family={Willhalm},
+           familyi={W\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=f45bc9e7a5e031fbe65d161d6cbc1ff5}{%
+           family={Popovici},
+           familyi={P\bibinitperiod},
+           given={Nicolae},
+           giveni={N\bibinitperiod}}}%
+        {{hash=b6d2e57d7fa1a5ae129d8156dc8be4a7}{%
+           family={Boshmaf},
+           familyi={B\bibinitperiod},
+           given={Yazan},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=06532fdd8e4deefd635af65774c6cf2b}{%
+           family={Plattner},
+           familyi={P\bibinitperiod},
+           given={Hasso},
+           giveni={H\bibinitperiod}}}%
+        {{hash=661e504eeb6bb3d1e712c681c9921bd1}{%
+           family={Zeier},
+           familyi={Z\bibinitperiod},
+           given={Alexander},
+           giveni={A\bibinitperiod}}}%
+        {{hash=aac6238c4854da71879fe90b3c67fa07}{%
+           family={Schaffner},
+           familyi={S\bibinitperiod},
+           given={Jan},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{fullhash}{085e81fa38e91b18a2bcb9f03fff9a30}
+      \strng{bibnamehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{authorbibnamehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{authornamehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{authorfullhash}{085e81fa38e91b18a2bcb9f03fff9a30}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proc. VLDB Endow.}
+      \field{title}{SIMD-scan: Ultra Fast In-memory Table Scan Using On-chip Vector Processing Units}
+      \field{year}{2009}
+    \endentry
+    \entry{willhalm2013vectorizing}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=6f0db50b789a90fa1faf39a81ef403c1}{%
+           family={Willhalm},
+           familyi={W\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=303aca6ebdfc126b6cdc1589400f26f5}{%
+           family={Oukid},
+           familyi={O\bibinitperiod},
+           given={Ismail},
+           giveni={I\bibinitperiod}}}%
+        {{hash=9ab0767dcffab94f2ef89bfbc078f25b}{%
+           family={M{ü}ller},
+           familyi={M\bibinitperiod},
+           given={Ingo},
+           giveni={I\bibinitperiod}}}%
+        {{hash=21e522aecc9513388a4f9402cfe741ae}{%
+           family={Faerber},
+           familyi={F\bibinitperiod},
+           given={Franz},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{fullhash}{f7239c512e326d7521e7fe341763cdd0}
+      \strng{bibnamehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{authorbibnamehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{authornamehash}{86e8d037b7de7dc6c795ea50423077db}
+      \strng{authorfullhash}{f7239c512e326d7521e7fe341763cdd0}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ADMS}
+      \field{title}{Vectorizing database column scans with complex predicates}
+      \field{year}{2013}
+      \field{pages}{1\bibrangedash 12}
+      \range{pages}{12}
+    \endentry
+    \entry{DBLP:journals/cacm/WittenNC87}{article}{}
+      \name{author}{3}{}{%
+        {{hash=926252d979eb0dc3c8c27118fa93f219}{%
+           family={Witten},
+           familyi={W\bibinitperiod},
+           given={Ian\bibnamedelima H.},
+           giveni={I\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=65d7fa5657a0bb6a58702171f1d98cf0}{%
+           family={Neal},
+           familyi={N\bibinitperiod},
+           given={Radford\bibnamedelima M.},
+           giveni={R\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=7aba9e040fa87d74d50095e162b60afa}{%
+           family={Cleary},
+           familyi={C\bibinitperiod},
+           given={John\bibnamedelima G.},
+           giveni={J\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+      }
+      \strng{namehash}{6ac5394d587238f0530585a2c1a4e44b}
+      \strng{fullhash}{6ac5394d587238f0530585a2c1a4e44b}
+      \strng{bibnamehash}{6ac5394d587238f0530585a2c1a4e44b}
+      \strng{authorbibnamehash}{6ac5394d587238f0530585a2c1a4e44b}
+      \strng{authornamehash}{6ac5394d587238f0530585a2c1a4e44b}
+      \strng{authorfullhash}{6ac5394d587238f0530585a2c1a4e44b}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Commun. {ACM}}
+      \field{number}{6}
+      \field{title}{Arithmetic Coding for Data Compression}
+      \field{volume}{30}
+      \field{year}{1987}
+      \field{pages}{520\bibrangedash 540}
+      \range{pages}{21}
+    \endentry
+    \entry{Wolf1982}{article}{}
+      \name{author}{3}{}{%
+        {{hash=184c3d4c16fdc5e44a4979a340b02366}{%
+           family={Wolf},
+           familyi={W\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=4fc7ec4f60d9a0107127813056b356d4}{%
+           family={Michelson},
+           familyi={M\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=f7c0cf29bd61d5b61f1f1e51f63f7fbb}{%
+           family={Levesque},
+           familyi={L\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{f8ae14b2eeda10a976b013cc1111e888}
+      \strng{fullhash}{f8ae14b2eeda10a976b013cc1111e888}
+      \strng{bibnamehash}{f8ae14b2eeda10a976b013cc1111e888}
+      \strng{authorbibnamehash}{f8ae14b2eeda10a976b013cc1111e888}
+      \strng{authornamehash}{f8ae14b2eeda10a976b013cc1111e888}
+      \strng{authorfullhash}{f8ae14b2eeda10a976b013cc1111e888}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Communications}
+      \field{number}{2}
+      \field{title}{On the Probability of Undetected Error for Linear Block Codes}
+      \field{volume}{30}
+      \field{year}{1982}
+    \endentry
+    \entry{DBLP:journals/pieee/WongLYCWCLCT12}{article}{}
+      \name{author}{9}{}{%
+        {{hash=2f9b6b8763f7e586cd3199a09a42cdc5}{%
+           family={Wong},
+           familyi={W\bibinitperiod},
+           given={H.{-}S.\bibnamedelimi Philip},
+           giveni={H\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=a0c0dbfcf795b632e0c311ee3e508261}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Heng{-}Yuan},
+           giveni={H\bibinitperiod}}}%
+        {{hash=b4d48c0ed5d150e3b3b7aeda8a4778e0}{%
+           family={Yu},
+           familyi={Y\bibinitperiod},
+           given={Shimeng},
+           giveni={S\bibinitperiod}}}%
+        {{hash=df97b6dcdaa021c69fe9777a6d78e082}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Yu{-}Sheng},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=e2101a0f6a72a2fb022cd3e2d45461e1}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Yi},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=79ecc1d53534aa9bb1de65c8a5b5e044}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Pang{-}Shiu},
+           giveni={P\bibinitperiod}}}%
+        {{hash=b9850add4fc6e76633ec16f27c2cd8e0}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Byoungil},
+           giveni={B\bibinitperiod}}}%
+        {{hash=1b0f51e52a0ecbd49f5ca072705598ca}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Frederick\bibnamedelima T.},
+           giveni={F\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=6fa5432141310170b53585ebcb4bf3a8}{%
+           family={Tsai},
+           familyi={T\bibinitperiod},
+           given={Ming{-}Jinn},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{eb368d8890ee11f173edb8df565b0c93}
+      \strng{fullhash}{97bfe375d5a4aeeb85d70018046c5951}
+      \strng{bibnamehash}{eb368d8890ee11f173edb8df565b0c93}
+      \strng{authorbibnamehash}{eb368d8890ee11f173edb8df565b0c93}
+      \strng{authornamehash}{eb368d8890ee11f173edb8df565b0c93}
+      \strng{authorfullhash}{97bfe375d5a4aeeb85d70018046c5951}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the {IEEE}}
+      \field{number}{6}
+      \field{title}{Metal-Oxide {RRAM}}
+      \field{volume}{100}
+      \field{year}{2012}
+      \field{pages}{1951\bibrangedash 1970}
+      \range{pages}{20}
+    \endentry
+    \entry{DBLP:conf/icde/ZukowskiWB12}{inproceedings}{}
+      \name{author}{3}{}{%
+        {{hash=aa8a54cb3562becdd028d0111c6c255c}{%
+           family={Zukowski},
+           familyi={Z\bibinitperiod},
+           given={Marcin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=f80181eb5be257fc52b0c34f62ba4a08}{%
+           family={Wiel},
+           familyi={W\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod},
+           prefix={van\bibnamedelima de},
+           prefixi={v\bibinitperiod\bibinitdelim d\bibinitperiod}}}%
+        {{hash=9d7f371579170187dae3df4ff4a7e165}{%
+           family={Boncz},
+           familyi={B\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{70c7fc29487f0566405d85f5192ea041}
+      \strng{fullhash}{70c7fc29487f0566405d85f5192ea041}
+      \strng{bibnamehash}{70c7fc29487f0566405d85f5192ea041}
+      \strng{authorbibnamehash}{70c7fc29487f0566405d85f5192ea041}
+      \strng{authornamehash}{70c7fc29487f0566405d85f5192ea041}
+      \strng{authorfullhash}{70c7fc29487f0566405d85f5192ea041}
+      \field{sortinit}{Z}
+      \field{sortinithash}{156173bd08b075d7295bc3e0f4735a04}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ICDE}
+      \field{title}{Vectorwise: {A} Vectorized Analytical {DBMS}}
+      \field{year}{2012}
+      \field{pages}{1349\bibrangedash 1350}
+      \range{pages}{2}
+    \endentry
+    \entry{DBLP:conf/icde/ZukowskiHNB06}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=aa8a54cb3562becdd028d0111c6c255c}{%
+           family={Zukowski},
+           familyi={Z\bibinitperiod},
+           given={Marcin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=9f9e52debdbe6c5e27ee4ff72cb1133d}{%
+           family={H{é}man},
+           familyi={H\bibinitperiod},
+           given={S{á}ndor},
+           giveni={S\bibinitperiod}}}%
+        {{hash=077a3db533dc66056a66d471fadfdcb5}{%
+           family={Nes},
+           familyi={N\bibinitperiod},
+           given={Niels},
+           giveni={N\bibinitperiod}}}%
+        {{hash=9d7f371579170187dae3df4ff4a7e165}{%
+           family={Boncz},
+           familyi={B\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{da2a2b2cf6b1ab740149ac168e909bbe}
+      \strng{fullhash}{4d10b506b371b43078f4261e8097ee35}
+      \strng{bibnamehash}{da2a2b2cf6b1ab740149ac168e909bbe}
+      \strng{authorbibnamehash}{da2a2b2cf6b1ab740149ac168e909bbe}
+      \strng{authornamehash}{da2a2b2cf6b1ab740149ac168e909bbe}
+      \strng{authorfullhash}{4d10b506b371b43078f4261e8097ee35}
+      \field{sortinit}{Z}
+      \field{sortinithash}{156173bd08b075d7295bc3e0f4735a04}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{ICDE}
+      \field{title}{Super-Scalar {RAM-CPU} Cache Compression}
+      \field{year}{2006}
+      \field{pages}{59}
+      \range{pages}{1}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

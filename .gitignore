@@ -41,3 +41,9 @@ CMakeFiles
 .gdb_history
 /pcm
 /paper/sigmod2018.log
+/paper/results/ssb/data
+/paper/results/ssb/report
+/paper/sigmod2018.aux
+/paper/sigmod2018.bcf
+/paper/sigmod2018.pdf
+/paper/sigmod2018.run.xml

@@ -12,7 +12,7 @@ if [[ $(id -u) -eq 0 ]]; then
     exit 1
 fi
 
-./generate_ssbdata.sh || exit 1
+#./generate_ssbdata.sh || exit 1
 
 echo "###########################################################"
 echo "# For the following tests, for better reproducibilty, we: #"
@@ -40,9 +40,12 @@ done
 echo "###########################################################"
 
 pushd eval
-# source run.conf
-./run.sh || (popd && exit 1)
-mv "${PATH_EVAL_CURRENT}/data" "${PATH_EVAL_CURRENT}/report" "${AHEAD_PAPER_RESULTS_SSB}"
+export DATE="2018-08-15_17-04"
+source ./run.conf
+./run.sh EVAL || (popd && exit 1)
+rm -Rf "${AHEAD_PAPER_RESULTS_SSB}/data" "${AHEAD_PAPER_RESULTS_SSB}/report"
+ln -s "${PATH_EVAL_CURRENT}/data" "../${AHEAD_PAPER_RESULTS_SSB}/data"
+ln -s "${PATH_EVAL_CURRENT}/report" "../${AHEAD_PAPER_RESULTS_SSB}/report"
 popd
 
 pushd paper

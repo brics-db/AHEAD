@@ -101,9 +101,9 @@ mkdir -p "${PATH_EVAL_CURRENT}"
 # if the outputs are not redirected to files, then call ourselves again with additional piping #
 ################################################################################################
 if [[ -t 1 ]] && [[ -t 2 ]]; then
-    basename=$(basename -s '.sh')
-    outfile="${PATH_EVAL_CURRENT}/${basename}.out"
-    errfile="${PATH_EVAL_CURRENT}/${basename}.err"
+    filebase=$(basename -s '.sh' $0)
+    outfile="${PATH_EVAL_CURRENT}/${filebase}.out"
+    errfile="${PATH_EVAL_CURRENT}/${filebase}.err"
     if [[ -e ${PATH_EVAL_CURRENT} ]]; then
         if [[ -f "${outfile}" ]]; then
             idx=0
@@ -130,7 +130,7 @@ else
 fi ### [[ -t 1 ]] && [[ -t 2 ]]
 
 # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
-sed -E -e '34,+26s/^(.+)$/#\1/' -e '88s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '94s,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '96s/^.+$/DATE="'"${DATE}"'"\n\1' -e '133s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
+sed -E -e '34,+25s/^(.+)$/#\1/' -e '88s/^.+$/    PHASE="EVALONLY"\n    DO_COMPILE=0\n    DO_BENCHMARK=0\n    DO_EVAL=1\n    DO_EVAL_PREPARE=1\n    DO_VERIFY=1/' -e '94,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '96s/^(.+)$/DATE="'"${DATE}"'"\n\1/' -e '133s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
 
 echo "[INFO] Running Phase \"${PHASE}\""
 
@@ -176,7 +176,7 @@ fi
 BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
-( [ $ret -ne 0 ] || [ -z ${BENCHMARK_SCALEFACTORS+x} ] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " 1 1))
+( [ $ret -ne 0 ] || [ -z ${BENCHMARK_SCALEFACTORS+x} ] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}))
 [ -z ${BENCHMARK_DBDIR_SUFFIX+x} ] && BENCHMARK_DBDIR_SUFFIX= #"-restiny32"
 [ -z ${BENCHMARK_MINBFW+x} ] && BENCHMARK_MINBFW= #1
 
@@ -226,7 +226,7 @@ awktranspose () {
 }
 
 #########################################################
-# gnuplotcode                                           #
+# gnuplotcode[pdf|tex]                                  #
 #                                                       #
 # arg1) <code output file>                              #
 #       where the generated code should written be to   #
@@ -237,7 +237,7 @@ awktranspose () {
 # arg4+) <gnuplot custom code>                          #
 #       custom code to be added                         #
 #########################################################
-gnuplotcode () {
+gnuplotcodepdf () {
     # Write GNUplot code to file
     cat >$1 << EOM
 #!/usr/bin/env gnuplot
@@ -247,6 +247,33 @@ set style data histogram
 set style histogram cluster gap 1
 set auto x
 unset key
+set style line 1 lc rgb "#9400d3"
+set style line 2 lc rgb "#009e73"
+set style line 3 lc rgb "#56b4e9"
+set style line 4 lc rgb "#e69f00"
+set style line 5 lc rgb "#000000"
+set style line 6 lc rgb "#0072b2"
+set style line 7 lc rgb "#e51e10"
+$(for var in "${@:4}"; do echo $var; done)
+plot '${3}' using 2:xtic(1) title col fillstyle pattern 0 border ls 1 lw 1 dt 1, \\
+         '' using 3:xtic(1) title col fillstyle pattern 2 border ls 2 lw 1 dt 1, \\
+         '' using 4:xtic(1) title col fillstyle pattern 3 border ls 4 lw 1 dt 1, \\
+         '' using 5:xtic(1) title col fillstyle pattern 7 border ls 5 lw 1 dt 1, \\
+         '' using 6:xtic(1) title col fillstyle pattern 1 border ls 6 lw 1 dt 1, \\
+         '' using 7:xtic(1) title col fillstyle pattern 4 border ls 7 lw 1 dt 1
+EOM
+}
+
+gnuplotcodetex () {
+    # Write GNUplot code to file
+    cat >$1 << EOM
+#!/usr/bin/env gnuplot
+set term cairolatex pdf color fontscale 0.44 size 6.5in,1in dashlength 0.2
+set output '${2}'
+set style data histogram
+set style histogram cluster gap 1
+set auto x
+set key outside right center vertical Right samplen 2 width 4 spacing 1.2
 set style line 1 lc rgb "#9400d3"
 set style line 2 lc rgb "#009e73"
 set style line 3 lc rgb "#56b4e9"
@@ -481,10 +508,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         # Prepare File for a single complete normalized overhead graph across all scale factors
         EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
         EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
-        EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
-        EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLPLOTFILE}"
-        EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
-        EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLPDFFILE}"
 
         if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
             rm -f ${EVAL_NORMALIZEDALLDATAFILE_PATH}
@@ -605,112 +628,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                                 }
                             }
                             END{printf "\n"}' "${EVAL_FILEOPS_TMP}" >"${EVAL_FILEOPS_OUT}"
-                        # TODO: The following does not work, so let's save some time
-                        #countOps=0
-                        #countRuns=0
-                        #sfidx=0
-                        #sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
-                        #echo -n "sf" >${EVAL_FILEOPS_TIMES}
-                        #for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
-                        #    echo -ne "\t$i" >>${EVAL_FILEOPS_TIMES}
-                        #done
-                        #echo -e "\tavg" >>${EVAL_FILEOPS_TIMES}
-                        #echo -n $sf >>${EVAL_FILEOPS_TIMES}
-                        #if [[ ${#array[@]} -gt 7 ]]; then
-                        #    echo -n "sf" >${EVAL_FILEOPS_RETINST}
-                        #    for i in $(seq 1 ${BENCHMARK_NUMRUNS}); do
-                        #        echo -ne "\t$i" >>${EVAL_FILEOPS_RETINST}
-                        #    done
-                        #    echo -e "\tavg" >>${EVAL_FILEOPS_RETINST}
-                        #    echo -n $sf >>${EVAL_FILEOPS_RETINST}
-                        #fi
-                        #while read line; do
-                        #    ((countOps++))
-                        #    IFS='    ' read -r -a array <<< "${line}"
-                        #    curTime=$(echo "${array[1]}" | sed 's/\.//g')
-                        #    arrayTimes+=(${curTime})
-                        #    echo -ne "\t${curTime}" >>${EVAL_FILEOPS_TIMES}
-                        #    if [[ ${#array[@]} -gt 7 ]]; then
-                        #        arrayRetInst+=(${array[8]})
-                        #        echo -ne "\t${array[8]}" >>${EVAL_FILEOPS_RETINST}
-                        #    fi
-                        #    if [[ ${countOps} -eq ${NUM_OPS_QUERY} ]]; then
-                        #        countOps=0
-                        #        ((countRuns++))
-                        #        if [[ ${countRuns} -lt ${BENCHMARK_NUMRUNS} ]]; then
-                        #            echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
-                        #            if [[ ${#array[@]} -gt 7 ]]; then
-                        #                echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
-                        #            fi
-                        #        else
-                        #            countRuns=0
-                        #            ((sfidx++))
-                        #            if [[ $sfidx -lt ${#BENCHMARK_SCALEFACTORS[@]} ]]; then
-                        #                sf=${BENCHMARK_SCALEFACTORS[${sfidx}]}
-                        #                unset arrayTimes
-                        #                arrayTimes=()
-                        #                echo -ne "\n$sf" >>${EVAL_FILEOPS_TIMES}
-                        #                if [[ ${#array[@]} -gt 7 ]]; then
-                        #                    unset arrayRetInst
-                        #                    arrayRetInst=()
-                        #                    echo -ne "\n$sf" >>${EVAL_FILEOPS_RETINST}
-                        #                fi
-                        #            fi
-                        #        fi
-                        #    fi
-                        #done <"${EVAL_FILEOPS_OUT}"
-                        #awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
-                        #    BEGIN {
-                        #        for (i=0; i<numOps; ++i) {
-                        #            a[i]=0
-                        #        }
-                        #        run=0
-                        #        printf "sf"
-                        #        for (i=1; i<=numOps; ++i) {
-                        #            printf "\t%d", i
-                        #        }
-                        #        printf "\n"
-                        #    }
-                        #    FNR>1{
-                        #        for (i=0; i<numOps; ++i) {
-                        #            a[i]+=$(i+2)
-                        #        }
-                        #        ++run
-                        #        if (run==numRuns) {
-                        #            printf "%d", $0
-                        #            for (i=0; i<numOps; ++i) {
-                        #                printf "\t%d", a[i]/numOps
-                        #            }
-                        #            printf "\n"
-                        #        }
-                        #    }' "${EVAL_FILEOPS_TIMES}" >"${EVAL_FILEOPS_TIMESAVG}"
-                        #if [[ ${#array[@]} -gt 7 ]]; then
-                        #awk -v numOps=${NUM_OPS_QUERY} -v numRuns=${BENCHMARK_NUMRUNS} '
-                        #    BEGIN {
-                        #        for (i=0; i<numOps; ++i) {
-                        #            a[i]=0
-                        #        }
-                        #        run=0
-                        #        printf "sf"
-                        #        for (i=1; i<=numOps; ++i) {
-                        #            printf "\t%d", i
-                        #        }
-                        #        printf "\n"
-                        #    }
-                        #    FNR>1{
-                        #        for (i=0; i<numOps; ++i) {
-                        #            a[i]+=$(i+2)
-                        #        }
-                        #        ++run
-                        #        if (run==numRuns) {
-                        #            printf "%d", $0
-                        #            for (i=0; i<numOps; ++i) {
-                        #                printf "\t%d", a[i]/numOps
-                        #            }
-                        #            printf "\n"
-                        #        }
-                        #    }' "${EVAL_FILEOPS_RETINST}" >"${EVAL_FILEOPS_RETINSTAVG}"
-                        #fi
                     done
 
                     # transpose original data
@@ -767,10 +684,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                 # Prepare File for a single complete normalized overhead graph across all scale factors
                 EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
                 EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
-                EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
-                EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLPLOTFILE}"
-                EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
-                EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLPDFFILE}"
                 for NUM in "${IMPLEMENTED[@]}"; do
                     BASE2="${BASE}${NUM}"
                     BASE3="${BASE2}${ARCH}"
@@ -814,8 +727,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
         EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
         EVAL_NORMALIZEDALLPLOTFILE="norm-all${ARCH}.m"
         EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLPLOTFILE}"
-        EVAL_NORMALIZEDALLPDFFILE="norm-all${ARCH}.pdf"
-        EVAL_NORMALIZEDALLPDFFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLPDFFILE}"
+        EVAL_NORMALIZEDALLTEXFILE="norm-all${ARCH}.tex"
+        EVAL_NORMALIZEDALLTEXFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLTEXFILE}"
         for NUM in "${IMPLEMENTED[@]}"; do
             BASE2="${BASE}${NUM}"
             BASE3="${BASE2}${ARCH}"
@@ -830,9 +743,9 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             echo "   * ${BASE3}"
             pushd ${PATH_EVALREPORT}
             #gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
-            gnuplotcode ${BASE3}.m ${BASE3}.pdf ${EVAL_DATAFILE} \
+            gnuplotcodepdf ${BASE3}.m ${BASE3}.pdf ${EVAL_DATAFILE} \
                 "set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
-            gnuplotcode ${BASE3}-norm.m ${BASE3}-norm.pdf ${EVAL_NORMALIZEDDATAFILE} \
+            gnuplotcodepdf ${BASE3}-norm.m ${BASE3}-norm.pdf ${EVAL_NORMALIZEDDATAFILE} \
                 "set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
             gnuplotlegend ${BASE3}-legend.m ${BASE3}-legend.pdf ${BASE3}-ylabel.pdf ${BASE3}.data
             gnuplot ${BASE3}.m
@@ -841,18 +754,19 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
             popd
         done
         sync
+
         ALLPDFOUTFILE=${PATH_EVALREPORT}/ssbm-all${ARCH}.pdf
-        echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
         ALLPDFINFILES=
         for NUM in "${IMPLEMENTED[@]}"; do
             BASE3=${BASE}${NUM}${ARCH}
             ALLPDFINFILES+=" ${PATH_EVALREPORT}/${BASE3}.pdf ${PATH_EVALREPORT}/${BASE3}-norm.pdf"
         done
+        echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
         gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
-        # gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
 
-        gnuplotcode  ${EVAL_NORMALIZEDALLPLOTFILE_PATH} ${EVAL_NORMALIZEDALLPDFFILE_PATH} ${EVAL_NORMALIZEDALLDATAFILE_PATH} \
-            "set yrange [0.9:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
+        echo "   * Creating tex/PDF files for normalized averages (${EVAL_NORMALIZEDALLTEXFILE_PATH})"
+        gnuplotcodetex  ${EVAL_NORMALIZEDALLPLOTFILE_PATH} ${EVAL_NORMALIZEDALLTEXFILE_PATH} ${EVAL_NORMALIZEDALLDATAFILE_PATH} \
+            "set yrange [0:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "set ylabel \"Relative Runtime\""
         gnuplot ${EVAL_NORMALIZEDALLPLOTFILE_PATH}
     done
 	sync
