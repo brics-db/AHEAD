@@ -78,7 +78,7 @@ for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
 	echo "  * synced all files (sync)"
 
 	if [[ -f "${AHEAD_SCALEFACTOR_PREFIX}${sf}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
-		echo "  * I assume all files for scale factor ${sf} are already generated"
+		echo "  * It seems that all files for scale factor ${sf} are already generated"
 		continue
 	fi
 
