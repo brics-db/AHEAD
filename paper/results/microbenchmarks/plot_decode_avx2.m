@@ -18,6 +18,7 @@
 # Paper-plots #
 ###############
 reset
+infile='benchmark.out'
 set terminal cairolatex pdf input blacktext color fontscale 0.44 transparent size 1.3in,1.25in
 set datafile separator ','
 set log x 2
@@ -58,29 +59,29 @@ set style line 9 lt 9 lw 2 ps 0.5
 # 8 AN inv S AVX2
 
 set output 'plot_paper_decode_16bit_seq.tex'
-plot 'benchmark_novec.out' index 0 using 1:39 ls 1 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:40 ls 4 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:41 ls 5 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:44 ls 3 with linespoints
+plot infile index 0 using 1:39 ls 1 with linespoints,\
+	'' index 0 using 1:40 ls 4 with linespoints,\
+	'' index 0 using 1:41 ls 5 with linespoints,\
+	'' index 0 using 1:44 ls 3 with linespoints
 
 set output 'plot_paper_decode_16bit_seq_inv.tex'
-plot 'benchmark_novec.out' index 0 using 1:39 ls 1 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:42 ls 4 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:43 ls 5 with linespoints
+plot infile index 0 using 1:39 ls 1 with linespoints,\
+	'' index 0 using 1:42 ls 4 with linespoints,\
+	'' index 0 using 1:43 ls 5 with linespoints
 
 set output 'plot_paper_decode_16bit_vec.tex'
-plot 'benchmark_novec.out' index 0 using 1:45 ls 1 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:46 ls 4 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:47 ls 5 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:50 ls 3 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:51 ls 6 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:52 ls 7 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:53 ls 8 with linespoints
+plot infile index 0 using 1:45 ls 1 with linespoints,\
+	'' index 0 using 1:46 ls 4 with linespoints,\
+	'' index 0 using 1:47 ls 5 with linespoints,\
+	'' index 0 using 1:50 ls 3 with linespoints,\
+	'' index 0 using 1:51 ls 6 with linespoints,\
+	'' index 0 using 1:52 ls 7 with linespoints,\
+	'' index 0 using 1:53 ls 8 with linespoints
 
 set output 'plot_paper_decode_16bit_vec_inv.tex'
-plot 'benchmark_novec.out' index 0 using 1:45 ls 1 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:48 ls 4 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:49 ls 5 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:51 ls 6 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:54 ls 7 with linespoints,\
-	'benchmark_novec.out' index 0 using 1:55 ls 8 with linespoints
+plot infile index 0 using 1:45 ls 1 with linespoints,\
+	'' index 0 using 1:48 ls 4 with linespoints,\
+	'' index 0 using 1:49 ls 5 with linespoints,\
+	'' index 0 using 1:51 ls 6 with linespoints,\
+	'' index 0 using 1:54 ls 7 with linespoints,\
+	'' index 0 using 1:55 ls 8 with linespoints

@@ -47,3 +47,5 @@ CMakeFiles
 /paper/sigmod2018.bcf
 /paper/sigmod2018.pdf
 /paper/sigmod2018.run.xml
+/paper/results/microbenchmarks/plot_paper_*.pdf
+/paper/results/microbenchmarks/plot_paper_*.tex

@@ -12,7 +12,7 @@ if [[ $(id -u) -eq 0 ]]; then
     exit 1
 fi
 
-#./generate_ssbdata.sh || exit 1
+./generate_ssbdata.sh || exit 1
 
 echo "###########################################################"
 echo "# For the following tests, for better reproducibilty, we: #"
@@ -24,7 +24,10 @@ echo "#                                                         #"
 
 echo -n "#   * turboboost: "
 haserror=0
-(sudo ./turboboost.sh disable &> /dev/null || (echo "failed.                                 #"; export haserror=1)) && echo "succeeded.                              #"
+(sudo ./turboboost.sh disable &> /dev/null || (echo "failed.                                 #"; export haserror=1))
+if [[ $haserror == 0 ]]; then
+	echo "succeeded.                              #"
+fi
 echo -n "#   * scaling governor: "
 haserror=0
 modes=($(sudo ./scalinggovernor.sh avail 0))
@@ -32,10 +35,13 @@ hasperformance=0
 for mode in "${modes[@]}"; do
     if [[ "${mode}" == performance ]]; then
         hasperformance=1
-        (sudo ./scalinggovernor.sh set performance &> /dev/null ||  (echo "[WARNING] Could not set the scalinggovernor!"; export haserror=1)) && echo "succeeded.                        #"
+        (sudo ./scalinggovernor.sh set performance &> /dev/null ||  (echo "[WARNING] Could not set the scalinggovernor!"; export haserror=1))
     fi
 done
 [[ $hasperformance = 0 ]] && (echo "failed.                           #"; echo "[WARNING] I was looking for governor \"performance\", but could not find it!"; export haserror=1)
+if [[ $haserror == 0 ]]; then
+	echo "succeeded.                        #"
+fi
 
 echo "###########################################################"
 

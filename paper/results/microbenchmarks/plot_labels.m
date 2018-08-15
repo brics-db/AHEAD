@@ -26,7 +26,7 @@ set notitle
 set xrange [-20:-10]
 set yrange [-20:-10]
 
-set terminal cairolatex pdf input blacktext color fontscale 0.6 transparent size .2in,1.25in
+set terminal cairolatex pdf input blacktext color transparent size .2in,1.25in
 set output 'plot_paper_ylabel_scalar.tex'
 set label 'Scalar Runtime [s]' at screen 0.6,0.5 offset 0,-strlen("Scalar Runtime [s]")/10.0 rotate by 90
 plot 20 ls 0 with linespoints
@@ -58,7 +58,7 @@ set style line 9 lt 9 lw 2 ps 0.5
 # 7 AN inv U AVX2
 # 8 AN inv S AVX2
 
-set terminal cairolatex pdf input blacktext color fontscale 0.5 transparent size 6.5in,.4in
+set terminal cairolatex pdf input blacktext color transparent size 6.5in,.4in
 set output 'plot_paper_legend.tex'
 set margin 0
 plot 20 ls 1 t "XOR$^{\\text{scalar/SSE}}$" with linespoints,\
