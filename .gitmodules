@@ -7,3 +7,4 @@
 [submodule "coding_benchmark"]
 	path = coding_benchmark
 	url = https://github.com/brics-db/coding_benchmark
+	branch = SIGMOD2018reproducibility
