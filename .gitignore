@@ -49,3 +49,7 @@ CMakeFiles
 /paper/sigmod2018.run.xml
 /paper/results/microbenchmarks/plot_paper_*.pdf
 /paper/results/microbenchmarks/plot_paper_*.tex
+/paper/results/microbenchmarks/ext_euclidean/modulo_inverse.m
+/paper/results/microbenchmarks/ext_euclidean/TestModuloInverseComputation2.data
+/paper/results/microbenchmarks/ext_euclidean/TestModuloInverseComputation2.pdf
+/paper/results/microbenchmarks/ext_euclidean/TestModuloInverseComputation2.tex
