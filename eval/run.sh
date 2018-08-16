@@ -607,10 +607,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
                         ### process individual Operators' times
                         EVAL_FILEOPS_TMP="${PATH_EVALINTER}/${type}.ops.tmp"
                         EVAL_FILEOPS_OUT="${PATH_EVALINTER}/${type}.ops.out"
-                        EVAL_FILEOPS_TIMES="${PATH_EVALINTER}/${type}.ops.times"
-                        EVAL_FILEOPS_TIMESAVG="${PATH_EVALINTER}/${type}.ops.timesavg"
-                        EVAL_FILEOPS_RETINST="${PATH_EVALINTER}/${type}.ops.retinst"
-                        EVAL_FILEOPS_RETINSTAVG="${PATH_EVALINTER}/${type}.ops.retinstavg"
                         grep op "${EVAL_FILEOUT}" | grep -v opy | sed -E 's/[ ]+//g' | sed -E 's/^\t//g' | sed -E 's/op([0-9]+\t)/\1/g' >"${EVAL_FILEOPS_TMP}"
                         NUM_OPS_ARRAY=$(awk '
                         BEGIN{i=0;mode=0;numCreateOps=0;numCopyOps=0;numQueryOps=0;FS="\t";}
@@ -708,6 +704,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
     # Now, wait for everything to finish
     wait -n
 	sync
+
     if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
         echo " * Preparing normalized data files for full-SSB plots"
         for ARCH in "${ARCHITECTURE[@]}"; do
@@ -751,6 +748,67 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
     # Now, wait for everything to finish
     wait -n
 	sync
+
+    echo " * Collecting data for teaser"
+    EVAL_TEASER_STORAGEFILE="teaser.storage.data"
+    EVAL_TEASER_STORAGEFILE_PATH="${PATH_EVALREPORT}/${EVAL_TEASER_STORAGEFILE}"
+    EVAL_TEASER_RUNTIMEFILE="teaser.storage.data"
+    EVAL_TEASER_RUNTIMEFILE_PATH="${PATH_EVALREPORT}/${EVAL_TEASER_RUNTIMEFILE}"
+    rm -f ${EVAL_TEASER_STORAGEFILE_PATH} ${EVAL_TEASER_RUNTIMEFILE}
+
+    echo "   * Storge"
+    for ARCH in "${ARCHITECTURE[0]}"; do
+        for NUM in "${IMPLEMENTED[@]}"; do
+            printf '%s' ${NUM}
+            BASE2="${BASE}${NUM}"
+            for VAR in "${VARIANTS[@]}"; do
+                type="${BASE2}${VAR}${ARCH}"
+                EVAL_FILEOPS_OUT="${PATH_EVALINTER}/${type}.ops.out"
+                # use the projected consumption for the teaser
+                awk -v numopsquery=${NUM_OPS_QUERY} '
+                    BEGIN {opNumBefore=0; runtime=0; projected=0}
+                    opNumBefore < $1 {
+                        opNumBefore=$1
+                        projected+=$5
+                        next
+                    }
+                    {exit}
+                    END {printf "\t%s", projected}
+                ' "${EVAL_FILEOPS_OUT}" >>"${EVAL_TEASER_STORAGEFILE_PATH}"
+            done
+            printf '\n' >>"${EVAL_TEASER_STORAGEFILE_PATH}"
+        done
+    done
+
+    echo "   * Runtime"
+    printf 'Type' >"${EVAL_TEASER_RUNTIMEFILE_PATH}"
+    for VAR in "${VARIANTS[@]}"; do
+        printf "\t${VAR}" >>"${EVAL_TEASER_RUNTIMEFILE_PATH}"
+    done
+    printf '\nAverage' >>"${EVAL_TEASER_RUNTIMEFILE_PATH}"
+    totalRelativeRuntimes=()
+    for NUM in "${IMPLEMENTED[@]}"; do
+        totalRelativeRuntimes+=(0)
+    done
+    for ARCH in "${ARCHITECTURE[@]}"; do
+        EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
+        EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
+        # ignore the headline generated in the normalized data file
+        ARRAY_RUNTIMES=($(awk -v numvars=${#VARIANTS[@]} '
+            BEGIN {for (i=0; i<numvars; ++i) runtimes[i]=0}
+            NR>1{for (i=1; i<NF; ++i) runtimes[i-1]+=$i}
+            END{for (i in runtimes) print runtimes[i]}
+        '))
+        for ((idx = 0; idx < ${#IMPLEMENTED[@]}; ++idx)); do
+            ((totalRelativeRuntimes[idx] += ARRAY_RUNTIMES[idx]))
+        done
+    done
+    numRuntimes=$((${#ARCH[@]}+${#IMPLEMENTED[@]}))
+    for ((idx = 0; idx < ${#IMPLEMENTED[@]}; ++idx)); do
+        printf '\t%s' ((totalRelativeRuntimes[idx] / numRuntimes)) >>"${EVAL_TEASER_RUNTIMEFILE_PATH}"
+    done
+    
+
     echo " * Plotting"
     for ARCH in "${ARCHITECTURE[@]}"; do
         # Prepare File for a single complete normalized overhead graph across all scale factors
