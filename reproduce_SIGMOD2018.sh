@@ -7,6 +7,8 @@ echo "# Welcome to the SIGMOD 2018 reproducibility script. #"
 echo "######################################################"
 echo
 
+export reproscript=1
+
 if [[ $(id -u) -eq 0 ]]; then
     echo "[ERROR] You must not run this script as super user!"
     exit 1
