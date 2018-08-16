@@ -22,7 +22,9 @@ git submodule update "${MI_SUBMODULE}"
 
 basedir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
 
-pushd ${MI_SUBMODULE}/${MI_BUILDDIR}/Release && ./${MI_EXEC} ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1> >(tee ${MI_OUTFILE}) 2> >(tee ${MI_ERRFILE} >&2) && mv ${MI_OUTFILE} ${MI_ERRFILE} "${basedir}/${AHEAD_PAPER_RESULTS_MI}" && popd
+mkdir -p "${basedir}/${AHEAD_PAPER_RESULTS_MI}"
+pushd ${MI_SUBMODULE} && ./bootstrap.sh && pushd "${MI_BUILDDIR}/Release" && make -j$(nproc) || exit 1
+./${MI_EXEC} ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1> >(tee ${MI_OUTFILE}) 2> >(tee ${MI_ERRFILE} >&2) && mv ${MI_OUTFILE} ${MI_ERRFILE} "${basedir}/${AHEAD_PAPER_RESULTS_MI}" && popd
 
 # In the following, prepare the results for printing.
 # The benchmarking tool (TestModuloInverseComputation2) measures for several widhts of A for each possible code word width.
