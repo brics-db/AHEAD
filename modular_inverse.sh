@@ -14,7 +14,7 @@ MI_C_MAX=127
 
 source common.conf
 
-if [[ -z ${reproscipt+x} ]]; then
+if [[ -z ${reproscript+x} ]]; then
 	echo "###########################################################"
 	echo "# For the following tests, for better reproducibilty, we: #"
 	echo "#   *  DISABLE turboboost                                 #"
@@ -23,26 +23,28 @@ if [[ -z ${reproscipt+x} ]]; then
 	echo "# For that, you need a sudoer account!                    #"
 	echo "#                                                         #"
 	echo -n "#   * turboboost: "
-	haserror=0
-	(sudo ./turboboost.sh disable &> /dev/null || (echo "failed.                                 #"; export haserror=1))
-	if [[ $haserror == 0 ]]; then
-	        echo "succeeded.                              #"
+	if [[ $(sudo ./turboboost.sh disable &>/dev/null) ]]; then
+		echo "succeeded.                              #"
+	else
+		echo "failed.                                 #"
 	fi
 	echo -n "#   * scaling governor: "
-	haserror=0
 	modes=($(sudo ./scalinggovernor.sh avail 0))
 	hasperformance=0
 	for mode in "${modes[@]}"; do
-	    if [[ "${mode}" == performance ]]; then
-	        hasperformance=1
-	        (sudo ./scalinggovernor.sh set performance &> /dev/null ||  (echo "[WARNING] Could not set the scalinggovernor!"; export haserror=1))
-	    fi
+		if [[ "${mode}" == performance ]]; then
+			hasperformance=1
+			if [[ $(sudo ./scalinggovernor.sh set performance &>/dev/null) ]]; then 
+				echo "succeeded.                        #"
+			else
+				echo "failed.                           #"
+			fi
+			break
+		fi
 	done
-	[[ $hasperformance = 0 ]] && (echo "failed.                           #"; echo "[WARNING] I was looking for governor \"performance\", but could not find it!"; export haserror=1)
-	if [[ $haserror == 0 ]]; then
-	        echo "succeeded.                        #"
-	fi
+	[[ $hasperformance == 0 ]] && echo "failed. Did not find governor.    #"
 	echo "###########################################################"
+	echo
 fi
 
 # For the reproducibility, use the submodule coding_benchmark
