@@ -37,6 +37,10 @@ if [[ -z ${reproscript+x} ]]; then
 	[[ $hasperformance == 0 ]] && echo "failed. Did not find governor.    #"
 	echo "###########################################################"
 	echo
+	echo "###########################################################"
+	echo "# Running Coding Benchmark                                #"
+	echo "###########################################################"
+	echo
 fi
 
 # For the reproducibility, use the submodule coding_benchmark

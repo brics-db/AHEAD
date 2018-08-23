@@ -218,8 +218,8 @@ for sf in $(seq "${AHEAD_SCALEFACTOR_MIN}" "${AHEAD_SCALEFACTOR_MAX}"); do
 done
 
 for minbfw in $(seq "${AHEAD_MINBFW_MIN}" "${AHEAD_MINBFW_MAX}"); do
-	# Only generate scale factor 1 for the minbfw tests!
-	generate_ssb 1 "${AHEAD_MINBFW_SUFFIX}${minbfw}" "${AHEAD_MINBFW_CMDARG} ${minbfw}"
+	# Only generate 1 scale factor for the minbfw tests!
+	generate_ssb "${AHEAD_MINBFW_SCALEFACTOR}" "${AHEAD_MINBFW_SUFFIX}${minbfw}" "${AHEAD_MINBFW_CMDARG} ${minbfw}"
 done
 
 popd

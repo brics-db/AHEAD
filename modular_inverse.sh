@@ -45,19 +45,53 @@ if [[ -z ${reproscript+x} ]]; then
 	[[ $hasperformance == 0 ]] && echo "failed. Did not find governor.    #"
 	echo "###########################################################"
 	echo
+	echo "###########################################################"
+	echo "# Running Modular Inverse Benchmark                       #"
+	echo "###########################################################"
+	echo
 fi
 
 # For the reproducibility, use the submodule coding_benchmark
+echo "  * Initializeing, syncing, and updating submodule"
+tempfilename=$(tempfile)
 if [[ -z "$(ls -A ${MI_SUBMODULE})" ]]; then
-    git submodule init "${MI_SUBMODULE}"
+	git submodule init "${MI_SUBMODULE}" &>${tempfilename}
+	ret=$?
+    if [[ ! $ret ]]; then
+    	cat ${tempfilename}
+    fi
+    rm -f ${tempfilename}
+    if [[ ! $ret ]]; then
+    	exit 1
+    fi
 fi
-git submodule update "${MI_SUBMODULE}"
+git submodule sync "${MI_SUBMODULE}" &>${tempfilename}
+ret=$?
+if [[ ! $ret ]]; then
+	cat ${tempfilename}
+fi
+rm -f ${tempfilename}
+if [[ ! $ret ]]; then
+	exit 1
+fi
+git submodule update "${MI_SUBMODULE}" &>${tempfilename}
+ret=$?
+if [[ ! $ret ]]; then
+	cat ${tempfilename}
+fi
+rm -f ${tempfilename}
+if [[ ! $ret ]]; then
+	exit 1
+fi
 
 basedir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
 
-mkdir -p "${basedir}/${AHEAD_PAPER_RESULTS_MI}"
-pushd ${MI_SUBMODULE} && ./bootstrap.sh && pushd "${MI_BUILDDIR}/Release" && make -j$(nproc) || exit 1
-./${MI_EXEC} ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1> >(tee ${MI_OUTFILE}) 2> >(tee ${MI_ERRFILE} >&2) && mv ${MI_OUTFILE} ${MI_ERRFILE} "${basedir}/${AHEAD_PAPER_RESULTS_MI}" && popd
+mkdir -p "${basedir}/${AHEAD_PAPER_RESULTS_MI}" || exit 1
+echo "  * Compiling sources"
+pushd ${MI_SUBMODULE} && ./bootstrap.sh && pushd "${MI_BUILDDIR}/Release" && make -j$(nproc) TestModuloInverseComputation2 || exit 1
+./${MI_EXEC} ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1> >(tee ${MI_OUTFILE}) 2> >(tee ${MI_ERRFILE} >&2) && mv ${MI_OUTFILE} ${MI_ERRFILE} "${basedir}/${AHEAD_PAPER_RESULTS_MI}" || exit 1
+popd
+popd
 
 # In the following, prepare the results for printing.
 # The benchmarking tool (TestModuloInverseComputation2) measures for several widhts of A for each possible code word width.
@@ -124,4 +158,11 @@ plot for [i=2:$((${#mywidths[@]}+1))] infile using 1:i t col w linespoints ls i
 EOF
 
 # Finally, gnuplot! :-)
-gnuplot ${MI_SCRIPTFILE} && popd
+MI_SUCCESS=0
+gnuplot ${MI_SCRIPTFILE} && MI_SUCCESS=1
+
+if [[ ${MI_SUCCESS} == 1 ]]; then
+	echo "  * plot files were written to $(pwd)"
+fi
+
+popd
