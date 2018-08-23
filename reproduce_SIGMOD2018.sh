@@ -2,6 +2,11 @@
 
 # This script is an all-in-one solution to reproduce the results from our SIGMOD 2018 paper titled "AHEAD: Adaptable Data Hardening for On-the-Fly Hardware Error Detection during Database Query Processing"
 
+if [[ $(id -u) -eq 0 ]]; then
+	echo "[ERROR] You must not run this script as super user!"
+	exit 1
+fi
+
 # Allow to run individual steps
 ARGS=("$@")
 if [[ $# > 0 ]] ; then
@@ -49,6 +54,21 @@ echo "# Welcome to the SIGMOD 2018 reproducibility script. #"
 echo "######################################################"
 echo
 
+echo "######################################################"
+echo "# Initializing, syncing and updating git submodules. #"
+echo "######################################################"
+git submodule init --recursive
+git submodule sync --recursive
+git submodule update --recursive
+
+if [[ ${DO_GENERATE} == 1 ]]; then
+	echo "###########################################################"
+	echo "# Running Star Schema Benchmark Data Generation           #"
+	echo "###########################################################"
+	./generate_ssbdata.sh || exit 1
+	echo
+fi
+
 if [[ -z ${reproscript+x} ]]; then
 	echo "###########################################################"
 	echo "# For the following tests, for better reproducibilty, we: #"
@@ -83,19 +103,6 @@ if [[ -z ${reproscript+x} ]]; then
 fi
 
 export reproscript=1
-
-if [[ $(id -u) -eq 0 ]]; then
-	echo "[ERROR] You must not run this script as super user!"
-	exit 1
-fi
-
-if [[ ${DO_GENERATE} == 1 ]]; then
-	echo "###########################################################"
-	echo "# Running Star Schema Benchmark Data Generation           #"
-	echo "###########################################################"
-	./generate_ssbdata.sh || exit 1
-	echo
-fi
 
 if [[ ${DO_SSB} == 1 ]]; then
 	echo "###########################################################"

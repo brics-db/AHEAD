@@ -26,6 +26,7 @@ if [[ -z "$(ls -A ${SSB_DBGEN_SUBMODULE})" ]]; then
 	git submodule init "${SSB_DBGEN_SUBMODULE}"
 fi
 
+git submodule sync "${SSB_DBGEN_SUBMODULE}"
 git submodule update "${SSB_DBGEN_SUBMODULE}"
 pushd "${SSB_DBGEN_SUBMODULE}"
 [[ ! -d "${SSB_DBGEN_BUILDIR}" ]] && mkdir -p "${SSB_DBGEN_BUILDIR}"
@@ -34,7 +35,7 @@ cmake ..
 make
 ret=$?
 if [[ $ret -ne 0 ]]; then
-	echo "Error maing ssb-dbgen!:"
+	echo "Error making ssb-dbgen!:"
 	cat make.err
 	popd;popd
 	exit
@@ -68,21 +69,38 @@ fi
 
 pushd ${AHEAD_DB_PATH}
 
-for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
-	echo "Generating data for scale factor ${sf}"
+function generate_ssb {
+	if [[ "$#" == 0 ]]; then
+		echo "[ERROR] you must call bash function generate_ssb with at least the scale factor as parameter!" >/dev/stderr
+		exit 1
+	fi
+
+	sf="$1"
+	shift
+	path_suffix=
+	if [[ "$#" > 0 ]]; then
+		path_suffix="$1"
+	fi
+	cmdargs=
+	if [[ "$#" > 0 ]]; then
+		cmdargs="$1"
+	fi
+	sf_path="${AHEAD_SCALEFACTOR_PREFIX}${sf}${path_suffix}"
+
+	echo "Generating data for scale factor ${sf} in ${sf_path}"
 	sync
 	echo "  * synced all files (sync)"
 
-	if [[ -f "${AHEAD_SCALEFACTOR_PREFIX}${sf}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
+	if [[ -f "${sf_path}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
 		echo "  * It seems that all files for scale factor ${sf} are already generated"
-		continue
+		exit 0
 	fi
 
 	all_existing=1
 	for tab in c d l p s; do
 		filename="${table_names[$tab]}.tbl"
 		echo -n "  * ${tab}: ${filename} "
-		if [[ -f "$filename" || -f "${AHEAD_SCALEFACTOR_PREFIX}${sf}/$filename" ]]; then
+		if [[ -f "$filename" || -f "${sf_path}/$filename" ]]; then
 			echo "exists"
 		else
 			all_existing=0
@@ -101,19 +119,19 @@ for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
 	if [[ ${all_existing} == 0 ]]; then
 		sync
 		echo "  * synced all files (sync)"
-		mkdir -p "${AHEAD_SCALEFACTOR_PREFIX}${sf}"
+		mkdir -p "${sf_path}"
 		ret=$?
 		if [[ $ret -ne 0 ]]; then
 			popd
-			echo "  * Error creating folder '${AHEAD_SCALEFACTOR_PREFIX}${sf}'"
+			echo "  * Error creating folder '${sf_path}'"
 			exit $ret
 		fi
 #		ls -lAh *.tbl
-		mv *.tbl "${AHEAD_SCALEFACTOR_PREFIX}${sf}/"
+		mv *.tbl "${sf_path}/"
 		ret=$?
 		if [[ $ret -ne 0 ]]; then
 			popd
-			echo "  * Error moving files to subfolder '${AHEAD_SCALEFACTOR_PREFIX}${sf}'"
+			echo "  * Error moving files to subfolder '${sf_path}'"
 			exit $ret
 		fi
 		echo "  * generated and moved tables for SF ${sf}"
@@ -121,7 +139,7 @@ for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
 		echo "  * all tables already exist for SF ${sf}"
 	fi
 
-	pushd "${AHEAD_SCALEFACTOR_PREFIX}${sf}"
+	pushd "${sf_path}"
 
 	for tab in customer date lineorder part supplier; do
 		if [[ ! -f "${tab}.tbl" ]]; then
@@ -147,7 +165,6 @@ for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
 				echo "  * Error creating softlink ${tab}AN_header.csv -> ../headers/${tab}AN_header.csv"
 				exit $ret
 			fi
-			#sed -e '/TINYINT/RESTINY/G' -e '/SHORTINT/RESSHORT/g' -e '/INTEGER/RESINT/g' -i ${tab}AN_header.csv
 		else
 			echo "  * ${tab}AN_header.csv exists"
 		fi
@@ -166,7 +183,7 @@ for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
 	echo "========================================================"
 	echo "=== GENERATING SMALLER DATABASE FILES. DO NOT ABORT! ==="
 	echo "========================================================"
-	../../build/Release/ssbm-dbsize_scalar -d . 
+	../../build/Release/${AHEAD_SCRIPT_GENSSB_EXECUTABLE} -d . "${cmdargs}"
 	ret=$?
 	if [[ $ret -ne 0 ]]; then
 		echo "  * Error executing ssbm-dbsize_scalar"
@@ -194,7 +211,15 @@ for sf in $(seq ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}); do
 
 	sync
 	echo "  * synced all files (sync)"
+}
 
+for sf in $(seq "${AHEAD_SCALEFACTOR_MIN}" "${AHEAD_SCALEFACTOR_MAX}"); do
+	generate_ssb ${sf} || exit 1
+done
+
+for minbfw in $(seq "${AHEAD_MINBFW_MIN}" "${AHEAD_MINBFW_MAX}"); do
+	# Only generate scale factor 1 for the minbfw tests!
+	generate_ssb 1 "${AHEAD_MINBFW_SUFFIX}${minbfw}" "${AHEAD_MINBFW_CMDARG} ${minbfw}"
 done
 
 popd
