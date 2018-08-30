@@ -152,7 +152,7 @@ if [[ -z ${reproscript+x} ]]; then
 		echo "failed.                                 #"
 	fi
 	echo -n "#   * scaling governor: "
-	modes=($(sudo ./scalinggovernor.sh avail 0))
+	modes=($(sudo $(pwd)/$(dirname $0)/../scalinggovernor.sh avail 0))
 	hasperformance=0
 	for mode in "${modes[@]}"; do
 		if [[ "${mode}" == performance ]]; then
@@ -755,14 +755,14 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 	wait -n
 	sync
 
-	echo " * Collecting data for teaser"
+	echo " * Collecting Data for teaser graphs"
 	EVAL_TEASER_STORAGEFILE="teaser.storage.data"
 	EVAL_TEASER_STORAGEFILE_PATH="${PATH_EVALREPORT}/${EVAL_TEASER_STORAGEFILE}"
 	EVAL_TEASER_RUNTIMEFILE="teaser.runtime.data"
 	EVAL_TEASER_RUNTIMEFILE_PATH="${PATH_EVALREPORT}/${EVAL_TEASER_RUNTIMEFILE}"
 	rm -f ${EVAL_TEASER_STORAGEFILE_PATH} ${EVAL_TEASER_RUNTIMEFILE}
 
-	# The sotrage teaser graph is for the INTERMEDIATE RESULTS only!
+	# The storage teaser graph is for the INTERMEDIATE RESULTS only!
 	# For the storage teaser graph, we only use scale factor 1 AND WE ASSUME THAT THIS IS THE FIRST ONE IN THE RESULT FILES!
 	echo "   * Storage"
 	totalAbsoluteStorages=()
@@ -873,20 +873,21 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		done
 		sync
 
-		ALLPDFOUTFILE=${PATH_EVALREPORT}/ssbm-all${ARCH}.pdf
-		ALLPDFINFILES=
-		for NUM in "${IMPLEMENTED[@]}"; do
-			BASE3=${BASE}${NUM}${ARCH}
-			ALLPDFINFILES+=" ${PATH_EVALREPORT}/${BASE3}.pdf ${PATH_EVALREPORT}/${BASE3}-norm.pdf"
-		done
-		echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
-		gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
+		#ALLPDFOUTFILE=${PATH_EVALREPORT}/ssbm-all${ARCH}.pdf
+		#ALLPDFINFILES=
+		#for NUM in "${IMPLEMENTED[@]}"; do
+		#	BASE3=${BASE}${NUM}${ARCH}
+		#	ALLPDFINFILES+=" ${PATH_EVALREPORT}/${BASE3}.pdf ${PATH_EVALREPORT}/${BASE3}-norm.pdf"
+		#done
+		#echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
+		#gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
 
 		echo "   * Creating tex/PDF files for normalized averages (${EVAL_NORMALIZEDALLTEXFILE_PATH})"
 		gnuplotcodetex  ${EVAL_NORMALIZEDALLPLOTFILE_PATH} ${EVAL_NORMALIZEDALLTEXFILE_PATH} ${EVAL_NORMALIZEDALLDATAFILE_PATH} \
 			"set yrange [0:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "set ylabel \"Relative Runtime\""
 		gnuplot ${EVAL_NORMALIZEDALLPLOTFILE_PATH}
 	done
+	echo "   * Teaser graphs"
 	sync
 else
 	echo "Skipping evaluation."

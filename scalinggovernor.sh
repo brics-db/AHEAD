@@ -5,47 +5,6 @@ if [[ -z $(which cpufreq-set) ]]; then
     exit 1
 fi
 
-##
-## Legacy code
-##
-#cores=$(cat /proc/cpuinfo | grep processor | awk '{print $3}')
-#case "$1" in
-#    set)
-#        if [[ $# -ne 2 ]]; then
-#            echo $"Usage: $0 {set <governor>|list|show}"
-#            exit 1
-#        fi
-#        for core in $cores; do
-#            cpufreq-set -c ${core} -g $2;
-#            if [[ $? -ne 0 ]]; then
-#                exit 1
-#            fi
-#        done
-#        ;;
-#    list)
-#        for core in $cores; do
-#            echo -n "CPU ${core}: "
-#            cpufreq-info -c ${core} -g $2;
-#            ret=$?
-#            if [[ ${ret} -ne 0 ]]; then
-#                echo "Error! cpufreq-info returned status ${ret}"
-#                exit 1
-#            fi
-#        done
-#        exit 0
-#        ;;
-#    show)
-#        ;;
-#    *)
-#        echo $"Usage: $0 {set <governor>|list|show}"
-#        exit 1
-#esac
-#
-#for core in $cores; do
-#    echo -n "CPU ${core}: "
-#    cat "/sys/devices/system/cpu/cpu${core}/cpufreq/scaling_governor"
-#done
-
 array_contains_any_substring_unique () {
     local seeking="$1"
     local array=()

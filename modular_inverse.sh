@@ -1,5 +1,6 @@
 #!/bin/bash
 
+MI_SOURCEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
 MI_SUBMODULE=coding_benchmark
 MI_GITREPO=https://github.com/brics-db/coding_benchmark
 MI_BUILDDIR=build
@@ -52,7 +53,7 @@ if [[ -z ${reproscript+x} ]]; then
 fi
 
 # For the reproducibility, use the submodule coding_benchmark
-echo "  * Initializeing, syncing, and updating submodule"
+echo "  * Initializing, syncing, and updating submodule"
 tempfilename=$(tempfile)
 if [[ -z "$(ls -A ${MI_SUBMODULE})" ]]; then
 	git submodule init "${MI_SUBMODULE}" &>${tempfilename}
@@ -84,12 +85,10 @@ if [[ ! $ret ]]; then
 	exit 1
 fi
 
-basedir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
-
-mkdir -p "${basedir}/${AHEAD_PAPER_RESULTS_MI}" || exit 1
+mkdir -p "${AHEAD_PAPER_RESULTS_MI}" || exit 1
 echo "  * Compiling sources"
-pushd ${MI_SUBMODULE} && ./bootstrap.sh && pushd "${MI_BUILDDIR}/Release" && make -j$(nproc) TestModuloInverseComputation2 || exit 1
-./${MI_EXEC} ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1> >(tee ${MI_OUTFILE}) 2> >(tee ${MI_ERRFILE} >&2) && mv ${MI_OUTFILE} ${MI_ERRFILE} "${basedir}/${AHEAD_PAPER_RESULTS_MI}" || exit 1
+pushd "${MI_SOURCEDIR}/${MI_SUBMODULE}" && ./bootstrap.sh && pushd "${MI_BUILDDIR}/Release" && make -j$(nproc) TestModuloInverseComputation2 || exit 1
+./${MI_EXEC} ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1> >(tee ${MI_OUTFILE}) 2> >(tee ${MI_ERRFILE} >&2) && mv "${MI_OUTFILE}" "${MI_ERRFILE}" "${AHEAD_PAPER_RESULTS_MI}" || exit 1
 popd
 popd
 
@@ -100,9 +99,9 @@ popd
 # When computing the modular inverse, the code word width is restrained -- we need an additional bit for the extended euclidean algorithm.
 #   Therefore, for a particular register width, we can only use width-1 wide code words. For instance, using 16-bit registers, we can only compute the modular inverse up to 15-bit wide code words.
 
-pushd "${basedir}/${AHEAD_PAPER_RESULTS_MI}" || exit 1
-rm -f ${MI_DATFILE}
-echo -n '\(|C|\)' >${MI_DATFILE}
+pushd "${AHEAD_PAPER_RESULTS_MI}" || exit 1
+rm -f "${MI_DATFILE}"
+echo -n '\(|C|\)' >"${MI_DATFILE}"
 mywidth=8
 while [[ ${mywidth} < ${MI_A_MIN} ]]; do
 	((mywidth *= 2))
@@ -115,14 +114,14 @@ done
 widthmax=${mywidths[${#mywidths[@]}-1]}
 widthlen=${#widthmax}
 for width in "${mywidths[@]}"; do
-	echo -ne '\t\(|C|\leq'"$((width-1))"'\)' >>${MI_DATFILE}
+	echo -ne '\t\(|C|\leq'"$((width-1))"'\)' >>"${MI_DATFILE}"
 done
-echo >>${MI_DATFILE}
+echo >>"${MI_DATFILE}"
 
 # The following prepares (and overwrites) the gnuplot file, depending on the parameters with which the benchmark was called (${MI_A_MIN} and ${MI_C_MAX}, see above)
-awk --field-separator='\t' 'NR>2{printf "%d",$1; numtabs=1; for (mywidth=8; $1 >= mywidth; mywidth=mywidth*2) {++numtabs}; for(i=0; i<numtabs; ++i) printf "\t"; average=0; for(i=1; i<=NF; ++i) average+=$i; printf "%d\n",((average/'${MI_NUMRUNS}')/(NF-1))}' ${MI_OUTFILE} >>${MI_DATFILE}
+awk --field-separator='\t' 'NR>2{printf "%d",$1; numtabs=1; for (mywidth=8; $1 >= mywidth; mywidth=mywidth*2) {++numtabs}; for(i=0; i<numtabs; ++i) printf "\t"; average=0; for(i=1; i<=NF; ++i) average+=$i; printf "%d\n",((average/'${MI_NUMRUNS}')/(NF-1))}' "${MI_OUTFILE}" >>"${MI_DATFILE}"
 
-cat >${MI_SCRIPTFILE} <<EOF
+cat >"${MI_SCRIPTFILE}" <<EOF
 #!/usr/bin/env gnuplot
 
 # The data was gained by
@@ -159,7 +158,7 @@ EOF
 
 # Finally, gnuplot! :-)
 MI_SUCCESS=0
-gnuplot ${MI_SCRIPTFILE} && MI_SUCCESS=1
+gnuplot "${MI_SCRIPTFILE}" && MI_SUCCESS=1
 
 if [[ ${MI_SUCCESS} == 1 ]]; then
 	echo "  * plot files were written to $(pwd)"

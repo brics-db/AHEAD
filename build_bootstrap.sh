@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source ./common.conf
+SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
+source "${SOURCE_DIR}/common.conf"
 
 if [[ -z ${DEBUG+x} ]]; then
 	debugmode=0

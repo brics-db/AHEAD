@@ -1,5 +1,5 @@
 #!/bin/bash
-
+SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
 SSB_DBGEN_SUBMODULE=ssb-dbgen
 SSB_DBGEN_GITREPO=https://github.com/valco1994/ssb-dbgen
 SSB_DBGEN_BUILDIR=build
@@ -12,7 +12,8 @@ SSB_DBGEN_BUILDIR=build
 # 1) AHEAD_SCALEFACTOR_MIN
 # 2) AHEAD_SCALEFACTOR_MAX
 # 3) AHEAD_DB_PATH
-source ./common.conf
+
+source "${SOURCE_DIR}./common.conf"
 
 mkdir -p "${AHEAD_DB_PATH}"
 
@@ -183,10 +184,10 @@ function generate_ssb {
 	echo "========================================================"
 	echo "=== GENERATING SMALLER DATABASE FILES. DO NOT ABORT! ==="
 	echo "========================================================"
-	../../build/Release/${AHEAD_SCRIPT_GENSSB_EXECUTABLE} -d . "${cmdargs}"
+	${AHEAD_SCRIPT_GENSSB_EXECUTABLE} -d . "${cmdargs}"
 	ret=$?
 	if [[ $ret -ne 0 ]]; then
-		echo "  * Error executing ssbm-dbsize_scalar"
+		echo "  * Error executing '${AHEAD_SCRIPT_GENSSB_EXECUTABLE} -d . \"${cmdargs}\"'"
 		exit $ret
 	fi
 
