@@ -469,8 +469,12 @@ fi
 if [[ ${DO_BENCHMARK} -ne 0 ]]; then
 	date
 	( [[ "${BENCHMARK_MINBFW}" > 0 ]] && echo "Benchmarking (using AN-minBFW=${BENCHMARK_MINBFW}):" ) || echo "Benchmarking:"
-	echo -n " * checking for 'msr' module: "
-	(lsmod | grep msr &>/dev/null && echo "already loaded") || (sudo modprobe msr &>/dev/null && echo "loaded") || echo " could not load -- pcm counters not available"
+	if (( AHEAD_USE_PCM==1 )); then
+		echo -n " * checking for 'msr' module for performance counter monitoring: "
+		(lsmod | grep msr &>/dev/null && echo "already loaded") || (sudo modprobe msr &>/dev/null && echo "loaded") || echo " could not load -- pcm counters not available"
+	else
+		echo " * Not using performance counter monitoring"
+	fi
 
 	if [[ ! -d ${PATH_EVALDATA} ]]; then
 		mkdir -p ${PATH_EVALDATA}
@@ -492,37 +496,46 @@ if [[ ${DO_BENCHMARK} -ne 0 ]]; then
 						echo -n " sf${SF}"
 						echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
 						if [[ "${BENCHMARK_MINBFW}" > 0 ]]; then
-							sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+							if (( AHEAD_USE_PCM==1 )); then
+								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+							else
+								${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+							fi
 						else
-							sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+							if (( AHEAD_USE_PCM==1 )); then
+								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+							else
+								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+							fi
 						fi
 					done
 					echo " done."
 				else
-					echo " Skipping missing binary!"
+					echo " Skipping missing binary '${${PATH_BINARY}}'!"
 				fi
 			done
 		done
 	done
 
-	USERID=$(id -u)
-	GROUPID=$(id -g)
-
-	for ARCH in "${ARCHITECTURE[@]}"; do
-		for NUM in "${IMPLEMENTED[@]}"; do
-			BASE2=${BASE}${NUM}
-			for VAR in "${VARIANTS[@]}"; do
-				type="${BASE2}${VAR}${ARCH}"
-				PATH_BINARY=${PATH_BUILD}/${type}
-				if [[ -e ${PATH_BINARY} ]]; then
-					EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
-					EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
-					sudo chown ${USERID}:${GROUPID} "${EVAL_FILEOUT}"
-					sudo chown ${USERID}:${GROUPID} "${EVAL_FILEERR}"
-				fi
+	if (( AHEAD_USE_PCM==1 )); then
+		USERID=$(id -u)
+		GROUPID=$(id -g)
+		for ARCH in "${ARCHITECTURE[@]}"; do
+			for NUM in "${IMPLEMENTED[@]}"; do
+				BASE2=${BASE}${NUM}
+				for VAR in "${VARIANTS[@]}"; do
+					type="${BASE2}${VAR}${ARCH}"
+					PATH_BINARY=${PATH_BUILD}/${type}
+					if [[ -e ${PATH_BINARY} ]]; then
+						EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
+						EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
+						sudo chown ${USERID}:${GROUPID} "${EVAL_FILEOUT}"
+						sudo chown ${USERID}:${GROUPID} "${EVAL_FILEERR}"
+					fi
+				done
 			done
 		done
-	done
+	fi
 else
 	echo "Skipping benchmarks."
 fi

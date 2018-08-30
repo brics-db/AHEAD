@@ -37,11 +37,14 @@ if [[ $# > 0 ]] ; then
 			DO_MODULARINVERSE=1
 			;;
 		ALL) ;&
+		DEFAULT) ;&
 		*)
 			PHASE="ALL"
 			;;
 	esac
 fi
+
+[[ -z "${PHASE+x}" ]] && PHASE=ALL
 
 # set the step switches if not done yet
 [ -z ${DO_GENERATE+x} ] && DO_GENERATE=1
@@ -113,8 +116,8 @@ if [[ ${DO_SSB} == 1 ]]; then
 	#source ./run.conf
 	./run.sh || exit 1
 	rm -Rf "${AHEAD_PAPER_RESULTS_SSB}/data" "${AHEAD_PAPER_RESULTS_SSB}/report"
-	ln -s "${PATH_EVAL_CURRENT}/data" "../${AHEAD_PAPER_RESULTS_SSB}/data"
-	ln -s "${PATH_EVAL_CURRENT}/report" "../${AHEAD_PAPER_RESULTS_SSB}/report"
+	ln -s "${PATH_EVAL_CURRENT}/data" "${AHEAD_PAPER_RESULTS_SSB}/data"
+	ln -s "${PATH_EVAL_CURRENT}/report" "${AHEAD_PAPER_RESULTS_SSB}/report"
 	popd &>/dev/null
 	echo
 fi
@@ -123,17 +126,19 @@ if [[ ${DO_CODINGBENCHMARK} == 1 ]]; then
 	echo "###########################################################"
 	echo "# Running Coding Benchmark                                #"
 	echo "###########################################################"
-	./coding_benchmark.sh
+	${AHEAD_SCRIPT_CODBEN}
 fi
 
 if [[ ${DO_MODULARINVERSE} == 1 ]]; then
 	echo "###########################################################"
 	echo "# Running Modular Inverse Benchmark                       #"
 	echo "###########################################################"
-	./modular_inverse.sh
+	${AHEAD_SCRIPT_MODINV}
 fi
 
-pushd paper &>/dev/null
+pushd ${AHEAD_PAPER_PATH} &>/dev/null
 (pdflatex sigmod2018.tex && pdflatex sigmod2018.tex) || exit 1
 popd &>/dev/null
+
+exit 0
 

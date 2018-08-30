@@ -13,11 +13,12 @@ SSB_DBGEN_BUILDIR=build
 # 2) AHEAD_SCALEFACTOR_MAX
 # 3) AHEAD_DB_PATH
 
-source "${SOURCE_DIR}./common.conf"
+source "${SOURCE_DIR}/common.conf"
 
 mkdir -p "${AHEAD_DB_PATH}"
 
-./${AHEAD_SCRIPT_BOOTSTRAP}
+${AHEAD_SCRIPT_BOOTSTRAP}
+
 pushd ${AHEAD_BUILD_RELEASE_DIR}
 make -j $(nproc) ssbm-dbsize_scalar
 popd
@@ -36,14 +37,13 @@ cmake ..
 make
 ret=$?
 if [[ $ret -ne 0 ]]; then
-	echo "Error making ssb-dbgen!:"
-	cat make.err
-	popd;popd
-	exit
+	echo "Error making ssb-dbgen!:" >/dev/stderr
+	cat make.err >/dev/stderr
+	exit 1
 fi
 
-cp dbgen ../../${AHEAD_DB_PATH}
-echo "*** copied dbgen executable ***"
+cp dbgen ${AHEAD_DB_PATH}
+echo "*** copied dbgen executable to '${AHEAD_DB_PATH}/dbgen'"
 
 popd;popd
 
@@ -212,10 +212,17 @@ function generate_ssb {
 
 	sync
 	echo "  * synced all files (sync)"
+
+	exit 0
 }
 
 for sf in $(seq "${AHEAD_SCALEFACTOR_MIN}" "${AHEAD_SCALEFACTOR_MAX}"); do
-	generate_ssb ${sf} || exit 1
+	generate_ssb ${sf}
+	ret=$?
+	if [[ $ret -ne 0 ]]; then
+		echo "  * return code was $ret"
+		exit 1
+	fi
 done
 
 for minbfw in $(seq "${AHEAD_MINBFW_MIN}" "${AHEAD_MINBFW_MAX}"); do
@@ -224,4 +231,6 @@ for minbfw in $(seq "${AHEAD_MINBFW_MIN}" "${AHEAD_MINBFW_MAX}"); do
 done
 
 popd
+
+exit 0
 
