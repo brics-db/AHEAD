@@ -113,9 +113,9 @@ if [[ ${DO_SSB} == 1 ]]; then
 	echo "###########################################################"
 	pushd eval &>/dev/null
 	#export DATE="2018-08-15_17-04" # for testing
-	#source ./run.conf
 	./run.sh || exit 1
-	rm -Rf "${AHEAD_PAPER_RESULTS_SSB}/data" "${AHEAD_PAPER_RESULTS_SSB}/report"
+	source run.conf
+	rm -f "${AHEAD_PAPER_RESULTS_SSB}/data" "${AHEAD_PAPER_RESULTS_SSB}/report"
 	ln -s "${PATH_EVAL_CURRENT}/data" "${AHEAD_PAPER_RESULTS_SSB}/data"
 	ln -s "${PATH_EVAL_CURRENT}/report" "${AHEAD_PAPER_RESULTS_SSB}/report"
 	popd &>/dev/null
@@ -126,14 +126,14 @@ if [[ ${DO_CODINGBENCHMARK} == 1 ]]; then
 	echo "###########################################################"
 	echo "# Running Coding Benchmark                                #"
 	echo "###########################################################"
-	${AHEAD_SCRIPT_CODBEN}
+	bash ${AHEAD_SCRIPT_CODBEN}
 fi
 
 if [[ ${DO_MODULARINVERSE} == 1 ]]; then
 	echo "###########################################################"
 	echo "# Running Modular Inverse Benchmark                       #"
 	echo "###########################################################"
-	${AHEAD_SCRIPT_MODINV}
+	bash ${AHEAD_SCRIPT_MODINV}
 fi
 
 pushd ${AHEAD_PAPER_PATH} &>/dev/null

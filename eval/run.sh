@@ -95,6 +95,7 @@ echo "DATE: ${DATE}"
 CONFIG_FILE=run.conf
 source "${CONFIG_FILE}"
 echo "DATE: ${DATE}"
+export DATE
 
 mkdir -p "${PATH_EVAL_CURRENT}"
 
