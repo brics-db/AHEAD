@@ -38,9 +38,4 @@ set arrow from first 4.85,2.93 to first 5.15,1.29 head filled front
 set label "2.3" at first 5.2,2.50 rotate by -70
 plot 'vectorVSscalar1_1-1_3.data' using 2:xtic(1) title col fillstyle pattern 0 border ls 1 lw 1 dt 1, \
          '' using 3:xtic(1) title col fillstyle pattern 2 border ls 2 lw 1 dt 1
-
-set term pngcairo enhanced notransparent size 10in,5in dashlength 0.2
-set output 'vectorVSscalar1_1-1_3.png'
-set bmargin 4
-plot 'vectorVSscalar1_1-1_3.data' using 2:xtic(1) title col fillstyle pattern 3 border ls 3 lw 1 dt 1, \
-         '' using 3:xtic(1) title col fillstyle pattern 1 border ls 1 lw 1 dt 1
+unset output

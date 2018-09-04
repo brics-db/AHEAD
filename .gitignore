@@ -53,3 +53,15 @@ CMakeFiles
 /paper/results/microbenchmarks/ext_euclidean/TestModuloInverseComputation2.data
 /paper/results/microbenchmarks/ext_euclidean/TestModuloInverseComputation2.pdf
 /paper/results/microbenchmarks/ext_euclidean/TestModuloInverseComputation2.tex
+paper/results/ssb/intermediate
+/paper/results/ssb/teaser_consumption.data
+/paper/results/ssb/teaser_consumption.m
+/paper/results/ssb/teaser_consumption.pdf
+/paper/results/ssb/teaser_consumption.tex
+/paper/results/ssb/teaser_legend.m
+/paper/results/ssb/teaser_legend.pdf
+/paper/results/ssb/teaser_legend.tex
+/paper/results/ssb/teaser_runtime.data
+/paper/results/ssb/teaser_runtime.m
+/paper/results/ssb/teaser_runtime.pdf
+/paper/results/ssb/teaser_runtime.tex

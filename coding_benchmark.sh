@@ -4,12 +4,12 @@ CB_SUBMODULE=coding_benchmark
 CB_GITREPO=https://github.com/brics-db/coding_benchmark
 CB_BUILDDIR=build
 
-source common.conf
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/common.conf"
 
 if [[ -z ${reproscript+x} ]]; then
 	echo "###########################################################"
 	echo "# For the following tests, for better reproducibilty, we: #"
-	echo "#   *  DISABLE turboboost                                 #"
+	echo "#   * DISABLE turboboost                                  #"
 	echo "#   * set the OS scaling governor to PERFORMANCE          #"
 	echo "#                                                         #"
 	echo "# For that, you need a sudoer account!                    #"
@@ -21,7 +21,7 @@ if [[ -z ${reproscript+x} ]]; then
 		echo "failed.                                 #"
 	fi
 	echo -n "#   * scaling governor: "
-	modes=($(sudo ./scalinggovernor.sh avail 0))
+	modes=($(sudo $(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/scalinggovernor.sh avail 0))
 	hasperformance=0
 	for mode in "${modes[@]}"; do
 		if [[ "${mode}" == performance ]]; then

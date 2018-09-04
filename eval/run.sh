@@ -65,7 +65,7 @@ if [[ $# -ne 0 ]] ; then
 			DO_EVAL_PREPARE=1
 			DO_VERIFY=1
 			if [[ $# > 1 ]]; then
-				DATE="${ARGS[1]}" #only needed when calling the original script.
+				AHEAD_DATE="${ARGS[1]}" #only needed when calling the original script.
 			fi
 			;;
 		PLOT)
@@ -76,7 +76,7 @@ if [[ $# -ne 0 ]] ; then
 			DO_EVAL_PREPARE=0
 			DO_VERIFY=0
 			if [[ $# > 1 ]]; then
-				DATE="${ARGS[1]}" #only needed when calling the original script.
+				AHEAD_DATE="${ARGS[1]}" #only needed when calling the original script.
 			fi
 			;;
 		*)
@@ -91,11 +91,11 @@ fi ### [[ $# -ne 0 ]]
 #######################
 # Bootstrap Variables #
 #######################
-echo "DATE: ${DATE}"
+echo "DATE: ${AHEAD_DATE}"
 CONFIG_FILE=run.conf
-source "${CONFIG_FILE}"
-echo "DATE: ${DATE}"
-export DATE
+source "${CONFIG_FILE}" || exit 1
+echo "DATE: ${AHEAD_DATE}"
+export AHEAD_DATE
 
 mkdir -p "${PATH_EVAL_CURRENT}"
 
@@ -132,7 +132,7 @@ else
 fi ### [[ -t 1 ]] && [[ -t 2 ]]
 
 # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
-sed -E -e '34,+25s/^(.+)$/#\1/' -e '88s/^.+$/\tPHASE="EVALONLY"\n\tDO_COMPILE=0\n\tDO_BENCHMARK=0\n\tDO_EVAL=1\n\tDO_EVAL_PREPARE=1\n\tDO_VERIFY=1/' -e '94,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '94s/^(.+)$/export DATE="'"${DATE}"'"\nexport PATH_EVAL_CURRENT="."\n\1/' -e '134,+2s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
+sed -E -e '34,+25s/^(.+)$/#\1/' -e '88s/^.+$/\tPHASE="EVAL"\n\tDO_COMPILE=0\n\tDO_BENCHMARK=0\n\tDO_EVAL=1\n\tDO_EVAL_PREPARE=1\n\tDO_VERIFY=1/' -e '94,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '94s/^(.+)$/export AHEAD_DATE="'"${AHEAD_DATE}"'"\nexport PATH_EVAL_CURRENT="."\n\1/' -e '135,+2s/^(.+)$/#\1/' -e '156s/(\/\.\.)/\1\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
 sed -E -e '7s/^(\s+source\s+)(\.\.\/common.conf)$/\1..\/\2/' -e '9s/^(.+)$/#\1/' "${CONFIG_FILE}" >"${PATH_EVAL_CURRENT}/${CONFIG_FILE}"
 chmod +x "${PATH_EVAL_CURRENT}/$(basename $0)"
 
@@ -141,7 +141,7 @@ echo "[INFO] Running Phase \"${PHASE}\""
 if [[ -z ${reproscript+x} ]]; then
 	echo "###########################################################"
 	echo "# For the following tests, for better reproducibilty, we: #"
-	echo "#   *  DISABLE turboboost                                 #"
+	echo "#   * DISABLE turboboost                                  #"
 	echo "#   * set the OS scaling governor to PERFORMANCE          #"
 	echo "#                                                         #"
 	echo "# For that, you need a sudoer account!                    #"
@@ -153,7 +153,7 @@ if [[ -z ${reproscript+x} ]]; then
 		echo "failed.                                 #"
 	fi
 	echo -n "#   * scaling governor: "
-	modes=($(sudo $(pwd)/$(dirname $0)/../scalinggovernor.sh avail 0))
+	modes=($(sudo $(cd "$(dirname "${BASH_SOURCE[0]}")/.." &>/dev/null && pwd)/scalinggovernor.sh avail 0))
 	hasperformance=0
 	for mode in "${modes[@]}"; do
 		if [[ "${mode}" == performance ]]; then
@@ -179,8 +179,8 @@ fi
 BASE=ssbm-q
 BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
 BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-VARREPLACE="s/_//g"
 IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
+# ATTENTION !!! When you change the following, then you MUST adapt variable TEASER_INDICES, too !!!
 VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
 VARIANT_NAMES=("Unprotected" "DMR" "Early" "Late" "Continuous" "Reencoding")
 ARCHITECTURE=("_scalar")
@@ -191,6 +191,7 @@ if [[ ${HAS_SSE42} -eq 0 ]]; then
 	ARCHITECTURE+=("_SSE");
 	ARCHITECTURE_NAMES+=("SSE4.2")
 fi
+TEASER_INDICES=(0 1 4)
 
 ####################
 # Process Switches #
@@ -233,7 +234,7 @@ popd () {
 }
 
 date () {
-	${EXEC_ENV} ${EXEC_BASH} -c 'date "+%Y-%m-%d %H-%M-%S"'
+	${EXEC_ENV} ${EXEC_BASH} -c 'Current timestamp: "+%Y-%m-%d %H-%M-%S"'
 }
 
 #########################################################
@@ -386,6 +387,123 @@ unset arrow
 unset key
 set label 'Relative Runtime' at screen 0.5,0.15 rotate by 90
 plot 1 ls 0 with linespoints
+EOM
+}
+
+gnuplot_teaser_runtime () {
+	cat >$1 << EOM
+#!/usr/bin/env gnuplot
+
+set datafile separator '\t'
+set style data histogram
+set style histogram cluster gap 0
+set style fill pattern 0 border
+set style line 1 lc rgb "#9400d3"
+set style line 2 lc rgb "#009e73"
+set style line 3 lc rgb "#56b4e9"
+set style line 4 lc rgb "#e69f00"
+set style line 5 lc rgb "#000000"
+set style line 6 lc rgb "#0072b2"
+set style line 7 lc rgb "#e51e10"
+
+set term cairolatex pdf color fontscale 0.44 size 1in,1in dashlength 0.2
+set output '${2}'
+unset key
+set boxwidth 0.75
+set auto x
+unset xtics
+set yrange [0:2.5]
+set grid noxtics noytics
+set ylabel "Relative Runtime" offset 1,0
+unset xlabel
+set tmargin 0.5
+set rmargin 0.5
+set bmargin 1
+set lmargin 8
+set format y "\\num{%g}"
+set label "${4}" at first -0.325,${5}
+set label "${6}" at first 0,${7}
+set label "${8}" at first 0.4,${9}
+plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 title col, \
+         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 title col, \
+         '' using 4:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 title col
+unset output
+EOM
+}
+
+gnuplot_teaser_consumption () {
+	cat >$1 << EOM
+#!/usr/bin/env gnuplot
+
+set datafile separator '\t'
+set style data histogram
+set style histogram cluster gap 0
+set style fill pattern 0 border
+set style line 1 lc rgb "#9400d3"
+set style line 2 lc rgb "#009e73"
+set style line 3 lc rgb "#56b4e9"
+set style line 4 lc rgb "#e69f00"
+set style line 5 lc rgb "#000000"
+set style line 6 lc rgb "#0072b2"
+set style line 7 lc rgb "#e51e10"
+
+set term cairolatex pdf color fontscale 0.44 size 1in,1in dashlength 0.2
+set output '${2}'
+unset key
+set boxwidth 0.75
+set auto x
+unset xtics
+set yrange [0:2.5]
+set grid noxtics noytics
+set ylabel "Relative Memory\nConsumption" offset 1,0
+unset xlabel
+set tmargin 0.5
+set rmargin 0.5
+set bmargin 1
+set lmargin 8
+set format y "\\num{%g}"
+set label "${4}" at first -0.325,${5}
+set label "${6}" at first 0,${7}
+set label "${8}" at first 0.4,${9}
+plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 title col, \
+         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 title col, \
+         '' using 4:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 title col
+unset output
+EOM
+}
+
+gnuplot_teaser_legend () {
+	cat >$1 << EOM
+#!/usr/bin/env gnuplot
+
+set datafile separator '\t'
+set style data histogram
+set style histogram cluster gap 0
+set style fill pattern 0 border
+set style line 1 lc rgb "#9400d3"
+set style line 2 lc rgb "#009e73"
+set style line 3 lc rgb "#56b4e9"
+set style line 4 lc rgb "#e69f00"
+set style line 5 lc rgb "#000000"
+set style line 6 lc rgb "#0072b2"
+set style line 7 lc rgb "#e51e10"
+
+set term cairolatex pdf color fontscale 0.44 size 0.8in,1in
+set output '${2}'
+unset label
+unset grid
+unset box
+unset border
+set margin 0
+set key right outside center spacing 3
+unset tics
+unset xlabel
+unset ylabel
+set yrange [-10:0]
+plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 t "Unprotected", \
+         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 t "DMR", \
+         '' using 4:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 t "AHEAD"
+unset output
 EOM
 }
 
@@ -563,7 +681,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
 			rm -f ${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-			for var in "${VARIANTS[@]}"; do
+			for var in "${VARIANT_NAMES[@]}"; do
 				echo -n " ${var}" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			done
 			echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
@@ -756,7 +874,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 					arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
 					awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDTEMPFILE_PATH} >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 					echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-					sed -i -e ${VARREPLACE} ${EVAL_NORMALIZEDALLDATAFILE_PATH}
 					# remove <zero>-bytes
 					tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
 					mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
@@ -770,11 +887,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 	sync
 
 	echo " * Collecting Data for teaser graphs"
-	EVAL_TEASER_STORAGEFILE="teaser.storage.data"
-	EVAL_TEASER_STORAGEFILE_PATH="${PATH_EVALREPORT}/${EVAL_TEASER_STORAGEFILE}"
-	EVAL_TEASER_RUNTIMEFILE="teaser.runtime.data"
-	EVAL_TEASER_RUNTIMEFILE_PATH="${PATH_EVALREPORT}/${EVAL_TEASER_RUNTIMEFILE}"
-	rm -f ${EVAL_TEASER_STORAGEFILE_PATH} ${EVAL_TEASER_RUNTIMEFILE}
+	rm -f ${PATH_TEASER_CONSUMPTION_DATAFILE} ${PATH_TEASER_RUNTIME_DATAFILE}
 
 	# The storage teaser graph is for the INTERMEDIATE RESULTS only!
 	# For the storage teaser graph, we only use scale factor 1 AND WE ASSUME THAT THIS IS THE FIRST ONE IN THE RESULT FILES!
@@ -785,10 +898,12 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 	done
 	for ARCH in "${ARCHITECTURE[0]}"; do
 		for NUM in "${IMPLEMENTED[@]}"; do
-			printf '%s' ${NUM} >>"${EVAL_TEASER_STORAGEFILE_PATH}"
+			printf '%s' ${NUM} >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 			BASE2="${BASE}${NUM}"
 			# In the following, we first sum up the storage consumption (per query ${NUM}) and then divide the totals
-			for idx in "${!VARIANTS[@]}"; do
+			# We assume that file ${EVAL_FILEOPS_OUT} contains only the filtered operator stats AND
+			# that the first N entries belong to the very first query. We collect all consumptions until the operator number is smaller again, which means the next query run starts, and then stop awk.
+			for idx in "${TEASER_INDICES[@]}"; do
 				type="${BASE2}${VARIANTS[$idx]}${ARCH}"
 				EVAL_FILEOPS_OUT="${PATH_EVALINTER}/${type}.ops.out"
 				# use the projected consumption for the teaser
@@ -804,17 +919,17 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 				' "${EVAL_FILEOPS_OUT}")
 				((totalAbsoluteStorages[idx] += STORAGE))
 			done
-			printf '\n' >>"${EVAL_TEASER_STORAGEFILE_PATH}"
+			printf '\n' >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 		done
 	done
-	printf 'Type' >"${EVAL_TEASER_STORAGEFILE_PATH}"
-	for idx in "${!VARIANTS[@]}"; do
-		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${EVAL_TEASER_STORAGEFILE_PATH}"
+	printf 'Type' >"${PATH_TEASER_CONSUMPTION_DATAFILE}"
+	for idx in "${TEASER_INDICES[@]}"; do
+		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 	done
-	printf '\nAverage' >>"${EVAL_TEASER_STORAGEFILE_PATH}"
-	for idx in ${!VARIANTS[@]}; do
+	printf '\nAverage' >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
+	for idx in ${TEASER_INDICES[@]}; do
 		overallAverage=$(echo "${totalAbsoluteStorages[$idx]} ${totalAbsoluteStorages[0]}"|awk '{printf "%f", $1 / $2}')
-		printf "\t${overallAverage}" >>"${EVAL_TEASER_STORAGEFILE_PATH}"
+		printf "\t${overallAverage}" >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 	done
 
 	echo "   * Runtime"
@@ -822,35 +937,33 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 	for VAR in "${VARIANTS[@]}"; do
 		totalRelativeRuntimes+=(0)
 	done
+	# For the following, we can use the already computed overall-relative-runtimes! These are stored in file ${EVAL_NORMALIZEDALLDATAFILE_PATH}
 	for idx in "${!ARCHITECTURE[@]}"; do
 		EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCHITECTURE[$idx]}.data"
 		EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
 		# ignore the headline generated in the normalized data file
 		#echo -n "      * ${ARCHITECTURE_NAMES[$idx]}"
 		ARRAY_RUNTIMES=($(awk -v numvars=${#VARIANTS[@]} '
-			BEGIN {for (i=0; i<numvars; ++i) runtimes[i]=0}
-			NR>1{for (i=1; i<NF; ++i) runtimes[i-1]+=$i}
-			END{for (i in runtimes) print runtimes[i]}
+			BEGIN{for (i=0; i<numvars; ++i) runtimes[i]=0}
+			NR>1{for (i=1; i<=NF; ++i) runtimes[i-1]+=$i}
+			END{for (i=1; i<=numvars; ++i) print runtimes[i]}
 		' "${EVAL_NORMALIZEDALLDATAFILE_PATH}"))
-		for idx in "${!VARIANTS[@]}"; do
-			totalRelativeRuntimes[$idx]=$(echo "${totalRelativeRuntimes[$idx]}+${ARRAY_RUNTIMES[$idx]}"|bc)
+		for idxA in "${!VARIANTS[@]}"; do
+			totalRelativeRuntimes[$idxA]=$(echo "${totalRelativeRuntimes[$idxA]}+${ARRAY_RUNTIMES[$idxA]}"|bc)
 		done
 	done
-	#echo -n " [${totalRelativeRuntimes[@]}]"
-	numRuntimes=$((${#ARCH[@]}*${#IMPLEMENTED[@]}))
-	printf 'Type' >"${EVAL_TEASER_RUNTIMEFILE_PATH}"
-	for idx in "${!VARIANTS[@]}"; do
-		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${EVAL_TEASER_RUNTIMEFILE_PATH}"
+	numRuntimes=$((${#ARCHITECTURE[@]}*${#IMPLEMENTED[@]}))
+	printf 'Type' >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	for idx in "${TEASER_INDICES[@]}"; do
+		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
-	printf '\nAverage' >>"${EVAL_TEASER_RUNTIMEFILE_PATH}"
-	#echo -n " ["
-	for idx in "${!VARIANTS[@]}"; do
-		#[[ $idx > 0 ]] && echo -n " "
-		overallAverage=$(echo "${totalRelativeRuntimes[$idx]} ${numRuntimes}"|awk '{printf "%f", $1 / $2}')
-		#echo -n "${overallAverage}"
-		printf '\t%s' "${overallAverage}" >>"${EVAL_TEASER_RUNTIMEFILE_PATH}"
+	printf '\nAverage' >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	for idx in "${TEASER_INDICES[@]}"; do
+		overallAverage=$(echo "${totalRelativeRuntimes[$idx]} ${numRuntimes}" | awk '{printf "%f", $1 / $2}')
+		printf '\t%s' "${overallAverage}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
-	#echo "]"
+	printf '\n#NumRuntimes=%s' ${numRuntimes} >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	echo -n " [${totalRelativeRuntimes[@]}]" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 
 	echo " * Plotting"
 	for ARCH in "${ARCHITECTURE[@]}"; do
@@ -887,21 +1000,18 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		done
 		sync
 
-		#ALLPDFOUTFILE=${PATH_EVALREPORT}/ssbm-all${ARCH}.pdf
-		#ALLPDFINFILES=
-		#for NUM in "${IMPLEMENTED[@]}"; do
-		#	BASE3=${BASE}${NUM}${ARCH}
-		#	ALLPDFINFILES+=" ${PATH_EVALREPORT}/${BASE3}.pdf ${PATH_EVALREPORT}/${BASE3}-norm.pdf"
-		#done
-		#echo "   * Creating PDF file with all diagrams (${ALLPDFOUTFILE})"
-		#gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages -dCompressFonts=true -r150 -sOutputFile=${ALLPDFOUTFILE} ${ALLPDFINFILES}
-
 		echo "   * Creating tex/PDF files for normalized averages (${EVAL_NORMALIZEDALLTEXFILE_PATH})"
 		gnuplotcodetex  ${EVAL_NORMALIZEDALLPLOTFILE_PATH} ${EVAL_NORMALIZEDALLTEXFILE_PATH} ${EVAL_NORMALIZEDALLDATAFILE_PATH} \
 			"set yrange [0:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "set ylabel \"Relative Runtime\""
 		gnuplot ${EVAL_NORMALIZEDALLPLOTFILE_PATH}
 	done
 	echo "   * Teaser graphs"
+	gnuplot_teaser_runtime "${PATH_TEASER_RUNTIME_GNUPLOTFILE}" "${PATH_TEASER_RUNTIME_PLOTFILE}" "${PATH_TEASER_RUNTIME_DATAFILE}" "1.0" "1.25" "2.0" "2.25" "1.19" "1.44"
+	gnuplot_teaser_consumption "${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}" "${PATH_TEASER_CONSUMPTION_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}" "1.0" "1.25" "2.0" "2.25" "1.5" "1.75"
+	gnuplot_teaser_legend "${PATH_TEASER_LEGEND_GNUPLOTFILE}" "${PATH_TEASER_LEGEND_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}"
+	gnuplot "${PATH_TEASER_RUNTIME_GNUPLOTFILE}"
+	gnuplot "${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}"
+	gnuplot "${PATH_TEASER_LEGEND_GNUPLOTFILE}"
 	sync
 else
 	echo "Skipping evaluation."

@@ -98,24 +98,32 @@ function generate_ssb {
 	fi
 
 	all_existing=1
+	any_error=0
 	for tab in c d l p s; do
-		filename="${table_names[$tab]}.tbl"
-		echo -n "  * ${tab}: ${filename} "
-		if [[ -f "$filename" || -f "${sf_path}/$filename" ]]; then
-			echo "exists"
-		else
-			all_existing=0
-			./dbgen -s ${sf} -T ${tab} -v 1>/dev/null 2>/dev/null
-			ret=$?
-			if [[ ! $ret -eq 0 ]]; then
-				echo "Error"
-				popd
-				exit $ret
+		(
+			filename="${table_names[$tab]}.tbl"
+			echo -n "  * ${tab}: ${filename} "
+			if [[ -f "$filename" || -f "${sf_path}/$filename" ]]; then
+				echo "exists"
+			else
+				all_existing=0
+				./dbgen -s ${sf} -T ${tab} -v 1>/dev/null 2>/dev/null
+				ret=$?
+				if [[ ! $ret -eq 0 ]]; then
+					echo "Error"
+					any_error=1
+					popd
+					exit $ret
+				fi
+				sync
+				echo "created"
 			fi
-			sync
-			echo "created"
-		fi
+		)
 	done
+	wait -n
+	if $((any_error == 1)); then
+		exit 1
+	fi
 
 	if [[ ${all_existing} == 0 ]]; then
 		sync
