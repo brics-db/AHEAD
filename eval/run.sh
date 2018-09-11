@@ -106,7 +106,7 @@ if [[ -t 1 ]] && [[ -t 2 ]]; then
 	filebase=$(basename -s '.sh' $0)
 	outfile="${PATH_EVAL_CURRENT}/${filebase}.out"
 	errfile="${PATH_EVAL_CURRENT}/${filebase}.err"
-	if [[ -e ${PATH_EVAL_CURRENT} ]]; then
+	if [[ -e "${PATH_EVAL_CURRENT}" ]]; then
 		if [[ -f "${outfile}" ]]; then
 			idx=0
 			while [[ -f "${outfile}.${idx}" ]]; do
@@ -234,7 +234,7 @@ popd () {
 }
 
 date () {
-	${EXEC_ENV} ${EXEC_BASH} -c 'Current timestamp: "+%Y-%m-%d %H-%M-%S"'
+	${EXEC_ENV} ${EXEC_BASH} -c 'echo -n "Current timestamp: "; date "+%Y-%m-%d %H-%M-%S"'
 }
 
 #########################################################
