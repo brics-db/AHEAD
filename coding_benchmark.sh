@@ -4,44 +4,14 @@ CB_SUBMODULE=coding_benchmark
 CB_GITREPO=https://github.com/brics-db/coding_benchmark
 CB_BUILDDIR=build
 
+echo "###########################################################"
+echo "# Running Coding Benchmark                                #"
+echo "###########################################################"
+echo
+
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/common.conf"
 
-if [[ -z ${reproscript+x} ]]; then
-	echo "###########################################################"
-	echo "# For the following tests, for better reproducibilty, we: #"
-	echo "#   * DISABLE turboboost                                  #"
-	echo "#   * set the OS scaling governor to PERFORMANCE          #"
-	echo "#                                                         #"
-	echo "# For that, you need a sudoer account!                    #"
-	echo "#                                                         #"
-	echo -n "#   * turboboost: "
-	if [[ $(sudo "${AHEAD_SCRIPT_TURBOBOOST}" disable &>/dev/null) ]]; then
-		echo "succeeded.                              #"
-	else
-		echo "failed.                                 #"
-	fi
-	echo -n "#   * scaling governor: "
-	modes=($(sudo "${AHEAD_SCRIPT_GOVERNOR}" avail 0))
-	hasperformance=0
-	for mode in "${modes[@]}"; do
-		if [[ "${mode}" == performance ]]; then
-			hasperformance=1
-			if [[ $(sudo "${AHEAD_SCRIPT_GOVERNOR}" set performance &>/dev/null) ]]; then
-				echo "succeeded.                        #"
-			else
-				echo "failed.                           #"
-			fi
-			break
-		fi
-	done
-	[[ $hasperformance == 0 ]] && echo "failed. Did not find governor.    #"
-	echo "###########################################################"
-	echo
-	echo "###########################################################"
-	echo "# Running Coding Benchmark                                #"
-	echo "###########################################################"
-	echo
-fi
+AHEAD_prepare_scalinggovernor_and_turboboost
 
 # For the reproducibility, use the submodule coding_benchmark
 if [[ -z "$(ls -A ${CB_SUBMODULE})" ]]; then

@@ -5,6 +5,8 @@ if [[ -z $(which rdmsr) ]]; then
     exit 1
 fi
 
+modprobe msr
+
 cores=$(cat /proc/cpuinfo | grep processor | awk '{print $3}')
 for core in $cores; do
     case "$1" in

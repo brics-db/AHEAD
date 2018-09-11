@@ -138,39 +138,6 @@ chmod +x "${PATH_EVAL_CURRENT}/$(basename $0)"
 
 echo "[INFO] Running Phase \"${PHASE}\""
 
-if [[ -z ${reproscript+x} ]]; then
-	echo "###########################################################"
-	echo "# For the following tests, for better reproducibilty, we: #"
-	echo "#   * DISABLE turboboost                                  #"
-	echo "#   * set the OS scaling governor to PERFORMANCE          #"
-	echo "#                                                         #"
-	echo "# For that, you need a sudoer account!                    #"
-	echo "#                                                         #"
-	echo -n "#   * turboboost: "
-	if [[ $(sudo "${AHEAD_SCRIPT_TURBOBOOST}" disable &>/dev/null) ]]; then
-		echo "succeeded.                              #"
-	else
-		echo "failed.                                 #"
-	fi
-	echo -n "#   * scaling governor: "
-	modes=($(sudo "${AHEAD_SCRIPT_GOVERNOR}" avail 0))
-	hasperformance=0
-	for mode in "${modes[@]}"; do
-		if [[ "${mode}" == performance ]]; then
-			hasperformance=1
-			if [[ $(sudo "${AHEAD_SCRIPT_GOVERNOR}" set performance &>/dev/null) ]]; then
-				echo "succeeded.                        #"
-			else
-				echo "failed.                           #"
-			fi
-			break
-		fi
-	done
-	[[ $hasperformance == 0 ]] && echo "failed. Did not find governor.    #"
-	echo "###########################################################"
-	echo
-fi
-
 ###################
 # Basic Variables #
 ###################
@@ -587,6 +554,7 @@ fi
 # Benchmarking
 if [[ ${DO_BENCHMARK} -ne 0 ]]; then
 	date
+	AHEAD_prepare_scalinggovernor_and_turboboost
 	( [[ "${BENCHMARK_MINBFW}" > 0 ]] && echo "Benchmarking (using AN-minBFW=${BENCHMARK_MINBFW}):" ) || echo "Benchmarking:"
 	if (( AHEAD_USE_PCM==1 )); then
 		echo -n " * checking for 'msr' module for performance counter monitoring: "

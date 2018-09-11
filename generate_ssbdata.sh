@@ -70,6 +70,11 @@ fi
 
 pushd ${AHEAD_DB_PATH}
 
+# generate_ssb (
+#              sf    [required]    The scale factor as an integer
+#     path_suffix    [optional]    Special suffix, e.g. "-minbfw1"
+#         cmdargs    [optional]    Special cmd args for the .ahead file generator, e.g. "--minbfw 1"
+# )
 function generate_ssb {
 	if [[ "$#" == 0 ]]; then
 		echo "[ERROR] you must call bash function generate_ssb with at least the scale factor as parameter!" >/dev/stderr
@@ -94,52 +99,41 @@ function generate_ssb {
 
 	if [[ -f "${sf_path}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
 		echo "  * It seems that all files for scale factor ${sf} are already generated"
-		exit 0
+		# We can return from the function here.
+		return
 	fi
 
 	all_existing=1
-	any_error=0
 	for tab in c d l p s; do
-		(
-			filename="${table_names[$tab]}.tbl"
-			echo -n "  * ${tab}: ${filename} "
-			if [[ -f "$filename" || -f "${sf_path}/$filename" ]]; then
-				echo "exists"
-			else
-				all_existing=0
-				./dbgen -s ${sf} -T ${tab} -v 1>/dev/null 2>/dev/null
-				ret=$?
-				if [[ ! $ret -eq 0 ]]; then
-					echo "Error"
-					any_error=1
-					popd
-					exit $ret
-				fi
-				sync
-				echo "created"
+		filename="${table_names[$tab]}.tbl"
+		echo -n "  * ${tab}: ${filename} "
+		if [[ -f "$filename" || -f "${sf_path}/$filename" ]]; then
+			echo "exists"
+		else
+			all_existing=0
+			./dbgen -s ${sf} -T ${tab} -v 1>/dev/null 2>/dev/null
+			ret=$?
+			if [[ ! $ret -eq 0 ]]; then
+				echo "Error"
+				exit $ret
 			fi
-		)
+			echo "created"
+		fi
 	done
-	wait -n
-	if $((any_error == 1)); then
-		exit 1
+
+	mkdir -p "${sf_path}"
+	ret=$?
+	if ((ret != 0)); then
+		echo "  * Error creating folder '${sf_path}'"
+		exit $ret
 	fi
 
-	if [[ ${all_existing} == 0 ]]; then
+	if ((all_existing == 0)); then
 		sync
 		echo "  * synced all files (sync)"
-		mkdir -p "${sf_path}"
-		ret=$?
-		if [[ $ret -ne 0 ]]; then
-			popd
-			echo "  * Error creating folder '${sf_path}'"
-			exit $ret
-		fi
-#		ls -lAh *.tbl
 		mv *.tbl "${sf_path}/"
 		ret=$?
 		if [[ $ret -ne 0 ]]; then
-			popd
 			echo "  * Error moving files to subfolder '${sf_path}'"
 			exit $ret
 		fi
@@ -189,12 +183,10 @@ function generate_ssb {
 		fi
 	done
 
-	echo "========================================================"
-	echo "=== GENERATING SMALLER DATABASE FILES. DO NOT ABORT! ==="
-	echo "========================================================"
+	echo "  * Generating smaller database files. DO NOT ABORT!"
 	${AHEAD_SCRIPT_GENSSB_EXECUTABLE} -d . "${cmdargs}"
 	ret=$?
-	if [[ $ret -ne 0 ]]; then
+	if ((ret != 0)); then
 		echo "  * Error executing '${AHEAD_SCRIPT_GENSSB_EXECUTABLE} -d . \"${cmdargs}\"'"
 		exit $ret
 	fi
@@ -204,7 +196,7 @@ function generate_ssb {
 
 	rm -f *.tbl
 	ret=$?
-	if [[ $ret -ne 0 ]]; then
+	if ((ret != 0)); then
 		echo "  * Error removing table files"
 		exit $ret
 	fi
@@ -213,24 +205,17 @@ function generate_ssb {
 
 	/bin/bash -c "ls *.tbl" &>/dev/null
 	ret2=$?
-	if [[ $ret2 -eq 0 ]]; then
+	if ((ret2 == 0)); then
 		echo "  * There are still some table files here!"
 		rm -f *.tbl
 	fi
 
 	sync
 	echo "  * synced all files (sync)"
-
-	exit 0
 }
 
 for sf in $(seq "${AHEAD_SCALEFACTOR_MIN}" "${AHEAD_SCALEFACTOR_MAX}"); do
 	generate_ssb ${sf}
-	ret=$?
-	if [[ $ret -ne 0 ]]; then
-		echo "  * return code was $ret"
-		exit 1
-	fi
 done
 
 for minbfw in $(seq "${AHEAD_MINBFW_MIN}" "${AHEAD_MINBFW_MAX}"); do
@@ -238,7 +223,5 @@ for minbfw in $(seq "${AHEAD_MINBFW_MIN}" "${AHEAD_MINBFW_MAX}"); do
 	generate_ssb "${AHEAD_MINBFW_SCALEFACTOR}" "${AHEAD_MINBFW_SUFFIX}${minbfw}" "${AHEAD_MINBFW_CMDARG} ${minbfw}"
 done
 
-popd
-
+echo "All database generated without error."
 exit 0
-
