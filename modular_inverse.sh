@@ -24,18 +24,18 @@ if [[ -z ${reproscript+x} ]]; then
 	echo "# For that, you need a sudoer account!                    #"
 	echo "#                                                         #"
 	echo -n "#   * turboboost: "
-	if [[ $(sudo ./turboboost.sh disable &>/dev/null) ]]; then
+	if [[ $(sudo "${AHEAD_SCRIPT_TURBOBOOST}" disable &>/dev/null) ]]; then
 		echo "succeeded.                              #"
 	else
 		echo "failed.                                 #"
 	fi
 	echo -n "#   * scaling governor: "
-	modes=($(sudo $(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/scalinggovernor.sh avail 0))
+	modes=($(sudo "${AHEAD_SCRIPT_GOVERNOR}" avail 0))
 	hasperformance=0
 	for mode in "${modes[@]}"; do
 		if [[ "${mode}" == performance ]]; then
 			hasperformance=1
-			if [[ $(sudo ./scalinggovernor.sh set performance &>/dev/null) ]]; then 
+			if [[ $(sudo "${AHEAD_SCRIPT_GOVERNOR}" set performance &>/dev/null) ]]; then
 				echo "succeeded.                        #"
 			else
 				echo "failed.                           #"
