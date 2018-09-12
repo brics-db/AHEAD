@@ -133,7 +133,7 @@ fi ### [[ -t 1 ]] && [[ -t 2 ]]
 
 # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
 sed -E -e '34,+25s/^(.+)$/#\1/' -e '88s/^.+$/\tPHASE="EVAL"\n\tDO_COMPILE=0\n\tDO_BENCHMARK=0\n\tDO_EVAL=1\n\tDO_EVAL_PREPARE=1\n\tDO_VERIFY=1/' -e '94,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '94s/^(.+)$/export AHEAD_DATE="'"${AHEAD_DATE}"'"\nexport PATH_EVAL_CURRENT="."\n\1/' -e '135,+2s/^(.+)$/#\1/' -e '156s/(\/\.\.)/\1\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
-sed -E -e '7s/^(\s+source\s+)(\.\.\/common.conf)$/\1..\/\2/' -e '9s/^(.+)$/#\1/' "${CONFIG_FILE}" >"${PATH_EVAL_CURRENT}/${CONFIG_FILE}"
+sed -E -e 's/^(\s+source\s+"[^\.]+)(\.\.\/common.conf.+)$/\1..\/\2/' "${CONFIG_FILE}" >"${PATH_EVAL_CURRENT}/${CONFIG_FILE}"
 chmod +x "${PATH_EVAL_CURRENT}/$(basename $0)"
 
 echo "[INFO] Running Phase \"${PHASE}\""
@@ -387,12 +387,12 @@ set tmargin 0.5
 set rmargin 0.5
 set bmargin 1
 set lmargin 8
-set format y "\\num{%g}"
+set format y "\\\\num{%g}"
 set label "${4}" at first -0.325,${5}
 set label "${6}" at first 0,${7}
 set label "${8}" at first 0.4,${9}
-plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 title col, \
-         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 title col, \
+plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 title col, \\
+         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 title col, \\
          '' using 4:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 title col
 unset output
 EOM
@@ -428,12 +428,12 @@ set tmargin 0.5
 set rmargin 0.5
 set bmargin 1
 set lmargin 8
-set format y "\\num{%g}"
+set format y "\\\\num{%g}"
 set label "${4}" at first -0.325,${5}
 set label "${6}" at first 0,${7}
 set label "${8}" at first 0.4,${9}
-plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 title col, \
-         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 title col, \
+plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 title col, \\
+         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 title col, \\
          '' using 4:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 title col
 unset output
 EOM
@@ -467,8 +467,8 @@ unset tics
 unset xlabel
 unset ylabel
 set yrange [-10:0]
-plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 t "Unprotected", \
-         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 t "DMR", \
+plot '${3}' using 2:xtic(1) fillstyle pattern 0 border ls 1 lw 1 dt 1 t "Unprotected", \\
+         '' using 3:xtic(1) fillstyle pattern 2 border ls 2 lw 1 dt 1 t "DMR", \\
          '' using 4:xtic(1) fillstyle pattern 1 border ls 6 lw 1 dt 1 t "AHEAD"
 unset output
 EOM
@@ -684,6 +684,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 						EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
 						EVAL_FILERESULTS_PATH="${PATH_EVALINTER}/${type}.results"
 						EVAL_FILEBESTRUNS_PATH="${PATH_EVALINTER}/${type}.bestruns"
+						echo "    * ${type}: ${EVAL_FILEOUT} // ${EVAL_FILERESULTS_PATH} // ${EVAL_FILEBESTRUNS_PATH}"
 
 						grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS_PATH}
 						allruntimes=($(grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" | awk '{print $2}'))
@@ -919,6 +920,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		for idxA in "${!VARIANTS[@]}"; do
 			totalRelativeRuntimes[$idxA]=$(echo "${totalRelativeRuntimes[$idxA]}+${ARRAY_RUNTIMES[$idxA]}"|bc)
 		done
+		printf '#NumRuntimes=%s [%s]\n' ${numRuntimes} "${totalRelativeRuntimes[@]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
 	numRuntimes=$((${#ARCHITECTURE[@]}*${#IMPLEMENTED[@]}))
 	printf 'Type' >>"${PATH_TEASER_RUNTIME_DATAFILE}"
@@ -930,8 +932,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		overallAverage=$(echo "${totalRelativeRuntimes[$idx]} ${numRuntimes}" | awk '{printf "%f", $1 / $2}')
 		printf '\t%s' "${overallAverage}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
-	printf '\n#NumRuntimes=%s' ${numRuntimes} >>"${PATH_TEASER_RUNTIME_DATAFILE}"
-	echo -n " [${totalRelativeRuntimes[@]}]" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	printf '\n#NumRuntimes=%s [%s]' ${numRuntimes} "${totalRelativeRuntimes[@]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 
 	echo " * Plotting"
 	for ARCH in "${ARCHITECTURE[@]}"; do

@@ -118,9 +118,9 @@ set xrange [$((MI_A_MIN+1)):${MI_C_MAX}]
 set offsets 3, 3, 0, 0
 set xtics rotate by 45 offset -1,-1 ($(for idx in ${!mywidths[@]}; do if [[ $idx > 0 ]]; then printf ", "; fi; printf "\"%${widthlen}d\" %d" $((${mywidths[$idx]} - 1)) $((${mywidths[$idx]} - 1)); done))
 set yrange [0:*]
-set xlabel "$|C|$ [\\# bits]"
+set xlabel "$|C|$ [\\\\# bits]"
 set ylabel "Compute Time [ns]"
-set format y "\\num{%g}"
+set format y "\\\\num{%g}"
 set key right outside center vertical samplen 1 spacing 1.4
 
 plot for [i=2:$((${#mywidths[@]}+1))] infile using 1:i t col w linespoints ls i

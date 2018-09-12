@@ -91,7 +91,9 @@ if [[ ${DO_SSB} == 1 ]]; then
 	ln -fs "${PATH_EVALREPORT}" "${AHEAD_PAPER_RESULTS_SSB}/report"
 	ln -fs "${PATH_EVALINTER}" "${AHEAD_PAPER_RESULTS_SSB}/intermediate"
 	for f in $(ls ${PATH_EVALREPORT}/${PATH_TEASER_RUNTIME_BASENAME}* ; ls ${PATH_EVALREPORT}/${PATH_TEASER_CONSUMPTION_BASENAME}* ; ${PATH_EVALREPORT}/${PATH_TEASER_LEGEND_BASENAME}*); do
-		ln -fs "${f}" "${AHEAD_PAPER_RESULTS_SSB}/$(basename -s '' ${f})"
+		link="${AHEAD_PAPER_RESULTS_SSB}/$(basename -s '' ${f})"
+		echo "  * linking '${f}' <- '${link}'"
+		ln -fs "${f}" "${link}"
 	done
 	popd &>/dev/null
 	echo
@@ -105,8 +107,12 @@ if [[ ${DO_MODULARINVERSE} == 1 ]]; then
 	bash ${AHEAD_SCRIPT_MODINV}
 fi
 
+echo "###########################################################"
+echo "# Generating simgod2018.pdf                               #"
+echo "###########################################################"
 pushd ${AHEAD_PAPER_PATH} &>/dev/null
-(pdflatex sigmod2018.tex && pdflatex sigmod2018.tex) || exit 1
+(pdflatex sigmod2018.tex &>/dev/null && pdflatex sigmod2018.tex &>/dev/null && pdflatex sigmod2018.tex &>/dev/null) || exit 1
+printf '\n\nDone. You can re-compile the paper by calling "pdflatex sigmod2018.tex" in subfolder "paper"\n'
 popd &>/dev/null
 
 exit 0
