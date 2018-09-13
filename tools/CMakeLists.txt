@@ -25,6 +25,12 @@ ELSE()
     PROJECT(SSBQueries LANGUAGES CXX)
 ENDIF()
 
+IF(DEFINED RESTINY32)
+	SET(EXEC_SUFFIX "_restiny32")
+ELSE()
+	SET(EXEC_SUFFIX "")
+ENDIF()
+
 ###########
 ### PCM ###
 ###########
@@ -37,14 +43,11 @@ MESSAGE("Checking for PCM")
 IF(NOT EXISTS "${PCMDIR}" OR NOT EXISTS "${LIBPCMDIR}")
 	MESSAGE(STATUS "Fetching PCM from github as submodule")
 	EXECUTE_PROCESS(
-		COMMAND git submodule add "https://github.com/opcm/pcm.git" pcm
+		COMMAND git submodule add "https://github.com/brics-db/pcm.git" pcm
 		WORKING_DIRECTORY "${ROOTDIR}")
 	EXECUTE_PROCESS(
-		COMMAND git submodule init pcm
+		COMMAND git submodule update --init pcm
 		WORKING_DIRECTORY "${ROOTDIR}")
-	EXECUTE_PROCESS(
-		COMMAND git submodule update
-		WORKING_DIRECTORY "${PCMDIR}")
 ENDIF(NOT EXISTS "${PCMDIR}" OR NOT EXISTS "${LIBPCMDIR}")
 
 # The same as above ---> build libpcm.so only once. Until we have a cmake project file in pcm/ the responsibility for recreating the library is on the user side
@@ -67,16 +70,17 @@ ENDIF(LIBPCM)
 ### SSB Shared Library ###
 ##########################
 MACRO( add_shared_lib target_name arg_source_files )
-    MESSAGE(STATUS "Add shared library ${LIBNAME}")
     SET(LIBNAME "${target_name}")
+    STRING(APPEND LIBNAME "${EXEC_SUFFIX}")
+    MESSAGE(STATUS "Add shared library ${LIBNAME}")
     STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
     ADD_LIBRARY(${LIBNAME} SHARED ${SOURCE_FILES})
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
     SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
-    TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC "${PCMDIR}")
+    TARGET_INCLUDE_DIRECTORIES(${LIBNAME} PUBLIC "${PCMDIR}")
     IF(LIBPCM)
         TARGET_LINK_LIBRARIES(${LIBNAME} AHEAD "${LIBPCM}" ffi dl pthread curses boost_system boost_filesystem)
-        TARGET_COMPILE_OPTIONS(${LIBNAME} PUBLIC "-DAHEAD_PCM")
+        TARGET_COMPILE_DEFINITIONS(${LIBNAME} PUBLIC "AHEAD_PCM")
     ELSE(LIBPCM)
         TARGET_LINK_LIBRARIES(${LIBNAME} AHEAD ffi dl pthread curses boost_system boost_filesystem)
     ENDIF(LIBPCM)
@@ -97,51 +101,46 @@ MACRO( add_algorithm arg_name arg_path target_name )
 	TARGET_INCLUDE_DIRECTORIES(${target_name} PUBLIC "${PCMDIR}")
     IF(LIBPCM)
         TARGET_LINK_LIBRARIES(${target_name} ${LIBPCM} AHEAD SSB)
-        TARGET_COMPILE_OPTIONS(${LIBNAME} PUBLIC "-DAHEAD_PCM")
+        TARGET_COMPILE_DEFINITIONS(${LIBNAME} PUBLIC "AHEAD_PCM")
     ELSE(LIBPCM)
         TARGET_LINK_LIBRARIES(${target_name} AHEAD SSB)
     ENDIF(LIBPCM)
+    IF(DEFINED RESTINY32)
+    	TARGET_COMPILE_DEFINITIONS(${target_name} PUBLIC "RESTINY32")
+    ENDIF(DEFINED RESTINY32)
 ENDMACRO( add_algorithm )
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 MESSAGE(STATUS "link directory: ${LIBRARY_OUTPUT_PATH}")
 
-#add_algorithm(main               "sample")
-#add_algorithm(lineorder_size     "sample")
-#add_algorithm(test_hashjoin      "sample")
-#add_algorithm(test_group         "sample")
-
-MACRO(append_target_property arg_target arg_property arg_setting)
-	GET_TARGET_PROPERTY(TEMP ${arg_target} ${arg_property})
-	IF(TEMP STREQUAL "TEMP-NOTFOUND")
-		SET(TEMP "") # set to empty string
-	ELSE()
-		SET(TEMP "${TEMP} ") # a space to cleanly separate from existing content
-	ENDIF()
-	# append our values
-	SET(TEMP "${TEMP}${arg_setting}")
-	SET_TARGET_PROPERTIES(${arg_target} PROPERTIES ${arg_property} ${TEMP})
-ENDMACRO(append_target_property)
-
-MACRO(add_ssb arg_queries)
+MACRO(add_ssb_Scalar arg_queries)
 	SET(QUERIES "")
     STRING(REPLACE " " ";" QUERIES "${arg_queries}")
     FOREACH(Q ${QUERIES})
-        add_algorithm(${Q} "ssbm" "${Q}_scalar")
-        TARGET_COMPILE_OPTIONS("${Q}_scalar" PUBLIC "-fno-tree-vectorize")
+    	SET(EXEC_NAME "${Q}_scalar")
+    	STRING(APPEND EXEC_NAME "${EXEC_SUFFIX}")
+        add_algorithm(${Q} "ssbm" "${EXEC_NAME}")
+        TARGET_COMPILE_OPTIONS("${EXEC_NAME}" PUBLIC "-fno-tree-vectorize")
     ENDFOREACH(Q QUERIES)
-ENDMACRO(add_ssb)
+ENDMACRO(add_ssb_Scalar)
 
 MACRO(add_ssb_SSE arg_queries)
 	SET(QUERIES "")
     STRING(REPLACE " " ";" QUERIES "${arg_queries}")
     FOREACH(Q ${QUERIES})
-        add_algorithm(${Q} "ssbm" "${Q}_SSE")
-        TARGET_COMPILE_DEFINITIONS("${Q}_SSE" PUBLIC "FORCE_SSE")
+    	SET(EXEC_NAME "${Q}_SSE")
+    	STRING(APPEND EXEC_NAME "${EXEC_SUFFIX}")
+        add_algorithm(${Q} "ssbm" "${EXEC_NAME}")
+        TARGET_COMPILE_DEFINITIONS("${EXEC_NAME}" PUBLIC "FORCE_SSE")
     ENDFOREACH(Q QUERIES)
 ENDMACRO(add_ssb_SSE)
 
-add_ssb("ssbm-dbsize \
+# If you want to be able to test the restiny_t=32bit behavior for *all* queries, simply remove the if-branch, so that all queries will be generated a second time with the larger data type!
+IF(DEFINED RESTINY32)
+	add_ssb_Scalar("ssbm-dbsize ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc")
+	add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc")
+ELSE()
+	add_ssb_Scalar("ssbm-dbsize \
 ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
@@ -155,7 +154,7 @@ ssbm-q34_normal ssbm-q34_dmr_seq ssbm-q34_early ssbm-q34_late ssbm-q34_continuou
 ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late ssbm-q41_continuous ssbm-q41_continuous_reenc \
 ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late ssbm-q42_continuous ssbm-q42_continuous_reenc \
 ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late ssbm-q43_continuous ssbm-q43_continuous_reenc")
-add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
+	add_ssb_SSE("ssbm-q11_normal ssbm-q11_dmr_seq ssbm-q11_early ssbm-q11_late ssbm-q11_continuous ssbm-q11_continuous_reenc \
 ssbm-q12_normal ssbm-q12_dmr_seq ssbm-q12_early ssbm-q12_late ssbm-q12_continuous ssbm-q12_continuous_reenc \
 ssbm-q13_normal ssbm-q13_dmr_seq ssbm-q13_early ssbm-q13_late ssbm-q13_continuous ssbm-q13_continuous_reenc \
 ssbm-q21_normal ssbm-q21_dmr_seq ssbm-q21_early ssbm-q21_late ssbm-q21_continuous ssbm-q21_continuous_reenc \
@@ -168,35 +167,4 @@ ssbm-q34_normal ssbm-q34_dmr_seq ssbm-q34_early ssbm-q34_late ssbm-q34_continuou
 ssbm-q41_normal ssbm-q41_dmr_seq ssbm-q41_early ssbm-q41_late ssbm-q41_continuous ssbm-q41_continuous_reenc \
 ssbm-q42_normal ssbm-q42_dmr_seq ssbm-q42_early ssbm-q42_late ssbm-q42_continuous ssbm-q42_continuous_reenc \
 ssbm-q43_normal ssbm-q43_dmr_seq ssbm-q43_early ssbm-q43_late ssbm-q43_continuous ssbm-q43_continuous_reenc")
-
-##############
-### OPENMP ###
-##############
-MACRO(enable_openmp arg_queries)
-	SET(QUERIES "")
-    STRING(REPLACE " " ";" QUERIES "${arg_queries}")
-    FOREACH(Q ${QUERIES})
-        append_target_property(${Q} "COMPILE_FLAGS" "${OpenMP_CXX_FLAGS}")
-        append_target_property(${Q} "LINK_FLAGS" "${OpenMP_CXX_FLAGS}")
-    ENDFOREACH(Q QUERIES)
-ENDMACRO(enable_openmp)
-
-FIND_PACKAGE(OpenMP)
-
-IF(OPENMP_FOUND)
-	MESSAGE("Generating OpenMP targets")
-	add_ssb("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt \
-ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt \
-ssbm-q31_dmr_mt ssbm-q32_dmr_mt ssbm-q33_dmr_mt ssbm-q34_dmr_mt \
-ssbm-q41_dmr_mt ssbm-q42_dmr_mt ssbm-q43_dmr_mt")
-	add_ssb_SSE("ssbm-q11_dmr_mt ssbm-q12_dmr_mt ssbm-q13_dmr_mt \
-ssbm-q21_dmr_mt ssbm-q22_dmr_mt ssbm-q23_dmr_mt \
-ssbm-q31_dmr_mt ssbm-q32_dmr_mt ssbm-q33_dmr_mt ssbm-q34_dmr_mt \
-ssbm-q41_dmr_mt ssbm-q42_dmr_mt ssbm-q43_dmr_mt")
-	enable_openmp("ssbm-q11_dmr_mt_scalar ssbm-q12_dmr_mt_scalar ssbm-q13_dmr_mt_scalar ssbm-q11_dmr_mt_SSE ssbm-q12_dmr_mt_SSE ssbm-q13_dmr_mt_SSE \
-ssbm-q21_dmr_mt_scalar ssbm-q22_dmr_mt_scalar ssbm-q23_dmr_mt_scalar ssbm-q21_dmr_mt_SSE ssbm-q22_dmr_mt_SSE ssbm-q23_dmr_mt_SSE \
-ssbm-q31_dmr_mt_scalar ssbm-q32_dmr_mt_scalar ssbm-q33_dmr_mt_scalar ssbm-q34_dmr_mt_scalar ssbm-q31_dmr_mt_SSE ssbm-q32_dmr_mt_SSE ssbm-q33_dmr_mt_SSE ssbm-q34_dmr_mt_SSE \
-ssbm-q41_dmr_mt_scalar ssbm-q42_dmr_mt_scalar ssbm-q43_dmr_mt_scalar ssbm-q41_dmr_mt_SSE ssbm-q42_dmr_mt_SSE ssbm-q43_dmr_mt_SSE")
-ELSE(OPENMP_FOUND)
-	MESSAGE(WARNING "OpenMP not found!")
-ENDIF(OPENMP_FOUND)
+ENDIF()

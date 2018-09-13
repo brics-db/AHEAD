@@ -34,8 +34,11 @@
 namespace ahead {
 
     typedef uint16_t A_t;
+#ifndef RESTINY32
     typedef uint16_t restiny_t, restinyint_t;
-    // typedef uint32_t restiny_t, restinyint_t;
+#else
+    typedef uint32_t restiny_t, restinyint_t;
+#endif
     typedef uint32_t resshort_t, resshortint_t;
     typedef uint64_t resint_t;
     typedef uint64_t resbigint_t;
