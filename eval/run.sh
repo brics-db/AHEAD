@@ -684,7 +684,6 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 						EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
 						EVAL_FILERESULTS_PATH="${PATH_EVALINTER}/${type}.results"
 						EVAL_FILEBESTRUNS_PATH="${PATH_EVALINTER}/${type}.bestruns"
-						echo "    * ${type}: ${EVAL_FILEOUT} // ${EVAL_FILERESULTS_PATH} // ${EVAL_FILEBESTRUNS_PATH}"
 
 						grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS_PATH}
 						allruntimes=($(grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" | awk '{print $2}'))

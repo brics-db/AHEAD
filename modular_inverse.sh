@@ -8,15 +8,9 @@ MI_EXEC="TestModuloInverseComputation2"
 MI_OUTFILE="${MI_EXEC}.out"
 MI_ERRFILE="${MI_EXEC}.err"
 MI_DATFILE="${MI_EXEC}.data"
-MI_SCRIPTFILE="modulo_inverse.m"
 MI_NUMRUNS=10000
 MI_A_MIN=2
 MI_C_MAX=127
-
-echo "###########################################################"
-echo "# Running Modular Inverse Benchmark                       #"
-echo "###########################################################"
-echo
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/common.conf"
 
@@ -91,11 +85,12 @@ echo >>"${MI_DATFILE}"
 # The following prepares (and overwrites) the gnuplot file, depending on the parameters with which the benchmark was called (${MI_A_MIN} and ${MI_C_MAX}, see above)
 awk --field-separator='\t' 'NR>2{printf "%d",$1; numtabs=1; for (mywidth=8; $1 >= mywidth; mywidth=mywidth*2) {++numtabs}; for(i=0; i<numtabs; ++i) printf "\t"; average=0; for(i=1; i<=NF; ++i) average+=$i; printf "%d\n",((average/'${MI_NUMRUNS}')/(NF-1))}' "${MI_OUTFILE}" >>"${MI_DATFILE}"
 
+# MI_SCRIPTFILE is defined in file common.conf
 cat >"${MI_SCRIPTFILE}" <<EOF
 #!/usr/bin/env gnuplot
 
 # The data was gained by
-# ./TestModuloInverseComputation2 10000 2 127
+# ./TestModuloInverseComputation2 ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX}
 
 infile='TestModuloInverseComputation2.data'
 set datafile separator '\t'
@@ -125,13 +120,5 @@ set key right outside center vertical samplen 1 spacing 1.4
 
 plot for [i=2:$((${#mywidths[@]}+1))] infile using 1:i t col w linespoints ls i
 EOF
-
-# Finally, gnuplot! :-)
-MI_SUCCESS=0
-gnuplot "${MI_SCRIPTFILE}" && MI_SUCCESS=1
-
-if [[ ${MI_SUCCESS} == 1 ]]; then
-	echo "  * plot files were written to $(pwd)"
-fi
 
 popd
