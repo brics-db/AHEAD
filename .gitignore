@@ -37,3 +37,6 @@ CMakeFiles
 /Debug
 /Release
 .gdb_history
+/paper
+/coding_benchmark
+/ssb-dbgen
