@@ -1,5 +1,9 @@
 # AHEAD: Adaptable Data Hardening for On-the-Fly Hardware Error Detection during Database Query Processing
 
+[![Open Source Helpers](https://www.codetriage.com/brics-db/ahead/badges/users.svg)](https://www.codetriage.com/brics-db/ahead)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/brics-db/AHEAD.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/brics-db/AHEAD/alerts/)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/brics-db/AHEAD.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/brics-db/AHEAD/context:cpp)
+
 <em>AHEAD</em> is our in-memory column store prototype which incorporates AN Coding for detecting (transient) hardware errors during query processing &ndash; at run-time! The respective paper was [accepted at SIGMOD'18]().
 
 ## Contributing and Feedback
