@@ -77,7 +77,7 @@ if ((DO_GENERATE == 1)) && ((NO_BENCH == 0)); then
 	echo "###########################################################"
 	echo "# Running Star Schema Benchmark Data Generation           #"
 	echo "###########################################################"
-	./generate_ssbdata.sh && exit 1
+	./generate_ssbdata.sh || exit 1
 	echo
 fi
 

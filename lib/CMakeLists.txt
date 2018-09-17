@@ -15,41 +15,41 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
 IF("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
-    MESSAGE(FATAL_ERROR "You must run cmake on the root diretory!")
+	MESSAGE(FATAL_ERROR "You must run cmake on the root diretory!")
 ENDIF()
 
 IF(POLICY CMP0048)
-    CMAKE_POLICY(SET CMP0048 NEW)
-    PROJECT(LIBAHEAD VERSION 0.9 LANGUAGES CXX)
+	CMAKE_POLICY(SET CMP0048 NEW)
+	PROJECT(LIBAHEAD VERSION 0.9 LANGUAGES CXX)
 ELSE()
-    PROJECT(LIBAHEAD LANGUAGES CXX)
+	PROJECT(LIBAHEAD LANGUAGES CXX)
 ENDIF()
 
 MACRO( add_static_lib arg_name arg_source_files arg_dep_libs )
-    SET(LIBNAME "${arg_name}")
+	SET(LIBNAME "${arg_name}")
 
-    STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
-    #FOREACH(f ${TMP_SOURCE_FILES})
-    #    LIST(APPEND SOURCE_FILES "${arg_name}/${f}")
-    #ENDFOREACH(f TMP_SOURCE_FILES)
+	STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
+	#FOREACH(f ${TMP_SOURCE_FILES})
+	#	LIST(APPEND SOURCE_FILES "${arg_name}/${f}")
+	#ENDFOREACH(f TMP_SOURCE_FILES)
 
-    MESSAGE(STATUS "Add static library ${LIBNAME}")
-    ADD_LIBRARY(${LIBNAME} STATIC ${SOURCE_FILES})
-    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
-    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
-    TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
+	MESSAGE(STATUS "Add static library ${LIBNAME}")
+	ADD_LIBRARY(${LIBNAME} STATIC ${SOURCE_FILES})
+	SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
+	SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+	TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
 ENDMACRO( add_static_lib )
 
 MACRO( add_shared_lib arg_name arg_source_files arg_dep_libs )
-    SET(LIBNAME "${arg_name}")
+	SET(LIBNAME "${arg_name}")
 
-    STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
+	STRING(REPLACE " " ";" SOURCE_FILES "${arg_source_files}")
 
-    MESSAGE(STATUS "Add shared library ${LIBNAME}")
-    ADD_LIBRARY(${LIBNAME} SHARED ${SOURCE_FILES})
-    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
-    SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
-    TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
+	MESSAGE(STATUS "Add shared library ${LIBNAME}")
+	ADD_LIBRARY(${LIBNAME} SHARED ${SOURCE_FILES})
+	SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
+	SET_PROPERTY(TARGET ${LIBNAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+	TARGET_LINK_LIBRARIES(${LIBNAME} ffi dl pthread curses boost_system boost_filesystem "${arg_dep_libs}")
 ENDMACRO( add_shared_lib )
 
 MACRO(append_target_property arg_target arg_property arg_setting)
@@ -66,8 +66,13 @@ ENDMACRO(append_target_property)
 
 MESSAGE("Generating make scripts for ${PROJECT_NAME} in ${CMAKE_BUILD_TYPE} mode")
 
-#add_static_lib(AHEAD "AHEAD.cpp \
-add_shared_lib(AHEAD "AHEAD.cpp \
+SET(LIBAHEAD "AHEAD")
+IF(DEFINED RESTINY32)
+	STRING(APPEND LIBAHEAD "_restiny32")
+ENDIF(DEFINED RESTINY32)
+
+#add_static_lib(${LIBAHEAD} "AHEAD.cpp \
+add_shared_lib(${LIBAHEAD} "AHEAD.cpp \
 AHEAD_Config.cpp \
 util/AlignedAllocator.cpp \
 util/argumentparser.cpp \
@@ -138,5 +143,8 @@ column_operators/AN/selectAN_str.cpp \
 column_operators/SIMD/SSE.cpp \
 column_operators/SIMD/AVX2.cpp \
 meta_repository/MetaRepositoryManager.cpp" "")
-TARGET_COMPILE_OPTIONS(AHEAD PUBLIC "-Wno-ignored-attributes" "-ffast-math")
-cotire(AHEAD)
+TARGET_COMPILE_OPTIONS(${LIBAHEAD} PUBLIC "-Wno-ignored-attributes" "-ffast-math")
+IF(DEFINED RESTINY32)
+	TARGET_COMPILE_OPTIONS(${LIBAHEAD} PUBLIC "-DRESTINY32")
+ENDIF(DEFINED RESTINY32)
+cotire(${LIBAHEAD})

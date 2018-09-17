@@ -23,10 +23,16 @@ else
 	debugmode=1
 fi
 
+echo " * Bootstrapping AHEAD sources"
+
 if [[ ${debugmode} -eq 1 ]]; then
-	mkdir -p ${AHEAD_BUILD_DEBUG_DIR}
-	pushd ${AHEAD_BUILD_DEBUG_DIR} && cmake ../.. -DCMAKE_BUILD_TYPE=Debug || popd
+	echo -n "   * Debug..."
+	mkdir -p ${AHEAD_BUILD_DEBUG_DIR} || AHEAD_quit 1 " Error creating directory '${AHEAD_BUILD_DEBUG_DIR}'!"
+	pushd ${AHEAD_BUILD_DEBUG_DIR} &>/dev/null || AHEAD_quit 1 " Error accessing directory '${AHEAD_BUILD_DEBUG_DIR}'!"
+	AHEAD_run_hidden_output "cmake" "../.." "-DCMAKE_BUILD_TYPE=Debug" || exit 1
 fi
 
-mkdir -p ${AHEAD_BUILD_RELEASE_DIR}
-pushd ${AHEAD_BUILD_RELEASE_DIR} && cmake ../.. -DCMAKE_BUILD_TYPE=Release || popd
+echo -n "   * Release..."
+mkdir -p ${AHEAD_BUILD_RELEASE_DIR} || AHEAD_quit 1 " Error creating directory '${AHEAD_BUILD_RELEASE_DIR}'!"
+pushd ${AHEAD_BUILD_RELEASE_DIR} &>/dev/null || AHEAD_quit 1 " Error accessing directory '${AHEAD_BUILD_RELEASE_DIR}'!"
+AHEAD_run_hidden_output "cmake" "../.." "-DCMAKE_BUILD_TYPE=Release" || exit 1

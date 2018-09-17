@@ -183,8 +183,8 @@ BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
 declare -p BENCHMARK_SCALEFACTORS &>/dev/null
 ret=$?
 ( [ $ret -ne 0 ] || [ -z ${BENCHMARK_SCALEFACTORS+x} ] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}))
-[ -z ${BENCHMARK_DBDIR_SUFFIX+x} ] && BENCHMARK_DBDIR_SUFFIX= #"-restiny32"
-[ -z ${BENCHMARK_MINBFW+x} ] && BENCHMARK_MINBFW= #1
+[ -z ${BENCHMARK_DBDIR_SUFFIX+x} ] && BENCHMARK_DBDIR_SUFFIX=
+[ -z ${BENCHMARK_MINBFW+x} ] && BENCHMARK_MINBFW=
 
 ### Eval
 EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)
@@ -507,7 +507,7 @@ if [[ ${DO_COMPILE} -ne 0 ]]; then
 				exit 1
 			fi
 		fi
-		testfile=$(mktemp --suffix=.cpp)
+		testfile=$(mktemp --suffix=.cpp) || exit 1
 		cat >${testfile} << EOM
 #include <optional>
 int main() {
@@ -932,6 +932,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		printf '\t%s' "${overallAverage}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
 	printf '\n#NumRuntimes=%s [%s]' ${numRuntimes} "${totalRelativeRuntimes[@]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+
+	echo " * Scalar vs. Vectorized"
 
 	echo " * Plotting"
 	for ARCH in "${ARCHITECTURE[@]}"; do
