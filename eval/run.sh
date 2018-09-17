@@ -133,7 +133,7 @@ fi ### [[ -t 1 ]] && [[ -t 2 ]]
 
 # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
 sed -E -e '34,+25s/^(.+)$/#\1/' -e '88s/^.+$/\tPHASE="EVAL"\n\tDO_COMPILE=0\n\tDO_BENCHMARK=0\n\tDO_EVAL=1\n\tDO_EVAL_PREPARE=1\n\tDO_VERIFY=1/' -e '94,2s/([^=]+)=(.+)/#\1=\2\n\1=./' -e '94s/^(.+)$/export AHEAD_DATE="'"${AHEAD_DATE}"'"\nexport PATH_EVAL_CURRENT="."\n\1/' -e '135,+2s/^(.+)$/#\1/' -e '156s/(\/\.\.)/\1\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
-sed -E -e 's/^(\s+source\s+"[^\.]+)(\.\.\/common.conf.+)$/\1..\/\2/' "${CONFIG_FILE}" >"${PATH_EVAL_CURRENT}/${CONFIG_FILE}"
+sed -E -e 's/(source\s+"[^\.]+)(\.\.\/common.conf.+)$/\1..\/\2/' "${CONFIG_FILE}" >"${PATH_EVAL_CURRENT}/${CONFIG_FILE}"
 chmod +x "${PATH_EVAL_CURRENT}/$(basename $0)"
 
 echo "[INFO] Running Phase \"${PHASE}\""
@@ -474,6 +474,38 @@ unset output
 EOM
 }
 
+gnuplot_scalarVSvector () {
+	cat >$1 << EOM
+#!/usr/bin/env gnuplot
+
+set datafile separator '\t'
+
+set style line 1 lc rgb "#9400d3"
+set style line 2 lc rgb "#009e73"
+set style line 3 lc rgb "#56b4e9"
+set style line 4 lc rgb "#e69f00"
+set style line 5 lc rgb "#000000"
+set style line 6 lc rgb "#0072b2"
+set style line 7 lc rgb "#e51e10"
+
+set term cairolatex pdf color fontscale 0.44 size 2.9in,1in dashlength 0.2
+set output '${2}'
+set style data histogram
+set style histogram cluster gap 1
+set auto x
+set key below horizontal
+set ytics mirror out
+set xtics nomirror out
+set grid noxtics ytics
+unset xlabel
+set ylabel "Relative Runtime"
+$(for var in "${@:4}"; do echo $var; done)
+plot '${3}' using 2:xtic(1) title col fillstyle pattern 0 border ls 1 lw 1 dt 1, \
+         '' using 3:xtic(1) title col fillstyle pattern 2 border ls 2 lw 1 dt 1
+unset output
+EOM
+}
+
 
 
 
@@ -490,7 +522,7 @@ fi
 
 
 # Compile
-if [[ ${DO_COMPILE} -ne 0 ]]; then
+if ((DO_COMPILE != 0)); then
 	date
 	echo "Compiling:"
 	if [[ ${DO_COMPILE_CMAKE} -ne 0 ]] || [[ ! -e ${PATH_BUILD}/Makefile ]]; then
@@ -552,7 +584,7 @@ else
 fi
 
 # Benchmarking
-if [[ ${DO_BENCHMARK} -ne 0 ]]; then
+if ((DO_BENCHMARK != 0)); then
 	date
 	AHEAD_prepare_scalinggovernor_and_turboboost
 	( [[ "${BENCHMARK_MINBFW}" > 0 ]] && echo "Benchmarking (using AN-minBFW=${BENCHMARK_MINBFW}):" ) || echo "Benchmarking:"
@@ -628,7 +660,7 @@ else
 fi
 
 # Evaluation
-if [[ ${DO_EVAL} -ne 0 ]]; then
+if ((DO_EVAL != 0)); then
 	date
 	echo "Evaluating"
 	array=()
@@ -637,40 +669,32 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 	[[ -d ${PATH_EVALINTER} ]] || mkdir -p ${PATH_EVALINTER}
 	[[ -d ${PATH_EVALREPORT} ]] || mkdir -p ${PATH_EVALREPORT}
 
-	if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
+	if ((DO_EVAL_PREPARE != 0)); then
 		echo " * Preparing"
-	fi
+		for ARCH in "${ARCHITECTURE[@]}"; do
+			# Prepare File for a single complete normalized overhead graph across all scale factors
+			EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
+			EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
 
-	for ARCH in "${ARCHITECTURE[@]}"; do
-		# Prepare File for a single complete normalized overhead graph across all scale factors
-		EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
-		EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
-
-		if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
 			rm -f ${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			for var in "${VARIANT_NAMES[@]}"; do
 				echo -n " ${var}" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			done
 			echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-		fi
 
-		for NUM in "${IMPLEMENTED[@]}"; do
-			BASE2="${BASE}${NUM}"
-			BASE3="${BASE2}${ARCH}"
-			EVAL_TEMPFILE="${BASE3}.tmp"
-			EVAL_TEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_TEMPFILE}"
-			EVAL_DATAFILE="${BASE3}.data"
-			EVAL_DATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_DATAFILE}"
-			EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
-			EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_NORMALIZEDTEMPFILE}"
-			EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
-			EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDDATAFILE}"
+			for NUM in "${IMPLEMENTED[@]}"; do
+				BASE2="${BASE}${NUM}"
+				BASE3="${BASE2}${ARCH}"
+				EVAL_TEMPFILE="${BASE3}.tmp"
+				EVAL_TEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_TEMPFILE}"
+				EVAL_DATAFILE="${BASE3}.data"
+				EVAL_DATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_DATAFILE}"
+				EVAL_NORMALIZEDTEMPFILE="${BASE3}-norm.tmp"
+				EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_NORMALIZEDTEMPFILE}"
+				EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
+				EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDDATAFILE}"
 
-			if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
-				#njobs=$(jobs | wc -l)
-				#((njobs/=136)) # you should adapt this one if the following subtask is changed
-				#[[ $njobs -ge $(nproc) ]] && wait -n
 				(
 					echo "   * ${BASE3}"
 
@@ -714,8 +738,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 						EVAL_FILEOPS_TMP="${PATH_EVALINTER}/${type}.ops.tmp"
 						EVAL_FILEOPS_OUT="${PATH_EVALINTER}/${type}.ops.out"
 						grep op "${EVAL_FILEOUT}" | grep -v opy | sed -E 's/[ ]+//g' | sed -E 's/^\t//g' | sed -E 's/op([0-9]+\t)/\1/g' >"${EVAL_FILEOPS_TMP}"
-						NUM_OPS_ARRAY=$(awk '
-						BEGIN{i=0;mode=0;numCreateOps=0;numCopyOps=0;numQueryOps=0;FS="\t";}
+						NUM_OPS_ARRAY=$(awk \
+						'BEGIN{i=0;mode=0;numCreateOps=0;numCopyOps=0;numQueryOps=0;FS="\t";}
 						{
 							if($1<i) {
 								if(mode==0) {
@@ -738,8 +762,8 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 						NUM_OPS_CREATE=${array[0]}
 						NUM_OPS_COPY=${array[1]}
 						NUM_OPS_QUERY=${array[2]}
-						awk -v numopscreate=${NUM_OPS_CREATE} -v numopscopy=${NUM_OPS_COPY} -v numopsquery=${NUM_OPS_QUERY} -v numruns=${BENCHMARK_NUMRUNS} '
-							BEGIN{i=0;incopy=1;inquery=0;FS="\t";}
+						awk -v numopscreate=${NUM_OPS_CREATE} -v numopscopy=${NUM_OPS_COPY} -v numopsquery=${NUM_OPS_QUERY} -v numruns=${BENCHMARK_NUMRUNS} \
+							'BEGIN{i=0;incopy=1;inquery=0;FS="\t";}
 							{
 								++i
 								if ((incopy < 2) && (i == numopscreate)) {
@@ -792,7 +816,7 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 					arg+="}"
 					# EVAL_TEMPFILE_PATH already contains the average (arithmetic mean) of the best X of Y runs
 					# (see BENCHMARK_NUMRUNS and BENCHMARK_NUMBEST)
-					awk "${arg}" ${EVAL_TEMPFILE_PATH} ${EVAL_TEMPFILE_PATH} >${EVAL_NORMALIZEDTEMPFILE_PATH}
+					awk "${arg}" "${EVAL_TEMPFILE_PATH}" "${EVAL_TEMPFILE_PATH}" >"${EVAL_NORMALIZEDTEMPFILE_PATH}"
 
 					# transpose normalized data
 					awktranspose ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDDATAFILE_PATH}
@@ -804,14 +828,12 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 					fi
 					sync "${EVAL_TEMPFILE_PATH}" "${EVAL_DATAFILE_PATH}" "${EVAL_FILERESULTS_PATH}" "${EVAL_FILEBESTRUNS_PATH}" "${EVAL_NORMALIZEDDATAFILE_PATH}" "${EVAL_NORMALIZEDTEMPFILE_PATH}"
 				) &
-			fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
+			done
 		done
-	done
-	# Now, wait for everything to finish
-	wait -n
-	sync
+		# Now, wait for everything to finish
+		wait -n
+		AHEAD_sync
 
-	if [[ ${DO_EVAL_PREPARE} -ne 0 ]]; then
 		echo " * Preparing normalized data files for full-SSB plots"
 		for ARCH in "${ARCHITECTURE[@]}"; do
 			(
@@ -840,19 +862,21 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 						arg+="\$${column}+"
 					done
 					arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
-					awk "${arg}" ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDTEMPFILE_PATH} >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-					echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
+					awk "${arg}" "${EVAL_NORMALIZEDTEMPFILE_PATH}" "${EVAL_NORMALIZEDTEMPFILE_PATH}" >>"${EVAL_NORMALIZEDALLDATAFILE_PATH}"
+					echo "" >>"${EVAL_NORMALIZEDALLDATAFILE_PATH}"
 					# remove <zero>-bytes
-					tr <${EVAL_NORMALIZEDALLDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp
-					mv ${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDALLDATAFILE_PATH}
+					tr <"${EVAL_NORMALIZEDALLDATAFILE_PATH}" -d '\000' >"${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp"
+					mv "${EVAL_NORMALIZEDALLDATAFILE_PATH}.tmp" "${EVAL_NORMALIZEDALLDATAFILE_PATH}"
 				done
 				sync -d ${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			) &
 		done
-	fi ### [[ ${DO_EVAL_PREPARE} -ne 0 ]]
-	# Now, wait for everything to finish
-	wait -n
-	sync
+		# Now, wait for everything to finish
+		wait -n
+		AHEAD_sync
+	else ### ((DO_EVAL_PREPARE != 0))
+		echo " * Skipping preparation"
+	fi ### ((DO_EVAL_PREPARE != 0))
 
 	echo " * Collecting Data for teaser graphs"
 	rm -f ${PATH_TEASER_CONSUMPTION_DATAFILE} ${PATH_TEASER_RUNTIME_DATAFILE}
@@ -875,16 +899,16 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 				type="${BASE2}${VARIANTS[$idx]}${ARCH}"
 				EVAL_FILEOPS_OUT="${PATH_EVALINTER}/${type}.ops.out"
 				# use the projected consumption for the teaser
-				STORAGE=$(awk '
-					BEGIN {opNumBefore=0; projected=0}
+				STORAGE=$(awk \
+					'BEGIN {opNumBefore=0; projected=0}
 					opNumBefore < $1 {
 						opNumBefore=$1
 						projected+=$5
 						next
 					}
 					{exit}
-					END {printf "\t%s", projected}
-				' "${EVAL_FILEOPS_OUT}")
+					END {printf "\t%s", projected}' \
+					"${EVAL_FILEOPS_OUT}")
 				((totalAbsoluteStorages[idx] += STORAGE))
 			done
 			printf '\n' >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
@@ -895,9 +919,11 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 	done
 	printf '\nAverage' >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
+	CONSUMPTION_ARGUMENTS=()
 	for idx in ${TEASER_INDICES[@]}; do
-		overallAverage=$(echo "${totalAbsoluteStorages[$idx]} ${totalAbsoluteStorages[0]}"|awk '{printf "%f", $1 / $2}')
+		overallAverage=$(awk '{printf "%f", $1 / $2}' <<<"${totalAbsoluteStorages[$idx]} ${totalAbsoluteStorages[0]}")
 		printf "\t${overallAverage}" >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
+		CONSUMPTION_ARGUMENTS+=($(awk '{printf "%.2f %.2f",$1,($1+0.25)}' <<<"${overallAverage}"))
 	done
 
 	echo "   * Runtime"
@@ -910,16 +936,16 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCHITECTURE[$idx]}.data"
 		EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
 		# ignore the headline generated in the normalized data file
-		#echo -n "      * ${ARCHITECTURE_NAMES[$idx]}"
-		ARRAY_RUNTIMES=($(awk -v numvars=${#VARIANTS[@]} '
-			BEGIN{for (i=0; i<numvars; ++i) runtimes[i]=0}
+		[[ ! -z ${VERBOSE+x} ]] && echo "      * ${ARCHITECTURE_NAMES[$idx]}"
+		ARRAY_RUNTIMES=($(awk -v numvars=${#VARIANTS[@]} \
+			'BEGIN{for (i=0; i<numvars; ++i) runtimes[i]=0}
 			NR>1{for (i=1; i<=NF; ++i) runtimes[i-1]+=$i}
-			END{for (i=1; i<=numvars; ++i) print runtimes[i]}
-		' "${EVAL_NORMALIZEDALLDATAFILE_PATH}"))
+			END{for (i=1; i<=numvars; ++i) print runtimes[i]}' \
+			"${EVAL_NORMALIZEDALLDATAFILE_PATH}"))
 		for idxA in "${!VARIANTS[@]}"; do
 			totalRelativeRuntimes[$idxA]=$(echo "${totalRelativeRuntimes[$idxA]}+${ARRAY_RUNTIMES[$idxA]}"|bc)
 		done
-		printf '#NumRuntimes=%s [%s]\n' ${numRuntimes} "${totalRelativeRuntimes[@]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+		[[ ! -z ${VERBOSE+x} ]] && printf '#NumRuntimes=%s [%s]\n' ${numRuntimes} "${totalRelativeRuntimes[@]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
 	numRuntimes=$((${#ARCHITECTURE[@]}*${#IMPLEMENTED[@]}))
 	printf 'Type' >>"${PATH_TEASER_RUNTIME_DATAFILE}"
@@ -927,13 +953,177 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
 	printf '\nAverage' >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	RUNTIME_ARGUMENTS=()
 	for idx in "${TEASER_INDICES[@]}"; do
-		overallAverage=$(echo "${totalRelativeRuntimes[$idx]} ${numRuntimes}" | awk '{printf "%f", $1 / $2}')
+		overallAverage=$(awk '{printf "%f", $1 / $2}' <<<"${totalRelativeRuntimes[$idx]} ${numRuntimes}")
 		printf '\t%s' "${overallAverage}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+		RUNTIME_ARGUMENTS+=($(awk '{printf "%.2f %.2f",$1,($1+0.25)}' <<<"${overallAverage}"))
 	done
-	printf '\n#NumRuntimes=%s [%s]' ${numRuntimes} "${totalRelativeRuntimes[@]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	[[ ! -z ${VERBOSE+x} ]] && printf '\n#NumRuntimes=%s [%s]' ${numRuntimes} "${totalRelativeRuntimes[@]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	echo "   * Generating plot scripts"
+	[[ ! -z ${VERBOSE+x} ]] && echo "     * Runtime"
+	gnuplot_teaser_runtime "${PATH_TEASER_RUNTIME_GNUPLOTFILE}" "${PATH_TEASER_RUNTIME_PLOTFILE}" "${PATH_TEASER_RUNTIME_DATAFILE}" "${RUNTIME_ARGUMENTS[@]}"
+	[[ ! -z ${VERBOSE+x} ]] && echo "     * Memory Consumption"
+	gnuplot_teaser_consumption "${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}" "${PATH_TEASER_CONSUMPTION_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}" "${CONSUMPTION_ARGUMENTS[@]}"
+	[[ ! -z ${VERBOSE+x} ]] && echo "     * Key"
+	gnuplot_teaser_legend "${PATH_TEASER_LEGEND_GNUPLOTFILE}" "${PATH_TEASER_LEGEND_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}"
 
-	echo " * Scalar vs. Vectorized"
+	echo " * Collecting data for Scalar vs. Vectorized"
+	if printf '%s\n' "${ARCHITECTURE[@]}" | grep -qE '^_SSE$'; then
+		[[ "${AHEAD_SCALAR_VS_VECTOR_QUERIES}" =~ \(([1-9][1-9] *)*\) ]] || AHEAD_quit 1 "   * Variable 'AHEAD_SCALAR_VS_VECTOR_QUERIES' must match pattern '\(([1-9][1-9] *)*\)' !!!"
+		[[ "${AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES}" =~ \(([0-9]+ *)*\) ]] || AHEAD_quit 1 "   * Variable 'AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES' must match pattern '\(([0-9]+ *)*\)' !!!"
+		eval "AHEAD_SCALAR_VS_VECTOR_QUERIES=${AHEAD_SCALAR_VS_VECTOR_QUERIES}" # use this to emulate exporting arrays.
+		eval "AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES=${AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES}" # use this to emulate exporting arrays.
+		numQueries="${#AHEAD_SCALAR_VS_VECTOR_QUERIES[@]}"
+		ARCH="_SSE"
+		AVERAGE_RUNTIMES_SCALAR=()
+		AVERAGE_RUNTIMES_VECTOR=()
+		AVERAGE_RUNTIMES_SCALAR_TO_VECTOR=()
+		for idx in "${!VARIANTS[@]}"; do
+			AVERAGE_RUNTIMES_SCALAR+=(0)
+			AVERAGE_RUNTIMES_VECTOR+=(0)
+			AVERAGE_RUNTIMES_SCALAR_TO_VECTOR+=(0)
+		done
+		for idx in "${!AHEAD_SCALAR_VS_VECTOR_QUERIES[@]}"; do
+			BASE2="${BASE}${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]}"
+			REPORT_NORMALIZED_SCALAR_DATA_PATH="${PATH_EVALREPORT}/${BASE2}_scalar.data"
+			REPORT_NORMALIZED_VECTOR_DATA_PATH="${PATH_EVALREPORT}/${BASE2}${ARCH}.data"
+			if [[ ! -z ${VERBOSE+x} ]]; then
+				echo "   * ${REPORT_NORMALIZED_SCALAR_DATA_PATH}"
+				echo "   * ${REPORT_NORMALIZED_VECTOR_DATA_PATH}"
+			fi
+			# THe following awk script computes all relative runtimes with respect to Unprotected SSE baseline
+			numVariants=${#VARIANTS[@]}
+			ARRAY_RUNTIMES=($(awk -v query=${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]} -v numvar=${numVariants} -v numsf=$((${AHEAD_SCALEFACTOR_MAX} - (${AHEAD_SCALEFACTOR_MIN} - 1))) \
+				'BEGIN{
+					maxNF=0
+					numLines=0
+					#printf "   * Starting awk for query %.1f. numvar=%s. numsf=%s.\n",(query/10),numvar,numsf
+					for (var=1; var<=numvar; ++var) {
+						totalRelativesScalar[var]=0
+						totalRelativesSSE[var]=0
+						for (sf=1; sf<=numsf; ++sf) {
+							runtimesSSE[var,sf]=0
+							relativesScalar[var,sf]=0
+							relativesSSE[var,sf]=0
+						}
+					}
+				}
+				FNR==NR{
+					if (FNR>1 && NF>0) {
+						if (NF>maxNF) maxNF=NF
+						++numLines
+						for (var=1; var<=numvar; ++var) {
+							runtimesSSE[var,numLines]=$(var+1)
+							# we compute the SSE relative times already in the first run
+							relativesSSE[var,numLines]=$(var+1)/runtimesSSE[1,numLines]
+						}
+					}
+					next
+				}
+				{
+					if (FNR>1 && NF>0) {
+						for (var=1; var<=numvar; ++var) {
+							# we compute the Scalar relative times in the second run
+							relativesScalar[var,(FNR-1)]=$(var+1)/runtimesSSE[1,(FNR-1)]
+						}
+					}
+				}
+				END{
+					if (numLines != numsf) {printf "ERROR: numLines(%s) != numsf(%s)\n", numLines, numsf; exit 1}
+					if (maxNF != (numvar+1)) {printf "ERROR: maxNF(%s) != numvar+1(%s)\n", maxNF, (numvar+1); exit 1}
+					for (var=1; var<=numvar; ++var) {
+						for (sf=1; sf<=numsf; ++sf) {
+							totalRelativesScalar[var] += relativesScalar[var,sf]
+							totalRelativesSSE[var] += relativesSSE[var,sf]
+						}
+						totalRelativesScalar[var] /= numsf;
+						totalRelativesSSE[var] /= numsf;
+					}
+					#printf "     * Runtimes relative to Unprotected SSE: Scalar ["
+					for (var=1; var<=numvar; ++var) {printf "%.5f ", (totalRelativesScalar[var] / numsf)}
+					#printf "] SSE ["
+					for (var=1; var<=numvar; ++var) {printf "%.5f ", (totalRelativesSSE[var] / numsf)}
+					#printf "]\n"
+				}' "${REPORT_NORMALIZED_VECTOR_DATA_PATH}" "${REPORT_NORMALIZED_SCALAR_DATA_PATH}"))
+			[[ "${ARRAY_RUNTIMES[@]}" == ERROR:* ]] && AHEAD_quit 1 "${ARRAY_RUNTIMES[@]}"
+			RUNTIMES_SCALAR=(${ARRAY_RUNTIMES[@]:0:${numVariants}})
+			RUNTIMES_VECTOR=(${ARRAY_RUNTIMES[@]:${numVariants}:${numVariants}})
+			ARRAY_RUNTIMES=($(awk \
+				'FNR==1{for (i=1; i<=NF; ++i) scalar[i]=$i}
+				FNR==2{for (i=1; i<=NF; ++i) {vector[i]=$i; printf "%.5f ",(scalar[i] / vector[i])}}
+				FNR==3{for (i=1; i<=NF; ++i) printf "%.5f ",($i+scalar[i])}
+				FNR==4{for (i=1; i<=NF; ++i) printf "%.5f ",($i+vector[i])}
+				FNR==5{}' << EOM
+${RUNTIMES_SCALAR[@]}
+${RUNTIMES_VECTOR[@]}
+${AVERAGE_RUNTIMES_SCALAR[@]}
+${AVERAGE_RUNTIMES_VECTOR[@]}
+EOM
+))
+			RUNTIMES_SCALAR_TO_VECTOR=("${ARRAY_RUNTIMES[@]:0:$numVariants}")
+			AVERAGE_RUNTIMES_SCALAR=("${ARRAY_RUNTIMES[@]:$numVariants:$numVariants}")
+			AVERAGE_RUNTIMES_VECTOR=("${ARRAY_RUNTIMES[@]:$((numVariants*2)):$numVariants}")
+			if [[ ! -z ${VERBOSE+x} ]]; then
+				echo "   * ${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]}"
+				echo "     * Scalar: ${RUNTIMES_SCALAR[@]}"
+				echo "     * Vector: ${RUNTIMES_VECTOR[@]}"
+				echo "     * Scalar->Vector: ${RUNTIMES_SCALAR_TO_VECTOR[@]}"
+				echo "     * Average Scalar: ${AVERAGE_RUNTIMES_SCALAR[@]}"
+				echo "     * Average Vector: ${AVERAGE_RUNTIMES_VECTOR[@]}"
+			fi
+		done
+		AVERAGES=($(awk -v numQueries=${numQueries} \
+		'FNR==1{for (i=1; i<=NF; ++i) {scalar[i]=$i/numQueries; printf " %.5f",scalar[i]}}
+		FNR==2{for (i=1; i<=NF; ++i) {vector[i]=$i/numQueries; printf " %.5f",vector[i]} for (i=1; i<=NF; ++i) {printf " %.5f",(scalar[i]/vector[i])}}' << EOM
+${AVERAGE_RUNTIMES_SCALAR[@]}
+${AVERAGE_RUNTIMES_VECTOR[@]}
+EOM
+		))
+		AVERAGE_RUNTIMES_SCALAR=("${AVERAGES[@]:0:$numVariants}")
+		AVERAGE_RUNTIMES_VECTOR=("${AVERAGES[@]:$numVariants:$numVariants}")
+		AVERAGE_RUNTIMES_SCALAR_TO_VECTOR=("${AVERAGES[@]:$((numVariants*2)):$numVariants}")
+		if [[ ! -z ${VERBOSE+x} ]]; then
+			echo "   * Total"
+			echo "     * Scalar: ${AVERAGE_RUNTIMES_SCALAR[@]}"
+			echo "     * SSE: ${AVERAGE_RUNTIMES_VECTOR[@]}"
+			echo "     * Scalar->SSE: ${AVERAGE_RUNTIMES_SCALAR_TO_VECTOR[@]}"
+		fi
+		echo -e "Variant\tScalar\tVectorized" >"${PATH_SCALAR_VS_VECTOR_DATAFILE}"
+		SCALE="10000"
+		THRESHOLD=$(bc <<< "scale=0;${AHEAD_SCALAR_VS_VECTOR_YMAX}*${SCALE}/1")
+		VALUES_TOO_LARGE=()
+		POSITIONS_TOO_LARGE=()
+		for idx in "${!AVERAGE_RUNTIMES_SCALAR[@]}"; do
+			echo -e "${VARIANT_NAMES[$idx]}\t${AVERAGE_RUNTIMES_SCALAR[$idx]}\t${AVERAGE_RUNTIMES_VECTOR[$idx]}" >>"${PATH_SCALAR_VS_VECTOR_DATAFILE}"
+			SCALAR=$(bc <<< "scale=0;${AVERAGE_RUNTIMES_SCALAR[$idx]}*${SCALE}/1")
+			VECTOR=$(bc <<< "scale=0;${AVERAGE_RUNTIMES_VECTOR[$idx]}*${SCALE}/1")
+			((SCALAR > THRESHOLD)) && { VALUES_TOO_LARGE+=("${AVERAGE_RUNTIMES_SCALAR[$idx]}"); POSITIONS_TOO_LARGE+=("$(bc <<< "$idx-0.4")"); }
+		done
+		[[ ! -z ${VERBOSE+x} ]] && echo "     * Too large: values=[${VALUES_TOO_LARGE[@]}] positions=[${POSITIONS_TOO_LARGE[@]}]"
+		ARGUMENTS=("set yrange [${AHEAD_SCALAR_VS_VECTOR_YMIN}:${AHEAD_SCALAR_VS_VECTOR_YMAX}]")
+		for idx in "${!VALUES_TOO_LARGE[@]}"; do
+			ARGUMENTS+=("set label \"$(awk '{printf "%.2f",$1}' <<< "${VALUES_TOO_LARGE[$idx]}")\" at first ${POSITIONS_TOO_LARGE[$idx]}, screen 0.97")
+		done
+		for idx in "${!AVERAGE_RUNTIMES_SCALAR[@]}"; do
+			SCALAR="${AVERAGE_RUNTIMES_SCALAR[$idx]}"
+			VECTOR="${AVERAGE_RUNTIMES_VECTOR[$idx]}"
+			Xa="$(bc <<< "$idx-0.15")"
+			(( $(bc <<< "$SCALAR <= ${AHEAD_SCALAR_VS_VECTOR_YMAX}") )) && Ya="$SCALAR" || Ya="$(bc <<< "scale=2;${AHEAD_SCALAR_VS_VECTOR_YMAX}/1")"
+			Xb="$(bc <<< "$idx+0.15")"
+			Yb="${VECTOR}"
+			ARGUMENTS+=("set arrow from first $Xa,$Ya to first $Xb,$Yb head filled front")
+			X="$(bc <<< "$idx+0.2")"
+			Y="$(bc <<< "scale=2; $Yb + ($Ya - $Yb) / 2.00")"
+			ARGUMENTS+=("set label \"${AVERAGE_RUNTIMES_SCALAR_TO_VECTOR[$idx]}\" at first $X,$Y rotate by -70")
+		done
+
+		echo "   * Generating plot scripts"
+		[[ ! -z ${VERBOSE+x} ]] && { echo "     * Arguments to gnuplot_scalarVSvector:"; for V in "${ARGUMENTS[@]}"; do echo "       * $V"; done; }
+		gnuplot_scalarVSvector "${PATH_SCALAR_VS_VECTOR_GNUPLOTFILE}" "${PATH_SCALAR_VS_VECTOR_PLOTFILE}" "${PATH_SCALAR_VS_VECTOR_DATAFILE}" "${ARGUMENTS[@]}"
+	else
+		echo "   * SSE architecture not found, not specified, or disabled (or the like)! Skipping."
+	fi
 
 	echo " * Plotting"
 	for ARCH in "${ARCHITECTURE[@]}"; do
@@ -968,21 +1158,22 @@ if [[ ${DO_EVAL} -ne 0 ]]; then
 			gnuplot ${BASE3}-legend.m
 			popd
 		done
-		sync
 
 		echo "   * Creating tex/PDF files for normalized averages (${EVAL_NORMALIZEDALLTEXFILE_PATH})"
 		gnuplotcodetex  ${EVAL_NORMALIZEDALLPLOTFILE_PATH} ${EVAL_NORMALIZEDALLTEXFILE_PATH} ${EVAL_NORMALIZEDALLDATAFILE_PATH} \
 			"set yrange [0:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "set ylabel \"Relative Runtime\""
 		gnuplot ${EVAL_NORMALIZEDALLPLOTFILE_PATH}
 	done
+
 	echo "   * Teaser graphs"
-	gnuplot_teaser_runtime "${PATH_TEASER_RUNTIME_GNUPLOTFILE}" "${PATH_TEASER_RUNTIME_PLOTFILE}" "${PATH_TEASER_RUNTIME_DATAFILE}" "1.0" "1.25" "2.0" "2.25" "1.19" "1.44"
-	gnuplot_teaser_consumption "${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}" "${PATH_TEASER_CONSUMPTION_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}" "1.0" "1.25" "2.0" "2.25" "1.5" "1.75"
-	gnuplot_teaser_legend "${PATH_TEASER_LEGEND_GNUPLOTFILE}" "${PATH_TEASER_LEGEND_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}"
 	gnuplot "${PATH_TEASER_RUNTIME_GNUPLOTFILE}"
 	gnuplot "${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}"
 	gnuplot "${PATH_TEASER_LEGEND_GNUPLOTFILE}"
-	sync
+
+	echo "   * Scalar vs. Vector graph"
+	gnuplot "${PATH_SCALAR_VS_VECTOR_GNUPLOTFILE}"
+
+	AHEAD_sync
 else
 	echo "Skipping evaluation."
 fi
