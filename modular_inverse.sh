@@ -78,7 +78,7 @@ done
 widthmax=${mywidths[${#mywidths[@]}-1]}
 widthlen=${#widthmax}
 for width in "${mywidths[@]}"; do
-	echo -ne '\t\\(|C|\\leq'"$((width-1))"'\\)' >>"${MI_DATFILE}"
+	echo -ne '\t\\\\(|C|\\\\leq'"$((width-1))"'\\\\)' >>"${MI_DATFILE}"
 done
 echo >>"${MI_DATFILE}"
 
