@@ -14,11 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#####################
-#####################
-### Preliminaries ###
-#####################
-#####################
+
+
+
+
+#############################################
+#############################################
+###                                       ###
+###             Preliminaries             ###
+###                                       ###
+#############################################
+#############################################
 
 if [[ $(id -u) -eq 0 ]]; then
 	echo "[ERROR] You must not run this script as super user!"
@@ -38,6 +44,7 @@ if [[ $# -ne 0 ]] ; then
 			DO_BENCHMARK=1
 			DO_EVAL=1
 			DO_EVAL_PREPARE=1
+			DO_EVAL_PLOT=1
 			DO_VERIFY=1
 			;;
 		COMPILE)
@@ -47,6 +54,7 @@ if [[ $# -ne 0 ]] ; then
 			DO_BENCHMARK=0
 			DO_EVAL=0
 			DO_EVAL_PREPARE=0
+			DO_EVAL_PLOT=0
 			DO_VERIFY=0
 			;;
 		ACTUAL)
@@ -55,6 +63,7 @@ if [[ $# -ne 0 ]] ; then
 			DO_BENCHMARK=1
 			DO_EVAL=1
 			DO_EVAL_PREPARE=1
+			DO_EVAL_PLOT=1
 			DO_VERIFY=1
 			;;
 		EVAL)
@@ -63,10 +72,8 @@ if [[ $# -ne 0 ]] ; then
 			DO_BENCHMARK=0
 			DO_EVAL=1
 			DO_EVAL_PREPARE=1
+			DO_EVAL_PLOT=0
 			DO_VERIFY=1
-			if [[ $# > 1 ]]; then
-				AHEAD_DATE="${ARGS[1]}" #only needed when calling the original script.
-			fi
 			;;
 		PLOT)
 			PHASE="PLOT"
@@ -74,10 +81,8 @@ if [[ $# -ne 0 ]] ; then
 			DO_BENCHMARK=0
 			DO_EVAL=1
 			DO_EVAL_PREPARE=0
+			DO_EVAL_PLOT=1
 			DO_VERIFY=0
-			if [[ $# > 1 ]]; then
-				AHEAD_DATE="${ARGS[1]}" #only needed when calling the original script.
-			fi
 			;;
 		*)
 			echo "[ERROR] UNKNOWN Phase"
@@ -93,10 +98,10 @@ fi ### [[ $# -ne 0 ]]
 #######################
 CONFIG_FILE=run.conf
 source "${CONFIG_FILE}" || exit 1
-echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Used date: ${AHEAD_DATE}"
+echo "${AHEAD_SCRIPT_ECHO_INDENT}Used date: ${AHEAD_DATE}"
 export AHEAD_DATE
 
-mkdir -p "${PATH_EVAL_CURRENT}" || AHEAD_quit 1 "${AHEAD_SCRIPT_COMMAND_PREFIX}Could not create path '${PATH_EVAL_CURRENT}'"
+mkdir -p "${PATH_EVAL_CURRENT}" || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Could not create path '${PATH_EVAL_CURRENT}'"
 
 ################################################################################################
 # if the outputs are not redirected to files, then call ourselves again with additional piping #
@@ -117,57 +122,38 @@ if [[ -t 1 ]] && [[ -t 2 ]]; then
 		fi
 	fi ### [[ -e ${PATH_EVAL_CURRENT} ]]
 	rm -f $outfile $errfile
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[INFO] one of stdout or stderr is not redirected, calling script with redirecting" | tee $outfile
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}[INFO] one of stdout or stderr is not redirected, calling script with redirecting" | tee $outfile
 	./$0 $@ > >(tee "${outfile}") 2> >(tee "${errfile}" >&2)
 	ret=$?
 	if [[ ${ret} != 0 ]]; then
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[ERROR] Aborted. Exit code = $ret" > >(tee -a $errfile >&2)
+		echo
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Aborted. Exit code = $ret" > >(tee -a $errfile >&2)
 	else
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[INFO] Finished" > >(tee -a $outfile)
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}[INFO] Finished" > >(tee -a $outfile)
 	fi
+	sleep 1
 	exit $ret
 else
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[INFO] stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}[INFO] stdout and stderr are redirected. Starting script. Parameters are: \"$@\""
 fi ### [[ -t 1 ]] && [[ -t 2 ]]
 
 # copy the script file to the sub-eval-folder and disable / change some lines to only enable data evaluation at a later time (e.g. to adapt the gnuplot scripts)
-sed -E -e '34,+25s/^(.+)$/#\1/' -e '88s/^.+$/\tPHASE="EVAL"\n\tDO_COMPILE=0\n\tDO_BENCHMARK=0\n\tDO_EVAL=1\n\tDO_EVAL_PREPARE=1\n\tDO_VERIFY=1/' -e '94s/^(.+)$/export AHEAD_DATE="'"${AHEAD_DATE}"'"\nexport PATH_EVAL_CURRENT="."\n\1/' -e '134,+2s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
+sed -E -e '40,+28s/^(.+)$/#\1/' -e '93s/^.+$/\tPHASE="EVAL"\n\tDO_COMPILE=0\n\tDO_BENCHMARK=0\n\tDO_EVAL=1\n\tDO_EVAL_PREPARE=1\n\tDO_VERIFY=1/' -e '99s/^(.+)$/export AHEAD_DATE="'"${AHEAD_DATE}"'"\nexport PATH_EVAL_CURRENT="."\n\1/' -e '141,+2s/^(.+)$/#\1/' $0 >"${PATH_EVAL_CURRENT}/$(basename $0)"
 sed -E -e 's/(source\s+"[^\.]+)(\.\.\/common.conf.+)$/\1..\/\2/' "${CONFIG_FILE}" >"${PATH_EVAL_CURRENT}/${CONFIG_FILE}"
 chmod +x "${PATH_EVAL_CURRENT}/$(basename $0)"
 
-echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[INFO] Running Phase \"${PHASE}\""
-
-###################
-# Basic Variables #
-###################
-[[ -z "${CXX_COMPILER+x}" ]] && CXX_COMPILER="c++"
-[[ -z "${GXX_COMPILER+x}" ]] && GXX_COMPILER="g++"
-BASE=ssbm-q
-BASEREPLACE1="s/${BASE}\([0-9]\)\([0-9]\)/Q\1.\2/g"
-BASEREPLACE2="s/[_]\([^[:space:]]\)[^[:space:]]*/^\{\1\}/g"
-IMPLEMENTED=(11 12 13 21 22 23 31 32 33 34 41 42 43)
-# ATTENTION !!! When you change the following, then you MUST adapt variable TEASER_INDICES, too !!!
-VARIANTS=("_normal" "_dmr_seq" "_early" "_late" "_continuous" "_continuous_reenc")
-VARIANT_NAMES=("Unprotected" "DMR" "Early" "Late" "Continuous" "Reencoding")
-ARCHITECTURE=("_scalar")
-ARCHITECTURE_NAMES=("Scalar")
-cat /proc/cpuinfo | grep sse4_2 &>/dev/null
-HAS_SSE42=$?
-if [[ ${HAS_SSE42} -eq 0 ]]; then
-	ARCHITECTURE+=("_SSE");
-	ARCHITECTURE_NAMES+=("SSE4.2")
-fi
-TEASER_INDICES=(0 1 4)
+echo "${AHEAD_SCRIPT_ECHO_INDENT}[INFO] Running Phase \"${PHASE}\""
 
 ####################
 # Process Switches #
 ####################
-[ -z ${DO_COMPILE+x} ] && DO_COMPILE=1 # yes we want to set it either when it's unset or empty
-[ -z ${DO_COMPILE_CMAKE+x} ] && DO_COMPILE_CMAKE=0 # do not re-generate cmake files be default every time
-[ -z ${DO_BENCHMARK+x} ] && DO_BENCHMARK=1
-[ -z ${DO_EVAL+x} ] && DO_EVAL=1
-[ -z ${DO_EVAL_PREPARE+x} ] && DO_EVAL_PREPARE=1
-[ -z ${DO_VERIFY+x} ] && DO_VERIFY=1
+[[ -z ${DO_COMPILE+x} ]] && DO_COMPILE=1 # yes we want to set it either when it's unset or empty
+[[ -z ${DO_COMPILE_CMAKE+x} ]] && DO_COMPILE_CMAKE=0 # do not re-generate cmake files be default every time
+[[ -z ${DO_BENCHMARK+x} ]] && DO_BENCHMARK=1
+[[ -z ${DO_EVAL+x} ]] && DO_EVAL=1
+[[ -z ${DO_EVAL_PREPARE+x} ]] && DO_EVAL_PREPARE=1
+[[ -z ${DO_EVAL_PLOT+x} ]] && DO_EVAL_PLOT=1
+[[ -z ${DO_VERIFY+x} ]] && DO_VERIFY=1
 
 ##############################
 # Process specific constants #
@@ -176,24 +162,52 @@ TEASER_INDICES=(0 1 4)
 [ -z ${CMAKE_BUILD_TYPE+x} ] && CMAKE_BUILD_TYPE=Release
 
 ### Benchmarking
-[ -z ${BENCHMARK_NUMRUNS+x} ] && BENCHMARK_NUMRUNS=10 # like above
-#[ -z ${BENCHMARK_NUMBEST+x} ] && BENCHMARK_NUMBEST=$(($BENCHMARK_NUMRUNS > 10 ? 10 : $BENCHMARK_NUMRUNS))
-BENCHMARK_NUMBEST=$BENCHMARK_NUMRUNS
-declare -p BENCHMARK_SCALEFACTORS &>/dev/null
-ret=$?
-( [ $ret -ne 0 ] || [ -z ${BENCHMARK_SCALEFACTORS+x} ] ) && BENCHMARK_SCALEFACTORS=($(seq -s " " ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}))
-[ -z ${BENCHMARK_DBDIR_SUFFIX+x} ] && BENCHMARK_DBDIR_SUFFIX=
-[ -z ${BENCHMARK_MINBFW+x} ] && BENCHMARK_MINBFW=
+##### "import" the exported arrays --> also check that they contain only valid contents
+pattern="\(([1-9][1-9] *)*\)"
+[[ "${AHEAD_IMPLEMENTED}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_IMPLEMENTED' must match pattern '$pattern' !!!"
+pattern="\(('_[a-z_]+' *)*\)"
+[[ "${AHEAD_VARIANTS}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_VARIANTS' must match pattern '$pattern' !!!"
+pattern="\(('[a-zA-Z]+' *)*\)"
+[[ "${AHEAD_VARIANT_NAMES}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_VARIANT_NAMES' must match pattern '$pattern' !!!"
+pattern="\(('_[_a-zA-Z]+' *)*\)"
+[[ "${AHEAD_ARCHITECTURES}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_ARCHITECTURES' must match pattern '$pattern' !!!"
+pattern="\(('[a-zA-Z0-9\.]+' *)*\)"
+[[ "${AHEAD_ARCHITECTURE_NAMES}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_ARCHITECTURE_NAMES' must match pattern '$pattern' !!! Contents: '${AHEAD_ARCHITECTURE_NAMES}'"
+pattern="\(([0-9]+ *)*\)"
+[[ "${AHEAD_TEASER_INDICES}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_TEASER_INDICES' must match pattern '$pattern' !!!"
+eval "AHEAD_IMPLEMENTED=${AHEAD_IMPLEMENTED}" # use this to emulate exporting arrays.
+eval "AHEAD_VARIANTS=${AHEAD_VARIANTS}" # use this to emulate exporting arrays.
+eval "AHEAD_VARIANT_NAMES=${AHEAD_VARIANT_NAMES}" # use this to emulate exporting arrays.
+eval "AHEAD_ARCHITECTURES=${AHEAD_ARCHITECTURES}" # use this to emulate exporting arrays.
+eval "AHEAD_ARCHITECTURE_NAMES=${AHEAD_ARCHITECTURE_NAMES}" # use this to emulate exporting arrays.
+eval "AHEAD_TEASER_INDICES=${AHEAD_TEASER_INDICES}" # use this to emulate exporting arrays.
+
+pattern="\(([1-9][1-9] *)*\)"
+[[ "${AHEAD_SCALAR_VS_VECTOR_QUERIES}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_SCALAR_VS_VECTOR_QUERIES' must match pattern '$pattern' !!!"
+pattern="\(([0-9]+ *)*\)"
+[[ "${AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES}" =~ $pattern ]] || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Variable 'AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES' must match pattern '$pattern' !!!"
+eval "AHEAD_SCALAR_VS_VECTOR_QUERIES=${AHEAD_SCALAR_VS_VECTOR_QUERIES}" # use this to emulate exporting arrays.
+eval "AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES=${AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES}" # use this to emulate exporting arrays.
+
+[[ -z ${AHEAD_SCALEFACTOR_MIN+x} ]] && AHEAD_exit 1 "AHEAD_SCALEFACTOR_MIN not set!"
+[[ -z ${AHEAD_SCALEFACTOR_MAX+x} ]] && AHEAD_exit 1 "AHEAD_SCALEFACTOR_MAX not set!"
+AHEAD_BENCHMARK_SCALEFACTORS=($(seq -s " " ${AHEAD_SCALEFACTOR_MIN} ${AHEAD_SCALEFACTOR_MAX}))
+
+### The following are used for the min-bfw experiments, where we prescribe a desired minimal detectable bit flip weight
+[[ -z ${BENCHMARK_DBDIR_SUFFIX+x} ]] && BENCHMARK_DBDIR_SUFFIX=
+[[ -z ${BENCHMARK_MINBFW+x} ]] && BENCHMARK_MINBFW=
+[[ -z ${BENCHMARK_EXECUTABLE_SUFFIX+x} ]] && BENCHMARK_EXECUTABLE_SUFFIX= 
+
 
 ### Eval
-EVAL_TOTALRUNS_PER_VARIANT=$(echo "$BENCHMARK_NUMRUNS * ${#BENCHMARK_SCALEFACTORS[@]}"|bc)
+EVAL_TOTALRUNS_PER_VARIANT=$(echo "$AHEAD_BENCHMARK_NUMRUNS * ${#AHEAD_BENCHMARK_SCALEFACTORS[@]}"|bc)
 
 #################
 # functions etc #
 #################
 
 date () {
-	echo -n "${AHEAD_SCRIPT_COMMAND_PREFIX}Current timestamp: "; command date "+%Y-%m-%d %H-%M-%S"
+	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Current timestamp: "; command date "+%Y-%m-%d %H-%M-%S"
 }
 
 #########################################################
@@ -501,11 +515,14 @@ EOM
 
 
 
-#################################
-#################################
-### Actual Script starts here ###
-#################################
-#################################
+
+#############################################
+#############################################
+###                                       ###
+###       Actual script starts here       ###
+###                                       ###
+#############################################
+#############################################
 
 numcpus=$(nproc)
 if [[ $? -ne 0 ]]; then
@@ -515,20 +532,20 @@ fi
 
 # Compile
 if ((DO_COMPILE != 0)); then
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Compiling."
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Compiling."
 	AHEAD_sub_begin
 	date
 	if ((DO_COMPILE_CMAKE != 0)) || [[ ! -e ${PATH_BUILD}/Makefile ]]; then
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Testing for compiler."
-		cxx=$(which ${CXX_COMPILER})
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Testing for compiler."
+		cxx=$(which ${AHEAD_CXX_COMPILER})
 		if [[ -e ${cxx} ]]; then
 			export CXX=$cxx
 		else
-			cxx=$(which ${GXX_COMPILER})
+			cxx=$(which ${AHEAD_GXX_COMPILER})
 			if [[ -e ${cxx} ]]; then
 				export CXX=$cxx
 			else
-				AHEAD_quit 1 "${AHEAD_SCRIPT_COMMAND_PREFIX}[ERROR] This benchmark requires a c++17 compatible compiler! You may modify variable CXX_COMPILER or GXX_COMPILER at the top of the script."
+				AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] This benchmark requires a c++17 compatible compiler! You may modify variable AHEAD_CXX_COMPILER or AHEAD_GXX_COMPILER at the top of the script."
 			fi
 		fi
 		testfile=$(mktemp --suffix=.cpp) || exit 1
@@ -538,82 +555,87 @@ int main() {
 		return 0;
 }
 EOM
-		${cxx} -std=c++17 -o ${testfile}.a ${testfile} &>/dev/null && (rm ${testfile}; echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[INFO] Compiler is c++17 compatible.") || (rm ${estfile}; echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[ERROR] Compiler is not c++17 compatible! Please fix this by yourself or tell me: Till.Kolditz@gmail.com."; exit 1)
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Recreating build dir \"${PATH_BUILD}\"."
+		${cxx} -std=c++17 -o ${testfile}.a ${testfile} &>/dev/null && (rm ${testfile}; echo "${AHEAD_SCRIPT_ECHO_INDENT}[INFO] Compiler is c++17 compatible.") || (rm ${estfile}; echo "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Compiler is not c++17 compatible! Please fix this by yourself or tell me: Till.Kolditz@gmail.com."; exit 1)
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Recreating build dir \"${PATH_BUILD}\"."
 		if [[ -e "${AHEAD_SCRIPT_BOOTSTRAP}" ]]; then
-			echo -n "${AHEAD_SCRIPT_COMMAND_PREFIX}using bootstrap.sh file..."
+			echo -n "${AHEAD_SCRIPT_ECHO_INDENT}using bootstrap.sh file..."
 			AHEAD_pushd "${PATH_BASE}"
 			AHEAD_run_hidden_output "${AHEAD_SCRIPT_BOOTSTRAP}" || exit 1
 			AHEAD_popd
 		else
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}bootstrap file not present -- trying to do it manually"
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}bootstrap file not present -- trying to do it manually"
 			rm -Rf ${PATH_BUILD}
 			mkdir -p ${PATH_BUILD}
 			AHEAD_pushd ${PATH_BUILD}
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Running cmake (Build Type = ${CMAKE_BUILD_TYPE}..."
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}Running cmake (Build Type = ${CMAKE_BUILD_TYPE}..."
 			AHEAD_run_hidden_output cmake "${PATH_BASE}" "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 			exitcode=$?
 			AHEAD_popd
 			if [[ ${exitcode} -ne 0 ]]; then
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[ERROR] Exitcode = ${exitcode}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Exitcode = ${exitcode}"
 				exit ${exitcode};
 			fi
 		fi
 	fi
 	numcores=$(echo "${numcpus}*1.25/1"|bc)
 	AHEAD_pushd ${PATH_BUILD}
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Running make (-j${numcores})..."
+	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Running make (-j${numcores})..."
 	AHEAD_run_hidden_output "make" "-j${numcores}" || exit 1
 	AHEAD_popd
 	AHEAD_sub_end
 else
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Skipping compilation."
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Skipping compilation."
 fi
 
 # Benchmarking
 if ((DO_BENCHMARK != 0)); then
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Benchmarking."
+	echo
+	AHEAD_prepare_scalinggovernor_and_turboboost
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Benchmarking."
 	AHEAD_sub_begin
 	date
-	AHEAD_prepare_scalinggovernor_and_turboboost
-	((BENCHMARK_MINBFW > 0 )) && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Using AN-minBFW=${BENCHMARK_MINBFW})."
+	((BENCHMARK_MINBFW > 0 )) && echo "${AHEAD_SCRIPT_ECHO_INDENT}Using AN-minBFW=${BENCHMARK_MINBFW})."
 	if (( AHEAD_USE_PCM==1 )); then
-		echo -n "${AHEAD_SCRIPT_COMMAND_PREFIX}checking for 'msr' module for performance counter monitoring: "
+		echo -n "${AHEAD_SCRIPT_ECHO_INDENT}checking for 'msr' module for performance counter monitoring: "
 		(lsmod | grep msr &>/dev/null && echo "already loaded") || (sudo modprobe msr &>/dev/null && echo "loaded") || echo " could not load -- pcm counters not available"
 	else
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Not using performance counter monitoring"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Not using performance counter monitoring"
 	fi
 
 	if [[ ! -d ${PATH_EVALDATA} ]]; then
 		mkdir -p ${PATH_EVALDATA}
 	fi
 
-	for ARCH in "${ARCHITECTURE[@]}"; do
-		for NUM in "${IMPLEMENTED[@]}"; do
-			BASE2=${BASE}${NUM}
-			for VAR in "${VARIANTS[@]}"; do
-				type="${BASE2}${VAR}${ARCH}"
+	for idxArch in "${!AHEAD_ARCHITECTURES[@]}"; do
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_ARCHITECTURE_NAMES[$idxArch]}"
+		for NUM in "${AHEAD_IMPLEMENTED[@]}"; do
+			AHEAD_sub_begin
+			BASE2=${AHEAD_EXECUTABLE_BASE}${NUM}
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}$(sed -e ${AHEAD_BASEREPLACE1} <<<"${BASE2}")"
+			for idxVar in "${!AHEAD_VARIANTS[@]}"; do
+				AHEAD_sub_begin
+				type="${BASE2}${AHEAD_VARIANTS[$idxVar]}${AHEAD_ARCHITECTURES[$idxArch]}"
 				PATH_BINARY=${PATH_BUILD}/${type}
-				echo -n "${AHEAD_SCRIPT_COMMAND_PREFIX}${type}:"
+				echo -n "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_VARIANT_NAMES[$idxVar]}:"
 				if [[ -e ${PATH_BINARY} ]]; then
 					EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
 					EVAL_FILEERR="${PATH_EVALDATA}/${type}.err"
 					EVAL_FILETIME="${PATH_EVALDATA}/${type}.time"
 					rm -f ${EVAL_FILEOUT} ${EVAL_FILEERR} ${EVAL_FILETIME}
-					for SF in ${BENCHMARK_SCALEFACTORS[*]}; do
+					for SF in ${AHEAD_BENCHMARK_SCALEFACTORS[*]}; do
 						echo -n " sf-${SF}"
 						echo "Scale Factor ${SF} ===========================" >>${EVAL_FILETIME}
 						if (( BENCHMARK_MINBFW > 0 )); then
 							if (( AHEAD_USE_PCM==1 )); then
-								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${AHEAD_BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
 							else
-								${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+								${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${AHEAD_BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" --AN-minbfw ${BENCHMARK_MINBFW} 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
 							fi
 						else
 							if (( AHEAD_USE_PCM==1 )); then
-								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${AHEAD_BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
 							else
-								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
+								sudo ${EXEC_ENV} ${EXEC_BASH} -c "/usr/bin/time -avo ${EVAL_FILETIME} ${PATH_BINARY} --numruns ${AHEAD_BENCHMARK_NUMRUNS} --verbose --print-result --dbpath \"${PATH_DB}/sf-${SF}${BENCHMARK_DBDIR_SUFFIX}\" 1>>${EVAL_FILEOUT} 2>>${EVAL_FILEERR}"
 							fi
 						fi
 					done
@@ -621,18 +643,20 @@ if ((DO_BENCHMARK != 0)); then
 				else
 					echo " Skipping missing binary '${${PATH_BINARY}}'!"
 				fi
+				AHEAD_sub_end
 			done
+			AHEAD_sub_end
 		done
 	done
 
 	if (( AHEAD_USE_PCM==1 )); then
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Fixing file permissions"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Fixing file permissions"
 		USERID=$(id -u)
 		GROUPID=$(id -g)
-		for ARCH in "${ARCHITECTURE[@]}"; do
-			for NUM in "${IMPLEMENTED[@]}"; do
-				BASE2=${BASE}${NUM}
-				for VAR in "${VARIANTS[@]}"; do
+		for ARCH in "${AHEAD_ARCHITECTURES[@]}"; do
+			for NUM in "${AHEAD_IMPLEMENTED[@]}"; do
+				BASE2=${AHEAD_EXECUTABLE_BASE}${NUM}
+				for VAR in "${AHEAD_VARIANTS[@]}"; do
 					type="${BASE2}${VAR}${ARCH}"
 					PATH_BINARY=${PATH_BUILD}/${type}
 					if [[ -e ${PATH_BINARY} ]]; then
@@ -647,12 +671,12 @@ if ((DO_BENCHMARK != 0)); then
 	fi
 	AHEAD_sub_end
 else
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Skipping benchmarks."
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Skipping benchmarks."
 fi
 
 # Evaluation
 if ((DO_EVAL != 0)); then
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Evaluating."
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Evaluating"
 	AHEAD_sub_begin
 	date
 	array=()
@@ -662,22 +686,24 @@ if ((DO_EVAL != 0)); then
 	[[ -d ${PATH_EVALREPORT} ]] || mkdir -p ${PATH_EVALREPORT}
 
 	if ((DO_EVAL_PREPARE != 0)); then
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Preparing"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Preparing"
 		AHEAD_sub_begin
-		for ARCH in "${ARCHITECTURE[@]}"; do
+		for idxArch in "${!AHEAD_ARCHITECTURES[@]}"; do
+			ARCH="${AHEAD_ARCHITECTURES[$idxArch]}"
+			echo -n "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_ARCHITECTURE_NAMES[$idxArch]}"
 			# Prepare File for a single complete normalized overhead graph across all scale factors
 			EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
 			EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
 
 			rm -f ${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			echo -n "Query" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
-			for var in "${VARIANT_NAMES[@]}"; do
+			for var in "${AHEAD_VARIANT_NAMES[@]}"; do
 				echo -n " ${var}" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 			done
 			echo "" >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 
-			for NUM in "${IMPLEMENTED[@]}"; do
-				BASE2="${BASE}${NUM}"
+			for NUM in "${AHEAD_IMPLEMENTED[@]}"; do
+				BASE2="${AHEAD_EXECUTABLE_BASE}${NUM}"
 				BASE3="${BASE2}${ARCH}"
 				EVAL_TEMPFILE="${BASE3}.tmp"
 				EVAL_TEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_TEMPFILE}"
@@ -688,41 +714,40 @@ if ((DO_EVAL != 0)); then
 				EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
 				EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDDATAFILE}"
 
+				echo -n " $(sed -e ${AHEAD_BASEREPLACE1} <<<"${BASE2}")"
 				(
-					echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${BASE3}"
-
 					rm -f ${EVAL_TEMPFILE_PATH}
 					rm -f ${EVAL_DATAFILE_PATH}
 					echo -n "SF " >${EVAL_TEMPFILE_PATH}
-					echo "${BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE_PATH}
+					echo "${AHEAD_BENCHMARK_SCALEFACTORS[*]}" >>${EVAL_TEMPFILE_PATH}
 
-					for VAR in "${VARIANTS[@]}"; do
+					for VAR in "${AHEAD_VARIANTS[@]}"; do
 						type="${BASE2}${VAR}${ARCH}"
 						EVAL_FILEOUT="${PATH_EVALDATA}/${type}.out"
 						EVAL_FILERESULTS_PATH="${PATH_EVALINTER}/${type}.results"
 						EVAL_FILEBESTRUNS_PATH="${PATH_EVALINTER}/${type}.bestruns"
 
 						grep -o 'result.*$' ${EVAL_FILEOUT} >${EVAL_FILERESULTS_PATH}
-						allruntimes=($(grep -A ${BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" | awk '{print $2}'))
+						allruntimes=($(grep -A ${AHEAD_BENCHMARK_NUMRUNS} "TotalTimes" ${EVAL_FILEOUT} | sed '/^--$/d' | grep -v "TotalTimes:" | awk '{print $2}'))
 
 						rm -f ${EVAL_FILEBESTRUNS_PATH}
 						echo -n "${type}" >>${EVAL_TEMPFILE_PATH}
 						offset=0
 
-						for sf in "${BENCHMARK_SCALEFACTORS[@]}"; do
-							# a batch of ${BENCHMARK_NUMRUNS} runs, i.e. all runs of a scale factor
+						for sf in "${AHEAD_BENCHMARK_SCALEFACTORS[@]}"; do
+							# a batch of ${AHEAD_BENCHMARK_NUMRUNS} runs, i.e. all runs of a scale factor
 							# 1) compute the best runs (i.e. remove outliers)
-							bestruns=($(printf "%s\n" "${allruntimes[@]:${offset}:${BENCHMARK_NUMRUNS}}" | sort -n | head -n ${BENCHMARK_NUMBEST}))
+							bestruns=($(printf "%s\n" "${allruntimes[@]:${offset}:${AHEAD_BENCHMARK_NUMRUNS}}" | sort -n | head -n ${AHEAD_BENCHMARK_NUMBEST}))
 							echo "SF ${sf}: ${bestruns[@]}" >>${EVAL_FILEBESTRUNS_PATH}
 							# 2) compute the arithmetic mean
 							total=0
 							for k in "${bestruns[@]}"; do
 								((total += $k))
 							done
-							arithmean=$((total / ${BENCHMARK_NUMBEST}))
+							arithmean=$((total / ${AHEAD_BENCHMARK_NUMBEST}))
 							# 3) append to file
 							echo -n " ${arithmean}" >>${EVAL_TEMPFILE_PATH}
-							((offset+=${BENCHMARK_NUMRUNS}))
+							((offset+=${AHEAD_BENCHMARK_NUMRUNS}))
 						done
 						echo "" >>${EVAL_TEMPFILE_PATH}
 						sync ${EVAL_TEMPFILE_PATH}
@@ -755,7 +780,7 @@ if ((DO_EVAL != 0)); then
 						NUM_OPS_CREATE=${array[0]}
 						NUM_OPS_COPY=${array[1]}
 						NUM_OPS_QUERY=${array[2]}
-						awk -v numopscreate=${NUM_OPS_CREATE} -v numopscopy=${NUM_OPS_COPY} -v numopsquery=${NUM_OPS_QUERY} -v numruns=${BENCHMARK_NUMRUNS} \
+						awk -v numopscreate=${NUM_OPS_CREATE} -v numopscopy=${NUM_OPS_COPY} -v numopsquery=${NUM_OPS_QUERY} -v numruns=${AHEAD_BENCHMARK_NUMRUNS} \
 							'BEGIN{i=0;incopy=1;inquery=0;FS="\t";}
 							{
 								++i
@@ -782,14 +807,14 @@ if ((DO_EVAL != 0)); then
 
 					# transpose original data
 					awktranspose ${EVAL_TEMPFILE_PATH} ${EVAL_DATAFILE_PATH}
-					if [[ ${BASEREPLACE1} ]]; then
-						sed -i -e ${BASEREPLACE1} ${EVAL_DATAFILE_PATH}
-						sed -i -e ${BASEREPLACE2} ${EVAL_DATAFILE_PATH}
+					if [[ ${AHEAD_BASEREPLACE1} ]]; then
+						sed -i -e ${AHEAD_BASEREPLACE1} ${EVAL_DATAFILE_PATH}
+						sed -i -e ${AHEAD_BASEREPLACE2} ${EVAL_DATAFILE_PATH}
 					fi
 
 					# prepare awk statement to normalize all columns and output them to the normalized temp file
 					# 2016-11-04: normalize to "normal" (unencoded) base variant
-					sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
+					sfIdxs=$(seq -s " " 1 ${#AHEAD_BENCHMARK_SCALEFACTORS[@]})
 					arg="FNR==NR {if (FNR==2) { "
 					for sf in ${sfIdxs}; do # number of scale factors
 						column=$(echo "${sf}+1" | bc)
@@ -808,35 +833,38 @@ if ((DO_EVAL != 0)); then
 					done
 					arg+="}"
 					# EVAL_TEMPFILE_PATH already contains the average (arithmetic mean) of the best X of Y runs
-					# (see BENCHMARK_NUMRUNS and BENCHMARK_NUMBEST)
+					# (see AHEAD_BENCHMARK_NUMRUNS and AHEAD_BENCHMARK_NUMBEST)
 					awk "${arg}" "${EVAL_TEMPFILE_PATH}" "${EVAL_TEMPFILE_PATH}" >"${EVAL_NORMALIZEDTEMPFILE_PATH}"
 
 					# transpose normalized data
 					awktranspose ${EVAL_NORMALIZEDTEMPFILE_PATH} ${EVAL_NORMALIZEDDATAFILE_PATH}
-					if [[ ${BASEREPLACE1} ]]; then
-						sed -i -e ${BASEREPLACE1} ${EVAL_NORMALIZEDDATAFILE_PATH}
-						sed -i -e ${BASEREPLACE2} ${EVAL_NORMALIZEDDATAFILE_PATH}
+					if [[ ${AHEAD_BASEREPLACE1} ]]; then
+						sed -i -e ${AHEAD_BASEREPLACE1} ${EVAL_NORMALIZEDDATAFILE_PATH}
+						sed -i -e ${AHEAD_BASEREPLACE2} ${EVAL_NORMALIZEDDATAFILE_PATH}
 						tr <${EVAL_NORMALIZEDDATAFILE_PATH} -d '\000' >${EVAL_NORMALIZEDDATAFILE_PATH}.tmp
 						mv ${EVAL_NORMALIZEDDATAFILE_PATH}.tmp ${EVAL_NORMALIZEDDATAFILE_PATH}
 					fi
 					sync "${EVAL_TEMPFILE_PATH}" "${EVAL_DATAFILE_PATH}" "${EVAL_FILERESULTS_PATH}" "${EVAL_FILEBESTRUNS_PATH}" "${EVAL_NORMALIZEDDATAFILE_PATH}" "${EVAL_NORMALIZEDTEMPFILE_PATH}"
 				) &
 			done
+			echo
 		done
 		# Now, wait for everything to finish
 		wait -n
 		AHEAD_sync
 		AHEAD_sub_end
 
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Preparing normalized data files for full-SSB plots"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Preparing normalized data files for full-SSB plots"
 		AHEAD_sub_begin
-		for ARCH in "${ARCHITECTURE[@]}"; do
+		for idxArch in "${!AHEAD_ARCHITECTURES[@]}"; do
+			ARCH="${AHEAD_ARCHITECTURES[$idxArch]}"
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_ARCHITECTURE_NAMES[$idxArch]}"
 			(
 				# Prepare File for a single complete normalized overhead graph across all scale factors
 				EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
 				EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
-				for NUM in "${IMPLEMENTED[@]}"; do
-					BASE2="${BASE}${NUM}"
+				for NUM in "${AHEAD_IMPLEMENTED[@]}"; do
+					BASE2="${AHEAD_EXECUTABLE_BASE}${NUM}"
 					BASE3="${BASE2}${ARCH}"
 					EVAL_TEMPFILE="${BASE3}.tmp"
 					EVAL_TEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_TEMPFILE}"
@@ -849,14 +877,14 @@ if ((DO_EVAL != 0)); then
 					echo -n $(echo -n "${NUM} " | sed 's/\([0-9]\)\([0-9]\)/Q\1.\2/g') >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 					echo -n " " >>${EVAL_NORMALIZEDALLDATAFILE_PATH}
 					#prepare awk statement to generate from the normalized temp file the normalized data across all scalefactors
-					sfIdxs=$(seq -s " " 1 ${#BENCHMARK_SCALEFACTORS[@]})
-					varIdxs=$(seq -s " " 1 ${#VARIANTS[@]})
+					sfIdxs=$(seq -s " " 1 ${#AHEAD_BENCHMARK_SCALEFACTORS[@]})
+					varIdxs=$(seq -s " " 1 ${#AHEAD_VARIANTS[@]})
 					arg="BEGIN {ORS=\" \"} NR==FNR { if (FNR==1) {next} {norm[FNR]=(("
 					for sf in ${sfIdxs}; do
 						column=$(echo "${sf}+1" | bc)
 						arg+="\$${column}+"
 					done
-					arg+="0)/${#BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
+					arg+="0)/${#AHEAD_BENCHMARK_SCALEFACTORS[@]})};next} FNR==1 {next} {print norm[FNR]}"
 					awk "${arg}" "${EVAL_NORMALIZEDTEMPFILE_PATH}" "${EVAL_NORMALIZEDTEMPFILE_PATH}" >>"${EVAL_NORMALIZEDALLDATAFILE_PATH}"
 					echo "" >>"${EVAL_NORMALIZEDALLDATAFILE_PATH}"
 					# remove <zero>-bytes
@@ -871,29 +899,29 @@ if ((DO_EVAL != 0)); then
 		AHEAD_sync
 		AHEAD_sub_end
 	else ### ((DO_EVAL_PREPARE != 0))
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Skipping preparation."
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Skipping preparation."
 	fi ### ((DO_EVAL_PREPARE != 0))
 
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Collecting Data for teaser graphs"
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Collecting Data for teaser graphs"
 	AHEAD_sub_begin
 	rm -f ${PATH_TEASER_CONSUMPTION_DATAFILE} ${PATH_TEASER_RUNTIME_DATAFILE}
 
 	# The storage teaser graph is for the INTERMEDIATE RESULTS only!
 	# For the storage teaser graph, we only use scale factor 1 AND WE ASSUME THAT THIS IS THE FIRST ONE IN THE RESULT FILES!
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Memory Consumption"
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Memory Consumption"
 	totalAbsoluteStorages=()
-	for VAR in "${VARIANTS[@]}"; do
+	for VAR in "${AHEAD_VARIANTS[@]}"; do
 		totalAbsoluteStorages+=(0)
 	done
-	for ARCH in "${ARCHITECTURE[0]}"; do
-		for NUM in "${IMPLEMENTED[@]}"; do
+	for ARCH in "${AHEAD_ARCHITECTURES[0]}"; do
+		for NUM in "${AHEAD_IMPLEMENTED[@]}"; do
 			printf '%s' ${NUM} >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
-			BASE2="${BASE}${NUM}"
+			BASE2="${AHEAD_EXECUTABLE_BASE}${NUM}"
 			# In the following, we first sum up the storage consumption (per query ${NUM}) and then divide the totals
 			# We assume that file ${EVAL_FILEOPS_OUT} contains only the filtered operator stats AND
 			# that the first N entries belong to the very first query. We collect all consumptions until the operator number is smaller again, which means the next query run starts, and then stop awk.
-			for idx in "${TEASER_INDICES[@]}"; do
-				type="${BASE2}${VARIANTS[$idx]}${ARCH}"
+			for idx in "${AHEAD_TEASER_INDICES[@]}"; do
+				type="${BASE2}${AHEAD_VARIANTS[$idx]}${ARCH}"
 				EVAL_FILEOPS_OUT="${PATH_EVALINTER}/${type}.ops.out"
 				# use the projected consumption for the teaser
 				STORAGE=$(awk \
@@ -912,108 +940,104 @@ if ((DO_EVAL != 0)); then
 		done
 	done
 	printf 'Type' >"${PATH_TEASER_CONSUMPTION_DATAFILE}"
-	for idx in "${TEASER_INDICES[@]}"; do
-		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
+	for idx in "${AHEAD_TEASER_INDICES[@]}"; do
+		printf '\t%s' "${AHEAD_VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 	done
 	printf '\nAverage' >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 	CONSUMPTION_ARGUMENTS=()
-	for idx in ${TEASER_INDICES[@]}; do
+	for idx in ${AHEAD_TEASER_INDICES[@]}; do
 		overallAverage=$(awk '{printf "%f", $1 / $2}' <<<"${totalAbsoluteStorages[$idx]} ${totalAbsoluteStorages[0]}")
 		printf "\t${overallAverage}" >>"${PATH_TEASER_CONSUMPTION_DATAFILE}"
 		CONSUMPTION_ARGUMENTS+=($(awk '{printf "%.2f %.2f",$1,($1+0.25)}' <<<"${overallAverage}"))
 	done
 
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Runtime"
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Runtime"
 	AHEAD_sub_begin
 	totalRelativeRuntimes=()
-	for VAR in "${VARIANTS[@]}"; do
+	for VAR in "${AHEAD_VARIANTS[@]}"; do
 		totalRelativeRuntimes+=(0)
 	done
 	# For the following, we can use the already computed overall-relative-runtimes! These are stored in file ${EVAL_NORMALIZEDALLDATAFILE_PATH}
-	numRuntimes=$((${#ARCHITECTURE[@]}*${#IMPLEMENTED[@]}))
+	numRuntimes=$((${#AHEAD_ARCHITECTURES[@]}*${#AHEAD_IMPLEMENTED[@]}))
 	if [[ ! -z ${VERBOSE+x} ]]; then
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Architectures: ${ARCHITECTURE[@]}"
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}numRuntimes=${numRuntimes}"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Architectures: ${AHEAD_ARCHITECTURES[@]}"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}numRuntimes=${numRuntimes}"
 	fi
-	for idx in "${!ARCHITECTURE[@]}"; do
-		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${ARCHITECTURE_NAMES[$idx]}"
+	for idx in "${!AHEAD_ARCHITECTURES[@]}"; do
+		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_ARCHITECTURE_NAMES[$idx]}"
 		AHEAD_sub_begin
-		EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCHITECTURE[$idx]}.data"
+		EVAL_NORMALIZEDALLDATAFILE="norm-all${AHEAD_ARCHITECTURES[$idx]}.data"
 		EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
-		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Normalized data file: ${EVAL_NORMALIZEDALLDATAFILE_PATH}"
+		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}Normalized data file: ${EVAL_NORMALIZEDALLDATAFILE_PATH}"
 		# ignore the headline generated in the normalized data file
-		ARRAY_RUNTIMES=($(awk -v numvars=${#VARIANTS[@]} \
+		ARRAY_RUNTIMES=($(awk -v numvars=${#AHEAD_VARIANTS[@]} \
 			'BEGIN{for (i=0; i<numvars; ++i) runtimes[i]=0}
 			NR>1{for (i=1; i<=NF; ++i) runtimes[i-1]+=$i}
 			END{for (i=1; i<=numvars; ++i) print runtimes[i]}' \
 			"${EVAL_NORMALIZEDALLDATAFILE_PATH}"))
-		for idxA in "${!VARIANTS[@]}"; do
+		for idxA in "${!AHEAD_VARIANTS[@]}"; do
 			totalRelativeRuntimes[$idxA]=$(echo "${totalRelativeRuntimes[$idxA]}+${ARRAY_RUNTIMES[$idxA]}"|bc)
 		done
-		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}[${totalRelativeRuntimes[@]}]"
+		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}[${totalRelativeRuntimes[@]}]"
 		AHEAD_sub_end
 	done
 	printf 'Type' >>"${PATH_TEASER_RUNTIME_DATAFILE}"
-	for idx in "${TEASER_INDICES[@]}"; do
-		printf '\t%s' "${VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
+	for idx in "${AHEAD_TEASER_INDICES[@]}"; do
+		printf '\t%s' "${AHEAD_VARIANT_NAMES[$idx]}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	done
 	printf '\nAverage' >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 	RUNTIME_ARGUMENTS=()
-	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Final relative values"
+	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}Final relative values"
 	AHEAD_sub_begin
-	for idx in "${TEASER_INDICES[@]}"; do
+	for idx in "${AHEAD_TEASER_INDICES[@]}"; do
 		overallAverage=$(awk '{printf "%f", $1 / $2}' <<<"${totalRelativeRuntimes[$idx]} ${numRuntimes}")
 		printf '\t%s' "${overallAverage}" >>"${PATH_TEASER_RUNTIME_DATAFILE}"
 		RUNTIME_ARGUMENTS+=($(awk '{printf "%.2f %.2f",$1,($1+0.25)}' <<<"${overallAverage}"))
-		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${VARIANT_NAMES[$idx]}: ${overallAverage}"
+		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_VARIANT_NAMES[$idx]}: ${overallAverage}"
 	done
 	AHEAD_sub_end
 	AHEAD_sub_end
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Generating plot scripts"
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Generating plot scripts"
 	AHEAD_sub_begin
-	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Runtime"
+	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}Runtime"
 	gnuplot_teaser_runtime "${PATH_TEASER_RUNTIME_GNUPLOTFILE}" "${PATH_TEASER_RUNTIME_PLOTFILE}" "${PATH_TEASER_RUNTIME_DATAFILE}" "${RUNTIME_ARGUMENTS[@]}"
-	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Memory Consumption"
+	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}Memory Consumption"
 	gnuplot_teaser_consumption "${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}" "${PATH_TEASER_CONSUMPTION_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}" "${CONSUMPTION_ARGUMENTS[@]}"
-	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Key"
+	[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}Key"
 	gnuplot_teaser_legend "${PATH_TEASER_LEGEND_GNUPLOTFILE}" "${PATH_TEASER_LEGEND_PLOTFILE}" "${PATH_TEASER_CONSUMPTION_DATAFILE}"
 	AHEAD_sub_end
 
 	AHEAD_sync
 	AHEAD_sub_end
 
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Collecting data for Scalar vs. Vectorized"
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Collecting data for Scalar vs. Vectorized"
 	AHEAD_sub_begin
-	if printf '%s\n' "${ARCHITECTURE[@]}" | grep -qE '^_SSE$'; then
-		[[ "${AHEAD_SCALAR_VS_VECTOR_QUERIES}" =~ \(([1-9][1-9] *)*\) ]] || AHEAD_quit 1 "${AHEAD_SCRIPT_COMMAND_PREFIX}Variable 'AHEAD_SCALAR_VS_VECTOR_QUERIES' must match pattern '\(([1-9][1-9] *)*\)' !!!"
-		[[ "${AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES}" =~ \(([0-9]+ *)*\) ]] || AHEAD_quit 1 "${AHEAD_SCRIPT_COMMAND_PREFIX}Variable 'AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES' must match pattern '\(([0-9]+ *)*\)' !!!"
-		eval "AHEAD_SCALAR_VS_VECTOR_QUERIES=${AHEAD_SCALAR_VS_VECTOR_QUERIES}" # use this to emulate exporting arrays.
-		eval "AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES=${AHEAD_SCALAR_VS_VECTOR_VARIANT_INDICES}" # use this to emulate exporting arrays.
+	if printf '%s\n' "${AHEAD_ARCHITECTURES[@]}" | grep -qE '^_SSE$'; then
 		numQueries="${#AHEAD_SCALAR_VS_VECTOR_QUERIES[@]}"
 		ARCH="_SSE"
 		AVERAGE_RUNTIMES_SCALAR=()
 		AVERAGE_RUNTIMES_VECTOR=()
 		AVERAGE_RUNTIMES_SCALAR_TO_VECTOR=()
-		for idx in "${!VARIANTS[@]}"; do
+		for idx in "${!AHEAD_VARIANTS[@]}"; do
 			AVERAGE_RUNTIMES_SCALAR+=(0)
 			AVERAGE_RUNTIMES_VECTOR+=(0)
 			AVERAGE_RUNTIMES_SCALAR_TO_VECTOR+=(0)
 		done
 		for idx in "${!AHEAD_SCALAR_VS_VECTOR_QUERIES[@]}"; do
-			BASE2="${BASE}${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]}"
+			BASE2="${AHEAD_EXECUTABLE_BASE}${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]}"
 			REPORT_NORMALIZED_SCALAR_DATA_PATH="${PATH_EVALREPORT}/${BASE2}_scalar.data"
 			REPORT_NORMALIZED_VECTOR_DATA_PATH="${PATH_EVALREPORT}/${BASE2}${ARCH}.data"
 			if [[ ! -z ${VERBOSE+x} ]]; then
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]}"
 				AHEAD_sub_begin
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${REPORT_NORMALIZED_SCALAR_DATA_PATH}"
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${REPORT_NORMALIZED_VECTOR_DATA_PATH}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}${REPORT_NORMALIZED_SCALAR_DATA_PATH}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}${REPORT_NORMALIZED_VECTOR_DATA_PATH}"
 				AHEAD_sub_end
 			fi
 			# The following awk script computes all relative runtimes with respect to Unprotected Vector (SSE) baseline
 			# The results are the sums for all considered queries (11, 12, and 13 for the paper)
 			# In the awk script afterwards, we compute the average by dividing by the number of queries (3 for the paper)
-			numVariants=${#VARIANTS[@]}
+			numVariants=${#AHEAD_VARIANTS[@]}
 			ARRAY_RUNTIMES=($(awk -v query=${AHEAD_SCALAR_VS_VECTOR_QUERIES[$idx]} -v numvar=${numVariants} -v numsf=$((${AHEAD_SCALEFACTOR_MAX} - (${AHEAD_SCALEFACTOR_MIN} - 1))) \
 				'BEGIN{
 					maxNF=0
@@ -1066,7 +1090,7 @@ if ((DO_EVAL != 0)); then
 					for (var=1; var<=numvar; ++var) {printf "%.5f ", (totalRelativesSSE[var])}
 					#printf "]\n"
 				}' "${REPORT_NORMALIZED_VECTOR_DATA_PATH}" "${REPORT_NORMALIZED_SCALAR_DATA_PATH}"))
-			[[ "${ARRAY_RUNTIMES[@]}" == ERROR:* ]] && AHEAD_quit 1 "${ARRAY_RUNTIMES[@]}"
+			[[ "${ARRAY_RUNTIMES[@]}" == ERROR:* ]] && AHEAD_exit 1 "${ARRAY_RUNTIMES[@]}"
 			RUNTIMES_SCALAR=(${ARRAY_RUNTIMES[@]:0:${numVariants}})
 			RUNTIMES_VECTOR=(${ARRAY_RUNTIMES[@]:${numVariants}:${numVariants}})
 			ARRAY_RUNTIMES=($(awk \
@@ -1086,11 +1110,11 @@ EOM
 			AVERAGE_RUNTIMES_VECTOR=("${ARRAY_RUNTIMES[@]:$((numVariants*2)):$numVariants}")
 			if [[ ! -z ${VERBOSE+x} ]]; then
 				AHEAD_sub_begin
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Scalar: ${RUNTIMES_SCALAR[@]}"
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Vector: ${RUNTIMES_VECTOR[@]}"
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Scalar->Vector: ${RUNTIMES_SCALAR_TO_VECTOR[@]}"
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Average Scalar: ${AVERAGE_RUNTIMES_SCALAR[@]}"
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Average Vector: ${AVERAGE_RUNTIMES_VECTOR[@]}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}Scalar: ${RUNTIMES_SCALAR[@]}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}Vector: ${RUNTIMES_VECTOR[@]}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}Scalar->Vector: ${RUNTIMES_SCALAR_TO_VECTOR[@]}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}Average Scalar: ${AVERAGE_RUNTIMES_SCALAR[@]}"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}Average Vector: ${AVERAGE_RUNTIMES_VECTOR[@]}"
 				AHEAD_sub_end
 			fi
 		done
@@ -1105,11 +1129,11 @@ EOM
 		AVERAGE_RUNTIMES_VECTOR=("${AVERAGES[@]:$numVariants:$numVariants}")
 		AVERAGE_RUNTIMES_SCALAR_TO_VECTOR=("${AVERAGES[@]:$((numVariants*2)):$numVariants}")
 		if [[ ! -z ${VERBOSE+x} ]]; then
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Total"
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}Total"
 			AHEAD_sub_begin
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Scalar: ${AVERAGE_RUNTIMES_SCALAR[@]}"
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Vector: ${AVERAGE_RUNTIMES_VECTOR[@]}"
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Scalar->Vector: ${AVERAGE_RUNTIMES_SCALAR_TO_VECTOR[@]}"
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}Scalar: ${AVERAGE_RUNTIMES_SCALAR[@]}"
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}Vector: ${AVERAGE_RUNTIMES_VECTOR[@]}"
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}Scalar->Vector: ${AVERAGE_RUNTIMES_SCALAR_TO_VECTOR[@]}"
 			AHEAD_sub_end
 		fi
 		echo -e "Variant\tScalar\tVectorized" >"${PATH_SCALAR_VS_VECTOR_DATAFILE}"
@@ -1118,7 +1142,7 @@ EOM
 		VALUES_TOO_LARGE=()
 		POSITIONS_TOO_LARGE=()
 		for idx in "${!AVERAGE_RUNTIMES_SCALAR[@]}"; do
-			echo -e "${VARIANT_NAMES[$idx]}\t${AVERAGE_RUNTIMES_SCALAR[$idx]}\t${AVERAGE_RUNTIMES_VECTOR[$idx]}" >>"${PATH_SCALAR_VS_VECTOR_DATAFILE}"
+			echo -e "${AHEAD_VARIANT_NAMES[$idx]}\t${AVERAGE_RUNTIMES_SCALAR[$idx]}\t${AVERAGE_RUNTIMES_VECTOR[$idx]}" >>"${PATH_SCALAR_VS_VECTOR_DATAFILE}"
 			SCALAR=$(bc <<< "scale=0;${AVERAGE_RUNTIMES_SCALAR[$idx]}*${SCALE}/1")
 			VECTOR=$(bc <<< "scale=0;${AVERAGE_RUNTIMES_VECTOR[$idx]}*${SCALE}/1")
 			((SCALAR > THRESHOLD)) && { VALUES_TOO_LARGE+=("${AVERAGE_RUNTIMES_SCALAR[$idx]}"); POSITIONS_TOO_LARGE+=("$(bc <<< "$idx-0.4")"); }
@@ -1141,25 +1165,28 @@ EOM
 			ARGUMENTS+=("set label \"${AVERAGE_RUNTIMES_SCALAR_TO_VECTOR[$idx]}\" at first $X,$Y rotate by -70")
 		done
 
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Generating plot scripts"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Generating plot scripts"
 		if [[ ! -z ${VERBOSE+x} ]]; then
 			AHEAD_sub_begin
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Arguments to gnuplot_scalarVSvector:";
+			echo "${AHEAD_SCRIPT_ECHO_INDENT}Arguments to gnuplot_scalarVSvector:";
 			AHEAD_sub_begin
 			for V in "${ARGUMENTS[@]}"; do
-				echo "${AHEAD_SCRIPT_COMMAND_PREFIX}$V"
+				echo "${AHEAD_SCRIPT_ECHO_INDENT}$V"
 			done
 			AHEAD_sub_end
 			AHEAD_sub_end
 		fi
 		gnuplot_scalarVSvector "${PATH_SCALAR_VS_VECTOR_GNUPLOTFILE}" "${PATH_SCALAR_VS_VECTOR_PLOTFILE}" "${PATH_SCALAR_VS_VECTOR_DATAFILE}" "${ARGUMENTS[@]}"
 	else
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}SSE architecture not found, not specified, or disabled (or the like)! Skipping."
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}SSE architecture not found, not specified, or disabled (or the like)! Skipping."
 	fi
 
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Plotting"
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Plotting"
 	AHEAD_sub_begin
-	for ARCH in "${ARCHITECTURE[@]}"; do
+	for idxArch in "${!AHEAD_ARCHITECTURES[@]}"; do
+		ARCH="${AHEAD_ARCHITECTURES[$idxArch]}"
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}${AHEAD_ARCHITECTURE_NAMES[$idxArch]}"
+		AHEAD_sub_begin
 		# Prepare File for a single complete normalized overhead graph across all scale factors
 		EVAL_NORMALIZEDALLDATAFILE="norm-all${ARCH}.data"
 		EVAL_NORMALIZEDALLDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLDATAFILE}"
@@ -1167,8 +1194,9 @@ EOM
 		EVAL_NORMALIZEDALLPLOTFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLPLOTFILE}"
 		EVAL_NORMALIZEDALLTEXFILE="norm-all${ARCH}.tex"
 		EVAL_NORMALIZEDALLTEXFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDALLTEXFILE}"
-		for NUM in "${IMPLEMENTED[@]}"; do
-			BASE2="${BASE}${NUM}"
+		for NUM in "${AHEAD_IMPLEMENTED[@]}"; do
+			BASE2="${AHEAD_EXECUTABLE_BASE}${NUM}"
+			echo -n "${AHEAD_SCRIPT_ECHO_INDENT}$(sed -e ${AHEAD_BASEREPLACE1} <<<"${BASE2}")..."
 			BASE3="${BASE2}${ARCH}"
 			EVAL_TEMPFILE="${BASE3}.tmp"
 			EVAL_TEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_TEMPFILE}"
@@ -1178,63 +1206,61 @@ EOM
 			EVAL_NORMALIZEDTEMPFILE_PATH="${PATH_EVALINTER}/${EVAL_NORMALIZEDTEMPFILE}"
 			EVAL_NORMALIZEDDATAFILE="${BASE3}-norm.data"
 			EVAL_NORMALIZEDDATAFILE_PATH="${PATH_EVALREPORT}/${EVAL_NORMALIZEDDATAFILE}"
-			echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${BASE3}"
-			pushd ${PATH_EVALREPORT}
+			
+			AHEAD_pushd ${PATH_EVALREPORT}
 			#gnuplotcode <output file> <gnuplot target output file> <gnuplot data file>
 			gnuplotcodepdf ${BASE3}.m ${BASE3}.pdf ${EVAL_DATAFILE} \
 				"set yrange [0:*]" "set grid" "set xlabel 'Scale Factor'" "set ylabel 'Runtime [ns]'"
 			gnuplotcodepdf ${BASE3}-norm.m ${BASE3}-norm.pdf ${EVAL_NORMALIZEDDATAFILE} \
 				"set yrange [0.9:2]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "unset ylabel"
 			gnuplotlegend ${BASE3}-legend.m ${BASE3}-legend.pdf ${BASE3}-ylabel.pdf ${BASE3}.data
-			gnuplot ${BASE3}.m
-			gnuplot ${BASE3}-norm.m
-			gnuplot ${BASE3}-legend.m
-			popd
+			AHEAD_run_hidden_output  "${EXEC_ENV}" "${EXEC_BASH}" "-c" "gnuplot '${BASE3}.m'; gnuplot '${BASE3}-norm.m'; gnuplot '${BASE3}-legend.m'"
+			AHEAD_popd
 		done
 
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Creating tex/PDF files for normalized averages (${EVAL_NORMALIZEDALLTEXFILE_PATH})"
+		echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Creating tex/PDF files for normalized averages (${EVAL_NORMALIZEDALLTEXFILE_PATH})"
 		gnuplotcodetex  ${EVAL_NORMALIZEDALLPLOTFILE_PATH} ${EVAL_NORMALIZEDALLTEXFILE_PATH} ${EVAL_NORMALIZEDALLDATAFILE_PATH} \
 			"set yrange [0:]" "set ytics out" "set xtics out" "set grid noxtics ytics" "unset xlabel" "set ylabel \"Relative Runtime\""
-		gnuplot ${EVAL_NORMALIZEDALLPLOTFILE_PATH}
+		AHEAD_run_hidden_output gnuplot "${EVAL_NORMALIZEDALLPLOTFILE_PATH}"
+		AHEAD_sub_end
 	done
 	AHEAD_sub_end
 
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Teaser graphs"
-	gnuplot "${PATH_TEASER_RUNTIME_GNUPLOTFILE}"
-	gnuplot "${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}"
-	gnuplot "${PATH_TEASER_LEGEND_GNUPLOTFILE}"
+	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Teaser graphs..."
+	AHEAD_run_hidden_output  "${EXEC_ENV}" "${EXEC_BASH}" "-c" "gnuplot '${PATH_TEASER_RUNTIME_GNUPLOTFILE}'; gnuplot '${PATH_TEASER_CONSUMPTION_GNUPLOTFILE}'; gnuplot '${PATH_TEASER_LEGEND_GNUPLOTFILE}'"
 
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Scalar vs. Vector graph"
-	gnuplot "${PATH_SCALAR_VS_VECTOR_GNUPLOTFILE}"
+	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Scalar vs. Vector graph..."
+	AHEAD_run_hidden_output gnuplot "${PATH_SCALAR_VS_VECTOR_GNUPLOTFILE}"
 
 	AHEAD_sync
 	AHEAD_sub_end
 else
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Skipping evaluation."
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Skipping evaluation."
 fi
 
 # Verification
 if ((DO_VERIFY != 0)); then
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Verifying."
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Verifying."
 	AHEAD_sub_begin
 	date
-	NUMARCHS="${#ARCHITECTURE[@]}"
+	NUMARCHS="${#AHEAD_ARCHITECTURES[@]}"
 	isAnyBad=0
 	for idxArch in $(seq 0 $(echo "${NUMARCHS}-1" | bc)); do
-		ARCH=${ARCHITECTURE[$idxArch]}
-		ARCHNAME=${ARCHITECTURE_NAMES[$idxArch]}
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}${ARCHNAME}"
+		ARCH=${AHEAD_ARCHITECTURES[$idxArch]}
+		ARCHNAME=${AHEAD_ARCHITECTURE_NAMES[$idxArch]}
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}${ARCHNAME}"
 		AHEAD_sub_begin
-		for NUM in "${IMPLEMENTED[@]}"; do
-			echo -n "${AHEAD_SCRIPT_COMMAND_PREFIX}Q${NUM}:"
-			BASE2="${BASE}${NUM}"
-			NUMVARS="${#VARIANTS[@]}"
-			baseline1="${PATH_EVALINTER}/${BASE2}${VARIANTS[0]}${ARCHITECTURE[0]}.results"
+		for NUM in "${AHEAD_IMPLEMENTED[@]}"; do
+			echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Q${NUM}:"
+			BASE2="${AHEAD_EXECUTABLE_BASE}${NUM}"
+			NUMVARS="${#AHEAD_VARIANTS[@]}"
+			baseline1="${PATH_EVALINTER}/${BASE2}${AHEAD_VARIANTS[0]}${AHEAD_ARCHITECTURES[0]}.results"
 			baseline1Tmp="${baseline1}.tmp"
-			baseline2="${PATH_EVALDATA}/${BASE2}${VARIANTS[0]}${ARCH}.err"
+			baseline2="${PATH_EVALDATA}/${BASE2}${AHEAD_VARIANTS[0]}${ARCH}.err"
 			awk '{print $1,$2}' "${baseline1}" >"${baseline1Tmp}"
-			for VAR in "${VARIANTS[@]}"; do
-				echo -n " ${VAR:1}="
+			for idxVar in "${AHEAD_VARIANTS[@]}"; do
+				VAR="${AHEAD_VARIANTS[$idxVar]}"
+				echo -n " ${AHEAD_VARIANT_NAMES[$idxVar]}="
 				other1="${PATH_EVALINTER}/${BASE2}${VAR}${ARCH}.results"
 				other1Tmp="${other1}.tmp"
 				awk '{print $1,$2}' "${other1}" >"${other1Tmp}" # filters out e.g. the encoded value for the continuous encoding variants
@@ -1255,18 +1281,18 @@ if ((DO_VERIFY != 0)); then
 	done
 
 	if ((isAnyBad == 1)); then
-		echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Generating diffs:"
-		for s in "${ARCHITECTURE[@]}"; do
-			for q in "${IMPLEMENTED[@]}"; do
-				for v in "${VARIANTS[@]}"; do
+		echo "${AHEAD_SCRIPT_ECHO_INDENT}Generating diffs:"
+		for s in "${AHEAD_ARCHITECTURES[@]}"; do
+			for q in "${AHEAD_IMPLEMENTED[@]}"; do
+				for v in "${AHEAD_VARIANTS[@]}"; do
 					for t in out err; do
 						grepfile="./grep.${t}"
-						diff "${PATH_EVALDATA}/${BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
+						diff "${PATH_EVALDATA}/${AHEAD_EXECUTABLE_BASE}${q}_normal_scalar.${t}" "${PATH_EVALDATA}/${AHEAD_EXECUTABLE_BASE}${q}${v}${s}.${t}" | grep result >${grepfile}
 						if [[ -s "${grepfile}" ]]; then
-							echo "${AHEAD_SCRIPT_COMMAND_PREFIX}-------------------------------"
-							echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Q${q}${v}${s} (${t}):"
+							echo "${AHEAD_SCRIPT_ECHO_INDENT}-------------------------------"
+							echo "${AHEAD_SCRIPT_ECHO_INDENT}Q${q}${v}${s} (${t}):"
 							cat "${grepfile}"
-							echo "${AHEAD_SCRIPT_COMMAND_PREFIX}==============================="
+							echo "${AHEAD_SCRIPT_ECHO_INDENT}==============================="
 						fi
 						rm -f ${grepfile}
 					done
@@ -1276,5 +1302,5 @@ if ((DO_VERIFY != 0)); then
 	fi
 	AHEAD_sub_end
 else
-	echo "${AHEAD_SCRIPT_COMMAND_PREFIX}Skipping verification."
+	echo "${AHEAD_SCRIPT_ECHO_INDENT}Skipping verification."
 fi
