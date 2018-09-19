@@ -70,3 +70,9 @@ paper/results/ssb/intermediate
 /paper/results/ssb/scalarVSvector.m
 /paper/results/ssb/scalarVSvector.pdf
 /paper/results/ssb/scalarVSvector.tex
+/paper/results/ssb/minbfw_consumption.data
+/paper/results/ssb/minbfw_runtime.data
+/paper/results/ssb/minbfw_consumption.pdf
+/paper/results/ssb/minbfw_consumption.tex
+/paper/results/ssb/minbfw_runtime.pdf
+/paper/results/ssb/minbfw_runtime.tex
