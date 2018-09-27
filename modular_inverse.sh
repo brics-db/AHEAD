@@ -4,57 +4,46 @@ MI_SOURCEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
 MI_SUBMODULE=coding_benchmark
 MI_GITREPO=https://github.com/brics-db/coding_benchmark
 MI_BUILDDIR=build
+MI_BUILDTYPE=Release
 MI_EXEC="TestModuloInverseComputation2"
 MI_OUTFILE="${MI_EXEC}.out"
 MI_ERRFILE="${MI_EXEC}.err"
-MI_DATFILE="${MI_EXEC}.data"
+MI_DATAFILE="${MI_EXEC}.data"
 MI_NUMRUNS=10000
 MI_A_MIN=2
 MI_C_MAX=127
 
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/common.conf"
+source "${MI_SOURCEDIR}/common.conf"
 
 AHEAD_prepare_scalinggovernor_and_turboboost
 
 # For the reproducibility, use the submodule coding_benchmark
-echo "  * Initializing, syncing, and updating submodule"
-tempfilename=$(tempfile)
 if [[ -z "$(ls -A ${MI_SUBMODULE})" ]]; then
-	git submodule init "${MI_SUBMODULE}" &>${tempfilename}
-	ret=$?
-    if [[ ! $ret ]]; then
-    	cat ${tempfilename}
-    fi
-    rm -f ${tempfilename}
-    if [[ ! $ret ]]; then
-    	exit 1
-    fi
-fi
-git submodule sync "${MI_SUBMODULE}" &>${tempfilename}
-ret=$?
-if [[ ! $ret ]]; then
-	cat ${tempfilename}
-fi
-rm -f ${tempfilename}
-if [[ ! $ret ]]; then
-	exit 1
-fi
-git submodule update "${MI_SUBMODULE}" &>${tempfilename}
-ret=$?
-if [[ ! $ret ]]; then
-	cat ${tempfilename}
-fi
-rm -f ${tempfilename}
-if [[ ! $ret ]]; then
-	exit 1
+	AHEAD_echo "Submodule not present."
+	AHEAD_sub_begin
+	AHEAD_echo -n "Syncing..."
+	AHEAD_run_hidden_output git submodule sync "${MI_SUBMODULE}" || AHEAD_exit $?
+    AHEAD_echo -n "Fetching..."
+	AHEAD_run_hidden_output git submodule update --init --recursive "${MI_SUBMODULE}" || AHEAD_exit $?
+	AHEAD_sub_end
 fi
 
-mkdir -p "${AHEAD_PAPER_RESULTS_MI}" || exit 1
-echo "  * Compiling sources"
-pushd "${MI_SOURCEDIR}/${MI_SUBMODULE}" && ./bootstrap.sh && pushd "${MI_BUILDDIR}/Release" && make -j$(nproc) TestModuloInverseComputation2 || exit 1
-./${MI_EXEC} ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1> >(tee ${MI_OUTFILE}) 2> >(tee ${MI_ERRFILE} >&2) && mv "${MI_OUTFILE}" "${MI_ERRFILE}" "${AHEAD_PAPER_RESULTS_MI}" || exit 1
-popd
-popd
+AHEAD_echo "Compiling."
+AHEAD_sub_begin
+AHEAD_pushd "${MI_SOURCEDIR}/${MI_SUBMODULE}" || AHEAD_exit $?
+AHEAD_echo -n "Invoking cmake..."
+AHEAD_run_hidden_output ./bootstrap.sh || AHEAD_exit $?
+AHEAD_pushd "${MI_BUILDDIR}/${MI_BUILDTYPE}" || AHEAD_exit $?
+AHEAD_echo -n "Invoking make..."
+AHEAD_run_hidden_output make -j$(nproc) TestModuloInverseComputation2 || AHEAD_exit $?
+AHEAD_sub_end
+
+mkdir -p "${AHEAD_PAPER_RESULTS_MI}" || { ret=$?; AHEAD_echo "Could not create path '${AHEAD_PAPER_RESULTS_MI}'"; AHEAD_exit $ret; }
+AHEAD_echo -n "Running benchmark..."
+"./${MI_EXEC}" ${MI_NUMRUNS} ${MI_A_MIN} ${MI_C_MAX} 1>"${MI_OUTFILE}" 2>"${MI_ERRFILE}" && echo " Done." || { ret=$?; echo " Error!"; cat ${MI_ERRFILE} >&2; exit $ret; }
+mv "${MI_OUTFILE}" "${MI_ERRFILE}" "${AHEAD_PAPER_RESULTS_MI}" || AHEAD_exit $? "Could not move files '$(pwd)/${MI_OUTFILE}' and '$(pwd)/${MI_ERRFILE}' to destination '${AHEAD_PAPER_RESULTS_MI}'"
+AHEAD_popd
+AHEAD_popd
 
 # In the following, prepare the results for printing.
 # The benchmarking tool (TestModuloInverseComputation2) measures for several widhts of A for each possible code word width.
@@ -62,10 +51,11 @@ popd
 # For the "AHEAD" paper we compute the average of all runtimes per code word width
 # When computing the modular inverse, the code word width is restrained -- we need an additional bit for the extended euclidean algorithm.
 #   Therefore, for a particular register width, we can only use width-1 wide code words. For instance, using 16-bit registers, we can only compute the modular inverse up to 15-bit wide code words.
+AHEAD_echo -n "Generating gnuplot script..."
 
-pushd "${AHEAD_PAPER_RESULTS_MI}" || exit 1
-rm -f "${MI_DATFILE}"
-echo -n '\(|C|\)' >"${MI_DATFILE}"
+AHEAD_pushd "${AHEAD_PAPER_RESULTS_MI}" || AHEAD_exit 1 " Error! Could not pushd directory '${AHEAD_PAPER_RESULTS_MI}'"
+rm -f "${MI_DATAFILE}"
+echo -n '\(|C|\)' >"${MI_DATAFILE}"
 mywidth=8
 while [[ ${mywidth} < ${MI_A_MIN} ]]; do
 	((mywidth *= 2))
@@ -78,15 +68,15 @@ done
 widthmax=${mywidths[${#mywidths[@]}-1]}
 widthlen=${#widthmax}
 for width in "${mywidths[@]}"; do
-	echo -ne '\t\\\\(|C|\\\\leq'"$((width-1))"'\\\\)' >>"${MI_DATFILE}"
+	echo -ne '\t\\\\(|C|\\\\leq'"$((width-1))"'\\\\)' >>"${MI_DATAFILE}"
 done
-echo >>"${MI_DATFILE}"
+echo >>"${MI_DATAFILE}"
 
 # The following prepares (and overwrites) the gnuplot file, depending on the parameters with which the benchmark was called (${MI_A_MIN} and ${MI_C_MAX}, see above)
-awk --field-separator='\t' 'NR>2{printf "%d",$1; numtabs=1; for (mywidth=8; $1 >= mywidth; mywidth=mywidth*2) {++numtabs}; for(i=0; i<numtabs; ++i) printf "\t"; average=0; for(i=1; i<=NF; ++i) average+=$i; printf "%d\n",((average/'${MI_NUMRUNS}')/(NF-1))}' "${MI_OUTFILE}" >>"${MI_DATFILE}"
+awk --field-separator='\t' 'NR>2{printf "%d",$1; numtabs=1; for (mywidth=8; $1 >= mywidth; mywidth=mywidth*2) {++numtabs}; for(i=0; i<numtabs; ++i) printf "\t"; average=0; for(i=1; i<=NF; ++i) average+=$i; printf "%d\n",((average/'${MI_NUMRUNS}')/(NF-1))}' "${MI_OUTFILE}" >>"${MI_DATAFILE}"
 
-# MI_SCRIPTFILE is defined in file common.conf
-cat >"${MI_SCRIPTFILE}" <<EOF
+# PATH_MODINV_GNUPLOTFILE is defined in file common.conf
+cat >"${PATH_MODINV_GNUPLOTFILE}" <<EOF
 #!/usr/bin/env gnuplot
 
 # The data was gained by
@@ -121,4 +111,6 @@ set key right outside center vertical samplen 1 spacing 1.4
 plot for [i=2:$((${#mywidths[@]}+1))] infile using 1:i t col w linespoints ls i
 EOF
 
-popd
+echo " Done."
+
+AHEAD_popd

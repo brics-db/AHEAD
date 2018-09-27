@@ -14,31 +14,33 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )/common.conf"
 mkdir -p "${AHEAD_DB_PATH}" || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Could not create mandatory directory '${AHEAD_DB_PATH}'"
 
 # First, make sure that the cmake files are populated
-echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Bootstrapping AHEAD build files using cmake into '${AHEAD_BUILD_RELEASE_DIR}'..."
-AHEAD_run_hidden_output ${AHEAD_SCRIPT_BOOTSTRAP} || exit 1
+AHEAD_echo -n "Bootstrapping AHEAD build files using cmake into '${AHEAD_BUILD_RELEASE_DIR}'..."
+AHEAD_run_hidden_output ${AHEAD_SCRIPT_BOOTSTRAP} || AHEAD_exit &?
 AHEAD_pushd ${AHEAD_BUILD_RELEASE_DIR}
-echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Generating AHEAD executables for compacting the database files..."
-AHEAD_run_hidden_output "make" "-j$(nproc)" "${AHEAD_SCRIPT_GENSSB_EXECUTABLE}" "${AHEAD_SCRIPT_GENSSB_EXECUTABLE}${AHEAD_RESTINY32_SUFFIX}" || exit 1
+AHEAD_echo -n "Generating AHEAD executables for compacting the database files..."
+AHEAD_run_hidden_output "make" "-j$(nproc)" "${AHEAD_SCRIPT_GENSSB_EXECUTABLE}" "${AHEAD_SCRIPT_GENSSB_EXECUTABLE}${AHEAD_RESTINY32_SUFFIX}" || AHEAD_exit &?
 AHEAD_popd
 
 # For the reproducibility, use the submodule ssb-dbgen to generate the ssb generator and push it to the database directory
-echo -n "${AHEAD_SCRIPT_ECHO_INDENT}git submodule sync --recursive ${SSB_DBGEN_SUBMODULE}..."
-AHEAD_run_hidden_output git submodule sync --recursive "${SSB_DBGEN_SUBMODULE}" || exit 1
-echo -n "${AHEAD_SCRIPT_ECHO_INDENT}git submodule update --init --recursive ${SSB_DBGEN_SUBMODULE}..."
-AHEAD_run_hidden_output git submodule update --init --recursive "${SSB_DBGEN_SUBMODULE}" || exit 1
+AHEAD_echo -n "git submodule update --init --recursive ${SSB_DBGEN_SUBMODULE}..."
+AHEAD_run_hidden_output git submodule update --init --recursive "${SSB_DBGEN_SUBMODULE}" || AHEAD_exit &?
+AHEAD_echo -n "git submodule sync --recursive ${SSB_DBGEN_SUBMODULE}..."
+AHEAD_run_hidden_output git submodule sync --recursive "${SSB_DBGEN_SUBMODULE}" || AHEAD_exit &?
+AHEAD_echo -n "git submodule update --recursive ${SSB_DBGEN_SUBMODULE}..."
+AHEAD_run_hidden_output git submodule update --recursive "${SSB_DBGEN_SUBMODULE}" || AHEAD_exit &?
 
-echo "${AHEAD_SCRIPT_ECHO_INDENT}Compiling ssb-dbgen executable"
+AHEAD_echo "Compiling ssb-dbgen executable"
 AHEAD_sub_begin
 AHEAD_pushd "${SSB_DBGEN_SUBMODULE}"
 if [[ ! -d "${SSB_DBGEN_BUILDIR}" ]]; then
 	mkdir -p "${SSB_DBGEN_BUILDIR}" || AHEAD_exit 1 "Could not create mandatory directory '${SSB_DBGEN_BUILDIR}'!"
 fi
 AHEAD_pushd "${SSB_DBGEN_BUILDIR}"
-echo -n "${AHEAD_SCRIPT_ECHO_INDENT}cmake..."
-AHEAD_run_hidden_output "cmake" ".." || exit 1
-echo -n "   * make..."
-AHEAD_run_hidden_output "make" || exit 1
-echo "${AHEAD_SCRIPT_ECHO_INDENT}Copying dbgen executable to '${AHEAD_DB_PATH}/dbgen'."
+AHEAD_echo -n "cmake..."
+AHEAD_run_hidden_output "cmake" ".." || AHEAD_exit &?
+AHEAD_echo -n "make..."
+AHEAD_run_hidden_output "make" || AHEAD_exit $?
+AHEAD_echo "Copying dbgen executable to '${AHEAD_DB_PATH}/dbgen'."
 cp dbgen ${AHEAD_DB_PATH}
 AHEAD_popd
 AHEAD_popd
@@ -48,7 +50,7 @@ AHEAD_sub_end
 SCRIPT_DATABASE_GENERATED_FILE=generated
 SCRIPT_DATABASE_HEADERS_SUBFOLDER=headers
 
-echo "${AHEAD_SCRIPT_ECHO_INDENT}Checking table header files."
+AHEAD_echo "Checking table header files."
 AHEAD_sub_begin
 function untar_headers {
 	tar -xaf headers.tgz
@@ -58,11 +60,11 @@ declare -A table_names
 table_names=([c]='customer' [d]='date' [l]='lineorder' [p]='part' [s]='supplier')
 AHEAD_pushd ${AHEAD_DB_PATH}
 if [[ ! -d "${SCRIPT_DATABASE_HEADERS_SUBFOLDER}" ]]; then
-	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Untar files..."
+	AHEAD_echo -n "Untar files..."
 	AHEAD_run_hidden_output untar_headers
 else
 	allFilesPresent=1
-	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Checking if all files are present..."
+	AHEAD_echo -n "Checking if all files are present..."
 	for tab in customer date lineorder part supplier; do
 		if [[ ! -f "${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}_header.csv" || ! -f "${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}AN_header.csv" ]]; then
 			allFilesPresent=0
@@ -103,23 +105,23 @@ function generate_ssb {
 		shift
 	fi
 
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}Generating data for scale factor ${sf} in ${sf_path}"
+	AHEAD_echo "Generating data for scale factor ${sf} in ${sf_path}"
 	AHEAD_sub_begin
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}arguments: '$arguments'"
+	AHEAD_echo "arguments: '$arguments'"
 
 	if [[ -f "${sf_path}/${SCRIPT_DATABASE_GENERATED_FILE}" ]]; then
-		echo "${AHEAD_SCRIPT_ECHO_INDENT}It seems that all files for scale factor ${sf} are already generated :-)"
+		AHEAD_echo "It seems that all files for scale factor ${sf} are already generated :-)"
 		AHEAD_sub_end
 		# We can return from the function here.
 		return
 	fi
 
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}Generating data"
+	AHEAD_echo "Generating data"
 	AHEAD_sub_begin
 	all_existing=1
 	for tab in c d l p s; do
 		filename="${table_names[$tab]}.tbl"
-		echo -n "${AHEAD_SCRIPT_ECHO_INDENT}${filename}:"
+		AHEAD_echo -n "${filename}:"
 		if [[ -f "$filename" || -f "${sf_path}/$filename" ]]; then
 			echo " Exists."
 		else
@@ -130,48 +132,48 @@ function generate_ssb {
 	done
 	AHEAD_sub_end
 
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}Moving files"
+	AHEAD_echo "Moving files"
 	mkdir -p "${sf_path}" || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not create mandatory directoy '${sf_path}'"
 	if ((all_existing == 0)); then
 		AHEAD_sync
 		mv *.tbl "${sf_path}/" || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not move files to subfolder '${sf_path}'"
-		echo "${AHEAD_SCRIPT_ECHO_INDENT}Generated and moved tables for SF ${sf}"
+		AHEAD_echo "Generated and moved tables for SF ${sf}"
 	else
-		echo "${AHEAD_SCRIPT_ECHO_INDENT}All tables already exist for SF ${sf}"
+		AHEAD_echo "All tables already exist for SF ${sf}"
 	fi
 
 	AHEAD_pushd "${sf_path}"
 
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}Creating softlinks for table header files"
+	AHEAD_echo "Creating softlinks for table header files"
 	AHEAD_sub_begin
 	for tab in customer date lineorder part supplier; do
 		[[ ! -f "${tab}.tbl" ]] && AHEAD_exit "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Data file '${tab}.tbl' does not exist"
 		if [[ ! -f ${tab}_header.csv ]]; then
 			ln -s "../${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}_header.csv" "${tab}_header.csv" || AHEAD_exit $? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not create softlink ${tab}_header.csv -> ../${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}_header.csv"
 		else
-			[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}${tab}_header.csv exists"
+			[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "${tab}_header.csv exists"
 		fi
 		if [[ ! -f ${tab}AN_header.csv ]]; then
 			ln -s "../${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}AN_header.csv" "${tab}AN_header.csv" || AHEAD_exit $? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not create softlink ${tab}AN_header.csv -> ../${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}AN_header.csv"
 		else
-			[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}${tab}AN_header.csv exists"
+			[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "${tab}AN_header.csv exists"
 		fi
 		if [[ ! -f ${tab}AN.tbl ]]; then
 			ln -s "${tab}.tbl" "${tab}AN.tbl" || AHEAD_exit $? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not create softlink ${tab}AN.tbl -> ${tab}.tbl"
 		else
-			[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}${tab}AN.tbl exists"
+			[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "${tab}AN.tbl exists"
 		fi
 	done
 	AHEAD_sub_end
 
-	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Generating smaller database files using '${executable_path} -d . ${cmdargs}'. DO NOT ABORT..."
+	AHEAD_echo -n "Generating smaller database files using '${executable_path} -d . ${cmdargs}'. DO NOT ABORT..."
 	AHEAD_run_hidden_output "${executable_path}" "-d" "." "${cmdargs}"
 	AHEAD_sub_begin
 	touch "${SCRIPT_DATABASE_GENERATED_FILE}"
 	AHEAD_sync
 	AHEAD_sub_end
 
-	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}Removing unneeded files..."
+	AHEAD_echo -n "Removing unneeded files..."
 	AHEAD_run_hidden_output rm -f *.tbl || exit $?
 	AHEAD_sub_begin
 	AHEAD_sync
@@ -192,7 +194,7 @@ done
 # generate the minbfw=4 data with restiny=32bit
 generate_ssb "${AHEAD_MINBFW_SCALEFACTOR}" "${AHEAD_MINBFW_SUFFIX}4" "${AHEAD_MINBFW_CMDARG} 4" "${AHEAD_SCRIPT_GENSSB_EXECUTABLE_PATH}${AHEAD_RESTINY32_SUFFIX}"
 
-echo "${AHEAD_SCRIPT_ECHO_INDENT}All database generated successfully."
+AHEAD_echo "All database generated successfully."
 AHEAD_popd
 
 exit 0

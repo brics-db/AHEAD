@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )"
-source "${SOURCE_DIR}/common.conf"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )/common.conf"
 
 if [[ -z ${DEBUG+x} ]]; then
 	debugmode=0
@@ -23,16 +22,19 @@ else
 	debugmode=1
 fi
 
-echo " * Bootstrapping AHEAD sources"
+AHEAD_echo "Bootstrapping AHEAD sources"
+AHEAD_sub_begin
 
 if [[ ${debugmode} -eq 1 ]]; then
-	echo -n "   * Debug..."
-	mkdir -p ${AHEAD_BUILD_DEBUG_DIR} || AHEAD_quit 1 " Error creating directory '${AHEAD_BUILD_DEBUG_DIR}'!"
-	pushd ${AHEAD_BUILD_DEBUG_DIR} &>/dev/null || AHEAD_quit 1 " Error accessing directory '${AHEAD_BUILD_DEBUG_DIR}'!"
-	AHEAD_run_hidden_output "cmake" "../.." "-DCMAKE_BUILD_TYPE=Debug" || exit 1
+	AHEAD_echo -n "Debug..."
+	mkdir -p ${AHEAD_BUILD_DEBUG_DIR} || AHEAD_exit $? " Error creating directory '${AHEAD_BUILD_DEBUG_DIR}'!"
+	AHEAD_pushd ${AHEAD_BUILD_DEBUG_DIR} &>/dev/null || AHEAD_exit $? " Error accessing directory '${AHEAD_BUILD_DEBUG_DIR}'!"
+	AHEAD_run_hidden_output "cmake" "../.." "-DCMAKE_BUILD_TYPE=Debug" || AHEAD_exit $?
 fi
 
-echo -n "   * Release..."
-mkdir -p ${AHEAD_BUILD_RELEASE_DIR} || AHEAD_quit 1 " Error creating directory '${AHEAD_BUILD_RELEASE_DIR}'!"
-pushd ${AHEAD_BUILD_RELEASE_DIR} &>/dev/null || AHEAD_quit 1 " Error accessing directory '${AHEAD_BUILD_RELEASE_DIR}'!"
-AHEAD_run_hidden_output "cmake" "../.." "-DCMAKE_BUILD_TYPE=Release" || exit 1
+AHEAD_echo -n "Release..."
+mkdir -p ${AHEAD_BUILD_RELEASE_DIR} || AHEAD_exit $? " Error creating directory '${AHEAD_BUILD_RELEASE_DIR}'!"
+pushd ${AHEAD_BUILD_RELEASE_DIR} &>/dev/null || AHEAD_exit $? " Error accessing directory '${AHEAD_BUILD_RELEASE_DIR}'!"
+AHEAD_run_hidden_output "cmake" "../.." "-DCMAKE_BUILD_TYPE=Release" || AHEAD_exit $?
+
+AHEAD_sub_end

@@ -31,7 +31,8 @@ if [[ $# > 0 ]] ; then
 			DO_MODULARINVERSE=0
 			DO_PLOT=0
 			;;
-		CB)
+		CB) ;&
+		MB)
 			DO_SUBMODULE=0
 			DO_GENERATE=0
 			DO_SSB=0
@@ -39,7 +40,8 @@ if [[ $# > 0 ]] ; then
 			DO_MODULARINVERSE=0
 			DO_PLOT=0
 			;;
-		INV)
+		INV) ;&
+		MODINV)
 			DO_SUBMODULE=0
 			DO_GENERATE=0
 			DO_SSB=0
@@ -47,10 +49,20 @@ if [[ $# > 0 ]] ; then
 			DO_MODULARINVERSE=1
 			DO_PLOT=0
 			;;
+		PLOT)
+			DO_SUBMODULE=0
+			DO_GENERATE=0
+			DO_SSB=0
+			DO_CODINGBENCHMARK=0
+			DO_MODULARINVERSE=0
+			DO_PLOT=1
+			;;
 		ALL) ;&
-		DEFAULT) ;&
-		*)
+		DEFAULT)
 			PHASE="ALL"
+			;;
+		*)
+			PHASE="'${ARGS[0]}' Unknown -- Reverting to ALL"
 			;;
 	esac
 fi
@@ -278,7 +290,7 @@ if ((DO_CODINGBENCHMARK != 0)); then
 	fi
 
 	# gnuplot the results
-	AHEAD_pushd "${AHEAD_PAPER_RESULTS_MB}" && gnuplot plot_check_avx2.m && gnuplot plot_decode_avx2.m && gnuplot plot_encode_avx2.m && gnuplot plot_labels.m
+	AHEAD_pushd "${AHEAD_PAPER_RESULTS_CB}" && gnuplot "${PATH_CODBENCH_ENCODE_GNUPLOTFILE}" && gnuplot "${PATH_CODBENCH_CHECK_GNUPLOTFILE}" && gnuplot "${PATH_CODBENCH_DECODE_GNUPLOTFILE}" && gnuplot "${PATH_CODBENCH_LABELS_GNUPLOTFILE}"
 	AHEAD_popd
 	AHEAD_sync
 
@@ -296,7 +308,8 @@ if ((DO_MODULARINVERSE != 0)); then
 	fi
 
 	# gnuplot the results
-	AHEAD_pushd "${AHEAD_PAPER_RESULTS_MI}" && gnuplot "${MI_SCRIPTFILE}" && echo " * Plotted graphs" || echo " * Error plotting graphs!"
+	AHEAD_pushd "${AHEAD_PAPER_RESULTS_MI}" || AHEAD_exit $? "Could not enter directory '${AHEAD_PAPER_RESULTS_MI}'"
+	AHEAD_run_hidden_output gnuplot "${PATH_MODINV_GNUPLOTFILE}" && AHEAD_echo "Plotted graphs" || AHEAD_exit $? "Error plotting graphs!"
 	AHEAD_popd
 	AHEAD_sync
 
