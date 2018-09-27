@@ -92,11 +92,11 @@ if ((DO_SUBMODULE != 0)); then
 	echo "######################################################"
 	echo
 	AHEAD_echo -n "git submodule update --init --recursive..."
-	AHEAD_run_hidden_output git submodule update --init --recursive || AHEAD_exit &?
+	AHEAD_run_hidden_output git submodule update --init --recursive || AHEAD_exit $?
 	AHEAD_echo -n "git submodule sync --recursive..."
-	AHEAD_run_hidden_output git submodule sync --recursive || AHEAD_exit &?
+	AHEAD_run_hidden_output git submodule sync --recursive || AHEAD_exit $?
 	AHEAD_echo -n "git submodule update --recursive..."
-	AHEAD_run_hidden_output git submodule update --recursive || AHEAD_exit &?
+	AHEAD_run_hidden_output git submodule update --recursive || AHEAD_exit $?
 	AHEAD_sync
 fi
 
@@ -104,7 +104,7 @@ if ((DO_GENERATE != 0)) && ((NO_BENCH == 0)); then
 	echo "###########################################################"
 	echo "# Running Star Schema Benchmark Data Generation           #"
 	echo "###########################################################"
-	./generate_ssbdata.sh || AHEAD_exit &?
+	./generate_ssbdata.sh || AHEAD_exit $?
 	AHEAD_sync
 	echo
 	AHEAD_sub_reset
@@ -121,7 +121,7 @@ if ((DO_SSB != 0)); then
 	AHEAD_pushd "eval"
 
 	if [[ -z ${NO_BENCH+x} ]] || ((NO_BENCH == 0)); then
-		./run.sh || AHEAD_exit &?
+		./run.sh || AHEAD_exit $?
 		echo -n "${AHEAD_DATE}" >"${AHEAD_PREVIOUS_DATE_FILE}"
 
 		for minbfw in $(seq ${AHEAD_MINBFW_MIN} ${AHEAD_MINBFW_MAX}); do
@@ -129,9 +129,9 @@ if ((DO_SSB != 0)); then
 			if ((minbfw < 4)); then
 				# We don't need the plotting feature for the minbfw runs
 				# AHEAD_DATE="2018-09-19_13-10" 
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || AHEAD_exit &?
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || AHEAD_exit $?
 			elif ((minbfw == 4)); then
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || AHEAD_exit &?
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || AHEAD_exit $?
 			else
 				AHEAD_echo "${AHEAD_MINBFW_SUFFIX}[ERROR] The current implementation only supports minbfw between 1 and 4."
 			fi
@@ -141,18 +141,18 @@ if ((DO_SSB != 0)); then
 		### No benchmarking, but re-create evaluation data
 		if [[ ! -f "${AHEAD_PREVIOUS_DATE_FILE}" ]]; then
 			AHEAD_echo "WARNING: It seems that there is no previous run of AHEAD, because \"${AHEAD_PREVIOUS_DATE_FILE}\" does not exist.\n   Please, either first run this reproducibility script at least once, or create the file with appropriate contents in the format yyyy-MM-dd_HH-mm, e.g. 2018-09-13_17-50 !" >&2
-			AHEAD_exit &?
+			AHEAD_exit $?
 		fi
 		export AHEAD_DATE=$(cat "${AHEAD_PREVIOUS_DATE_FILE}")
 		[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "AHEAD_DATE=${AHEAD_DATE}"
-		./run.sh EVAL || AHEAD_exit &?
+		./run.sh EVAL || AHEAD_exit $?
         
 		for minbfw in $(seq ${AHEAD_MINBFW_MIN} ${AHEAD_MINBFW_MAX}); do
 			DIRSUFFIX="${AHEAD_MINBFW_SUFFIX}$minbfw"
 			if ((minbfw < 4)); then
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || AHEAD_exit &?
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || AHEAD_exit $?
 			elif ((minbfw == 4)); then
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || AHEAD_exit &?
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || AHEAD_exit $?
 			else
 				AHEAD_echo "${AHEAD_MINBFW_SUFFIX}[ERROR] The current implementation only supports minbfw from 1 to 4."
 			fi
@@ -320,7 +320,7 @@ if ((DO_PLOT != 0)); then
 	echo "# Generating simgod2018.pdf                               #"
 	echo "###########################################################"
 	AHEAD_pushd ${AHEAD_PAPER_PATH}
-	(pdflatex sigmod2018.tex && pdflatex sigmod2018.tex && pdflatex sigmod2018.tex) || AHEAD_exit &?
+	(pdflatex sigmod2018.tex && pdflatex sigmod2018.tex && pdflatex sigmod2018.tex) || AHEAD_exit $?
 	printf '\n\nDone. You can re-compile the paper by calling "pdflatex sigmod2018.tex" in subfolder "paper"\n'
 	AHEAD_popd
 	AHEAD_sync
