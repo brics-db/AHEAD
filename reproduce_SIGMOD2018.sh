@@ -83,7 +83,7 @@ echo "# Welcome to the SIGMOD 2018 reproducibility script. #"
 echo "######################################################"
 echo
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/common.conf"
-echo "${AHEAD_SCRIPT_ECHO_INDENT}Running Phase \"${PHASE}\""
+AHEAD_echo "Running Phase \"${PHASE}\""
 echo
 
 if ((DO_SUBMODULE != 0)); then
@@ -91,12 +91,12 @@ if ((DO_SUBMODULE != 0)); then
 	echo "# Initializing, syncing and updating git submodules. #"
 	echo "######################################################"
 	echo
-	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}git submodule update --init --recursive..."
-	AHEAD_run_hidden_output git submodule update --init --recursive || exit 1
-	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}git submodule sync --recursive..."
-	AHEAD_run_hidden_output git submodule sync --recursive || exit 1
-	echo -n "${AHEAD_SCRIPT_ECHO_INDENT}git submodule update --recursive..."
-	AHEAD_run_hidden_output git submodule update --recursive || exit 1
+	AHEAD_echo -n "git submodule update --init --recursive..."
+	AHEAD_run_hidden_output git submodule update --init --recursive || AHEAD_exit &?
+	AHEAD_echo -n "git submodule sync --recursive..."
+	AHEAD_run_hidden_output git submodule sync --recursive || AHEAD_exit &?
+	AHEAD_echo -n "git submodule update --recursive..."
+	AHEAD_run_hidden_output git submodule update --recursive || AHEAD_exit &?
 	AHEAD_sync
 fi
 
@@ -104,7 +104,7 @@ if ((DO_GENERATE != 0)) && ((NO_BENCH == 0)); then
 	echo "###########################################################"
 	echo "# Running Star Schema Benchmark Data Generation           #"
 	echo "###########################################################"
-	./generate_ssbdata.sh || exit 1
+	./generate_ssbdata.sh || AHEAD_exit &?
 	AHEAD_sync
 	echo
 	AHEAD_sub_reset
@@ -121,7 +121,7 @@ if ((DO_SSB != 0)); then
 	AHEAD_pushd "eval"
 
 	if [[ -z ${NO_BENCH+x} ]] || ((NO_BENCH == 0)); then
-		./run.sh || exit 1
+		./run.sh || AHEAD_exit &?
 		echo -n "${AHEAD_DATE}" >"${AHEAD_PREVIOUS_DATE_FILE}"
 
 		for minbfw in $(seq ${AHEAD_MINBFW_MIN} ${AHEAD_MINBFW_MAX}); do
@@ -129,79 +129,78 @@ if ((DO_SSB != 0)); then
 			if ((minbfw < 4)); then
 				# We don't need the plotting feature for the minbfw runs
 				# AHEAD_DATE="2018-09-19_13-10" 
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN=1 AHEAD_SCALEFACTOR_MAX=1 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || exit 1
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || AHEAD_exit &?
 			elif ((minbfw == 4)); then
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN=1 AHEAD_SCALEFACTOR_MAX=1 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || exit 1
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || AHEAD_exit &?
 			else
-				echo"${AHEAD_MINBFW_SUFFIX}[ERROR] The current implementation only supports minbfw between 1 and 4."
+				AHEAD_echo "${AHEAD_MINBFW_SUFFIX}[ERROR] The current implementation only supports minbfw between 1 and 4."
 			fi
 		done
 		AHEAD_sync
 	else
 		### No benchmarking, but re-create evaluation data
 		if [[ ! -f "${AHEAD_PREVIOUS_DATE_FILE}" ]]; then
-			echo "${AHEAD_SCRIPT_ECHO_INDENT}WARNING: It seems that there is no previous run of AHEAD, because \"${AHEAD_PREVIOUS_DATE_FILE}\" does not exist.\n   Please, either first run this reproducibility script at least once, or create the file with appropriate contents in the format yyyy-MM-dd_HH-mm, e.g. 2018-09-13_17-50 !" >&2
-			exit 1
+			AHEAD_echo "WARNING: It seems that there is no previous run of AHEAD, because \"${AHEAD_PREVIOUS_DATE_FILE}\" does not exist.\n   Please, either first run this reproducibility script at least once, or create the file with appropriate contents in the format yyyy-MM-dd_HH-mm, e.g. 2018-09-13_17-50 !" >&2
+			AHEAD_exit &?
 		fi
 		export AHEAD_DATE=$(cat "${AHEAD_PREVIOUS_DATE_FILE}")
-		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}AHEAD_DATE=${AHEAD_DATE}"
-		./run.sh EVAL || exit 1
+		[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "AHEAD_DATE=${AHEAD_DATE}"
+		./run.sh EVAL || AHEAD_exit &?
         
 		for minbfw in $(seq ${AHEAD_MINBFW_MIN} ${AHEAD_MINBFW_MAX}); do
 			DIRSUFFIX="${AHEAD_MINBFW_SUFFIX}$minbfw"
 			if ((minbfw < 4)); then
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN=1 AHEAD_SCALEFACTOR_MAX=1 DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || exit 1
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw ./run.sh || AHEAD_exit &?
 			elif ((minbfw == 4)); then
-				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN=1 AHEAD_SCALEFACTOR_MAX=1 DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || exit 1
+				AHEAD_VARIANTS="('_normal' '_continuous')" AHEAD_VARIANT_NAMES="('Unprotected' 'Continuous')" AHEAD_IMPLEMENTED="(11)" AHEAD_SCALEFACTOR_MIN="${AHEAD_MINBFW_SCALEFACTOR}" AHEAD_SCALEFACTOR_MAX="${AHEAD_MINBFW_SCALEFACTOR}" DO_BENCHMARK=0 DO_EVAL_TEASER=0 DO_EVAL_SCALARVSVECTOR=0 DO_EVAL_PLOT=0 AHEAD_BENCHMARK_DBDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_EVALDIR_SUFFIX="${DIRSUFFIX}" AHEAD_BENCHMARK_MINBFW=$minbfw AHEAD_BENCHMARK_MINBFW_EXECUTABLE_SUFFIX="${AHEAD_RESTINY32_SUFFIX}" ./run.sh || AHEAD_exit &?
 			else
-				echo"${AHEAD_MINBFW_SUFFIX}[ERROR] The current implementation only supports minbfw between 1 and 4."
+				AHEAD_echo "${AHEAD_MINBFW_SUFFIX}[ERROR] The current implementation only supports minbfw from 1 to 4."
 			fi
 		done
 		AHEAD_sync
 	fi
 
 	# Link the report files generated by eval/run.sh script to the paper result SSB folder
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}Creating symlinks"
+	AHEAD_echo "Creating symlinks"
 	AHEAD_sub_begin
 	(
 		source run.conf
-		[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}PWD: '$(pwd)'"
-		echo "${AHEAD_SCRIPT_ECHO_INDENT}linking '${PATH_EVALDATA}' <- '${AHEAD_PAPER_RESULTS_SSB}/data'" && ln -fs "${PATH_EVALDATA}" "${AHEAD_PAPER_RESULTS_SSB}/data"
-		echo "${AHEAD_SCRIPT_ECHO_INDENT}linking '${PATH_EVALREPORT}' <- '${AHEAD_PAPER_RESULTS_SSB}/report'" && ln -fs "${PATH_EVALREPORT}" "${AHEAD_PAPER_RESULTS_SSB}/report"
-		echo "${AHEAD_SCRIPT_ECHO_INDENT}linking '${PATH_EVALINTER}' <- '${AHEAD_PAPER_RESULTS_SSB}/intermediate'" && ln -fs "${PATH_EVALINTER}" "${AHEAD_PAPER_RESULTS_SSB}/intermediate"
+		[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "PWD: '$(pwd)'"
+		AHEAD_echo "linking '${PATH_EVALDATA}' <- '${AHEAD_PAPER_RESULTS_SSB}/data'" && ln -fs "${PATH_EVALDATA}" "${AHEAD_PAPER_RESULTS_SSB}/data"
+		AHEAD_echo "linking '${PATH_EVALREPORT}' <- '${AHEAD_PAPER_RESULTS_SSB}/report'" && ln -fs "${PATH_EVALREPORT}" "${AHEAD_PAPER_RESULTS_SSB}/report"
+		AHEAD_echo "linking '${PATH_EVALINTER}' <- '${AHEAD_PAPER_RESULTS_SSB}/intermediate'" && ln -fs "${PATH_EVALINTER}" "${AHEAD_PAPER_RESULTS_SSB}/intermediate"
 		if [[ ! -z ${PATH_TEASER_RUNTIME_BASENAME+x} ]]; then
 			find "$(pwd)" -iname "${PATH_TEASER_RUNTIME_BASENAME}"'*' -print0 | \
-			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; echo \"${AHEAD_SCRIPT_ECHO_INDENT}linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
+			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; AHEAD_echo \"linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
 		else
-			echo "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] PATH_TEASER_RUNTIME_BASENAME not set!"
+			AHEAD_echo "[ERROR] PATH_TEASER_RUNTIME_BASENAME not set!"
 		fi
 		if [[ ! -z ${PATH_TEASER_CONSUMPTION_BASENAME+x} ]]; then
 			find "$(pwd)" -iname "${PATH_TEASER_CONSUMPTION_BASENAME}"'*' -print0 | \
-			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; echo \"${AHEAD_SCRIPT_ECHO_INDENT}linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
+			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; AHEAD_echo \"linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
 		else
-			echo "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] PATH_TEASER_CONSUMPTION_BASENAME not set!"
+			AHEAD_echo "[ERROR] PATH_TEASER_CONSUMPTION_BASENAME not set!"
 		fi
 		if [[ ! -z ${PATH_TEASER_LEGEND_BASENAME+x} ]]; then
 			find "$(pwd)" -iname "${PATH_TEASER_LEGEND_BASENAME}"'*' -print0 | \
-			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; echo \"${AHEAD_SCRIPT_ECHO_INDENT}linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
+			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; AHEAD_echo \"linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
 		else
-			echo "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] PATH_TEASER_LEGEND_BASENAME not set!"
+			AHEAD_echo "[ERROR] PATH_TEASER_LEGEND_BASENAME not set!"
 		fi
 		if [[ ! -z ${PATH_SCALAR_VS_VECTOR_BASENAME+x} ]]; then
 			find "$(pwd)" -iname "${PATH_SCALAR_VS_VECTOR_BASENAME}"'*' -print0 | \
-			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; echo \"${AHEAD_SCRIPT_ECHO_INDENT}linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
+			xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; AHEAD_echo \"linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
 		else
-			echo "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] PATH_SCALAR_VS_VECTOR_BASENAME not set!"
+			AHEAD_echo "[ERROR] PATH_SCALAR_VS_VECTOR_BASENAME not set!"
 		fi
 		#find "$(pwd)" \( -iname "${PATH_TEASER_RUNTIME_BASENAME}"'*' -o -iname "${PATH_TEASER_CONSUMPTION_BASENAME}"'*' -o -iname "${PATH_TEASER_LEGEND_BASENAME}"'*' -o -iname "${PATH_SCALAR_VS_VECTOR_BASENAME}"'*' \) -print0 | \
 		#	xargs -0 -I file bash -c "link=\"${AHEAD_PAPER_RESULTS_SSB}/\$(basename 'file')\"; echo \" * linking 'file' <- '\${link}'\"; rm -f \"\${link}\"; ln -s \"file\" \"\${link}\""
 	)
 	AHEAD_sub_end
 
-	# norm-all_scalar.data
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}Processing minBFW data"
+	AHEAD_echo "Processing minBFW data"
 	AHEAD_sub_begin
-	echo "${AHEAD_SCRIPT_ECHO_INDENT}${PATH_MINBFW_RUNTIME_DATAFILE}"
+	AHEAD_echo "${PATH_MINBFW_RUNTIME_DATAFILE}"
 	MINBFW_RUNTIME_FILENAME_SCALAR="norm-all_scalar.data"
 	MINBFW_RUNTIME_FILENAME_SSE="norm-all_SSE.data"
 	echo -e "MinBFW\tScalar\tSSE4.2" >"${PATH_MINBFW_RUNTIME_DATAFILE}"
@@ -245,7 +244,7 @@ if ((DO_SSB != 0)); then
 			for idx in 0 1; do
 				type="${BASE2}${AHEAD_VARIANTS[$idx]}${ARCH}"
 				EVAL_FILEOPS_OUT="${PATH_EVALINTER}/${type}.ops.out"
-				[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}${EVAL_FILEOPS_OUT}"
+				[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "${EVAL_FILEOPS_OUT}"
 				# use the projected consumption for the teaser
 				STORAGES=($(awk \
 					'BEGIN {opNumBefore=0; consumption=0; projected=0}
@@ -258,7 +257,7 @@ if ((DO_SSB != 0)); then
 					{exit}
 					END {printf "%s %s",consumption,projected}' \
 					"${EVAL_FILEOPS_OUT}"))
-				[[ ! -z ${VERBOSE+x} ]] && echo "${AHEAD_SCRIPT_ECHO_INDENT}STORAGES=${STORAGES[@]}"
+				[[ ! -z ${VERBOSE+x} ]] && AHEAD_echo "STORAGES=${STORAGES[@]}"
 				((CONSUMPTION[idx] += STORAGES[0]))
 				((PROJECTED[idx] += STORAGES[1]))
 			done
@@ -321,7 +320,7 @@ if ((DO_PLOT != 0)); then
 	echo "# Generating simgod2018.pdf                               #"
 	echo "###########################################################"
 	AHEAD_pushd ${AHEAD_PAPER_PATH}
-	(pdflatex sigmod2018.tex && pdflatex sigmod2018.tex && pdflatex sigmod2018.tex) || exit 1
+	(pdflatex sigmod2018.tex && pdflatex sigmod2018.tex && pdflatex sigmod2018.tex) || AHEAD_exit &?
 	printf '\n\nDone. You can re-compile the paper by calling "pdflatex sigmod2018.tex" in subfolder "paper"\n'
 	AHEAD_popd
 	AHEAD_sync

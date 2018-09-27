@@ -36,7 +36,7 @@ AHEAD_sub_end
 
 mkdir -p "${AHEAD_PAPER_RESULTS_CB}" || { ret=$?; AHEAD_echo "Could not create path '${AHEAD_PAPER_RESULTS_CB}'"; AHEAD_exit $ret; }
 AHEAD_echo -n "Running benchmark..."
-"./${CB_EXEC}" 1>"${CB_OUTFILE}" 2>"${CB_ERRFILE}" && echo " Done." || { ret=$?; echo " Error!"; cat ${CB_ERRFILE} >&2; exit $ret; }
+"./${CB_EXEC}" 1>"${CB_OUTFILE}" 2>"${CB_ERRFILE}" && echo " Done." || { ret=$?; echo " Error!"; cat ${CB_ERRFILE} >&2; AHEAD_exit $ret; }
 mv "${CB_OUTFILE}" "${CB_ERRFILE}" "${AHEAD_PAPER_RESULTS_CB}" || AHEAD_exit $? "Could not move files '${CB_BUILDDIR}/${CB_BUILDTYPE}/benchmark.out' and '${CB_BUILDDIR}/${CB_BUILDTYPE}/benchmark.err' to destination '${AHEAD_PAPER_RESULTS_CB}'"
 
 AHEAD_popd

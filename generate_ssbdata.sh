@@ -11,7 +11,7 @@
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd )/common.conf"
 
-mkdir -p "${AHEAD_DB_PATH}" || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}Could not create mandatory directory '${AHEAD_DB_PATH}'"
+mkdir -p "${AHEAD_DB_PATH}" || AHEAD_exit &? "${AHEAD_SCRIPT_ECHO_INDENT}Could not create mandatory directory '${AHEAD_DB_PATH}'"
 
 # First, make sure that the cmake files are populated
 AHEAD_echo -n "Bootstrapping AHEAD build files using cmake into '${AHEAD_BUILD_RELEASE_DIR}'..."
@@ -33,7 +33,7 @@ AHEAD_echo "Compiling ssb-dbgen executable"
 AHEAD_sub_begin
 AHEAD_pushd "${SSB_DBGEN_SUBMODULE}"
 if [[ ! -d "${SSB_DBGEN_BUILDIR}" ]]; then
-	mkdir -p "${SSB_DBGEN_BUILDIR}" || AHEAD_exit 1 "Could not create mandatory directory '${SSB_DBGEN_BUILDIR}'!"
+	mkdir -p "${SSB_DBGEN_BUILDIR}" || AHEAD_exit &? "Could not create mandatory directory '${SSB_DBGEN_BUILDIR}'!"
 fi
 AHEAD_pushd "${SSB_DBGEN_BUILDIR}"
 AHEAD_echo -n "cmake..."
@@ -84,7 +84,7 @@ AHEAD_sub_end
 #     executable_path    [optional]    Executable path for generating the smaller database files
 # )
 function generate_ssb {
-	[[ "$#" == 0 ]] && AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] You must call bash function generate_ssb with at least the scale factor as parameter!" >&2
+	[[ "$#" == 0 ]] && AHEAD_exit &? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] You must call bash function generate_ssb with at least the scale factor as parameter!" >&2
 	arguments="$@"
 	sf="$1"
 	shift
@@ -133,10 +133,10 @@ function generate_ssb {
 	AHEAD_sub_end
 
 	AHEAD_echo "Moving files"
-	mkdir -p "${sf_path}" || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not create mandatory directoy '${sf_path}'"
+	mkdir -p "${sf_path}" || AHEAD_exit &? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not create mandatory directoy '${sf_path}'"
 	if ((all_existing == 0)); then
 		AHEAD_sync
-		mv *.tbl "${sf_path}/" || AHEAD_exit 1 "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not move files to subfolder '${sf_path}'"
+		mv *.tbl "${sf_path}/" || AHEAD_exit &? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not move files to subfolder '${sf_path}'"
 		AHEAD_echo "Generated and moved tables for SF ${sf}"
 	else
 		AHEAD_echo "All tables already exist for SF ${sf}"
@@ -147,7 +147,7 @@ function generate_ssb {
 	AHEAD_echo "Creating softlinks for table header files"
 	AHEAD_sub_begin
 	for tab in customer date lineorder part supplier; do
-		[[ ! -f "${tab}.tbl" ]] && AHEAD_exit "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Data file '${tab}.tbl' does not exist"
+		[[ ! -f "${tab}.tbl" ]] && AHEAD_exit &? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Data file '${tab}.tbl' does not exist"
 		if [[ ! -f ${tab}_header.csv ]]; then
 			ln -s "../${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}_header.csv" "${tab}_header.csv" || AHEAD_exit $? "${AHEAD_SCRIPT_ECHO_INDENT}[ERROR] Could not create softlink ${tab}_header.csv -> ../${SCRIPT_DATABASE_HEADERS_SUBFOLDER}/${tab}_header.csv"
 		else
@@ -174,7 +174,7 @@ function generate_ssb {
 	AHEAD_sub_end
 
 	AHEAD_echo -n "Removing unneeded files..."
-	AHEAD_run_hidden_output rm -f *.tbl || exit $?
+	AHEAD_run_hidden_output rm -f *.tbl || AHEAD_exit $?
 	AHEAD_sub_begin
 	AHEAD_sync
 	AHEAD_sub_end
@@ -189,12 +189,15 @@ done
 
 for minbfw in $(seq "${AHEAD_MINBFW_MIN}" "${AHEAD_MINBFW_MAX}"); do
 	# Only generate 1 scale factor for the minbfw tests!
-	generate_ssb "${AHEAD_MINBFW_SCALEFACTOR}" "${AHEAD_MINBFW_SUFFIX}${minbfw}" "${AHEAD_MINBFW_CMDARG} ${minbfw}"
+	if ((minbfw < 4)); then
+		generate_ssb "${AHEAD_MINBFW_SCALEFACTOR}" "${AHEAD_MINBFW_SUFFIX}${minbfw}" "${AHEAD_MINBFW_CMDARG} ${minbfw}"
+	elif ((minbfw == 4)); then
+		# generate the minbfw=4 data with restiny=32bit
+		generate_ssb "${AHEAD_MINBFW_SCALEFACTOR}" "${AHEAD_MINBFW_SUFFIX}${minbfw}" "${AHEAD_MINBFW_CMDARG} ${minbfw}" "${AHEAD_SCRIPT_GENSSB_EXECUTABLE_PATH}${AHEAD_RESTINY32_SUFFIX}"
+	else
+		AHEAD_echo "${AHEAD_MINBFW_SUFFIX}[ERROR] The current implementation only supports minbfw from 1 to 4."
+	fi
 done
-# generate the minbfw=4 data with restiny=32bit
-generate_ssb "${AHEAD_MINBFW_SCALEFACTOR}" "${AHEAD_MINBFW_SUFFIX}4" "${AHEAD_MINBFW_CMDARG} 4" "${AHEAD_SCRIPT_GENSSB_EXECUTABLE_PATH}${AHEAD_RESTINY32_SUFFIX}"
 
 AHEAD_echo "All database generated successfully."
 AHEAD_popd
-
-exit 0
