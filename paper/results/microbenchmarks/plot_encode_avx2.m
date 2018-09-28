@@ -57,13 +57,13 @@ set style line 9 lt 9 lw 2 ps 0.5
 # 7 AN       AVX2
 
 set output 'plot_paper_encode_16bit_seq.tex'
-plot infile index 0 using 1:3 ls 1 with linespoints,\
-	'' index 0 using 1:4 ls 4 with linespoints,\
-	'' index 0 using 1:8 ls 3 with linespoints
+plot infile index 0 using 1:4 ls 1 with linespoints,\
+	'' index 0 using 1:5 ls 4 with linespoints,\
+	'' index 0 using 1:9 ls 3 with linespoints
 
 set output 'plot_paper_encode_16bit_vec.tex'
-plot infile index 0 using 1:9 ls 1 with linespoints,\
-	'' index 0 using 1:10 ls 4 with linespoints,\
-	'' index 0 using 1:14 ls 3 with linespoints,\
-	'' index 0 using 1:15 ls 6 with linespoints,\
-	'' index 0 using 1:16 ls 7 with linespoints
+plot infile index 0 using 1:10 ls 1 with linespoints,\
+	'' index 0 using 1:11 ls 4 with linespoints,\
+	'' index 0 using 1:15 ls 3 with linespoints,\
+	'' index 0 using 1:16 ls 6 with linespoints,\
+	'' index 0 using 1:17 ls 7 with linespoints

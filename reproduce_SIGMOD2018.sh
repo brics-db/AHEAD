@@ -21,7 +21,7 @@ if [[ $# > 0 ]] ; then
 			DO_SSB=0
 			DO_CODINGBENCHMARK=0
 			DO_MODULARINVERSE=0
-			DO_PLOT=1
+			DO_PDF=1
 			;;
 		SSB)
 			DO_SUBMODULE=0
@@ -29,7 +29,7 @@ if [[ $# > 0 ]] ; then
 			DO_SSB=1
 			DO_CODINGBENCHMARK=0
 			DO_MODULARINVERSE=0
-			DO_PLOT=0
+			DO_PDF=0
 			;;
 		CB) ;&
 		MB)
@@ -38,7 +38,7 @@ if [[ $# > 0 ]] ; then
 			DO_SSB=0
 			DO_CODINGBENCHMARK=1
 			DO_MODULARINVERSE=0
-			DO_PLOT=0
+			DO_PDF=0
 			;;
 		INV) ;&
 		MODINV)
@@ -47,15 +47,15 @@ if [[ $# > 0 ]] ; then
 			DO_SSB=0
 			DO_CODINGBENCHMARK=0
 			DO_MODULARINVERSE=1
-			DO_PLOT=0
+			DO_PDF=0
 			;;
-		PLOT)
+		PDF)
 			DO_SUBMODULE=0
 			DO_GENERATE=0
 			DO_SSB=0
 			DO_CODINGBENCHMARK=0
 			DO_MODULARINVERSE=0
-			DO_PLOT=1
+			DO_PDF=1
 			;;
 		ALL) ;&
 		DEFAULT)
@@ -75,7 +75,7 @@ fi
 [ -z ${DO_SSB+x} ] && DO_SSB=1
 [ -z ${DO_CODINGBENCHMARK+x} ] && DO_CODINGBENCHMARK=1
 [ -z ${DO_MODULARINVERSE+x} ] && DO_MODULARINVERSE=1
-[ -z ${DO_PLOT+x} ] && DO_PLOT=1
+[ -z ${DO_PDF+x} ] && DO_PDF=1
 [ -z ${NO_BENCH+x} ] && NO_BENCH=0
 
 echo "######################################################"
@@ -267,10 +267,13 @@ if ((DO_SSB != 0)); then
 			printf '\t%s\t%s\t%s\n' "${UNPROTECTED}" "${CONTINUOUS}" "${BITPACKED}" >>"${PATH_MINBFW_CONSUMPTION_DATAFILE}"
 		)
 	done
-	echo "Plotting minBFW graphs"
-	AHEAD_pushd "${AHEAD_PAPER_RESULTS_SSB}"
-	gnuplot "${PATH_MINBFW_RUNTIME_GNUPLOTFILE}"
-	gnuplot "${PATH_MINBFW_CONSUMPTION_GNUPLOTFILE}"
+	AHEAD_echo "Plotting minBFW graphs"
+	AHEAD_sub_begin
+	AHEAD_pushd "${AHEAD_PAPER_RESULTS_SSB}" || AHEAD_exit $? "Could not enter directory '${AHEAD_PAPER_RESULTS_SSB}'"
+	AHEAD_echo -n "Runtime..."
+	AHEAD_run_hidden_output gnuplot "${PATH_MINBFW_RUNTIME_GNUPLOTFILE}" || AHEAD_exit $?
+	AHEAD_echo -n "Consumption..."
+	AHEAD_run_hidden_output gnuplot "${PATH_MINBFW_CONSUMPTION_GNUPLOTFILE}" || AHEAD_exit $?
 	AHEAD_popd
 	AHEAD_sub_end
 
@@ -289,7 +292,17 @@ if ((DO_CODINGBENCHMARK != 0)); then
 	fi
 
 	# gnuplot the results
-	AHEAD_pushd "${AHEAD_PAPER_RESULTS_CB}" && gnuplot "${PATH_CODBENCH_ENCODE_GNUPLOTFILE}" && gnuplot "${PATH_CODBENCH_CHECK_GNUPLOTFILE}" && gnuplot "${PATH_CODBENCH_DECODE_GNUPLOTFILE}" && gnuplot "${PATH_CODBENCH_LABELS_GNUPLOTFILE}"
+	AHEAD_echo "Plotting graphs"
+	AHEAD_sub_begin
+	AHEAD_pushd "${AHEAD_PAPER_RESULTS_CB}" || AHEAD_exit $? "Could not enter directory '${AHEAD_PAPER_RESULTS_CB}'"
+	AHEAD_echo -n "Encode..."
+	AHEAD_run_hidden_output gnuplot "${PATH_CODBENCH_ENCODE_GNUPLOTFILE}" || AHEAD_exit $?
+	AHEAD_echo -n "Detect..."
+	AHEAD_run_hidden_output gnuplot "${PATH_CODBENCH_CHECK_GNUPLOTFILE}" || AHEAD_exit $?
+	AHEAD_echo -n "Decode..."
+	AHEAD_run_hidden_output gnuplot "${PATH_CODBENCH_DECODE_GNUPLOTFILE}" || AHEAD_exit $?
+	AHEAD_echo -n "Key..."
+	AHEAD_run_hidden_output gnuplot "${PATH_CODBENCH_LABELS_GNUPLOTFILE}" || AHEAD_exit $?
 	AHEAD_popd
 	AHEAD_sync
 
@@ -308,14 +321,15 @@ if ((DO_MODULARINVERSE != 0)); then
 
 	# gnuplot the results
 	AHEAD_pushd "${AHEAD_PAPER_RESULTS_MI}" || AHEAD_exit $? "Could not enter directory '${AHEAD_PAPER_RESULTS_MI}'"
-	AHEAD_run_hidden_output gnuplot "${PATH_MODINV_GNUPLOTFILE}" && AHEAD_echo "Plotted graphs" || AHEAD_exit $? "Error plotting graphs!"
+	AHEAD_echo -n "Plotting graphs"
+	AHEAD_run_hidden_output gnuplot "${PATH_MODINV_GNUPLOTFILE}" || AHEAD_exit $?
 	AHEAD_popd
 	AHEAD_sync
 
 	AHEAD_sub_reset
 fi
 
-if ((DO_PLOT != 0)); then
+if ((DO_PDF != 0)); then
 	echo "###########################################################"
 	echo "# Generating simgod2018.pdf                               #"
 	echo "###########################################################"
